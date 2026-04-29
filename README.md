@@ -85,6 +85,15 @@ If the URL can't be fetched (some job portals block automated access), you can p
 
 This runs the full workflow: evaluate fit, draft CV + cover letter, review with a second agent, revise, and present the final output.
 
+## Other commands
+
+`/setup`, `/scrape`, and `/apply` form the core workflow. Two more commands extend it once your profile is in place:
+
+- **`/expand`** enriches your profile by scanning public sources you've already linked in it (GitHub repos, portfolio site, Kaggle, Google Scholar) and looking up syllabi for named courses and certifications. Discovered competencies are added to your profile with a source tag. Useful right after `/setup` to surface skills that documents alone don't make explicit.
+- **`/upskill`** analyzes the gap between your profile and your tracked job postings (or a single posting via `/upskill <URL>`). Produces a prioritized heatmap of skill gaps and a learning plan with web-searched study resources and time estimates. Useful for career planning between applications.
+
+`/reset` is also available, see [Starting over](#starting-over) below.
+
 ## File structure
 
 ```
@@ -119,11 +128,19 @@ ai-job-search/
 ├── cover_letters/
 │   ├── cover.cls                      # Custom cover letter LaTeX class
 │   └── OpenFonts/                     # Lato + Raleway fonts
+├── documents/                         # Career source materials for /setup Path A and /expand
+│   ├── README.md                      # Folder layout instructions
+│   ├── cv/                            # Master CV (PDF or .tex)
+│   ├── linkedin/                      # LinkedIn profile export (PDF)
+│   ├── diplomas/                      # Degree certificates and transcripts
+│   ├── references/                    # Reference letters
+│   └── applications/                  # Past application records (<company>_<role>/)
 ├── salary_lookup.py                   # Salary benchmarking tool (BYO data)
 ├── tools/
 │   ├── convert_salary_excel.py        # Convert salary Excel to JSON
 │   └── README_SALARY_TOOL.md          # Salary tool setup instructions
 ├── job_scraper/                       # Scraper state (seen jobs, results)
+├── upskill/                           # /upskill report output (markdown reports per run)
 ├── job_search_tracker.csv             # Application tracking spreadsheet
 └── SETUP.md                           # Detailed setup guide
 ```
@@ -207,7 +224,7 @@ The single biggest factor in output quality is how much detail you put into your
 
 - **Role descriptions:** Don't just list job titles. Describe what you actually did in each position: specific projects, tools used, responsibilities, and measurable achievements. The more material you provide, the more precisely the system can reframe your experience for different roles.
 - **Skills in context:** Instead of listing "Python" or "project management," describe how and where you applied them. "Built ML pipelines for customer churn prediction in Python using scikit-learn" gives the system far more to work with than "Python, machine learning."
-- **Either onboarding path works:** Whether you import an existing CV or answer questions interactively via `/setup`, the principle is the same: richer input produces sharper output.
+- **All onboarding paths work:** Whether you point `/setup` at your `documents/` folder, paste a single CV, or walk through the interview, the principle is the same: richer input produces sharper output.
 
 ### Career path discovery
 
