@@ -1,6 +1,6 @@
 # /reset - Reset Candidate Profile Data
 
-You are resetting parts of the job search framework back to a blank state so the user can start fresh with `/setup` or `/setup_docs`.
+You are resetting parts of the job search framework back to a blank state so the user can start fresh with `/setup`.
 
 **This command is destructive.** Nothing is deleted until the user explicitly confirms. Follow these steps exactly in order.
 
@@ -18,7 +18,7 @@ If `$ARGUMENTS` is empty or does not contain a recognized scope keyword, ask:
 
 > **What would you like to reset?**
 >
-> - **`profile`** — Clears candidate data from the skill files (profile, behavioral, STAR examples, profile statements). The framework structure and writing rules are preserved. Use this to re-run `/setup` or `/setup_docs` from scratch.
+> - **`profile`** — Clears candidate data from the skill files (profile, behavioral, STAR examples, profile statements). The framework structure and writing rules are preserved. Use this to re-run `/setup` from scratch.
 >
 > - **`documents`** — Deletes all files you've placed in the `documents/` folder (CV PDFs, LinkedIn export, diplomas, references, past applications). The folder structure and `README.md` are preserved.
 >
@@ -119,7 +119,7 @@ Wait for the user's response.
 ```markdown
 # Candidate Profile
 
-<!-- Run /setup or /setup_docs to populate this file -->
+<!-- Run /setup to populate this file -->
 
 ## Identity
 
@@ -143,7 +143,7 @@ Wait for the user's response.
 ```markdown
 # Behavioral Profile
 
-<!-- Run /setup or /setup_docs to populate this file -->
+<!-- Run /setup to populate this file -->
 
 ## Overview
 
@@ -165,21 +165,21 @@ Wait for the user's response.
 ```markdown
 **Profile statement templates:**
 
-<!-- Run /setup or /setup_docs to populate role-specific profile statements -->
+<!-- Run /setup to populate role-specific profile statements -->
 ```
 
 Leave all other content in `05-cv-templates.md` intact.
 
 **For `07-interview-prep.md`**, locate and remove:
 - The entire `## Ready-Made STAR Examples` section and all numbered STAR examples under it
-- Any `## STAR Candidates (Complete Manually)` section added by `/setup_docs`
+- Any `## STAR Candidates (Complete Manually)` section added by `/setup` Path A
 
 Replace with:
 
 ```markdown
 ## Ready-Made STAR Examples
 
-<!-- Run /setup or /setup_docs to populate STAR examples from your actual experience -->
+<!-- Run /setup to populate STAR examples from your actual experience -->
 ```
 
 Leave all other content in `07-interview-prep.md` intact (STAR format explanation, tough questions, questions to ask interviewers, phone/video tips, follow-up etiquette, roleplay guidelines).
@@ -215,13 +215,10 @@ After the reset is complete, report:
 Then tell the user what to do next based on what was reset:
 
 **If profile was reset:**
-> Your candidate profile is now blank. To repopulate it:
-> - Run `/setup_docs` if you have documents in the `documents/` folder — it will re-read them and rebuild the profile files.
-> - Run `/setup` for an interactive interview to fill in your profile from scratch.
-> - You can also run `/setup_docs` first, then `/setup` to fill in anything the documents didn't cover.
+> Your candidate profile is now blank. Run `/setup` to repopulate it. The command auto-detects any files in your `documents/` folder and offers to read from there; otherwise it walks you through a CV import or interactive interview.
 
 **If documents were reset:**
-> The `documents/` folder is now empty. Add your career documents and run `/setup_docs` to populate your profile. See `documents/README.md` for instructions on what to put where.
+> The `documents/` folder is now empty. Add your career documents and run `/setup` to populate your profile. See `documents/README.md` for instructions on what to put where.
 
 **If both were reset:**
-> Both your profile files and documents folder are now empty. Add documents to `documents/` and run `/setup_docs`, or run `/setup` for an interactive setup interview.
+> Both your profile files and documents folder are now empty. Add documents to `documents/` (or skip and use the CV import / interview path), then run `/setup`.

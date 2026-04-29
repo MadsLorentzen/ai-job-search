@@ -61,26 +61,7 @@ claude
 /setup
 ```
 
-Claude will ask about your background, skills, and career goals, then populate all profile files automatically. You can import from an existing CV or answer questions interactively. The setup also configures your job search queries so `/scrape` works immediately.
-
-**Alternative: populate from documents**
-
-If you have a collection of career documents (CV PDF, LinkedIn export, diplomas, reference letters, past applications), drop them in the `documents/` folder and run `/setup_docs` instead. It reads all documents, cross-references them for consistency, and merges extracted data into your profile files. Safe to re-run as you add new documents.
-
-```
-documents/
-├── cv/          ← Your master CV (PDF or .tex)
-├── linkedin/    ← LinkedIn profile export (Save to PDF)
-├── diplomas/    ← Degree certificates
-├── references/  ← Reference letters
-└── applications/
-    └── company_role/
-        ├── job_posting.md
-        ├── cover_letter.tex
-        └── outcome.md
-```
-
-See `documents/README.md` for full instructions.
+`/setup` offers three paths: read your `documents/` folder if you have one populated (CV PDF, LinkedIn export, diplomas, reference letters, past applications), import a single CV pasted in chat, or walk through an interview. It auto-detects what you have and asks. Documents-folder mode is idempotent and safe to re-run as you add more material; see `documents/README.md` for the layout.
 
 ### 4. Search for jobs
 
@@ -112,8 +93,8 @@ ai-job-search/
 ├── .claude/
 │   ├── commands/
 │   │   ├── apply.md                   # /apply workflow (drafter-reviewer)
-│   │   ├── setup.md                   # /setup onboarding interview
-│   │   ├── setup_docs.md              # /setup_docs document-based profile population
+│   │   ├── setup.md                   # /setup onboarding (documents folder, CV import, or interview)
+│   │   ├── expand.md                  # /expand competency enrichment from documents and online presence
 │   │   └── reset.md                   # /reset wipe profile data or documents folder
 │   ├── skills/
 │   │   ├── job-application-assistant/  # Core application skill
@@ -125,7 +106,8 @@ ai-job-search/
 │   │   │   ├── 05-cv-templates.md     # LaTeX CV structure + tailoring rules
 │   │   │   ├── 06-cover-letter-templates.md # LaTeX cover letter templates
 │   │   │   └── 07-interview-prep.md   # STAR examples + interview framework
-│   │   └── job-scraper/               # Job search orchestration
+│   │   ├── job-scraper/               # Job search orchestration
+│   │   └── upskill/                   # /upskill skill gap analysis and learning plan
 │   └── settings.local.json            # Claude Code permissions
 ├── .agents/skills/                    # Job portal CLI tools (Denmark)
 │   ├── jobbank-search/                # Akademikernes Jobbank

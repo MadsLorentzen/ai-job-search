@@ -1,6 +1,6 @@
 # Documents Folder
 
-This folder holds your actual career documents. The `/setup_docs` command reads everything here and uses it to populate the candidate skill files under `.claude/skills/job-application-assistant/`. It is safe to re-run `/setup_docs` as you add new documents — it merges intelligently and will never overwrite existing content without asking you first.
+This folder holds your actual career documents. The `/setup` command reads everything here and uses it to populate the candidate skill files under `.claude/skills/job-application-assistant/`. It is safe to re-run `/setup` as you add new documents — it merges intelligently and will never overwrite existing content without asking you first.
 
 ---
 
@@ -29,14 +29,14 @@ Your master CV — the most complete, unedited version of your professional reco
 
 **Supported formats:** `.pdf`, `.tex`
 
-**What `/setup_docs` extracts:**
+**What `/setup` extracts:**
 - Work experience (titles, companies, dates, bullet points)
 - Education (degrees, institutions, dates, thesis topics)
 - Technical skills
 - Awards and publications
 - Contact information
 
-**Naming:** Any filename works. If multiple files are present, `/setup_docs` reads all of them and cross-references for consistency.
+**Naming:** Any filename works. If multiple files are present, `/setup` reads all of them and cross-references for consistency.
 
 **Tip:** Keep your most comprehensive CV here (not a tailored variant). The skill files are the canonical source — tailored CVs are generated per application by `/apply`.
 
@@ -50,7 +50,7 @@ Your LinkedIn profile exported as a PDF.
 
 **Supported formats:** `.pdf`
 
-**What `/setup_docs` extracts:**
+**What `/setup` extracts:**
 - Work experience and dates (cross-referenced against your CV)
 - Skills and endorsements
 - Education
@@ -60,7 +60,7 @@ Your LinkedIn profile exported as a PDF.
 - About/summary section (used to infer behavioral profile additions)
 - Recommendations received (may enrich reference context)
 
-**Naming:** Any filename works. Only one LinkedIn export is expected; if multiple are present, `/setup_docs` uses the most recently modified one.
+**Naming:** Any filename works. Only one LinkedIn export is expected; if multiple are present, `/setup` uses the most recently modified one.
 
 ---
 
@@ -70,7 +70,7 @@ Degree certificates, transcripts, and any official qualifications.
 
 **Supported formats:** `.pdf`
 
-**What `/setup_docs` extracts:**
+**What `/setup` extracts:**
 - Degree titles and official names (used to verify education entries)
 - Graduation dates
 - Grades or distinctions (if visible)
@@ -86,7 +86,7 @@ Reference letters from former managers, supervisors, or collaborators.
 
 **Supported formats:** `.pdf`, `.txt`, `.md`
 
-**What `/setup_docs` extracts:**
+**What `/setup` extracts:**
 - Referee name, title, and organization
 - Specific quotes and assessments (added to the references section of `01-candidate-profile.md`)
 - Competency language used by referees (adds behavioral signal to `02-behavioral-profile.md`)
@@ -111,7 +111,7 @@ applications/
 
 ### Files within each application folder
 
-**`job_posting.md`** — Paste the full job posting text here. Used by `/setup_docs` to infer which skills and role types you have targeted, and to calibrate `04-job-evaluation.md`.
+**`job_posting.md`** — Paste the full job posting text here. Used by `/setup` to infer which skills and role types you have targeted, and to calibrate `04-job-evaluation.md`.
 
 **`cover_letter.tex`** — The cover letter you actually submitted. Used to extract writing style patterns and structure for `06-cover-letter-templates.md`.
 
@@ -139,7 +139,7 @@ What would you do differently?
 Any signal about what they valued or didn't?
 ```
 
-**What `/setup_docs` learns from outcome.md:**
+**What `/setup` learns from outcome.md:**
 - Which role types and companies have led to interviews (signals strong fit areas)
 - Which applications did not progress (informs the experience match calibration in `04-job-evaluation.md`)
 - Interview feedback, if you recorded it, can surface new STAR candidates
@@ -148,7 +148,7 @@ Any signal about what they valued or didn't?
 
 ## File Format Notes
 
-| Format | Readable by `/setup_docs` | Notes |
+| Format | Readable by `/setup` | Notes |
 |--------|--------------------------|-------|
 | `.pdf` | Yes | Parsed directly with the Read tool |
 | `.tex` | Yes | LaTeX source — structure and content both readable |
@@ -159,7 +159,7 @@ Any signal about what they valued or didn't?
 
 ---
 
-## Re-running `/setup_docs`
+## Re-running `/setup`
 
 The command is designed to be re-run as your document collection grows. Each run:
 
