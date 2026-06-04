@@ -1,120 +1,81 @@
 # Salary Benchmark Tool
 
-## What is this?
+## What Is This?
 
-The salary lookup tool (`salary_lookup.py`) lets you benchmark company salaries against a baseline from your own data. It's used during the `/apply` workflow to show how a company's compensation compares to market rates.
+The salary lookup tool (`salary_lookup.py`) benchmarks a company or role against your own EUR salary data. It is optional; if `salary_data.json` is missing, `$job-apply` skips the salary step.
 
-**This tool is optional.** If you don't have salary data, the salary step is simply skipped during `/apply`.
+Use sources that make sense for Portugal and EU remote roles: public salary ranges, Portuguese salary surveys, Glassdoor, Teamlyzer, Levels.fyi where relevant, networking notes, recruiter ranges, or your own spreadsheet.
 
-## How it works
+## Data Format
 
-The tool reads a `salary_data.json` file in the repo root containing company salary benchmarks. It uses fuzzy matching to find companies by name, handling Danish/Nordic characters, legal suffixes (A/S, ApS), and common spelling variations.
-
-The data format supports any index-based or absolute salary data. For example:
-- Index 100 = median salary, higher is better
-- Absolute salary values in your currency
-- Any custom metric you want to track
-
-## Data format
-
-The tool expects `salary_data.json` with this structure:
+Create `salary_data.json` in the repo root:
 
 ```json
 {
   "metadata": {
-    "source": "My Union Statistics 2025",
-    "index_baseline": 100,
-    "index_label": "Index",
-    "baseline_description": "Index 100 = median salary for private sector"
+    "source": "Personal EUR salary research 2026",
+    "index_baseline": 0,
+    "index_label": "Annual gross salary (EUR)",
+    "baseline_description": "Approximate annual gross compensation"
   },
   "companies": [
     {
-      "company": "Novo Nordisk A/S",
-      "city": "Bagsværd",
+      "company": "Example Tech Portugal",
+      "city": "Lisbon",
       "categories": {
-        "all_employees": { "count": 500, "index": 108.5 },
-        "engineering": { "count": 120, "index": 112.3 }
+        "mid_level": { "count": 5, "index": 45000 },
+        "senior": { "count": 3, "index": 65000 }
       }
     },
     {
-      "company": "Ørsted A/S",
-      "city": "Fredericia",
+      "company": "Remote EU Startup",
+      "city": "Remote EU",
       "categories": {
-        "all_employees": { "count": 200, "index": 105.2 }
+        "senior": { "index": 80000 }
       }
     }
   ]
 }
 ```
 
-### Fields
+## Fields
 
-- **metadata.source**: Where the data comes from (for reference)
-- **metadata.index_baseline**: The baseline value (e.g., 100 for index-based data)
-- **metadata.index_label**: Label for the index column in output
-- **metadata.baseline_description**: Human-readable explanation of the baseline
-- **companies[].company**: Company name (required)
-- **companies[].city**: City/location (optional, used for filtering)
-- **companies[].categories**: Named salary categories, each with `count` and/or `index`
+- `metadata.source`: Where the data comes from.
+- `metadata.index_label`: Label shown in output.
+- `metadata.baseline_description`: Human-readable explanation.
+- `companies[].company`: Company name.
+- `companies[].city`: Optional city, country, or remote scope.
+- `companies[].categories`: Named salary categories with `count` and/or `index`.
 
-## Setup options
+## Setup Options
 
-### Option A: Create salary_data.json manually
+### Create Manually
 
-Create the file by hand with data from any source: union statistics, Glassdoor, salary surveys, networking, or personal research.
+Add companies as you research them. This is usually enough for a personal job search.
 
-### Option B: Convert from Excel
-
-If you have salary data in an Excel file:
+### Convert From Excel
 
 ```bash
 pip install openpyxl
 python tools/convert_salary_excel.py path/to/salary-data.xlsx \
-  --source "My Salary Data 2025" \
-  --baseline 100 \
-  --baseline-desc "Index 100 = median salary"
+  --source "My EUR Salary Data 2026" \
+  --baseline 0 \
+  --baseline-desc "Annual gross salary in EUR"
 ```
 
-The converter auto-detects the Excel layout:
-- Looks for a "Company"/"Firma" column and an optional "City"/"By" column
-- Treats remaining columns as salary data (auto-pairs count/index columns)
-
-### Option C: Build from research
-
-Start with an empty template and add companies as you research them:
-
-```json
-{
-  "metadata": {
-    "source": "Personal research",
-    "index_baseline": 0,
-    "index_label": "Monthly salary (DKK)",
-    "baseline_description": "Approximate monthly salary before tax"
-  },
-  "companies": [
-    {
-      "company": "Example Corp",
-      "city": "Copenhagen",
-      "categories": {
-        "entry_level": { "index": 42000 },
-        "senior": { "index": 55000 }
-      }
-    }
-  ]
-}
-```
+The converter auto-detects common columns such as company, city/location, salary, median, average, EUR, count, and sample size.
 
 ## Usage
 
 ```bash
-python salary_lookup.py "Novo Nordisk"
-python salary_lookup.py "Ørsted" --city "Fredericia"
-python salary_lookup.py "COWI" --json
+python salary_lookup.py "Example Tech Portugal"
+python salary_lookup.py "Remote EU Startup" --city "Remote EU"
+python salary_lookup.py "Example Tech Portugal" --json
 python salary_lookup.py --list-all
 ```
 
-## Important notes
+## Notes
 
-- The data file (`salary_data.json`) is **excluded from git** (see `.gitignore`). Your salary data may be proprietary or confidential.
-- If the data file is missing, `salary_lookup.py` exits with a helpful error message and the `/apply` workflow skips the salary benchmark step.
-- The fuzzy matcher handles Danish company name variations: legal suffixes, Nordic characters, anglicized spellings, and partial matches.
+- `salary_data.json` is excluded from git because salary notes can be private.
+- Missing salary data is fine; `$job-apply` continues without it.
+- Matching is accent-insensitive and strips common Portuguese legal suffixes such as `Lda`, `S.A.`, and `Unipessoal`.

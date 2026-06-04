@@ -3,8 +3,7 @@
 Salary Benchmark Lookup Tool
 
 Looks up company salary data from a user-provided dataset.
-Supports any salary data source — union statistics, Glassdoor exports,
-manually collected benchmarks, etc.
+Supports any EUR salary data source - salary surveys, Glassdoor exports, Teamlyzer notes, public ranges, networking notes, or personal research.
 
 This tool requires a data file (salary_data.json) that you create
 from your own salary data. See tools/README_SALARY_TOOL.md for
@@ -12,7 +11,7 @@ instructions on the expected format and how to convert from Excel.
 
 Usage:
     python salary_lookup.py "Company Name"
-    python salary_lookup.py "Company Name" --city "København"
+    python salary_lookup.py "Company Name" --city "Lisbon"
     python salary_lookup.py "Company Name" --json
     python salary_lookup.py --list-all
 """
@@ -26,22 +25,15 @@ from pathlib import Path
 
 DATA_FILE = Path(__file__).parent / "salary_data.json"
 
-# Common Danish <-> anglicized spelling variants
-SPELLING_VARIANTS = {
-    "ø": "o", "æ": "ae", "å": "aa",
-    "ö": "o", "ä": "ae", "ü": "u",
-}
-
 # Legal suffixes and noise to strip when matching company names
 STRIP_PATTERNS = [
-    r"\ba/s\b", r"\baps\b", r"\bi/s\b", r"\bp/s\b", r"\bk/s\b",
-    r"\bivs\b", r"\bamba\b", r"\ba\.m\.b\.a\.\b",
-    r"\(vg\)", r"\(.*?\)",  # (VG) and other parentheticals
-    r"\bdanmark\b", r"\bdenmark\b", r"\bscandinavia\b", r"\bnordic\b",
+    r"\blda\b", r"\blimitada\b", r"\bsa\b", r"\bs\.a\.\b",
+    r"\bunipessoal\b", r"\bsociedade\b",
+    r"\(.*?\)",
+    r"\bportugal\b", r"\beurope\b", r"\beu\b",
     r"\bgroup\b", r"\bholding\b",
-    r",\s*.*$",  # everything after comma (sub-entities)
+    r",\s*.*$",
 ]
-
 
 def load_data():
     if not DATA_FILE.exists():
@@ -51,7 +43,7 @@ def load_data():
         print("See tools/README_SALARY_TOOL.md for setup instructions.", file=sys.stderr)
         print("", file=sys.stderr)
         print("If you don't have salary data, the salary lookup", file=sys.stderr)
-        print("step will be skipped during /apply.", file=sys.stderr)
+        print("step will be skipped during $job-apply.", file=sys.stderr)
         sys.exit(1)
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
@@ -59,27 +51,32 @@ def load_data():
 
 def normalize(s):
     """Normalize string for robust fuzzy matching."""
-    s = s.lower().strip()
+    s = strip_accents(s.lower().strip())
     for pat in STRIP_PATTERNS:
         s = re.sub(pat, "", s)
-    s = re.sub(r"[^a-zæøåöäü0-9]", "", s)
+    s = re.sub(r"[^a-z0-9]", "", s)
     return s.strip()
 
 
+def strip_accents(s):
+    """Convert accented characters to ASCII equivalents for matching."""
+    return "".join(
+        c for c in unicodedata.normalize("NFKD", s)
+        if not unicodedata.combining(c)
+    )
+
+
 def anglicize(s):
-    """Convert Danish/Nordic characters to anglicized equivalents."""
-    s = s.lower()
-    for danish, english in SPELLING_VARIANTS.items():
-        s = s.replace(danish, english)
-    return s
+    """Return an accent-insensitive version for fuzzy matching."""
+    return strip_accents(s.lower())
 
 
 def extract_core_words(s):
     """Extract meaningful words from a company name, ignoring noise."""
-    s = s.lower()
+    s = strip_accents(s.lower())
     for pat in STRIP_PATTERNS:
         s = re.sub(pat, "", s)
-    words = re.findall(r"[a-zæøåöäü0-9]+", s)
+    words = re.findall(r"[a-z0-9]+", s)
     return [w for w in words if len(w) > 1]
 
 
@@ -261,7 +258,7 @@ def main():
         if args.city:
             print(f"  (filtered by city: {args.city})")
         print("\nTry a shorter or different name. Company names in the dataset")
-        print("may include legal suffixes like 'A/S' or 'ApS'.")
+        print("may include legal suffixes like 'Lda', 'S.A.', or 'Unipessoal'.")
         sys.exit(1)
 
     if args.json:

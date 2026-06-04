@@ -10,15 +10,15 @@ Prerequisites:
 
 Usage:
     python tools/convert_salary_excel.py <path-to-excel-file>
-    python tools/convert_salary_excel.py <path-to-excel-file> --source "My Union Stats 2025"
-    python tools/convert_salary_excel.py <path-to-excel-file> --baseline 100 --baseline-desc "Index 100 = median salary"
+    python tools/convert_salary_excel.py <path-to-excel-file> --source "My EUR Salary Data 2025"
+    python tools/convert_salary_excel.py <path-to-excel-file> --baseline 0 --baseline-desc "Annual gross salary in EUR"
 
 The output file (salary_data.json) will be written to the repository root.
 
 Expected Excel format:
     - A header row with column names
-    - A "Company" or "Firma" column (required)
-    - An optional "City" or "By" column
+    - A "Company" column (required)
+    - An optional "City" or "Location" column
     - Any number of numeric data columns (salary index, count, etc.)
 
 The script auto-detects the header row and column layout. For Excel files
@@ -38,10 +38,10 @@ except ImportError:
 
 
 # Column name patterns for auto-detection
-COMPANY_PATTERNS = {"firma", "company", "virksomhed", "employer", "arbejdsgiver"}
-CITY_PATTERNS = {"by", "city", "kommune", "location", "lokation", "sted"}
-COUNT_PATTERNS = {"antal", "count", "number", "n", "employees", "medarbejdere"}
-INDEX_PATTERNS = {"indeks", "index", "idx", "salary", "løn", "median", "average", "gennemsnit"}
+COMPANY_PATTERNS = {"company", "employer", "empresa", "organizacao"}
+CITY_PATTERNS = {"city", "location", "local", "localidade", "cidade", "region", "regiao"}
+COUNT_PATTERNS = {"count", "number", "n", "employees", "responses", "sample"}
+INDEX_PATTERNS = {"index", "idx", "salary", "salario", "remuneracao", "median", "average", "media", "eur", "euro"}
 
 
 def detect_column_type(header):
