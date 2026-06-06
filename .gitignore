@@ -42,7 +42,7 @@ Thumbs.db
 
 # Memory files (Claude Code user-specific)
 .claude/projects/
-.claude/skills/job-application-assistant/*
+.claude/skills/job-application-assistant/*.md
 
 # Skills lock (auto-generated)
 skills-lock.json
