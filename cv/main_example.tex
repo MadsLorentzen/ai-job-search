@@ -1,41 +1,35 @@
-%% Example CV - [YOUR_NAME]
+%% Master CV -- Silvia Giammarinaro
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
-%% Compile with: lualatex main_example.tex
-%% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
+%% Compile with: tectonic main_example.tex
+%%   (or: lualatex main_example.tex on a full TeX Live install)
+%% Note: pdflatex fails on modern setups with fontawesome5 font-expansion errors.
+%% tectonic requires \PassOptionsToPackage{noutf}{fontawesome5} to avoid a crash
+%% with the UTex fontawesome helper.
 
 \documentclass[11pt,a4paper,sans]{moderncv}
 \moderncvstyle{banking}
 \moderncvcolor{blue}
 
-% Force both first and last name AND section headings to render in moderncv
-% blue (color1). Default banking on lualatex+MiKTeX leaves these black, which
-% looks inconsistent with the rest of the blue accent scheme.
-\renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
+% moderncv 2022 (tectonic bundle) applies color1 to name and sections natively.
+% \firstnamestyle / \lastnamestyle / \sectionstyle overrides are for older MiKTeX only.
 
 \usepackage[utf8]{inputenc}
-\usepackage{hyperref}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
-    pdfpagemode=FullScreen,
-}
-\usepackage[scale=0.80]{geometry}
+\usepackage{needspace}
+\usepackage[scale=0.77]{geometry}
 \usepackage{import}
+\AtBeginDocument{%
+  \hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,
+              pdftitle={Silvia Giammarinaro - CV},pdfpagemode=FullScreen}%
+}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Silvia}{Giammarinaro}
+\address{Berlin, Germany}{}{}
+\phone[mobile]{+49 1705046633}
+\email{silvia.giammarinaro@gmail.com}
+\extrainfo{\href{https://www.linkedin.com/in/silvia-giammarinaro}{LinkedIn}, \href{https://sigeek.github.io/}{sigeek.github.io}}
 
 \begin{document}
 
@@ -46,7 +40,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{Data engineer and backend software engineer with 4+ years of industry experience building scalable data pipelines and production infrastructure. Currently at Aignostics (health tech, Berlin) designing systems for large-scale medical imaging data on GCP. Strong Python and SQL foundations, hands-on with Apache Airflow, PySpark, Terraform, and AWS. Track record of measurable impact: 85--93\% efficiency gains, \texteuro{}4k+/month cloud cost savings, and architecture decisions coordinated across 5+ teams.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +50,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{Data Engineering \& Pipelines}: Python (expert), Apache Airflow, PySpark, Delta Lake, ETL design, data quality, data modeling, 300M+ record scale
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Cloud \& Infrastructure}: AWS (S3, Redshift, EC2, Terraform), GCP (Cloud Run, Cloud Storage, event-driven architecture), Docker, containerized deployments
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Backend Engineering}: Event-driven systems, serverless architecture, PostgreSQL, system design, Architecture Decision Records (ADRs), cross-team coordination
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Analytics \& Visualization}: SQL (expert), Apache Superset, Looker, Tableau, Pandas, NumPy, R; automated reporting, KPI dashboards for director-level stakeholders
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Machine Learning}: PyTorch, Keras, TensorFlow, Scikit-learn; customer segmentation, conversion modeling, computer vision (MSc research)
 
 \end{itemize}
 
@@ -76,32 +70,73 @@
 \vspace{3pt}
 \begin{itemize}
 
-% --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{Feb 2025--Present}{Software Engineer, Backend}{Aignostics}{Berlin, Germany}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item \textbf{Data Pipelines}: Designed and implemented Python pipelines to process and onboard large-scale medical imaging datasets (1PB+), including metadata extraction, filtering, anonymization and processing
+    \item \textbf{GCP Infrastructure}: Designed and set up GCP infrastructure for a new backend integration service, including architecture documentation and cross-team coordination; designed a serverless event-driven architecture (Cloud Run + PostgreSQL-backed job queue) to automate transfer of AI-generated artifacts, replacing manual workflows
+    \item \textbf{Partner Onboarding}: Led end-to-end onboarding of a hospital partner's large-scale pathology dataset (\textasciitilde{}20k+ slides), handling metadata processing, performance tuning, and observability
+    \item \textbf{Data Cleanup}: Drove a large-scale data cleanup initiative spanning multiple databases and cloud storage buckets, requiring alignment across engineering, data science, and product teams; targeting \texteuro{}4k+/month in cost savings
+    \item \textbf{Code Quality}: Contributed to code quality through thorough MR reviews with a focus on root-cause fixes; participated in operational incident response
+    \item \textbf{Knowledge Sharing}: Internal DuckLake architecture presentation; external conference representation at EuroPython
+    \item \textbf{Process}: Established deployment changelogs, built progress-tracking dashboards, and contributed to cross-team request management workflows
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{Apr 2024--Feb 2025}{Data Engineer, Link}{Veeva Systems}{Berlin, Germany}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+    \item Designed and implemented scalable data pipelines in Python to process external large-scale datasets (300M+ records) using Airflow, PySpark, and AWS data lakes; ensured data integrity, quality, and efficiency
+    \item Managed and optimized AWS resources using Terraform; implemented processes to review and archive outdated S3 data, achieving savings of over 5TB of storage
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{Feb 2023--Apr 2024}{Data Analyst, Link Key Accounts / Data Operations}{Veeva Systems}{Berlin, Germany}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+    \item \textbf{Reporting}: Owner of team KPIs delivered to the department director (6 dashboards); automated reporting with Python, Airflow, and Superset -- 85\%+ time saved; 10+ Airflow processes and 20+ Superset dashboards created
+    \item \textbf{Data Engineering}: Revamped pipelines achieving \textasciitilde{}90\% efficiency gain; created 60+ tables as presentation layer across two databases; imported US government data into product pipelines
+    \item \textbf{Technical Lead}: Defined web scraping process with PM and Data Platform Engineering to collect daily data points, resulting in cost savings and faster customer delivery; authored case study for hiring review
+    \item \textbf{Knowledge Sharing}: Mentored data analysts in Python, AWS, and Airflow; held weekly AWS study sessions for 3 months; promoted git and Confluence documentation best practices
+\end{itemize}}}
+
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+\item{\cventry{Sep 2021--Feb 2023}{Data Analyst, CRM}{mytheresa.com}{Munich, Germany}{}{\vspace{1pt}
+\begin{itemize}
+    \item \textbf{Reporting}: Automated Customer Partnership Management (CPM) reports for major luxury brands -- 93\% reduction in report creation time; collaborated with C-level executives on report structure; pipeline: ETL from orders + Google Analytics, R script for auto-generation
+    \item \textbf{Data Engineering}: Revamped SQL data warehouse infrastructure; daily ETL maintenance using Pentaho; on-call weekends for pipeline reliability
+    \item \textbf{Machine Learning}: Improved customer segmentation algorithm leading to increased click-through rate and conversions; built model to identify potential conversions
+    \item \textbf{Customer Tracking}: Monitored customer KPIs across SEO, SEA, Facebook, Email, App channels; created identity stitching algorithms to merge data from different sources
+\end{itemize}}}
+
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+\item{\cventry{Oct 2020--Jan 2021}{Teaching Assistant}{Politecnico di Torino}{Turin, Italy}{}{\vspace{1pt}
+\begin{itemize}
+    \item Course: Machine Learning for Vision and Multimedia (Computer Engineering Master's degree)
+    \item Topics: ML with Python, TensorFlow, Keras -- computer vision and audio processing; supported 40+ students across 10+ labs; mentored final projects
+\end{itemize}}}
+
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+\item{\cventry{Sep 2019--Sep 2020}{Junior Software Engineer}{SAN srl}{Collegno, Italy}{}{\vspace{1pt}
+\begin{itemize}
+    \item Renovated hospital work-shift monitoring application using Ruby on Rails, JavaScript, HTML (1k+ employees)
+    \item Migrated NoSQL database to SQL, improving data storage and performance
+\end{itemize}}}
+
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+\item{\cventry{Mar 2019--May 2019}{Software Engineer Intern}{SAN srl}{Turin, Italy}{}{\vspace{1pt}
+\begin{itemize}
+    \item Developed medical record web application using Ruby on Rails, JavaScript, HTML; deployed to 2 hospitals in Piedmont with 300+ patients
 \end{itemize}}}
 
 \end{itemize}
@@ -114,15 +149,16 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
+\needspace{5\baselineskip}
+\item{\cventry{Oct 2019--Dec 2021}{MSc Data Science and Engineering (GPA: 3.8/4, Grade: 109/110)}{Politecnico di Torino}{Turin, Italy}{}{\vspace{1pt}
+Thesis: ``Exploiting background knowledge for scene graph generation with Logic Tensor Networks.''
+Founded \textbf{MALTO} (Machine Learning Torino Politecnico) data science student team. First place, Easy Peasy Robotics Competition (IIT Workshop, Computer Vision).
 }}
 
 \vspace{3pt}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
-}}
+\needspace{5\baselineskip}
+\item{\cventry{Oct 2016--Aug 2019}{BSc Computer Engineering}{Politecnico di Torino}{Turin, Italy}{}{}}
 
 \end{itemize}
 
@@ -133,27 +169,28 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
+\item Italian (native), English (C1 / full professional), German (A2 / elementary).
 \end{itemize}
 
 % ============================================================
-%     PUBLICATIONS (optional)
+%     CERTIFICATIONS
 % ============================================================
 
-\section{Publications}
+\section{Certifications}
 \vspace{1pt}
 \begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
+\item \textbf{MLOps Specialization} -- deeplearning.ai (Dec 2023)
+\item \textbf{AWS Certified Cloud Practitioner} -- Amazon Web Services (Sep 2023)
 \end{itemize}
 
 % ============================================================
-%     HONORS AND AWARDS (optional)
+%     HONORS AND AWARDS
 % ============================================================
 
 \section{Honors and Awards}
 \vspace{1pt}
 \begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item{\textbf{First place, Easy Peasy Robotics Competition} -- Workshop by Istituto Italiano di Tecnologia, Computer Vision (during MSc).}
 \end{itemize}
 
 % ============================================================

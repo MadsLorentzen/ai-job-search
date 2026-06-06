@@ -1,0 +1,101 @@
+% Tectonic-compatible stub for fontawesome5-utex-helper.sty
+%
+% The upstream version iterates through font glyphs using \XeTeXcountglyphs /
+% \XeTeXglyphname, which crashes tectonic (SIGABRT, exit 134).  This patched
+% version skips that initialisation loop and implements \__fontawesome_glyphindex:n
+% via \XeTeXglyphindex (works in tectonic) and \__fontawesome_glyph:w via
+% \XeTeXglyph.  All pre-defined moderncv icon macros (\faMobile, \faPhone,
+% \faEnvelope, \faLinkedinIn, etc.) still render correctly.  The only loss is
+% the automatic mapping of glyph-names to \fa* commands built by the loop;
+% those macros (\faRepeat, \faWifi, …) are not used by moderncv.
+
+\@ifpackageloaded{fontawesome5}{}{\PackageError{fontawesome5-utex-helper}{This package should not be loaded individually.}{}}
+\@ifpackagelater{expl3}{2017/05/26}{}{
+  \PackageError{fontawesome5}{expl3 too old}{}
+  \endinput
+}
+
+\ProvidesExplPackage{fontawesome5-utex-helper}{2021/06/04}{5.15.3}{uTeX helper for fontawesome5 (tectonic patch)}
+
+% Silence the LuaTeX branch entirely — we are on XeTeX.
+\sys_if_engine_luatex:TF{}{%
+  % XeTeX branch:
+  % Define analyse function that only loads the font (no glyph iteration).
+  \cs_new:Nn\__fontawesome_analyze_font:nn{%
+    \group_begin:
+      \usefont{TU}{fontawesome#1}{#2}{n}%
+    \group_end:
+  }
+  % Glyph lookup via XeTeX primitive (works fine in tectonic).
+  \cs_set:Nn\__fontawesome_glyphindex:n{%
+    \the\tex_XeTeXglyphindex:D"#1"\scan_stop:
+  }
+  \cs_set_eq:NN\__fontawesome_glyph:w\tex_XeTeXglyph:D
+}
+
+% Run the (patched, non-crashing) font analysis.
+\__fontawesome_analyze_font:nn{\c__fontawesome_kind_tl}{solid}
+\__fontawesome_analyze_font:nn{brands}{regular}
+
+\bool_new:N \l__fontawesome_duotone_bool
+\tl_new:N \l_fontawesome_duotone_secondary_style_tl
+\tl_set:Nn \l_fontawesome_duotone_secondary_style_tl { \color{.!50!white} }
+
+\cs_new:Nn\fontawesome_use_icon:nn{
+  \group_begin:
+    \usefont
+      {TU}
+      {fontawesome\c__fontawesome_kind_tl}
+      {#1}
+      {n}
+    \bool_set:Nn \l__fontawesome_duotone_bool {
+      \str_if_eq_p:ee {#1} {duotone}
+    }
+    \int_set:Nn\l_tmpa_int{
+      \__fontawesome_glyphindex:n{
+        #2
+        \bool_if:NT \l__fontawesome_duotone_bool { -primary }
+      }
+    }
+    \int_compare:nNnT{\l_tmpa_int}={0}{
+      \fontseries{solid}
+      \selectfont
+      \bool_set_false:N \l__fontawesome_duotone_bool
+      \int_set:Nn\l_tmpa_int{\__fontawesome_glyphindex:n{#2}}
+      \int_compare:nNnTF{\l_tmpa_int}={0}{
+        \fontfamily{fontawesomebrands}
+        \fontseries{regular}
+        \selectfont
+        \int_set:Nn\l_tmpa_int{\__fontawesome_glyphindex:n{#2}}
+        \int_compare:nNnT{\l_tmpa_int}={0}{
+          \msg_error:nnxx{fontawesome5}{icon-not-found}{#2}{#1}
+        }
+      }{
+        \msg_warning:nnxx{fontawesome5}{style-substitution}{#2}{#1}
+      }
+    }
+    \bool_if:NTF\c__fontawesome_fixed_bool{
+      \makebox[1.5em][c]
+    }{
+      \use:n
+    }
+    {
+      \bool_if:NTF \l__fontawesome_duotone_bool {
+        \__fontawesome_glyph:w \l_tmpa_int
+        \int_set:Nn\l_tmpa_int{ \__fontawesome_glyphindex:n{ #2-secondary } }
+        \int_compare:nNnF { \l_tmpa_int } = { 0 } {
+          \llap {
+            \l_fontawesome_duotone_secondary_style_tl
+            { \__fontawesome_glyph:w \l_tmpa_int }
+          }
+        }
+      } {
+        \__fontawesome_glyph:w \l_tmpa_int
+      }
+    }
+  \group_end:
+}
+
+\NewDocumentCommand \faDuotoneSetSecondary { m } {
+  \tl_set:Nn \l_fontawesome_duotone_secondary_style_tl { #1 }
+}

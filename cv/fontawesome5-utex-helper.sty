@@ -1,0 +1,169 @@
+% Tectonic-compatible patch for fontawesome5-utex-helper.sty
+%
+% Root cause: the upstream XeTeX path iterates over all font glyphs using
+% \XeTeXglyphname (lines 50-62 of the original).  \XeTeXglyphname hangs
+% indefinitely in tectonic 0.16.9 (SIGABRT / infinite wait), even though
+% \XeTeXglyphindex and \XeTeXcountglyphs work fine.
+%
+% Fix: skip the glyph-name iteration entirely.  Instead:
+%  - \__fontawesome_analyze_font:nn just loads the font (no glyph scan).
+%  - \__fontawesome_glyphindex:n uses \XeTeXglyphindex (works in tectonic).
+%  - \__fontawesome_glyph:w uses \XeTeXglyph (works in tectonic).
+%  - Pre-define every \fa* macro that moderncv banking style needs, exactly as
+%    the original iteration would have defined them.
+%
+% Icons not pre-defined here simply won't resolve (glyph index 0 → no output),
+% but moderncv uses only the macros listed below.
+
+\@ifpackageloaded{fontawesome5}{}{\PackageError{fontawesome5-utex-helper}{Load fontawesome5, not this file directly.}{}}
+\@ifpackagelater{expl3}{2017/05/26}{}{
+  \PackageError{fontawesome5}{expl3 too old}{}
+  \endinput
+}
+
+\ProvidesExplPackage{fontawesome5-utex-helper}{2021/06/04}{5.15.3}{uTeX helper for fontawesome5 (tectonic-compat patch)}
+
+\sys_if_engine_luatex:TF{
+  % LuaTeX path — unchanged from upstream (not affected by the tectonic bug).
+  \RequirePackage{luatexbase}
+  \directlua{require('fontawesome5')}
+  \cs_new:Nn\__fontawesome_analyze_font:nn{
+    \group_begin:
+      \usefont{TU}{fontawesome#1}{#2}{n}
+      \lua_now:e{fontawesome5_analyze_current_font(\tex_fontid:D\tex_font:D)}
+    \group_end:
+  }
+  \cs_set:Npn \__fontawesome_glyphindex:n {
+    \lua_now:e{tex.sprint(font.getfont(font.current()).resources.unicodes[token.scan_string()]~or~0)}
+  }
+  \cs_set_eq:NN\__fontawesome_glyph:w\tex_char:D
+}{
+  % XeTeX path — patched to skip \XeTeXglyphname iteration.
+  \cs_new:Nn\__fontawesome_analyze_font:nn{
+    \group_begin:
+      \usefont{TU}{fontawesome#1}{#2}{n}%  load the font; skip glyph scan
+    \group_end:
+  }
+  \cs_set:Nn\__fontawesome_glyphindex:n{
+    \the\tex_XeTeXglyphindex:D"#1"\scan_stop:
+  }
+  \cs_set_eq:NN\__fontawesome_glyph:w\tex_XeTeXglyph:D
+}
+
+% Load fonts (no glyph iteration).
+\__fontawesome_analyze_font:nn{\c__fontawesome_kind_tl}{solid}
+\__fontawesome_analyze_font:nn{brands}{regular}
+
+% Pre-define \fa* macros needed by moderncv banking style.
+% Pattern matches what the original glyph iteration would have produced:
+%   \cs_gset:Npx\faSomeName{\faPreselectedIcon{some-name}}
+% The \faPreselectedIcon{X} s O{} interface means:
+%   \faSomeName      → solid "some-name" icon
+%   \faSomeName*     → solid "some-name-alt" icon  (s arg → appends -alt)
+%   \faSomeName[reg] → "some-name" icon in "reg" style
+
+% Contact header icons
+\cs_gset:cpx{faMobile}      {\exp_not:N\faPreselectedIcon{mobile}}
+\cs_gset:cpx{faMobileAlt}   {\exp_not:N\faPreselectedIcon{mobile-alt}}
+\cs_gset:cpx{faPhone}       {\exp_not:N\faPreselectedIcon{phone}}
+\cs_gset:cpx{faPhoneAlt}    {\exp_not:N\faPreselectedIcon{phone-alt}}
+\cs_gset:cpx{faFax}         {\exp_not:N\faPreselectedIcon{fax}}
+\cs_gset:cpx{faPrint}       {\exp_not:N\faPreselectedIcon{print}}
+\cs_gset:cpx{faEnvelope}    {\exp_not:N\faPreselectedIcon{envelope}}
+\cs_gset:cpx{faInbox}       {\exp_not:N\faPreselectedIcon{inbox}}
+\cs_gset:cpx{faGlobe}       {\exp_not:N\faPreselectedIcon{globe}}
+\cs_gset:cpx{faGlobeAmericas}{\exp_not:N\faPreselectedIcon{globe-americas}}
+\cs_gset:cpx{faGlobeEurope} {\exp_not:N\faPreselectedIcon{globe-europe}}
+\cs_gset:cpx{faGlobeAfrica} {\exp_not:N\faPreselectedIcon{globe-africa}}
+\cs_gset:cpx{faGlobeAsia}   {\exp_not:N\faPreselectedIcon{globe-asia}}
+\cs_gset:cpx{faHome}        {\exp_not:N\faPreselectedIcon{home}}
+
+% Social icons
+\cs_gset:cpx{faLinkedinIn}  {\exp_not:N\faPreselectedIcon{linkedin-in}}
+\cs_gset:cpx{faLinkedin}    {\exp_not:N\faPreselectedIcon{linkedin}}
+\cs_gset:cpx{faXing}        {\exp_not:N\faPreselectedIcon{xing}}
+\cs_gset:cpx{faXingSquare}  {\exp_not:N\faPreselectedIcon{xing-square}}
+\cs_gset:cpx{faTwitter}     {\exp_not:N\faPreselectedIcon{twitter}}
+\cs_gset:cpx{faTwitterSquare}{\exp_not:N\faPreselectedIcon{twitter-square}}
+\cs_gset:cpx{faGithub}      {\exp_not:N\faPreselectedIcon{github}}
+\cs_gset:cpx{faGithubSquare}{\exp_not:N\faPreselectedIcon{github-square}}
+\cs_gset:cpx{faGitlab}      {\exp_not:N\faPreselectedIcon{gitlab}}
+\cs_gset:cpx{faStackOverflow}{\exp_not:N\faPreselectedIcon{stack-overflow}}
+\cs_gset:cpx{faBitbucket}   {\exp_not:N\faPreselectedIcon{bitbucket}}
+\cs_gset:cpx{faSkype}       {\exp_not:N\faPreselectedIcon{skype}}
+\cs_gset:cpx{faOrcid}       {\exp_not:N\faPreselectedIcon{orcid}}
+\cs_gset:cpx{faResearchgate}{\exp_not:N\faPreselectedIcon{researchgate}}
+\cs_gset:cpx{faTelegram}    {\exp_not:N\faPreselectedIcon{telegram}}
+\cs_gset:cpx{faWhatsapp}    {\exp_not:N\faPreselectedIcon{whatsapp}}
+
+% Bullet and misc
+\cs_gset:cpx{faCircle}      {\exp_not:N\faPreselectedIcon{circle}}
+\cs_gset:cpx{faAsterisk}    {\exp_not:N\faPreselectedIcon{asterisk}}
+\cs_gset:cpx{faBabyCarriage}{\exp_not:N\faPreselectedIcon{baby-carriage}}
+
+% \faDice must exist before fontawesome5.sty:105 runs \RenewDocumentCommand\faDice.
+\cs_gset:cpx{faDice}        {\exp_not:N\faPreselectedIcon{dice}}
+
+% Duotone support (stubs — not used in free font).
+\bool_new:N \l__fontawesome_duotone_bool
+\tl_new:N \l_fontawesome_duotone_secondary_style_tl
+\tl_set:Nn \l_fontawesome_duotone_secondary_style_tl { \color{.!50!white} }
+
+\cs_new:Nn\fontawesome_use_icon:nn{
+  \group_begin:
+    \usefont
+      {TU}
+      {fontawesome\c__fontawesome_kind_tl}
+      {#1}
+      {n}
+    \bool_set:Nn \l__fontawesome_duotone_bool {
+      \str_if_eq_p:ee {#1} {duotone}
+    }
+    \int_set:Nn\l_tmpa_int{
+      \__fontawesome_glyphindex:n{
+        #2
+        \bool_if:NT \l__fontawesome_duotone_bool { -primary }
+      }
+    }
+    \int_compare:nNnT{\l_tmpa_int}={0}{
+      \fontseries{solid}
+      \selectfont
+      \bool_set_false:N \l__fontawesome_duotone_bool
+      \int_set:Nn\l_tmpa_int{\__fontawesome_glyphindex:n{#2}}
+      \int_compare:nNnTF{\l_tmpa_int}={0}{
+        \fontfamily{fontawesomebrands}
+        \fontseries{regular}
+        \selectfont
+        \int_set:Nn\l_tmpa_int{\__fontawesome_glyphindex:n{#2}}
+        \int_compare:nNnT{\l_tmpa_int}={0}{
+          \msg_error:nnxx{fontawesome5}{icon-not-found}{#2}{#1}
+        }
+      }{
+        \msg_warning:nnxx{fontawesome5}{style-substitution}{#2}{#1}
+      }
+    }
+    \bool_if:NTF\c__fontawesome_fixed_bool{
+      \makebox[1.5em][c]
+    }{
+      \use:n
+    }
+    {
+      \bool_if:NTF \l__fontawesome_duotone_bool {
+        \__fontawesome_glyph:w \l_tmpa_int
+        \int_set:Nn\l_tmpa_int{ \__fontawesome_glyphindex:n{ #2-secondary } }
+        \int_compare:nNnF { \l_tmpa_int } = { 0 } {
+          \llap {
+            \l_fontawesome_duotone_secondary_style_tl
+            { \__fontawesome_glyph:w \l_tmpa_int }
+          }
+        }
+      } {
+        \__fontawesome_glyph:w \l_tmpa_int
+      }
+    }
+  \group_end:
+}
+
+\NewDocumentCommand \faDuotoneSetSecondary { m } {
+  \tl_set:Nn \l_fontawesome_duotone_secondary_style_tl { #1 }
+}

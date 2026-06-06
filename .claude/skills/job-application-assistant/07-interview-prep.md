@@ -8,32 +8,69 @@ Structure answers as: **Situation** (context), **Task** (your responsibility), *
 
 Keep answers to 1-2 minutes. Be specific. End with what you learned or would do differently.
 
-## Ready-Made STAR Examples
+## STAR Candidates (Complete Manually)
 
-<!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
+*These stubs were extracted from your CV and work history. Fill in the S/T/A/R details before using in interviews.*
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 1. Aignostics ADR — cross-platform integration (System design, cross-team influence)
+**Source:** Aignostics, Feb 2025–present
+**What happened:** Led the design and approval of an Architecture Decision Record (ADR) for integrating the image management system and AI application platform, coordinating requirements across 5+ teams
+**Why it matters:** "Tell me about a time you influenced without authority", "Describe a complex technical decision you drove", "How do you work across teams?"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 2. Aignostics GCP serverless event-driven architecture (Technical design, automation)
+**Source:** Aignostics, Feb 2025–present
+**What happened:** Designed Cloud Run + PostgreSQL-backed job queue to automate transfer of AI-generated artifacts, replacing manual workflows
+**Why it matters:** "Describe a system you designed end-to-end", "Tell me about a time you automated a manual process", "What's the most complex architecture decision you've made?"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 3. Aignostics hospital partner dataset onboarding (End-to-end ownership, observability)
+**Source:** Aignostics, Feb 2025–present
+**What happened:** Led end-to-end onboarding of a hospital partner's large-scale pathology dataset (~20k+ slides), handling metadata processing, performance tuning, and observability
+**Why it matters:** "Describe a project you owned end-to-end", "Tell me about a time you delivered something complex on a tight timeline"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-<!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
+### 4. mytheresa CPM report automation — 93% time reduction (Impact, initiative)
+**Source:** mytheresa.com, Sep 2021–Feb 2023
+**What happened:** Automated CPM reports for major luxury brands with R + ETL pipeline; 93% reduction in creation time; collaborated with C-level executives on report structure
+**Why it matters:** "Tell me about a measurable impact you had", "Describe a project where you improved efficiency", "Give an example of working with senior stakeholders"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### 5. Veeva reporting automation — 85%+ time saved (Scale, stakeholder delivery)
+**Source:** Veeva Systems, Data Analyst role, Feb 2023–Apr 2024
+**What happened:** Built 10+ Airflow processes and 20+ Superset dashboards; 85%+ time saved across team; delivered KPI set to department director
+**Why it matters:** "Tell me about delivering for senior stakeholders", "Describe a time you improved team productivity at scale"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### 6. Veeva pipeline revamp — ~90% efficiency gain (Data engineering, problem-solving)
+**Source:** Veeva Systems, Data Analyst role, Feb 2023–Apr 2024
+**What happened:** Revamped data pipelines achieving ~90% efficiency gain; created 60+ tables as presentation layer across two databases; imported US government data into product pipelines
+**Why it matters:** "Tell me about a legacy system you improved", "Describe a technical challenge you solved", "How do you approach technical debt?"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
 ## Common Tough Questions
 

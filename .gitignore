@@ -19,6 +19,7 @@ venv/
 *.fdb_latexmk
 
 # Personal data (never commit these)
+job_scraper/job_search_tracker.json
 salary_data.json
 job_scraper/seen_jobs.json
 job_scraper/*.md
@@ -41,6 +42,7 @@ Thumbs.db
 
 # Memory files (Claude Code user-specific)
 .claude/projects/
+.claude/skills/job-application-assistant/*
 
 # Skills lock (auto-generated)
 skills-lock.json

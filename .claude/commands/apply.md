@@ -182,14 +182,16 @@ After all edits are applied, the two files on disk are the final drafts.
 ### 5a. Compile
 
 ```bash
-cd cv && lualatex -interaction=nonstopmode main_<company>.tex
-cd ../cover_letters && xelatex -interaction=nonstopmode cover_<company>_<role>.tex
+cd cv && tectonic main_<company>.tex
+cd ../cover_letters && tectonic cover_<company>_<role>.tex
 ```
 
-- CV uses **lualatex** — pdflatex fails on modern MiKTeX with fontawesome5 font-expansion errors. lualatex handles the same sources cleanly.
-- Cover letter uses **xelatex** — cover.cls requires fontspec.
+- Use **tectonic** — it is the engine verified on this machine (`lualatex`/`xelatex` are not installed). Same command for both document types. It auto-downloads packages on first run.
+- A patched `fontawesome5-utex-helper.sty` lives in both `cv/` and `cover_letters/`; the stock version hangs tectonic (exit 134). Do not delete it. If you ever compile a CV in a new directory, copy that `.sty` alongside.
+- Generated moderncv CVs must omit the `\firstnamestyle`/`\lastnamestyle`/`\sectionstyle` overrides (tectonic ships moderncv 2022, which has no such commands and colours the name/headings natively) and wrap `\hypersetup{...}` in `\AtBeginDocument{}` (moderncv loads hyperref, so a bare `\usepackage{hyperref}` causes an option clash).
+- On a full TeX install instead, use `lualatex` for the CV and `xelatex` for the cover letter (`cover.cls` requires fontspec).
 
-If either compile fails, fix the error and re-compile until clean.
+If either compile fails, fix the error and re-compile until clean. Ignore harmless "ToUnicode CMap failed for FontAwesome5..." and overfull/underfull hbox warnings.
 
 ### 5b. Inspect layout
 

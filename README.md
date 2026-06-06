@@ -33,7 +33,7 @@ The framework encodes career guidance best practices, including structured evalu
 - [Claude Code](https://claude.com/claude-code) (CLI)
 - Python 3.10+
 - [Bun](https://bun.sh) (for Danish job search CLI tools)
-- LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/) or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`.
+- A LaTeX engine. Recommended: [Tectonic](https://tectonic-typesetting.github.io/) (`brew install tectonic`) — self-contained, no sudo, and the engine this repo is verified with. Compile any document with `tectonic <file>.tex`. Alternatively a full [TeX Live](https://tug.org/texlive/) or [MiKTeX](https://miktex.org/) install, where the CV compiles with `lualatex` and the cover letter with `xelatex` (`cover.cls` requires `fontspec`). See [SETUP.md](SETUP.md) for the tectonic-specific patches (a bundled `fontawesome5-utex-helper.sty` and moderncv 2022 notes).
 
 ## Quick start
 
@@ -154,7 +154,7 @@ The `/apply` command runs a **drafter-reviewer workflow** with mandatory PDF com
 3. **Draft** a tailored CV and cover letter in LaTeX
 4. **Spawn a reviewer agent** that researches the company and critiques the drafts
 5. **Revise** based on the reviewer's feedback
-6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. Claude reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
+6. **Compile and inspect** both PDFs with `tectonic` (or lualatex/xelatex on a full TeX install). Claude reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
 7. **Present** the final output with a verification checklist
 
 All claims in the CV and cover letter are verified against your actual profile. The system never fabricates skills or experience.

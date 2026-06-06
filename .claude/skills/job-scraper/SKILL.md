@@ -51,6 +51,19 @@ For each promising result from Step 1:
 - Skip if the URL or company+title combo already exists in `seen_jobs.json`
 - Skip if the company+role already appears in `job_search_tracker.csv`
 
+#### Liveness check (do NOT skip — aggregator pages lie)
+
+A WebFetch that returns full job content does **not** mean the role is still open. Aggregator boards (berlinstartupjobs.com, arbeitnow.com, builtin.com, wellfound.com) keep the detail page rendering long after the underlying role has closed. A posting that looks perfect but is actually expired wastes a full evaluation + CV + cover-letter cycle (see Seqana, 2026-06-06).
+
+Before presenting any job, confirm it is genuinely still accepting applications:
+1. **Follow the apply / redirect link, not just the posting page.** The aggregator detail page rendering is not proof of liveness — the "Apply" button is. Find the apply/redirect target (it usually points to the company's own ATS: Personio, Greenhouse, Lever, BambooHR, Workday) and verify *that* resolves to the specific role. Treat the role as **expired** if the apply link:
+   - returns 404 / 410 / "Gone", or
+   - cross-redirects to a generic careers homepage or job-list (e.g. a bare `personio.com/` or `/careers` with no job id) rather than the specific posting — this is the classic "role pulled, board not updated" signature.
+   Note: WebFetch returns cross-host redirects to you instead of following them; re-fetch the redirect URL and check where it actually lands.
+2. **Check freshness signals.** Look for an explicit posting date and an application deadline. Undated aggregator listings older than ~14 days, or any with a passed deadline, are expired — skip them.
+3. **Watch for closed markers.** "No longer accepting applications", "position filled", "applications closed" → expired.
+4. When liveness is genuinely unverifiable (apply link unreachable for non-expiry reasons, e.g. login wall), present it but **flag it explicitly** as "⚠️ liveness unconfirmed — verify the apply link before investing in an application", and never auto-advance it to a full evaluation without the user confirming it is still open.
+
 ### Step 3: Quick Fit Assessment
 
 For each new job, do a rapid fit check (NOT the full evaluation from `04-job-evaluation.md` - just a quick signal):
@@ -71,7 +84,8 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
       "url": "...",
       "first_seen": "YYYY-MM-DD",
       "fit": "high/medium/low",
-      "status": "new/skipped/evaluated"
+      "status": "new/skipped/evaluated/applied",
+      "skip_reason": "(only when skipped — e.g. 'EXPIRED - apply link 410', 'below salary floor', 'German required')"
     }
   }
 }
@@ -114,6 +128,6 @@ If the user decides to apply to any job, add a row to `job_search_tracker.csv`.
 1. **Never fabricate job postings.** Only present jobs found via actual WebSearch/WebFetch results.
 2. **Respect deduplication.** Always check seen_jobs.json AND job_search_tracker.csv before presenting.
 3. **Focus on configured geographic area.** Skip jobs that require relocation or are clearly outside commute range.
-4. **Only open positions.** Skip postings with expired deadlines or those marked as closed.
+4. **Only open positions — verify via the apply link.** Skip postings with expired deadlines or those marked as closed. A rendered detail page is not proof the role is open; follow the apply/redirect link and confirm it resolves to the specific role (see "Liveness check" in Step 2). When in doubt, flag rather than silently present.
 5. **Be efficient with WebFetch.** Don't fetch every search result - use titles and snippets to pre-filter before fetching.
 6. **Parallel searches.** Use the Agent tool or parallel WebSearch calls to speed up the search phase.

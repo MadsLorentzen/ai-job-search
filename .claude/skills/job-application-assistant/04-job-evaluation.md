@@ -16,9 +16,11 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Data Engineering (Python, PySpark, Apache Airflow, AWS, GCP), Backend Software Engineering (Python, GCP, event-driven architecture), Analytics Engineering (SQL, Superset, dashboards), ETL/pipeline architecture
+
+**Moderate match areas:** ML Engineering (PyTorch, Keras, TensorFlow, Sklearn — academic + applied customer modeling), Data Science (e-commerce analytics, customer segmentation)
+
+**Weak match areas:** Pure ML research / ML scientist roles (limited publication record), full-stack frontend engineering, infrastructure/DevOps-primary roles
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -30,9 +32,11 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** Data engineering (pipelines, Airflow, PySpark, AWS, GCP), backend software engineering (Python, event-driven systems, GCP), analytics engineering (reporting automation, SQL, dashboards, stakeholder delivery)
+
+**Moderate:** ML engineering (academic MSc thesis + applied customer modeling at mytheresa), data science (segmentation, conversion modeling), software engineering (Ruby on Rails background)
+
+**Entry-level / stretch:** Pure research roles, DevOps/infrastructure-primary roles, product management
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -63,19 +67,30 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- [Not yet collected — run /setup --section career to update]
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: hard engineering problems with real-world impact; building systems that scale; ownership of end-to-end work; knowledge sharing and mentoring; working in or near health tech / science domains
+- Tasks that drain: pure maintenance without development component; ambiguous ownership; roles that don't grow toward more senior scope
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Currently employed; salary baseline ≥€70k (inferred from LinkedIn About filter)
+- **Flexibility**: Berlin-based; applying to Berlin roles; no relocation
+- **Professional development**: [Not yet collected]
+
+## Calibration from Past Applications
+
+### Confirmed strong-fit signals (reached interview or offer)
+- **Data Engineer** roles: 2 hires (Veeva Systems Apr 2024; Aignostics as Software Engineer in Data Onboarding Dec 2024), multiple phone screens (KoRo, Omio, Delivery Hero via referral), full interview loop (Flatiron Health, multiple days)
+- **Analytics Engineer** roles: offer received at AVIV Group (Product Analyst, declined); suggests strong enough signal to reach final stage in analytics-adjacent roles
+- **Backend Software Engineer** roles: hired at Aignostics (Feb 2025)
+
+### Patterns to flag
+- Pure ML Scientist roles (e.g., Bayer): fast rejection without interview — publication-heavy research roles are likely a stretch
+- Top-tier "Senior" roles at FAANG/near-FAANG (Airbnb, Netflix, Google, Databricks): no response — level mismatch or competition density
+- Product Analyst role type (AVIV Group): offer declined by candidate — role type likely not energizing despite technical capability
+- Project A Data Engineer: withdrew after first call with Head of Data and Director Data — screens for management/culture fit
 
 ### 6. Salary Benchmark (Optional)
 

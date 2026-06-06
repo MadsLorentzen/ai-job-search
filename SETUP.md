@@ -32,13 +32,29 @@ curl -fsSL https://bun.sh/install | bash
 
 ### LaTeX (for compiling CVs and cover letters)
 
-Install a LaTeX distribution to compile the generated `.tex` files to PDF:
+You need a LaTeX engine to compile the generated `.tex` files to PDF. There are two supported paths:
+
+**Option A — Tectonic (recommended, no sudo, self-contained).** Tectonic is a single binary that downloads packages on demand, so you don't need a multi-GB TeX install. It is the engine this repo is verified to work with.
+
+- **macOS:** `brew install tectonic`
+- **Linux:** `brew install tectonic`, `cargo install tectonic`, or your distro package
+- **Windows:** see [tectonic-typesetting.github.io](https://tectonic-typesetting.github.io/)
+
+Compile both document types with the same command: `tectonic <file>.tex`.
+
+**Option B — Full TeX distribution.** If you already have one (or want offline compiling):
 
 - **Windows:** [MiKTeX](https://miktex.org/download)
 - **macOS:** [MacTeX](https://tug.org/mactex/)
 - **Linux:** `sudo apt install texlive-full` or `sudo dnf install texlive-scheme-full`
 
-The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors). The cover letter compiles with `xelatex` because `cover.cls` requires `fontspec` for its custom Lato/Raleway fonts.
+With a full install, compile the CV with `lualatex` (pdflatex often fails on modern MiKTeX with `fontawesome5` font-expansion errors) and the cover letter with `xelatex` (`cover.cls` requires `fontspec`).
+
+> **Two patches are checked into this repo to make moderncv compile under Tectonic** (both already present, nothing to do):
+> 1. A patched `fontawesome5-utex-helper.sty` sits in `cv/` and `cover_letters/`. The stock version hangs Tectonic by iterating glyphs via `\XeTeXglyphname`; the patch skips that loop and pre-defines the icon macros moderncv needs. **Do not delete these files.**
+> 2. The Tectonic package bundle ships moderncv 2022, which colours the name/section headings natively and has no `\firstnamestyle`/`\lastnamestyle`/`\sectionstyle` commands. So those `\renewcommand*` overrides are omitted in the generated CVs, and `\hypersetup` is wrapped in `\AtBeginDocument{}` to avoid a hyperref option clash.
+>
+> Harmless warnings to ignore under Tectonic: "Creating ToUnicode CMap failed for FontAwesome5..." and overfull/underfull hbox warnings. Icons render fine; only the PDF's copy-paste text layer shows garbled characters for the contact icons.
 
 ## 2. Fork and clone
 
@@ -142,11 +158,13 @@ Claude will:
 After `/apply` creates the LaTeX files:
 
 ```bash
-# Compile CV
-cd cv && lualatex main_<company>.tex && cd ..
+# Tectonic (recommended) — same command for both:
+cd cv && tectonic main_<company>.tex && cd ..
+cd cover_letters && tectonic cover_<company>_<role>.tex && cd ..
 
-# Compile cover letter
-cd cover_letters && xelatex cover_<company>_<role>.tex && cd ..
+# Full TeX install alternative:
+# cd cv && lualatex main_<company>.tex && cd ..
+# cd cover_letters && xelatex cover_<company>_<role>.tex && cd ..
 ```
 
 ## Troubleshooting
@@ -158,9 +176,11 @@ This is expected if you haven't set up salary benchmarking. The `/apply` workflo
 Make sure Bun is installed and you ran `bun install` in each CLI directory. The tools require network access to fetch job listings.
 
 ### LaTeX compilation errors
-- CV: uses `lualatex` (pdflatex often fails on modern MiKTeX with `fontawesome5` font-expansion errors; lualatex handles the same sources cleanly)
-- Cover letter: uses `xelatex` (for custom fonts in `OpenFonts/fonts/`)
-- Make sure your LaTeX distribution includes the `moderncv` package
+- **Recommended engine: `tectonic`** (`brew install tectonic`). Same command for CV and cover letter: `tectonic <file>.tex`. It auto-downloads packages, so a missing-package error usually just means the first run needs network access.
+- **Tectonic hangs/aborts (exit 134) on the CV:** caused by the stock `fontawesome5-utex-helper.sty` iterating glyphs via `\XeTeXglyphname`. The repo ships a patched copy in `cv/` and `cover_letters/` that fixes this. If compiling a CV in a new directory, copy that `.sty` alongside it.
+- **`Command \firstnamestyle undefined`:** you are on Tectonic's moderncv 2022, which has no such command. Remove the `\firstnamestyle`/`\lastnamestyle`/`\sectionstyle` overrides (moderncv 2022 colours the name and headings natively).
+- **`Option clash for package hyperref`:** moderncv loads hyperref itself; move your `\hypersetup{...}` into `\AtBeginDocument{}`.
+- **Full TeX install instead of Tectonic:** CV uses `lualatex` (pdflatex often fails on modern MiKTeX with `fontawesome5` font-expansion errors); cover letter uses `xelatex` (custom fonts in `OpenFonts/fonts/`). Make sure the distribution includes the `moderncv` package.
 
 ### Fonts not found in cover letter
 The cover letter template expects fonts in `cover_letters/OpenFonts/fonts/`. Make sure this directory exists and contains the Lato and Raleway font files.

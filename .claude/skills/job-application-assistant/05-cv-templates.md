@@ -7,13 +7,14 @@
 All CVs use the moderncv LaTeX package with the "banking" style and "blue" color scheme.
 
 **Output file:** `cv/main_<company>.tex`
-**Compile with:** **lualatex** on MiKTeX/TeX Live. pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors; lualatex handles the same sources cleanly.
+**Compile with:** **tectonic** (`tectonic main_<company>.tex`) — the engine verified on this machine; `lualatex`/`xelatex` are not installed. Tectonic ships moderncv 2022 and auto-downloads packages. (On a full TeX install, use `lualatex`; pdflatex often fails on modern MiKTeX with `fontawesome5` font-expansion errors.) A patched `fontawesome5-utex-helper.sty` in `cv/` is required under tectonic — see SETUP.md.
 **Master reference:** `cv/main_example.tex` (comprehensive CV with all competencies, experience, and achievements - use as source when building targeted CVs)
 
 ### Compile command
 
 ```bash
-cd cv && lualatex -interaction=nonstopmode main_<company>.tex
+cd cv && tectonic main_<company>.tex
+# Full TeX install alternative: lualatex -interaction=nonstopmode main_<company>.tex
 ```
 
 Expected output: `Output written on main_<company>.pdf (2 pages, ...)`. Any page count other than 2 is a failure that must be fixed before presenting to the user.
@@ -25,25 +26,22 @@ Expected output: `Output written on main_<company>.pdf (2 pages, ...)`. Any page
 \moderncvstyle{banking}
 \moderncvcolor{blue}
 
-% Force both first and last name AND section headings to render in moderncv
-% blue (color1). Default banking on lualatex+MiKTeX leaves these black, which
-% looks inconsistent with the rest of the blue accent scheme.
-\renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
+% NOTE: Under tectonic (moderncv 2022), the name and section headings are
+% coloured with color1 natively. Do NOT add \firstnamestyle/\lastnamestyle/
+% \sectionstyle overrides here — those commands do not exist in moderncv 2022
+% and cause "Command \firstnamestyle undefined". (They are only needed on older
+% lualatex+MiKTeX installs where the defaults render black.)
 
 \usepackage[utf8]{inputenc}
-\usepackage{hyperref}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
-    pdfpagemode=FullScreen,
-}
+\usepackage{needspace}
 \usepackage[scale=0.77]{geometry}
 \usepackage{import}
+% moderncv loads hyperref itself, so configure it at begin-document to avoid an
+% "Option clash for package hyperref". Do NOT add a bare \usepackage{hyperref}.
+\AtBeginDocument{%
+  \hypersetup{colorlinks=true,linkcolor=blue,filecolor=magenta,urlcolor=blue,
+              pdftitle={[YOUR_NAME] - CV},pdfpagemode=FullScreen}%
+}
 
 % Personal data
 \name{[FIRST_NAME]}{[LAST_NAME]}
@@ -66,9 +64,17 @@ Expected output: `Output written on main_<company>.pdf (2 pages, ...)`. Any page
 \end{document}
 ```
 
-### Color overrides
+### Color overrides (engine-dependent)
 
-The three `\renewcommand*` lines in the preamble are required on lualatex+MiKTeX. Without them the firstname, lastname, and section headings render in black even though `\moderncvcolor{blue}` is set, which looks inconsistent with the rest of the blue accent scheme (links, bullet markers, contact icons). The override forces all three to use `color1` (moderncv's accent colour, which becomes blue under `\moderncvcolor{blue}`). Both names render bold; if you prefer the firstname in regular weight, change the firstnamestyle override from `\bfseries` to `\mdseries`. Don't drop the override - on most modern installs the defaults render visibly wrong.
+**Under tectonic (moderncv 2022) — the engine used on this machine — do NOT add the `\firstnamestyle`/`\lastnamestyle`/`\sectionstyle` overrides.** moderncv 2022 colours the name and section headings with `color1` (blue) natively, and those commands no longer exist, so adding them throws `Command \firstnamestyle undefined`.
+
+The overrides are only relevant on **older lualatex+MiKTeX** installs, where without them the firstname, lastname, and section headings render in black despite `\moderncvcolor{blue}`. If you are on such an install, add them after `\moderncvcolor{blue}`:
+
+```latex
+\renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
+\renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
+\renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
+```
 
 ### Spacing inside itemize lists (important)
 
@@ -106,11 +112,11 @@ Write 5-7 lines that function as an "elevator pitch": a concise, compelling intr
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Data Engineer / Backend Software Engineer roles:**
+> Data engineer and backend software engineer with 4+ years of experience building scalable pipelines and production data infrastructure. Currently at Aignostics designing systems to process large-scale medical imaging datasets in Python on GCP. Combines strong Python and SQL foundations with hands-on experience in Apache Airflow, PySpark, Terraform, and AWS. Track record of measurable impact: 85–93% efficiency gains on reporting workflows, €4k+/month cloud cost savings, and architecture decisions coordinated across 5+ teams.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For ML / Data Science roles:**
+> Data scientist and engineer with an MSc in Data Science and Engineering (Politecnico di Torino, 109/110) and 4+ years of industry experience. Background spans ML research (Logic Tensor Networks, computer vision thesis) and production data systems. Currently building large-scale medical imaging pipelines at Aignostics; previously designed customer ML models and segmentation algorithms at mytheresa.com. Proficient in PyTorch, Scikit-learn, Python, and SQL.
 
 ### Core Competencies / Skills Section (Best Practice)
 Reorder and emphasize based on the role. Use bold category labels.
@@ -150,7 +156,7 @@ If there is a gap in your employment history:
 
 After writing the CV and before presenting to the user, always compile and visually inspect the PDF. Iterate until the layout is clean. Workflow:
 
-1. Run `lualatex -interaction=nonstopmode main_<company>.tex`
+1. Run `tectonic main_<company>.tex` (or `lualatex -interaction=nonstopmode main_<company>.tex` on a full TeX install)
 2. Check the output page count: must be exactly 2
 3. Read the PDF via the Read tool and visually inspect both pages
 4. Check for **orphaned entries**: a `\cventry` title line must never sit alone at the bottom of page 1 with its bullets on page 2

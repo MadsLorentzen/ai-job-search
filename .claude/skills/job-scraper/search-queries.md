@@ -1,76 +1,100 @@
 # Search Queries for Job Scraper
 
-<!-- SETUP: Customize these queries based on your skills, target roles, and location -->
-
 ## Search Sites
 
-Primary (Danish job market):
-- **jobindex.dk** - largest Danish job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: Denmark / your city)
-- **karriere.dk** - IDA's job board (engineering/science roles)
-- **jobfinder.dk** - another major Danish job board
-- **akademikernes.dk** - academic union job board
+Search across all of these. **Applications are submitted via LinkedIn** — when presenting results, always include the LinkedIn job URL where available (or note if only found on another board).
 
-Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for known target companies
+- **linkedin.com/jobs** — primary; most international Berlin companies post here
+- **stepstone.de** — large German job board; good for established companies
+- **de.indeed.com** — broad coverage; catches postings not on LinkedIn
+- **berlinstartupjobs.com** — Berlin startup and scale-up specific
+- **wellfound.com** — startup/tech roles; good for seed–Series C
+- **otta.com** — curated tech roles, good Berlin coverage
+- **Company career pages** — direct Google `site:` searches for known target companies
+
+> **Note:** This setup is for the **Berlin, Germany** job market. The built-in Danish portal tools (.agents/skills/) are not relevant. Use WebSearch + WebFetch instead.
 
 ## Query Categories
 
-Queries are grouped by priority. Each query should be combined with your location terms (e.g. "Copenhagen", "Sjælland", "Hovedstaden") where the site supports it.
+Queries are grouped by priority. Location terms: "Berlin" (primary), "Germany" (broader net).
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: Data Engineer
 
-These match your strongest and most desired career direction.
-
-```
-site:jobindex.dk "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:jobindex.dk "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
-```
-
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
+Strongest and most frequently targeted direction — 2 hires, multiple interviews in past applications.
 
 ```
-site:jobindex.dk [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:jobindex.dk [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:linkedin.com/jobs "Data Engineer" Berlin
+site:stepstone.de "Data Engineer" Berlin
+site:de.indeed.com "Data Engineer" Berlin
+site:berlinstartupjobs.com "Data Engineer"
+site:wellfound.com "Data Engineer" Berlin
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
+### Priority 2: Software Engineer / Backend Engineer
 
-Adjacent roles you could pivot into.
-
-```
-site:jobindex.dk "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:jobindex.dk "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
-```
-
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
+Python-focused backend roles; matches current Aignostics role.
 
 ```
-site:jobindex.dk [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:jobindex.dk "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:linkedin.com/jobs "Software Engineer" Python Berlin
+site:linkedin.com/jobs "Backend Engineer" Python Berlin
+site:stepstone.de "Software Engineer" Python Berlin
+site:berlinstartupjobs.com "Backend Engineer"
+site:wellfound.com "Backend Engineer" Python Berlin
 ```
+
+### Priority 3: ML Engineer / ML Platform Engineer
+
+Adjacent to MSc background (Logic Tensor Networks, computer vision) and MLOps certification.
+
+```
+site:linkedin.com/jobs "ML Engineer" Berlin
+site:linkedin.com/jobs "Machine Learning Engineer" Berlin
+site:linkedin.com/jobs "ML Platform Engineer" Berlin
+site:wellfound.com "ML Engineer" Berlin
+site:berlinstartupjobs.com "Machine Learning"
+```
+
+### Priority 4: Data Platform / Analytics Engineer / Founding Engineer
+
+Wider net — roles that fit well but may not be top-of-mind.
+
+```
+site:linkedin.com/jobs "Data Platform Engineer" Berlin
+site:linkedin.com/jobs "Analytics Engineer" Berlin
+site:linkedin.com/jobs "Founding Engineer" Berlin
+site:wellfound.com "Data Platform" Berlin
+site:otta.com "Data Engineer" Berlin
+site:berlinstartupjobs.com "Founding Engineer"
+```
+
+## Suggested Adjacent Role Types to Include
+
+Based on Silvia's skill profile — consider adding these to searches if standard queries return thin results:
+
+- **"Data Platform Engineer"** — Silvia collaborated with Data Platform Engineering teams at Veeva; companies like Delivery Hero, Zalando, HelloFresh have dedicated teams here
+- **"ML Platform Engineer"** — bridges MLOps certification, Python, GCP/AWS skills; growing role type at Berlin health-tech and AI companies
+- **"Founding Engineer" / "First Data Engineer"** — past co-founder applications signal interest in startup ownership; these roles match her independent working style and broad-scope experience
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+When evaluating results, verify the job location:
+- **Ideal:** Berlin (any district, reasonable commute by S/U-Bahn)
+- **Acceptable:** Berlin outskirts / Brandenburg with good transit connection to Berlin
+- **OK with caveats:** Remote Germany if explicitly hybrid with regular Berlin office time
+- **Skip:** Fully remote-only (wants in-person/hybrid), non-Berlin Germany without hybrid option
 
 ## Date Filter
 
 Only include jobs posted within the last 14 days, or with an application deadline that has not yet passed. If a posting date cannot be determined, include it but flag as "date unknown".
 
+## Salary Filter
+
+Skip roles that explicitly advertise below €70k. Flag any that specify a salary range so Silvia can decide.
+
 ## Adapting Queries
 
-If the user specifies a focus area, select queries from the matching category and also generate 2-3 custom queries for that focus. For example:
-- "/scrape [focus_area]" -> relevant category queries + custom focus-specific queries
+If the user specifies a focus area, select queries from the matching category and also generate 2-3 custom queries. Examples:
+- `/scrape data engineer` → Priority 1 queries + custom Airflow/PySpark/GCP variant searches
+- `/scrape startup` → Priority 4 "Founding Engineer" queries + wellfound/berlinstartupjobs
+- `/scrape ml` → Priority 3 queries + "ML Platform", "Applied ML", "AI Engineer" variants
+- `/scrape broad` → all four priority categories
