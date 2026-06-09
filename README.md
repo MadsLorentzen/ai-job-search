@@ -116,6 +116,7 @@ ai-job-search/
 │   │   │   ├── 06-cover-letter-templates.md # LaTeX cover letter templates
 │   │   │   └── 07-interview-prep.md   # STAR examples + interview framework
 │   │   ├── job-scraper/               # Job search orchestration
+│   │   ├── linkedin-search/           # Read/search LinkedIn job postings (any country, WebSearch + WebFetch)
 │   │   └── upskill/                   # /upskill skill gap analysis and learning plan
 │   └── settings.local.json            # Claude Code permissions
 ├── .agents/skills/                    # Job portal CLI tools (Denmark)
@@ -199,6 +200,8 @@ The CV uses [moderncv](https://ctan.org/pkg/moderncv) (banking style). The cover
 ### Job search tools
 
 The four CLI tools in `.agents/skills/` are specific to the **Danish job market** (Jobbank, Jobdanmark, Jobindex, Jobnet). They demonstrate the pattern for building job portal integrations. If you're in a different country, you can build equivalent tools for your local job portals using the same structure.
+
+The **`linkedin-search`** skill (`.claude/skills/linkedin-search/`) is country-agnostic and works out of the box: it reads any public `linkedin.com/jobs/view/...` posting and searches LinkedIn jobs by keyword + location using `WebSearch` + `WebFetch` (no API key, no MCP server). Use it directly — "read this linkedin post `<url>`" or "find AI engineer jobs on linkedin in Sydney" — until you build local portal CLIs.
 
 ### Salary benchmarking
 
