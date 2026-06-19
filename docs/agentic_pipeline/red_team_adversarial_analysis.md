@@ -1,6 +1,8 @@
 # Red-Team Adversarial Analysis: Job Pipeline Agent Program
 
-This analysis assumes the pipeline will fail in the most common ways: over-automation, recruiter pressure, private-data leakage, duplicate submissions, fake opportunities, stale state, and relationship damage.
+This analysis assumes the pipeline will fail in the most common ways: over-automation, recruiter pressure, private-data leakage, duplicate submissions, fake opportunities, stale state, relationship damage, calendar collisions, and conflict leakage.
+
+The pipeline may be intentionally optimized for multiple revenue sources, including OE-compatible roles. That is an economic strategy, not a defect. The red-team question is whether the system can pursue concurrent revenue without creating false statements, missed obligations, confidentiality bleed, exclusivity breaches, or work-quality collapse.
 
 ## Threat Model
 
@@ -12,6 +14,8 @@ This analysis assumes the pipeline will fail in the most common ways: over-autom
 - application credibility
 - compensation and availability posture
 - right-to-represent and exclusivity position
+- multi-revenue optionality
+- current obligations and calendar capacity
 - private correspondence and contact lists
 - clean evidence trail
 
@@ -24,6 +28,7 @@ This analysis assumes the pipeline will fail in the most common ways: over-autom
 - internal agent drift that creates activity without conversion
 - stale state that makes the next action wrong
 - relationship confusion between job-search, consulting, client-development, and personal lanes
+- conflicting core-hours, meeting, exclusivity, or confidentiality demands across concurrent roles
 
 ## Attack Scenarios And Controls
 
@@ -143,6 +148,65 @@ This analysis assumes the pipeline will fail in the most common ways: over-autom
 
 **Enhancement:** Add a contact-level `lane` field and block job-pipeline automation when lane is not `job-search`.
 
+### 9. OE Calendar Collision
+
+**Scenario:** The pipeline accepts two roles that both require fixed core hours, same-time standups, urgent support rotations, or unpredictable meetings.
+
+**Impact:** Missed meetings, obvious availability conflicts, performance degradation, or forced misrepresentation.
+
+**Controls:**
+
+- capture core hours, recurring meeting load, response-time expectations, and on-call duties before accepting
+- score meeting-load control and OE compatibility
+- require human approval before accepting fixed-core-hour commitments
+- suppress roles with heavy synchronous obligations unless they are explicitly compatible with the current calendar
+
+**Enhancement:** Add `core_hours`, `recurring_meeting_load`, `on_call_duties`, and `calendar_collision_risk` fields.
+
+### 10. Confidentiality Bleed Across Revenue Streams
+
+**Scenario:** The agent uses one employer's or client's confidential facts, documents, tools, contacts, code, strategy, or customer information to pursue or perform another engagement.
+
+**Impact:** Legal, ethical, contractual, and reputational exposure.
+
+**Controls:**
+
+- keep artifacts, devices, workspaces, notes, and source evidence separated by role/client
+- block reuse of confidential materials across lanes
+- require conflict/confidentiality review before accepting or performing overlapping engagements
+- record confidentiality boundary status in the system of record
+
+**Enhancement:** Add `confidentiality_boundary`, `tooling_separation_required`, and `conflict_review_required` fields.
+
+### 11. Exclusivity Or Outside-Work Restriction Breach
+
+**Scenario:** A role, contract, or offer includes exclusivity, outside-work, noncompete, moonlighting, client-conflict, or availability restrictions that conflict with the multi-revenue strategy.
+
+**Impact:** Breach, termination, forfeited payment, or avoidable dispute.
+
+**Controls:**
+
+- capture outside-work and exclusivity terms before offer acceptance
+- treat broad exclusivity as a suppression or counsel-review event
+- do not let an agent accept start dates, offers, or representation terms while conflict review is unresolved
+
+**Enhancement:** Add `outside_work_restriction`, `exclusivity_conflict`, and `current_obligation_conflict` fields.
+
+### 12. OE Quality Collapse
+
+**Scenario:** The pipeline maximizes income sources but accepts work whose combined delivery load cannot be performed.
+
+**Impact:** Revenue concentration is reduced but reputation and future optionality are damaged.
+
+**Controls:**
+
+- score role time cost and delivery predictability
+- require an explicit first-30-days delivery plan before accepting a concurrent engagement
+- prefer roles with clear outputs, low ambiguity, and low meeting load
+- suppress roles that depend on performative availability rather than deliverables
+
+**Enhancement:** Add `delivery_predictability`, `first_30_day_load`, and `deliverable_based` fields.
+
 ## Reddit-Informed Enhancements
 
 Reddit is not authority, but it is useful as a high-volume failure-mode sensor. Review of relevant `r/recruitinghell`, `r/jobs`, and `r/Scams` threads surfaced recurring practical risks:
@@ -154,6 +218,7 @@ Reddit is not authority, but it is useful as a high-volume failure-mode sensor. 
 5. **Generic ATS follow-up has low expected value.** The follow-up engine should not spend effort on generic acknowledgements without a named contact.
 6. **Application quality and artifact version control matter.** Track exactly which resume/cover note was sent, through which channel, and when.
 7. **Scam detection needs a contact-channel test.** Off-platform-only text, Telegram, Signal, WhatsApp, or non-corporate email should trigger verification before continuing.
+8. **OE-compatible role search needs its own positive criteria.** Remote and high-paying are not enough. The useful filter is asynchronous, deliverable-based, low-meeting, non-exclusive, low-conflict work.
 
 ## Sources Reviewed
 
@@ -190,6 +255,20 @@ Add these fields to the system of record:
 - `artifact_manifest_path`
 - `state_change_test`
 - `lane`
+- `oe_compatibility_score`
+- `core_hours`
+- `recurring_meeting_load`
+- `calendar_collision_risk`
+- `on_call_duties`
+- `outside_work_restriction`
+- `exclusivity_conflict`
+- `current_obligation_conflict`
+- `confidentiality_boundary`
+- `tooling_separation_required`
+- `conflict_review_required`
+- `deliverable_based`
+- `delivery_predictability`
+- `first_30_day_load`
 
 Add these automation gates:
 
@@ -200,6 +279,11 @@ Add these automation gates:
 - `payment_or_equipment_request` suppresses by default.
 - `lane != job-search` blocks job-pipeline cadence.
 - `state_change_test` must be non-empty before follow-up draft can be approved.
+- `current_obligation_conflict` must be clear or human-approved before offer acceptance, start-date commitment, or C2C/subcontract commitment.
+- `exclusivity_conflict` requires suppression, renegotiation, or human approval.
+- `calendar_collision_risk` above threshold requires a scheduling plan before accepting.
+- `confidentiality_boundary` must be clear before concurrent-role acceptance.
+- `oe_compatibility_score` below threshold suppresses roles when the active search strategy is multi-revenue/OE-compatible.
 
 ## Test Cases
 
@@ -213,7 +297,13 @@ Use these synthetic tests before live operation:
 6. Hiring manager replied yesterday and sourcing queue is trying to run today.
 7. Consulting lead is misclassified as job-search.
 8. Application artifact tries to attach the wrong resume version.
+9. Two roles both require daily 9:00 AM standups and rapid-response availability.
+10. A role has a broad outside-work prohibition.
+11. A contract role serves a client that competes with an existing client or employer.
+12. A role is remote but has heavy meeting load and ambiguous deliverables.
 
 ## Red-Team Verdict
 
-The baseline plan is directionally strong because it privileges state, evidence, next action, and suppression. The main weakness is that several risks need to be promoted from prose rules into explicit fields and hard gates. The highest-priority changes are duplicate-risk scoring, RTR scope controls, identity/payment scam flags, state-change tests for follow-up, and a response-queue-current gate before application volume.
+The baseline plan is directionally strong because it privileges state, evidence, next action, and suppression. For an OE or multi-revenue strategy, the main weakness is that "remote" and "high compensation" are too crude as filters. The system must explicitly score OE compatibility, meeting-load control, confidentiality boundaries, current-obligation conflicts, outside-work restrictions, and delivery predictability.
+
+The highest-priority controls are duplicate-risk scoring, RTR scope controls, identity/payment scam flags, state-change tests for follow-up, response-queue-current gate before application volume, and OE-specific acceptance gates for conflicts, calendar load, confidentiality, and first-30-days delivery risk.

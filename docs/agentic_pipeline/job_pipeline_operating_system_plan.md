@@ -2,6 +2,8 @@
 
 This plan extends the application-assistant workflow into a constrained operating system for job-search pipeline management. The goal is not maximum application volume. The goal is qualified movement through a clean state machine with evidence, suppression rules, and human approval before state-changing actions.
 
+The economic objective can include multiple concurrent revenue sources. A candidate is not required to handicap themselves by relying on one employer, one client, or one income stream. The pipeline should therefore be able to identify roles, contracts, advisory work, and fractional engagements that are compatible with a multi-revenue strategy, including overemployment-style concurrency where the candidate can meet obligations without misrepresenting credentials, availability, conflicts, or work product.
+
 ## Design Principle
 
 The job pipeline is not a scraper plus an LLM. It is a governed workflow:
@@ -12,6 +14,37 @@ The job pipeline is not a scraper plus an LLM. It is a governed workflow:
 - suppress low-quality or risky opportunities
 - require approval before sending, submitting, attaching, or accepting terms
 - make the next action obvious every day
+- optimize for high-control, low-conflict, multi-revenue opportunities when that is the candidate's strategy
+
+## Multi-Revenue / OE-Compatible Positioning
+
+This operating system can be used to pursue multiple revenue sources intentionally. The pipeline should favor roles that can coexist with other lawful obligations and suppress roles that create avoidable conflict, excessive meeting load, uncontrolled schedule demands, confidentiality risk, or exclusivity problems.
+
+High-compatibility opportunities tend to have:
+
+- remote-first or location-independent work
+- asynchronous communication norms
+- clear deliverables instead of constant availability signaling
+- individual-contributor or advisory ownership
+- limited recurring meeting load
+- predictable core hours or no core-hours requirement
+- objective output measures
+- contract, fractional, project, advisory, or clearly bounded employment terms
+- low client/customer conflict with existing obligations
+- no exclusivity, outside-work prohibition, or noncompete conflict
+
+Low-compatibility opportunities should be suppressed or escalated:
+
+- mandatory onsite or unpredictable travel
+- heavy synchronous meeting culture
+- real-time support rotations or incident ownership that cannot be scheduled
+- broad exclusivity or outside-employment restrictions
+- direct competitive conflict with an existing role, client, or fiduciary obligation
+- role requirements that depend on pretending to be available in ways the candidate cannot honestly support
+- monitoring or productivity-control regimes that are incompatible with autonomous deliverable-based work
+- any engagement requiring use of one client's confidential information to benefit another
+
+This is not a requirement to disclose every revenue source in every context. It is a requirement that the system not create false statements, hidden conflicts, confidentiality breaches, or commitments the candidate cannot perform.
 
 ## Public-Safe Boundary
 
@@ -61,6 +94,10 @@ Minimum opportunity fields:
 - authorization and sponsorship assumptions
 - client or hiring group
 - right-to-represent, exclusivity, and duplicate-submission risk
+- OE / multi-revenue compatibility score
+- meeting load and core-hours assumptions
+- current-obligation conflict status
+- confidentiality-boundary risk
 - evidence path or message ID
 - last touch
 - next action
@@ -107,9 +144,11 @@ Before a recruiter call, submission, right-to-represent discussion, or meaningfu
 - W2, 1099, C2C, direct-hire, or subcontract model
 - compensation or rate range
 - remote, hybrid, onsite, travel, and timezone expectations
+- core-hours expectations, meeting cadence, incident/on-call duties, and response-time requirements
 - contract length and conversion possibility
 - interview process and timeline
 - right-to-represent, exclusivity, and duplicate-submission terms
+- outside-work, conflict-of-interest, and noncompete restrictions
 - work authorization and sponsorship assumptions
 
 If a gate is missing, the default next action is a clarifying request.
@@ -123,8 +162,10 @@ Require explicit approval before:
 - attaching or transmitting a resume, portfolio, work sample, or private document
 - accepting right-to-represent, exclusivity, background-check, offer, or start-date terms
 - stating or changing compensation, location, travel, authorization, sponsorship, or availability posture
+- representing exclusive availability or agreeing to fixed core hours that collide with current obligations
 - contacting an active client or sensitive relationship
 - submitting to a company or role with unresolved duplicate risk
+- accepting any role with unresolved current-obligation, confidentiality, or conflict-of-interest risk
 
 ## Scoring Rubric
 
@@ -140,6 +181,9 @@ Score each factor 1 to 5 and preserve a short rationale:
 | Duplicate risk | Could another recruiter/application already cover this role? |
 | Time cost | Is the assessment/application burden worth it? |
 | Conversion evidence | Is there evidence this can move to screen, interview, or offer? |
+| OE / multi-revenue compatibility | Can this opportunity coexist with other obligations without false statements, conflict, or quality failure? |
+| Meeting-load control | Is the schedule compatible with autonomous work and existing obligations? |
+| Confidentiality boundary | Can work be performed without mixing client/employer data, tools, or duties? |
 
 The score is not the decision. It is a forcing function for explainable prioritization.
 
@@ -155,6 +199,8 @@ Suppress or defer when:
 - the message requests sensitive identity data too early
 - the process requires upfront payment, fake-check equipment purchase, crypto/gift-card transfer, or off-platform-only chat
 - the opportunity would displace a higher-conversion live thread
+- the role requires exclusive availability, conflicting core hours, or a broad outside-work restriction that the candidate cannot satisfy
+- the role creates a direct client, customer, employer, fiduciary, or confidentiality conflict with existing obligations
 
 ## Follow-Up Cadence
 
@@ -203,11 +249,11 @@ Also track how many items were suppressed before wasting time.
 ## Implementation Order
 
 1. Create the private system-of-record table or database.
-2. Define personal constraints: target role families, minimum compensation/rate, remote posture, geography, sponsorship, travel, and deal-breakers.
+2. Define personal constraints: target role families, minimum compensation/rate, remote posture, geography, sponsorship, travel, OE/multi-revenue compatibility, and deal-breakers.
 3. Add process skills for pipeline operation and lead-touch follow-up.
 4. Build inbox triage that only classifies and recommends.
 5. Build follow-up drafting that never sends without approval.
 6. Add duplicate suppression for company, role, recruiter, job ID, and source URL.
-7. Add daily rollup reporting.
-8. Only after those controls work, add sourcing or application automation.
-
+7. Add conflict, confidentiality, core-hours, and current-obligation review before offer acceptance.
+8. Add daily rollup reporting.
+9. Only after those controls work, add sourcing or application automation.

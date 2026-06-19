@@ -96,7 +96,7 @@ This runs the full workflow: evaluate fit, draft CV + cover letter, review with 
 
 ## Agentic pipeline operating system
 
-The core application workflow can be extended into a governed job-pipeline operating system. The operating-system layer adds a private system of record, strict stages, evidence capture, duplicate-submission suppression, right-to-represent controls, human approval gates, conservative follow-up cadence, and daily rollups.
+The core application workflow can be extended into a governed job-pipeline operating system. The operating-system layer adds a private system of record, strict stages, evidence capture, duplicate-submission suppression, right-to-represent controls, human approval gates, conservative follow-up cadence, and daily rollups. It can also support a multi-revenue or OE-compatible search strategy by scoring for asynchronous, deliverable-based, low-conflict roles instead of blindly maximizing application volume.
 
 Start with [docs/agentic_pipeline/job_pipeline_operating_system_plan.md](docs/agentic_pipeline/job_pipeline_operating_system_plan.md), then review the adversarial analysis in [docs/agentic_pipeline/red_team_adversarial_analysis.md](docs/agentic_pipeline/red_team_adversarial_analysis.md). Templates live under [docs/agentic_pipeline/templates/](docs/agentic_pipeline/templates/).
 
