@@ -5,7 +5,7 @@
 **Role:**  
 **Contact:**  
 **Stage before action:**  
-**Proposed action:** send / submit / attach / RTR / exclusivity / offer / start-date / posture-change / other  
+**Proposed action:** send / submit / attach / RTR / exclusivity / offer / start-date / posture-change / client-pitch / proposal / SOW / payment-terms / other
 
 ## Evidence
 
@@ -16,6 +16,11 @@
 - Duplicate-risk score:
 - RTR scope:
 - Identity/payment flags:
+- Revenue lane:
+- Service offer:
+- Service-offer proof:
+- Scope/payment risk:
+- Conflict/confidentiality status:
 
 ## Human Decision
 
@@ -32,4 +37,3 @@
 - Next action:
 - Next action date:
 - Notes:
-

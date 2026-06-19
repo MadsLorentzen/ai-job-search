@@ -2,7 +2,9 @@
 
 This plan extends the application-assistant workflow into a constrained operating system for job-search pipeline management. The goal is not maximum application volume. The goal is qualified movement through a clean state machine with evidence, suppression rules, and human approval before state-changing actions.
 
-The economic objective can include multiple concurrent revenue sources. A candidate is not required to handicap themselves by relying on one employer, one client, or one income stream. The pipeline should therefore be able to identify roles, contracts, advisory work, and fractional engagements that are compatible with a multi-revenue strategy, including overemployment-style concurrency where the candidate can meet obligations without misrepresenting credentials, availability, conflicts, or work product.
+The economic objective can include multiple concurrent revenue sources. A candidate is not required to handicap themselves by relying on one employer, one client, or one income stream. The pipeline should therefore be able to identify roles, contracts, advisory work, fractional engagements, and client opportunities that are compatible with a multi-revenue strategy, including overemployment-style concurrency where the candidate can meet obligations without misrepresenting credentials, availability, conflicts, or work product.
+
+When the candidate has a 1099 services entity, the system should treat that entity as a seller with a revenue account and a mandate to develop many customers. In that lane, the candidate's resume is not only an application artifact. It is the source inventory for services offered, proof points, case examples, and buyer-specific proposals.
 
 ## Design Principle
 
@@ -15,6 +17,7 @@ The job pipeline is not a scraper plus an LLM. It is a governed workflow:
 - require approval before sending, submitting, attaching, or accepting terms
 - make the next action obvious every day
 - optimize for high-control, low-conflict, multi-revenue opportunities when that is the candidate's strategy
+- support client acquisition for a 1099 services entity without mixing employer applications, consulting prospects, and private client records
 
 ## Multi-Revenue / OE-Compatible Positioning
 
@@ -46,6 +49,36 @@ Low-compatibility opportunities should be suppressed or escalated:
 
 This is not a requirement to disclose every revenue source in every context. It is a requirement that the system not create false statements, hidden conflicts, confidentiality breaches, or commitments the candidate cannot perform.
 
+## 1099 Services Entity / Client-Acquisition Lane
+
+For a 1099 services entity, the pipeline is also a business-development system. It should search for buyers, not only jobs. The objective is to build a diversified customer base around services the candidate can actually perform.
+
+The private implementation should maintain a services catalog derived from the candidate's resume:
+
+- service family
+- buyer problem solved
+- proof from the resume or portfolio
+- relevant industries or client types
+- delivery model: advisory, project, retainer, fractional, staff augmentation, expert review, or managed workstream
+- minimum economic threshold
+- meeting-load and delivery-load assumptions
+- conflicts and confidentiality limits
+- artifacts that can be safely shared externally
+
+The agent should use that catalog to classify opportunities as:
+
+- employment role
+- staffing or recruiter submission
+- 1099 contract
+- C2C or subcontract
+- fractional/advisory role
+- direct client services prospect
+- referral partner or channel lead
+
+Client-acquisition motion should favor prospects where the resume-backed service offer is clear, the buyer has a probable problem, and the next action can move toward a discovery call, scoped proposal, statement of work, or referral. It should suppress generic outreach that cannot name the buyer problem or the specific service being sold.
+
+The system should not put private resumes, client lists, revenue-account details, proposals, or statements of work into this public repository. Keep those in the private system of record.
+
 ## Public-Safe Boundary
 
 This repository should not contain private pipeline state.
@@ -72,9 +105,13 @@ Create the system of record before adding automation. A spreadsheet, SQLite data
 Minimum entities:
 
 - Company
+- Prospect
+- Client
 - Role
 - Contact
 - Source
+- Service Offer
+- Proposal
 - Application
 - Conversation
 - Touch
@@ -93,6 +130,17 @@ Minimum opportunity fields:
 - remote, hybrid, onsite, travel, and timezone constraints
 - authorization and sponsorship assumptions
 - client or hiring group
+- revenue lane: employment, recruiter, 1099, C2C, fractional, advisory, direct-client, referral-partner
+- seller entity
+- buyer type
+- service offer
+- service-offer evidence from resume or portfolio
+- buyer problem or trigger
+- proposed scope
+- delivery model
+- statement-of-work status
+- payment terms
+- customer-concentration risk
 - right-to-represent, exclusivity, and duplicate-submission risk
 - OE / multi-revenue compatibility score
 - meeting load and core-hours assumptions
@@ -121,6 +169,21 @@ Every opportunity must be in exactly one stage:
 11. `rejected-or-closed`
 
 Do not use vague stages such as `interesting`, `maybe`, `watch`, or `follow-up someday`. If an item is missing information, its next action is an information request. If it violates a hard constraint, it is suppressed with a reason.
+
+For direct-client services opportunities, use the same state discipline with service-specific stage labels:
+
+1. `prospect-discovered`
+2. `problem-qualified`
+3. `suppressed`
+4. `discovery-requested`
+5. `discovery-scheduled`
+6. `proposal-needed`
+7. `proposal-sent`
+8. `sow-negotiation`
+9. `won`
+10. `lost-or-closed`
+
+Do not allow a direct-client prospect to sit in an undefined "networking" bucket. If there is no buyer problem, owner, or next action, suppress it or mark the next action as research.
 
 ## Daily Operating Loop
 
@@ -153,6 +216,19 @@ Before a recruiter call, submission, right-to-represent discussion, or meaningfu
 
 If a gate is missing, the default next action is a clarifying request.
 
+Before a client-development pitch, discovery request, proposal, statement of work, or 1099 commitment, capture:
+
+- buyer organization and decision owner
+- buyer problem, trigger, or economic pain
+- service offer being sold
+- resume or portfolio proof for that service offer
+- delivery model and expected meeting load
+- scope boundaries and out-of-scope work
+- payment model, payment timing, and collection risk
+- confidentiality and conflict-of-interest constraints
+- whether the work can be delivered by the seller entity without creating employment, exclusivity, or control issues
+- next action needed to advance toward discovery, proposal, statement of work, or close
+
 ## Human Approval Gates
 
 Require explicit approval before:
@@ -166,6 +242,8 @@ Require explicit approval before:
 - contacting an active client or sensitive relationship
 - submitting to a company or role with unresolved duplicate risk
 - accepting any role with unresolved current-obligation, confidentiality, or conflict-of-interest risk
+- sending a client pitch, proposal, statement of work, payment terms, or services representation on behalf of the 1099 entity
+- describing a service offer that is not supported by the resume, portfolio, or actual delivery capacity
 
 ## Scoring Rubric
 
@@ -184,6 +262,8 @@ Score each factor 1 to 5 and preserve a short rationale:
 | OE / multi-revenue compatibility | Can this opportunity coexist with other obligations without false statements, conflict, or quality failure? |
 | Meeting-load control | Is the schedule compatible with autonomous work and existing obligations? |
 | Confidentiality boundary | Can work be performed without mixing client/employer data, tools, or duties? |
+| Service-offer fit | For 1099/client prospects, does the buyer problem map to a real service offer supported by the resume or portfolio? |
+| Customer-development value | Does the opportunity build a durable customer, referral path, or repeatable service line? |
 
 The score is not the decision. It is a forcing function for explainable prioritization.
 
@@ -201,6 +281,8 @@ Suppress or defer when:
 - the opportunity would displace a higher-conversion live thread
 - the role requires exclusive availability, conflicting core hours, or a broad outside-work restriction that the candidate cannot satisfy
 - the role creates a direct client, customer, employer, fiduciary, or confidentiality conflict with existing obligations
+- the services pitch cannot name a buyer problem and a resume-backed service offer
+- the proposed client work has unclear payment terms, uncontrolled scope, or unresolved collection risk
 
 ## Follow-Up Cadence
 
@@ -235,6 +317,7 @@ At the end of each operating cycle, produce:
 - replies approved/sent
 - applications submitted
 - screens, interviews, or offers advanced
+- discovery calls, proposals, statements of work, or client opportunities advanced
 - items suppressed and why
 - waiting items
 - blocked items
@@ -244,16 +327,21 @@ Track stage conversion:
 
 `discovered -> qualified -> applied -> recruiter-screen -> submitted-to-client -> interviewing -> offer-received -> accepted`
 
+Track client-development conversion:
+
+`prospect-discovered -> problem-qualified -> discovery-scheduled -> proposal-sent -> sow-negotiation -> won`
+
 Also track how many items were suppressed before wasting time.
 
 ## Implementation Order
 
 1. Create the private system-of-record table or database.
-2. Define personal constraints: target role families, minimum compensation/rate, remote posture, geography, sponsorship, travel, OE/multi-revenue compatibility, and deal-breakers.
+2. Define personal constraints: target role families, minimum compensation/rate, remote posture, geography, sponsorship, travel, OE/multi-revenue compatibility, 1099 services-entity strategy, and deal-breakers.
 3. Add process skills for pipeline operation and lead-touch follow-up.
-4. Build inbox triage that only classifies and recommends.
-5. Build follow-up drafting that never sends without approval.
-6. Add duplicate suppression for company, role, recruiter, job ID, and source URL.
-7. Add conflict, confidentiality, core-hours, and current-obligation review before offer acceptance.
-8. Add daily rollup reporting.
-9. Only after those controls work, add sourcing or application automation.
+4. Build the private resume-to-services catalog and map each service offer to proof, buyer problem, scope, and delivery model.
+5. Build inbox triage that only classifies and recommends.
+6. Build follow-up drafting that never sends without approval.
+7. Add duplicate suppression for company, role, recruiter, job ID, source URL, prospect, client, and service offer.
+8. Add conflict, confidentiality, core-hours, current-obligation, and services-entity review before offer acceptance or client commitment.
+9. Add daily rollup reporting.
+10. Only after those controls work, add sourcing, application, or client-prospecting automation.

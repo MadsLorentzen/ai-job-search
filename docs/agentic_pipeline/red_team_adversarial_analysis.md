@@ -2,7 +2,7 @@
 
 This analysis assumes the pipeline will fail in the most common ways: over-automation, recruiter pressure, private-data leakage, duplicate submissions, fake opportunities, stale state, relationship damage, calendar collisions, and conflict leakage.
 
-The pipeline may be intentionally optimized for multiple revenue sources, including OE-compatible roles. That is an economic strategy, not a defect. The red-team question is whether the system can pursue concurrent revenue without creating false statements, missed obligations, confidentiality bleed, exclusivity breaches, or work-quality collapse.
+The pipeline may be intentionally optimized for multiple revenue sources, including OE-compatible roles and 1099 services-entity client acquisition. That is an economic strategy, not a defect. The red-team question is whether the system can pursue concurrent revenue without creating false statements, missed obligations, confidentiality bleed, exclusivity breaches, work-quality collapse, or uncontrolled client-service commitments.
 
 ## Threat Model
 
@@ -16,6 +16,8 @@ The pipeline may be intentionally optimized for multiple revenue sources, includ
 - right-to-represent and exclusivity position
 - multi-revenue optionality
 - current obligations and calendar capacity
+- 1099 services-entity reputation and customer-development pipeline
+- resume-backed services catalog
 - private correspondence and contact lists
 - clean evidence trail
 
@@ -29,6 +31,7 @@ The pipeline may be intentionally optimized for multiple revenue sources, includ
 - stale state that makes the next action wrong
 - relationship confusion between job-search, consulting, client-development, and personal lanes
 - conflicting core-hours, meeting, exclusivity, or confidentiality demands across concurrent roles
+- service-offer overclaiming, scope creep, collection risk, and customer-concentration drift
 
 ## Attack Scenarios And Controls
 
@@ -207,6 +210,64 @@ The pipeline may be intentionally optimized for multiple revenue sources, includ
 
 **Enhancement:** Add `delivery_predictability`, `first_30_day_load`, and `deliverable_based` fields.
 
+### 13. Services-Entity Lane Confusion
+
+**Scenario:** The system treats a direct-client services prospect like an ordinary job application, or treats a recruiter submission like a client-development opportunity.
+
+**Impact:** Wrong message, wrong economics, wrong approval gate, and possible contamination between employment, staffing, and services lanes.
+
+**Controls:**
+
+- require a `revenue_lane` classification before drafting
+- keep employment, recruiter, C2C/subcontract, fractional/advisory, direct-client, and referral-partner motions separate
+- block client pitch language in ordinary job applications unless explicitly approved
+- block right-to-represent logic from direct-client service prospects
+
+**Enhancement:** Add `revenue_lane`, `seller_entity`, `buyer_type`, and `service_offer` fields.
+
+### 14. Resume-To-Service Overclaiming
+
+**Scenario:** The agent converts resume bullets into services offered, then markets a service that is adjacent to the candidate's experience but not actually supported by proof or delivery capacity.
+
+**Impact:** Misrepresentation, poor delivery, refund risk, and reputation damage.
+
+**Controls:**
+
+- every service offer must map to a resume, portfolio, certification, case example, or other candidate-controlled proof point
+- separate "can sell now" from "can learn/build later"
+- require human approval before sending a service representation, proposal, or statement of work
+- preserve the claim evidence used for each service pitch
+
+**Enhancement:** Add `service_offer_source`, `proof_point`, `delivery_capacity`, and `claim_evidence` fields.
+
+### 15. Uncontrolled Scope Or Collection Risk
+
+**Scenario:** The pipeline wins client interest but the proposal has vague scope, weak payment terms, unclear acceptance criteria, or no collection discipline.
+
+**Impact:** Revenue exists on paper but creates unpaid work, open-ended obligations, or avoidable disputes.
+
+**Controls:**
+
+- require scoped deliverables, out-of-scope language, payment model, payment timing, and decision owner before proposal approval
+- hold work-start commitments until payment terms and statement-of-work status are recorded
+- score collection risk and scope-control risk
+
+**Enhancement:** Add `proposed_scope`, `scope_control_risk`, `statement_of_work_status`, `payment_terms`, and `collection_risk` fields.
+
+### 16. Customer-Concentration Blind Spot
+
+**Scenario:** The system optimizes for one large customer or one pseudo-employer, defeating the multi-customer premise of a services entity.
+
+**Impact:** Revenue concentration, control-risk, loss of optionality, and increased dependence on one buyer.
+
+**Controls:**
+
+- track customer-concentration risk across the services pipeline
+- prioritize diverse prospects, referral partners, and repeatable service lines
+- flag opportunities where the buyer demands employer-like control while paying through a contractor structure
+
+**Enhancement:** Add `customer_concentration_risk`, `repeatable_service_line`, and `control_risk` fields.
+
 ## Reddit-Informed Enhancements
 
 Reddit is not authority, but it is useful as a high-volume failure-mode sensor. Review of relevant `r/recruitinghell`, `r/jobs`, and `r/Scams` threads surfaced recurring practical risks:
@@ -219,6 +280,7 @@ Reddit is not authority, but it is useful as a high-volume failure-mode sensor. 
 6. **Application quality and artifact version control matter.** Track exactly which resume/cover note was sent, through which channel, and when.
 7. **Scam detection needs a contact-channel test.** Off-platform-only text, Telegram, Signal, WhatsApp, or non-corporate email should trigger verification before continuing.
 8. **OE-compatible role search needs its own positive criteria.** Remote and high-paying are not enough. The useful filter is asynchronous, deliverable-based, low-meeting, non-exclusive, low-conflict work.
+9. **Client acquisition needs different stages than job applications.** A services entity should optimize for qualified buyer problems, discovery calls, proposals, statements of work, and repeat customers, not just applications or recruiter screens.
 
 ## Sources Reviewed
 
@@ -255,6 +317,22 @@ Add these fields to the system of record:
 - `artifact_manifest_path`
 - `state_change_test`
 - `lane`
+- `revenue_lane`
+- `seller_entity`
+- `buyer_type`
+- `service_offer`
+- `service_offer_source`
+- `buyer_problem`
+- `proof_point`
+- `delivery_capacity`
+- `proposed_scope`
+- `scope_control_risk`
+- `statement_of_work_status`
+- `payment_terms`
+- `collection_risk`
+- `customer_concentration_risk`
+- `repeatable_service_line`
+- `control_risk`
 - `oe_compatibility_score`
 - `core_hours`
 - `recurring_meeting_load`
@@ -279,6 +357,11 @@ Add these automation gates:
 - `payment_or_equipment_request` suppresses by default.
 - `lane != job-search` blocks job-pipeline cadence.
 - `state_change_test` must be non-empty before follow-up draft can be approved.
+- `revenue_lane` must be classified before drafting or sending.
+- `service_offer` must have a resume-backed `service_offer_source` before any client pitch or proposal.
+- `statement_of_work_status`, `payment_terms`, and `scope_control_risk` must be reviewed before a work-start commitment.
+- `collection_risk` above threshold requires human approval before proposal or start.
+- `customer_concentration_risk` above threshold requires a diversification note or human approval.
 - `current_obligation_conflict` must be clear or human-approved before offer acceptance, start-date commitment, or C2C/subcontract commitment.
 - `exclusivity_conflict` requires suppression, renegotiation, or human approval.
 - `calendar_collision_risk` above threshold requires a scheduling plan before accepting.
@@ -301,9 +384,13 @@ Use these synthetic tests before live operation:
 10. A role has a broad outside-work prohibition.
 11. A contract role serves a client that competes with an existing client or employer.
 12. A role is remote but has heavy meeting load and ambiguous deliverables.
+13. A direct-client services lead is misclassified as a job application.
+14. A service pitch is generated from a resume bullet but lacks proof or delivery capacity.
+15. A prospect asks for work to start before statement-of-work status and payment terms are clear.
+16. One large buyer would create excessive customer concentration or employer-like control.
 
 ## Red-Team Verdict
 
-The baseline plan is directionally strong because it privileges state, evidence, next action, and suppression. For an OE or multi-revenue strategy, the main weakness is that "remote" and "high compensation" are too crude as filters. The system must explicitly score OE compatibility, meeting-load control, confidentiality boundaries, current-obligation conflicts, outside-work restrictions, and delivery predictability.
+The baseline plan is directionally strong because it privileges state, evidence, next action, and suppression. For an OE, multi-revenue, or 1099 services-entity strategy, the main weakness is that "remote" and "high compensation" are too crude as filters. The system must explicitly score OE compatibility, meeting-load control, confidentiality boundaries, current-obligation conflicts, outside-work restrictions, delivery predictability, service-offer fit, scope control, collection risk, and customer-concentration risk.
 
-The highest-priority controls are duplicate-risk scoring, RTR scope controls, identity/payment scam flags, state-change tests for follow-up, response-queue-current gate before application volume, and OE-specific acceptance gates for conflicts, calendar load, confidentiality, and first-30-days delivery risk.
+The highest-priority controls are duplicate-risk scoring, RTR scope controls, identity/payment scam flags, state-change tests for follow-up, response-queue-current gate before application volume, OE-specific acceptance gates for conflicts, calendar load, confidentiality, and first-30-days delivery risk, plus services-entity gates for resume-backed offers, proposal scope, payment terms, and customer diversification.
