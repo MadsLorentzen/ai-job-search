@@ -1,10 +1,10 @@
-# Job Application Assistant for [YOUR_NAME]
+# Job Application Assistant for Thomas Adair
 
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+<!-- PRE-POPULATED 2026-06-24 from Thomas_Adair_Resume_v2.docx + Master_Inventory.docx -->
+<!-- Civilian translation: Department of War (not DoD), Federal Correctional Facility, MCMAP dropped -->
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Thomas Adair, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -16,65 +16,78 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 <!-- This section is auto-populated by /setup. You can also fill it in manually. -->
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Name:** Thomas Adair
+- **Email:** adair.thomas@gmail.com
+- **Location:** Oceanside, CA (North County San Diego)
+- **Languages:** English (native)
+- **Status:** Active U.S. Marine Corps service — transition projected 2028; SkillBridge eligible in final 180 days
+- **Clearance:** Active Secret (eligible Top Secret upgrade); protected veteran; no visa sponsorship needed
+- **LinkedIn:** linkedin.com/in/thomasadair
+- **GitHub:** github.com/AdairBear
+- **Location constraints:** Remote (CA-based) preferred; in-office SD/LA/Bay Area OK; NO relocation; NO in-office non-CA
+- **LinkedIn headline:** "Operations & Compliance Leader · AI Systems Builder · Active Secret Clearance"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **B.S. in Business Project Management** (in progress) - American Military University
+- **Strategic Leadership, Operations Management, Organizational Leadership** - Marine Corps University
+- **Strategic Planning Systems** - Joint Forces Staff College
+- PME through E-6 (Staff Sergeant level)
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Senior Operations & Compliance Manager** (2022–Present) - Federal Correctional Facility, Camp Pendleton, CA (Employer: U.S. Marine Corps / Dept. of War)
+  - 100% inspection pass rate; corrective-action program cut violations 15% YoY
+  - Executive KPI reporting, compliance dashboards, 40+ parole/clemency cases annually
+  - 5 direct reports, 20+ cross-functional stakeholders; 8 rehabilitative programs
+- **Talent Acquisition Specialist** (2019–2022) - Federal Government Recruiting, SF Bay Area (Employer: U.S. Marine Corps / Dept. of War)
+  - ~50 full-cycle placements; mentorship program +30% completion rate
+  - 100% documentation compliance; standardized workflows cut processing errors 20%
+- **Operations Manager** (2016–2019) - Federal Correctional Facility, Chesapeake, VA — Dept. of War / Navy-operated (Employer: U.S. Marine Corps)
+  - Led ACA accreditation (one of only two accredited Marine Corps facilities)
+  - 459 standardized operating procedures; 200+ hours compliance training to 110+ employees
+  - $100K+ procurement; $33K vendor-negotiation savings; 30+ employees supervised
+- **Security Operations & Corrections Specialist** (2008–2016) - Camp Pendleton, CA / Afghanistan (Employer: U.S. Marine Corps)
+  - Two deployments Afghanistan (2009, 2012)
+  - 80+ structured interviews, 30+ climate surveys across 1,500+ employees
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **AI/ML:** Multi-agent orchestration (Anthropic Claude + MCP), LLM deployment, parity validation, drift detection, automated kill switches, audit gates, RAG/pgvector memory, 150+ automated test suites, CI/CD
+- **Engineering:** Python, FastAPI, Pine Script v5/v6, React/Vite, Node.js, JUCE/C++, PostgreSQL/pgvector, Redis, Docker, Linux/systemd, WebSockets, Pandas/NumPy, ML (CNN/HMM/time-series)
+- **Domain:** National security/defense, regulated-environment operations, GovTech compliance, fintech/algorithmic trading
+- **Tools:** Claude Code, Anthropic API, OpenAI API, Groq API, Ollama, Databento MDP3.0, Tauri, Stripe, Clerk
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- ACA (American Correctional Association) — accreditation lead
+- SAPR Victim Advocate — certified, 5 years
+- Certified defensive-tactics and use-of-force instructor
+- Senior on-call incident commander (24/7 rotation)
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- None for direct submission.
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- TODO: Add any formal USMC awards/commendations with civilian-readable framing
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- TODO: Complete 02-behavioral-profile.md (DISC self-assessment — ~30 min)
+- **Known strengths:** Systems thinking, quality discipline, building reliable infrastructure, cross-functional coordination, regulated-environment leadership
+- **Thrives in:** High-stakes regulated environments, autonomous work with clear accountability, environments that value precision and correctness
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Building reliable AI systems with real quality gates and measurable correctness
+- Applying compliance and governance discipline to AI deployments (the "same muscle" as ACA accreditation)
+- GovTech — making government services better through technology
+- Autonomous trading and financial systems engineering
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- **GovTech:** Granicus, Tyler Technologies, Socrata/Tyler, NIC/Tyler, ServiceNow Government, Salesforce Government
+- **Defense/Cleared AI:** Palantir, Leidos, SAIC, Booz Allen Hamilton, MITRE, L3Harris, Raytheon
+- **Federal/Civilian AI:** AWS Public Sector, Microsoft Federal, Google Federal, IBM Federal
+- **Fintech/RegTech:** Veeva, Compliance.ai, Relativity, LogicGate
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- In-office roles outside California (no relocation)
+- Roles requiring active combat deployment (service is winding down, not pivoting back)
+- Pure sales roles with no technical or operational component
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

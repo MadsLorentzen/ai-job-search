@@ -1,10 +1,14 @@
 # Behavioral Profile
 
-<!-- SETUP: This file is populated by running /setup -->
-<!-- You can use results from PI, DISC, Myers-Briggs, StrengthsFinder, or a self-assessment -->
+<!-- PRE-POPULATED 2026-06-24: Identity block pre-filled. DISC assessment section needs Thomas's input. -->
+<!-- TODO FOR THOMAS (~30 min): Complete the DISC self-assessment and fill in the sections below. -->
+<!-- Free DISC: https://www.123test.com/disc-personality-test/ or use your gut self-assessment. -->
+<!-- Alternatively, complete /setup interview mode when Claude Code CLI is set up — it walks you through this. -->
 
 ## Overview
-[YOUR_NAME]'s behavioral assessment identifies them as a **[PROFILE_TYPE]** pattern. [1-2 SENTENCE_SUMMARY].
+Thomas Adair's behavioral profile identifies him as a **[TODO: DISC type — e.g. "CD Architect" or "SC Stabilizer"]** pattern. [TODO: 1-2 sentence summary once DISC is complete.]
+
+Known from 18 years of operational evidence: high discipline and follow-through; comfort with structure and accountability systems; ability to build reliable processes from scratch; strong cross-functional coordination in high-stakes regulated environments.
 
 ## Core Behavioral Drives
 
