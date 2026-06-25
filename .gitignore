@@ -67,3 +67,8 @@ upskill/*.md
 
 # Agent usage logs
 .agents/
+
+# Apply cap state — personal runtime data, never commit
+state/applications.csv
+state/overrides.log
+# state/applications.example.csv is intentionally tracked as a template

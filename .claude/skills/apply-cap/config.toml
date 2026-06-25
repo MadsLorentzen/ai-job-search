@@ -1,0 +1,23 @@
+# Apply Cap Configuration
+# Locked by Thomas Adair on 2026-06-24. Change only via explicit decision.
+
+[caps]
+# Maximum applications per calendar day (local time)
+daily_cap = 5
+
+# Maximum applications per calendar week (Mon 00:00 – Sun 23:59 local time)
+weekly_cap = 15
+
+[dedupe]
+# Block reapplication to the same company+role within this many days.
+# Match is case-insensitive on company; role is normalized (lowercase, no punctuation).
+dedupe_window_days = 14
+
+[state]
+# Path to application log CSV, relative to repo root.
+# This file is gitignored — never commit it.
+applications_csv = "state/applications.csv"
+
+# Path to force-override audit log, relative to repo root.
+# This file is gitignored — never commit it.
+overrides_log = "state/overrides.log"

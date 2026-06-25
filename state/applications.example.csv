@@ -1,0 +1,4 @@
+timestamp,company,role_normalized,role_raw,location,source,status,notes
+2026-06-24T09:15:00,Palantir,forward deployed engineer,Forward Deployed Engineer,Remote - US,LinkedIn,pending,Referral from network contact
+2026-06-24T14:30:00,Booz Allen Hamilton,senior ai engineer,Senior AI Engineer,Arlington VA (Hybrid),Company Site,pending,Requires active Secret clearance - confirmed eligible
+2026-06-25T10:00:00,Granicus,solutions engineer govtech,Solutions Engineer - GovTech,Remote,Indeed,force_override,Re-applied after 10 days; role re-opened per recruiter email
