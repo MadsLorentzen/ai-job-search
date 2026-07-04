@@ -8,8 +8,12 @@
 // it commercially or for bulk data collection. Run it on your own responsibility.
 
 // --- Public credentials (shipped in the WTTJ frontend; search-only, referer-locked) ---
-export const ALGOLIA_APP = "CSEKHVMS53"
-export const ALGOLIA_KEY = "4bd8f6215d0cc52b26430765769e65a0"
+// These are WTTJ's own public, browser-shipped Algolia search key — the same value every
+// visitor's browser sends, not tied to any account. If WTTJ ever rotates it, override
+// without a code change via the WTTJ_ALGOLIA_APP_ID / WTTJ_ALGOLIA_API_KEY env vars.
+export const ALGOLIA_APP = process.env.WTTJ_ALGOLIA_APP_ID || "CSEKHVMS53"
+export const ALGOLIA_KEY =
+  process.env.WTTJ_ALGOLIA_API_KEY || "4bd8f6215d0cc52b26430765769e65a0"
 export const ALGOLIA_URL = `https://${ALGOLIA_APP}-dsn.algolia.net/1/indexes/*/queries`
 export const JOBS_INDEX = "wk_cms_jobs_production"
 export const WTTJ_REFERER = "https://www.welcometothejungle.com/"

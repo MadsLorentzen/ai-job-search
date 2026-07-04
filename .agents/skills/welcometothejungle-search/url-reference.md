@@ -20,6 +20,10 @@ Headers (the public search key is **referer-restricted**, so the Referer header 
 | `Content-Type` | `application/json` |
 | `Referer` | `https://www.welcometothejungle.com/` |
 
+The app id and key are WTTJ's own public, browser-shipped values (the same ones every visitor
+sends — not account-specific). If WTTJ rotates them, override without a code change via the
+`WTTJ_ALGOLIA_APP_ID` and `WTTJ_ALGOLIA_API_KEY` environment variables.
+
 Body: `{"requests":[{"indexName":"wk_cms_jobs_production","params":"<url-encoded query string>"}]}`
 
 `params` query string values the CLI uses:
