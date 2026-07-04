@@ -202,6 +202,8 @@ The four Danish CLI tools in `.agents/skills/` (Jobbank, Jobdanmark, Jobindex, J
 
 For a **country-agnostic** starting point, the repo also includes **`linkedin-search`** — a job-search skill built on LinkedIn's public, unauthenticated `jobs-guest` endpoints. It is field-agnostic, has **zero runtime dependencies** (runs with just `bun`), and takes the search location as an explicit flag, so it works for any market out of the box (`-l "Berlin, Germany"`, `-l "Mumbai, Maharashtra, India"`, `-l "Remote"`, …). It is intended for **personal use only** — automated access is against LinkedIn's Terms of Service, so keep volume low. See `.agents/skills/linkedin-search/SKILL.md`.
 
+A second country-agnostic skill, **`welcometothejungle-search`**, follows the same pattern against Welcome to the Jungle's public Algolia index (search) and its public jobs API (detail) — also **zero runtime dependencies**, with explicit `--country`/`--location`/`--remote`/`--contract` filters (`-c US`, `-l "Paris"`, `--remote full`, …). Note WTTJ is heavily France/Europe-weighted, so it complements rather than replaces `linkedin-search`. **Personal use only** — keep volume low. See `.agents/skills/welcometothejungle-search/SKILL.md`.
+
 ### Salary benchmarking
 
 The salary tool works with any salary data you provide (union statistics, Glassdoor exports, personal research, etc.). See `tools/README_SALARY_TOOL.md` for the expected format and setup. If you don't have salary data, the salary step is simply skipped.

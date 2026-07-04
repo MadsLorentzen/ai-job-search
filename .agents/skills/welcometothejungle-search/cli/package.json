@@ -1,0 +1,19 @@
+{
+  "name": "wttj-cli",
+  "version": "1.0.0",
+  "description": "CLI for searching jobs on Welcome to the Jungle's public Algolia index (any country/city, plus remote) — no authentication, zero runtime dependencies. Personal use only.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "wttj-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "latest"
+  }
+}
