@@ -51,7 +51,10 @@ cd .agents/skills/jobbank-search/cli && bun install && cd ../../../..
 cd .agents/skills/jobdanmark-search/cli && bun install && cd ../../../..
 cd .agents/skills/jobindex-search/cli && bun install && cd ../../../..
 cd .agents/skills/jobnet-search/cli && bun install && cd ../../../..
+cd .agents/skills/linkedin-search/cli && bun install && cd ../../../..
 ```
+
+For `linkedin-search` the install is optional: it has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls TypeScript dev types.
 
 ### 3. Set up your profile
 
@@ -118,11 +121,12 @@ ai-job-search/
 │   │   ├── job-scraper/               # Job search orchestration
 │   │   └── upskill/                   # /upskill skill gap analysis and learning plan
 │   └── settings.json                  # Claude Code permissions (shared, scoped)
-├── .agents/skills/                    # Job portal CLI tools (Denmark)
-│   ├── jobbank-search/                # Akademikernes Jobbank
-│   ├── jobdanmark-search/             # Jobdanmark.dk
-│   ├── jobindex-search/               # Jobindex.dk
-│   └── jobnet-search/                 # Jobnet.dk (government portal)
+├── .agents/skills/                    # Job portal CLI tools
+│   ├── jobbank-search/                # Akademikernes Jobbank (Denmark)
+│   ├── jobdanmark-search/             # Jobdanmark.dk (Denmark)
+│   ├── jobindex-search/               # Jobindex.dk (Denmark)
+│   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
+│   └── linkedin-search/               # LinkedIn public job listings (country-agnostic)
 ├── cv/
 │   └── main_example.tex               # moderncv LaTeX template
 ├── cover_letters/

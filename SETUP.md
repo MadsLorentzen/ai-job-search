@@ -24,7 +24,7 @@ python --version
 
 ### Bun (for job search tools)
 
-The Danish job portal CLIs are written in TypeScript and run with Bun:
+The job portal CLIs (four Danish portals plus the country-agnostic LinkedIn tool) are written in TypeScript and run with Bun:
 
 ```bash
 curl -fsSL https://bun.sh/install | bash
@@ -52,10 +52,12 @@ Or manually: fork on GitHub, then clone your fork.
 ## 3. Install job search CLI dependencies
 
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search; do
+for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search; do
   cd .agents/skills/$tool/cli && bun install && cd ../../../..
 done
 ```
+
+For `linkedin-search` the install is optional: it has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls TypeScript dev types.
 
 ## 4. Run the setup interview
 
