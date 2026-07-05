@@ -117,7 +117,7 @@ ai-job-search/
 │   │   │   └── 07-interview-prep.md   # STAR examples + interview framework
 │   │   ├── job-scraper/               # Job search orchestration
 │   │   └── upskill/                   # /upskill skill gap analysis and learning plan
-│   └── settings.local.json            # Claude Code permissions
+│   └── settings.json                  # Claude Code permissions (shared, scoped)
 ├── .agents/skills/                    # Job portal CLI tools (Denmark)
 │   ├── jobbank-search/                # Akademikernes Jobbank
 │   ├── jobdanmark-search/             # Jobdanmark.dk
