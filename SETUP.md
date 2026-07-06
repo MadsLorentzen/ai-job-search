@@ -73,12 +73,13 @@ Then run the onboarding:
 /setup
 ```
 
-Claude will offer two paths:
+Claude will offer three paths:
 
-- **Path A (recommended):** Share your existing CV (mention the file with `@` or paste the text). Claude extracts your information and asks follow-up questions for anything missing.
-- **Path B:** Answer structured interview questions section by section.
+- **Path A (documents folder):** Add your CV, LinkedIn export, diplomas, references, or past applications under `documents/`. Claude reads and cross-references them before proposing profile updates. This is best when you have several source files.
+- **Path B (single CV import):** Share one CV/resume by mentioning the file with `@` or pasting the text. Claude extracts it and asks follow-up questions for anything missing.
+- **Path C (interview mode):** Answer structured interview questions section by section.
 
-Both paths produce the same result: fully populated profile files.
+All three paths produce the same result: fully populated profile files.
 
 ### What gets populated
 
