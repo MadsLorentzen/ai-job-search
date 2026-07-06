@@ -22,13 +22,25 @@ Python 3.10+ is required for the salary lookup tool. Check with:
 python --version
 ```
 
+On Windows, `py --version` is often the most reliable check if `python` is not on your PATH.
+
 ### Bun (for job search tools)
 
-The job portal CLIs (four Danish portals plus the country-agnostic LinkedIn tool) are written in TypeScript and run with Bun:
+The job portal CLIs (four Danish portals plus the country-agnostic LinkedIn tool) are written in TypeScript and run with Bun.
+
+- macOS/Linux:
 
 ```bash
 curl -fsSL https://bun.sh/install | bash
 ```
+
+- Windows PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -c "irm https://bun.sh/install.ps1 | iex"
+```
+
+If you prefer a package manager, `winget install Oven-sh.Bun` also works on Windows.
 
 ### LaTeX (for compiling CVs and cover letters)
 
@@ -50,7 +62,20 @@ cd ai-job-search
 Or manually: fork on GitHub, then clone your fork.
 
 ## 3. Install job search CLI dependencies
+Run these from the repository root.
 
+- PowerShell:
+
+```powershell
+$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search")
+foreach ($tool in $tools) {
+  Set-Location ".agents/skills/$tool/cli"
+  bun install
+  Set-Location "..\..\..\.."
+}
+```
+
+- Bash / zsh / Git Bash:
 ```bash
 for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search; do
   cd .agents/skills/$tool/cli && bun install && cd ../../../..
@@ -147,11 +172,15 @@ Claude will:
 After `/apply` creates the LaTeX files:
 
 ```bash
-# Compile CV
+# Bash / zsh / Git Bash
 cd cv && lualatex main_<company>.tex && cd ..
-
-# Compile cover letter
 cd cover_letters && xelatex cover_<company>_<role>.tex && cd ..
+```
+
+```powershell
+# PowerShell
+Set-Location cv; lualatex main_<company>.tex; Set-Location ..
+Set-Location cover_letters; xelatex cover_<company>_<role>.tex; Set-Location ..
 ```
 
 These commands apply to the stock templates (moderncv CV, `cover.cls` cover letter). If you'd rather use your own LaTeX template, run `/add-template` — it captures the template's compile engine, fonts, style rules, and page limit, test-compiles it, and wires it into `/apply`. See the "LaTeX templates" section in the README.
