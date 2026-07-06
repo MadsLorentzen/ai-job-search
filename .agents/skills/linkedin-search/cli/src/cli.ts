@@ -83,6 +83,32 @@ async function main(): Promise<number> {
       return 1
     }
     const fmt = (flags.format as string) || "json"
+
+    const parseIntFlag = (name: string, raw: string | boolean | string[]): number | null => {
+      const val = parseInt(raw as string, 10)
+      if (isNaN(val)) {
+        process.stderr.write(JSON.stringify({ error: `--${name} must be a number, got "${raw}"`, code: "BAD_ARG" }) + "\n")
+        return null
+      }
+      return val
+    }
+
+    if (flags.jobage !== undefined) {
+      const v = parseIntFlag("jobage", flags.jobage)
+      if (v === null) return 1
+      flags.jobage = String(v)
+    }
+    if (flags.page !== undefined) {
+      const v = parseIntFlag("page", flags.page)
+      if (v === null) return 1
+      flags.page = String(v)
+    }
+    if (flags.limit !== undefined) {
+      const v = parseIntFlag("limit", flags.limit)
+      if (v === null) return 1
+      flags.limit = String(v)
+    }
+
     const opts: SearchOpts = {
       query: typeof flags.query === "string" ? flags.query : undefined,
       location,

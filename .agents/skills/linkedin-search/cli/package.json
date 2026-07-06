@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 30000",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {},
