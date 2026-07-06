@@ -58,14 +58,12 @@ def detect_column_type(header):
 
 def parse_sheet(ws, sheet_label=None):
     """Parse a single worksheet into a list of company entries and detected categories."""
-    # Find header row (save cells during scan — ws[row_idx] random access breaks in read_only mode)
+    # Find header row
     header_row = None
-    saved_header_cells = None
-    for row_idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=True), start=1):
-        for cell_val in row:
-            if cell_val and str(cell_val).strip().lower() in COMPANY_PATTERNS:
+    for row_idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=False), start=1):
+        for cell in row:
+            if cell.value and str(cell.value).strip().lower() in COMPANY_PATTERNS:
                 header_row = row_idx
-                saved_header_cells = row
                 break
         if header_row:
             break
@@ -74,8 +72,10 @@ def parse_sheet(ws, sheet_label=None):
         print(f"Warning: Could not find header row in sheet '{ws.title}'. Skipping.", file=sys.stderr)
         return []
 
-    # Read headers from the saved row (avoids ws[header_row] which fails in read_only mode)
-    headers = [str(v).strip() if v else "" for v in saved_header_cells]
+    # Read headers
+    headers = []
+    for cell in ws[header_row]:
+        headers.append(str(cell.value).strip() if cell.value else "")
 
     # Find company and city columns
     company_col = None
