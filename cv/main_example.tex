@@ -1,8 +1,7 @@
-%% Example CV - [YOUR_NAME]
+%% Example CV - AJ Magnuson
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
 %% Compile with: lualatex main_example.tex
 %% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
@@ -18,24 +17,25 @@
 \renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
 
 \usepackage[utf8]{inputenc}
+\usepackage{needspace}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={AJ Magnuson - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{AJ}{Magnuson}
+\address{Brooklyn, NY, USA}{}{}
+\phone[mobile]{+1 650 814 7296}
+\email{ae@alumni.stanford.edu}
+\extrainfo{\href{https://linkedin.com/in/ajmagnuson}{LinkedIn}, \href{https://github.com/ajmagnu}{GitHub}}
 
 \begin{document}
 
@@ -46,7 +46,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{Product-led Growth executive and former engineer with a track record of driving 3-9x revenue growth across B2C, B2B, and B2B2C platforms. Builder of scalable growth engines spanning acquisition, activation, retention, monetization, and pricing. Experienced leading experimentation orgs, establishing KPI systems, architecting growth loops, and turning data infrastructure into predictable revenue acceleration.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +56,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{Product-Led Growth}: PLG funnels across B2C, B2B, B2B2C, and marketplace models. Self-serve onboarding, monetization, lifecycle.
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Lifecycle, Messaging \& Email}: Depth area. Built DailyPay's lifecycle stack (Iterable + Segment + Amplitude) and shipped Beacons' 0-to-1 AI Email Marketing (fastest ESP to 50M cumulative volume).
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Experimentation Engines}: 10x experimentation velocity at DailyPay. 10 experiments/week with a single engineer at Checkmate. Co-designed with engineering, not handed off.
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Pricing \& Packaging}: Designed Beacons pricing experiment that lifted revenue 120\% with ARPU and LTV gains.
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Growth Engineering \& Data Infrastructure}: KPI frameworks, revenue intelligence, personalization systems. Heavy current usage of Claude Code and agentic workflows for growth ops.
 
 \end{itemize}
 
@@ -76,32 +76,82 @@
 \vspace{3pt}
 \begin{itemize}
 
-% --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% --- Checkmate Intelligence ---
+\needspace{5\baselineskip}
+\item{\cventry{2025--2026}{VP of Growth}{Checkmate Intelligence}{Remote / New York, NY}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item Led PLG, revenue intelligence, and experiment velocity through \textbf{10x revenue expansion} in 12 months
+    \item Introduced ``Enrichment'' product line that grew to 15\% of total revenue in first 3 months
+    \item 2x LTV on B2C mobile app; 40\% revenue conversion lift in B2B channel
+    \item Built B2B2C growth loop driving 30,000 additional high-intent consumer opt-ins per week
+    \item Hit 10 experiments/week with a single engineering resource, across every surface
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% --- Beacons.ai ---
+\needspace{5\baselineskip}
+\item{\cventry{2022--2025}{Sr. Product Manager $\rightarrow$ Growth Lead}{Beacons.ai}{Remote / New York, NY}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+    \item Drove \textbf{$\sim$3x YoY revenue growth} by scaling self-serve PLG funnel across onboarding, monetization, and lifecycle
+    \item Launched 0-to-1 AI Email Marketing for creators; fastest ESP in market to reach \textbf{50M cumulative email volume}
+    \item Scaled Email Marketing to $\sim$9\% weekly user growth and $\sim$25\% weekly paid subscriber growth
+    \item Pricing and packaging experiment that lifted conversion, ARPU, and LTV for \textbf{120\% revenue gain}
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% --- DailyPay ---
+\needspace{5\baselineskip}
+\item{\cventry{2019--2021}{Sr. Growth Engineer $\rightarrow$ Sr. Product Manager, Communications}{DailyPay}{New York, NY}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+    \item Owned growth initiatives contributing to \textbf{5.7x revenue expansion} from $\sim$\$14M to $\sim$\$80M in under 12 months
+    \item Built lifecycle messaging and analytics stack (Iterable, Segment, Amplitude) supporting enterprise-scale PLG
+    \item Increased experimentation velocity \textbf{10x} by operationalizing company-wide testing frameworks
+    \item Designed and launched WorkLife, a financial wellness product, at \$3M annual projected revenue at inception
+\end{itemize}}}
+
+\vspace{3pt}
+
+% --- Blast Radio ---
+\needspace{4\baselineskip}
+\item{\cventry{2021--Present}{Product Lead Consultant, Advisor, Investor}{Blast Radio}{Brooklyn, NY}{}{\vspace{1pt}
+\begin{itemize}
+    \item Architected analytics and personalization infrastructure for early-stage growth and PMF validation
+    \item Built early ML-driven personalization and recommendation systems
+    \item Oversaw 5-person engineering team through application and developer experience re-architecture
+\end{itemize}}}
+
+\vspace{3pt}
+
+% --- PitchTop ---
+\needspace{4\baselineskip}
+\item{\cventry{2014--2019}{Co-founder, CEO $\rightarrow$ CTO}{PitchTop}{San Francisco, CA}{}{\vspace{1pt}
+\begin{itemize}
+    \item Scaled D2C launch platform powering \textbf{11k+ campaigns and $\sim$17M visits}; AngelPad-backed
+    \item Engineered cross-device embedded checkout that outperformed Shopify by $\sim$17\%
+    \item Designed viral referral and crowdfunding mechanics driving organic acquisition
+\end{itemize}}}
+
+\vspace{3pt}
+
+% --- FanBridge ---
+\needspace{3\baselineskip}
+\item{\cventry{2011--2013}{Head of Product $\rightarrow$ VP of Product Management}{FanBridge}{San Francisco / New York City}{}{\vspace{1pt}
+\begin{itemize}
+    \item Managed 4 cross-functional teams and 12 engineers; clients included Lady Gaga, John Mayer, Aziz Ansari
+    \item Closed YouTube Marketing partnership that spun out as Stensul (8-figure-valued business unit)
+\end{itemize}}}
+
+\vspace{3pt}
+
+% --- Earlier roles condensed ---
+\needspace{3\baselineskip}
+\item{\cventry{2006--2010}{Engineering and Product Leadership}{damntheradio (Co-founder, CTO) $\cdot$ RockYou $\cdot$ Become.com}{San Francisco Bay Area}{}{\vspace{1pt}
+\begin{itemize}
+    \item Co-founded damntheradio (social CMS for Linkin Park, Black Keys, Gatorade); acquired by FanBridge
+    \item First engineering hire at Sequoia-backed RockYou; built consumer apps reaching \textbf{100M+ MAU}
+    \item First product hire at Become.com (Ron Conway-backed search startup founded by the MySimon team)
 \end{itemize}}}
 
 \end{itemize}
@@ -114,14 +164,8 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
-
-\vspace{3pt}
-
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
+\item{\cventry{2000--2004}{B.S. Symbolic Systems}{Stanford University}{Stanford, CA}{}{\vspace{1pt}
+Concentration in Decision Making and Rationality. Interdisciplinary degree across cognitive science, AI, decision theory, formal logic, and CS.
 }}
 
 \end{itemize}
@@ -133,27 +177,17 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
+\item English (native). Actively learning Brazilian Portuguese, Spanish, and Arabic.
 \end{itemize}
 
 % ============================================================
-%     PUBLICATIONS (optional)
-% ============================================================
-
-\section{Publications}
-\vspace{1pt}
-\begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
+%     HONORS AND AWARDS
 % ============================================================
 
 \section{Honors and Awards}
 \vspace{1pt}
 \begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item{\textbf{AngelPad Inductee} -- top-ranked startup accelerator (PitchTop, 2014-2015).}
 \end{itemize}
 
 % ============================================================

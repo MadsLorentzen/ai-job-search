@@ -1,0 +1,1283 @@
+{
+  "_about": "Per-URL pipeline actions: outreach events, follow-up dates, fallback plans. Kept separate from seen_jobs.json so scrape regeneration doesn't clobber action history.",
+  "_schema": {
+    "actions": "Map of URL -> { outreach[], follow_up_due, fallback_plan }",
+    "outreach_event": "{ date: YYYY-MM-DD, channel: linkedin_dm|email|inmail|phone|other, to: name, via_broker?: name, note: string, outcome?: pending|responded|intro_made|declined|no_response }"
+  },
+  "actions": {
+    "https://boards.greenhouse.io/figma/jobs/5989185004?gh_jid=5989185004": {
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "linkedin_dm",
+          "to": "Brendan O'Driscoll",
+          "note": "Sent intro DM referencing the past email thread (Italy roadtrip / friend's wedding). Asked if PM AI Growth role is on his team. Hook: 8 years growth at Beacons.ai / DailyPay / Checkmate; 0-to-1 AI Email Marketing at Beacons; ex-founder + full-stack dev.",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-06-25",
+      "fallback_plan": "If no response by 2026-06-25, pivot to Upward PM coach dashboard (5 Figma in-network people). Log into https://referrals.upwardproductmanagement.com/ to identify names.",
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 5 in-network at Figma. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://boards.greenhouse.io/figma/jobs/5989185004?gh_jid=5989185004\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nAI growth is my sweet spot -- I've run PLG and experimentation engines (10 experiments a week, 10x velocity) and I build with AI every day (Warmode and Matic on Claude Code). I'd be shipping growth experiments on an AI surface, which is exactly the work I did at Beacons and Checkmate, pointed at Figma's scale."
+      }
+    },
+    "https://job-boards.greenhouse.io/anthropic/jobs/5181852008": {
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "linkedin_dm",
+          "to": "Alex Ortiz",
+          "via_broker": null,
+          "note": "Asked Alex Ortiz to broker an intro to Kat Killion (GTM @ Anthropic, 2-hop path via Alex). Re: PM API Growth role. Waiting on Alex.",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-06-25",
+      "fallback_plan": "If Alex doesn't respond by 2026-06-25: also Auren Hoffman (connector) and Chantel Benson 2-hop -> Shad Ahmed. Tier 3 coach dashboard has 3 in-network at Anthropic."
+    },
+    "https://jobs.ashbyhq.com/notion/576401b9-66e7-4407-a9e2-8aafaa590082": {
+      "outreach": [],
+      "fallback_plan": "Use Upward PM coach dashboard (1 Notion in-network). Log into https://referrals.upwardproductmanagement.com/ to identify the name. Secondary: Alex Ortiz -> Ish Verduzco (Social Lead, not lifecycle but adjacent).",
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in referral_pending)."
+    },
+    "https://stripe.com/jobs/search?gh_jid=7809139": {
+      "outreach": [],
+      "fallback_plan": "This role is skipped (Canada, low salary), but the relationship with Biju Ashokan -> Punit S. / Rohit S. / Eddie Serrill (3 Stripe paths) is worth activating for future Stripe roles. Action: when next compelling Stripe role appears, ping Biju with the specific role to ask which contact is right."
+    },
+    "https://jobs.ashbyhq.com/perplexity/f25e190e-0508-4707-b575-fcaed358dc13": {
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "linkedin_dm",
+          "to": "Jeff Maselli",
+          "via_broker": null,
+          "note": "Reached out to Jeff (leads search efforts across Executive and AI at Perplexity, strong-connection broker) about the Product Manager (Builder) role. Asked if its on his team / who the right person to talk to is.",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-06-25",
+      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths \u2014 Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
+    },
+    "https://jobs.ashbyhq.com/perplexity/dd9c7675-1369-4320-afdb-c8caef22ce3a": {
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "linkedin_dm",
+          "to": "Jeff Maselli",
+          "via_broker": null,
+          "note": "Reached out to Jeff (leads search efforts across Executive and AI at Perplexity, strong-connection broker) about the Product Marketing Manager, API role. Asked if its on his team / who the right person to talk to is.",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-06-25",
+      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths \u2014 Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
+    },
+    "https://jobs.ashbyhq.com/perplexity/5ec96ca1-319a-4b85-99ce-e06629099cf9": {
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "linkedin_dm",
+          "to": "Jeff Maselli",
+          "via_broker": null,
+          "note": "Reached out to Jeff (leads search efforts across Executive and AI at Perplexity, strong-connection broker) about the Product Marketing Manager role. Asked if its on his team / who the right person to talk to is.",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-06-25",
+      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths \u2014 Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
+    },
+    "https://jobs.ashbyhq.com/cursor/123af173-6f9b-4089-9d96-d0c028b9e841": {
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "linkedin_dm",
+          "to": "Alex Ortiz",
+          "via_broker": null,
+          "note": "Asked Alex Ortiz to broker an intro to Jordan MacDonald (2-hop path, Building Cursor). Re: PMM role.",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-06-25"
+    },
+    "https://jobs.ashbyhq.com/cursor/69abc2ba-2823-40c3-9b86-94ab63859649": {
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "linkedin_dm",
+          "to": "Alex Ortiz",
+          "via_broker": null,
+          "note": "Asked Alex Ortiz about Cursor connect (Jordan MacDonald, 2-hop). Re: PM Agent Harness role \u2014 direct match for AJs Warmode work.",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-06-25",
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in referral_pending)."
+    },
+    "https://jobs.ashbyhq.com/openai/d23c6966-e702-4088-860b-0f529745e03c": {
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "recruiter_conversation",
+          "to": "OpenAI recruiter",
+          "note": "Active conversation with OpenAI recruiter from prior process. Waiting on their response; not pushing alternate paths until that resolves.",
+          "outcome": "pending"
+        }
+      ]
+    },
+    "https://jobs.ashbyhq.com/openai/73e59b84-2e87-4637-8c4a-d271784afb30": {
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "recruiter_conversation",
+          "to": "OpenAI recruiter",
+          "note": "Active conversation with OpenAI recruiter from prior process. Waiting on their response; not pushing alternate paths until that resolves.",
+          "outcome": "pending"
+        }
+      ]
+    },
+    "https://jobs.ashbyhq.com/openai/02ee1352-9c8f-4efc-8127-d8f4eaed4474": {
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "recruiter_conversation",
+          "to": "OpenAI recruiter",
+          "note": "Active conversation with OpenAI recruiter from prior process. Waiting on their response; not pushing alternate paths until that resolves.",
+          "outcome": "pending"
+        }
+      ]
+    },
+    "https://job-boards.greenhouse.io/vercel/jobs/6016765004": {
+      "materials": {
+        "cv": "cv/main_vercel.tex",
+        "cv_pdf": "cv/main_vercel.pdf",
+        "cover_letter": "cover_letters/cover_vercel_growth_marketing_manager_agent_stack.tex",
+        "cover_letter_pdf": "cover_letters/cover_vercel_growth_marketing_manager_agent_stack.pdf",
+        "notes": "Drafted via /apply with drafter-reviewer workflow on 2026-06-22. Reviewer flagged tighter Vercel-specific framing (Agent Stack reference, agent-deploy %), all verified via WebFetch before inclusion. Word count 321 (over safe 300 budget; may need a final trim once compiled)."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Vercel (Greenhouse)",
+          "note": "Submitted application for Growth Marketing Manager, Agent Stack. Attached main_vercel.pdf + cover_vercel_growth_marketing_manager_agent_stack.pdf. Confirmation: 'Thank you for applying.'",
+          "outcome": "submitted"
+        }
+      ],
+      "follow_up_due": "2026-07-06",
+      "fallback_plan": "No referral on file at Vercel; consider sourcing a warm intro if no recruiter response by follow-up date."
+    },
+    "https://boards.greenhouse.io/chime/jobs/8593034002?gh_jid=8593034002": {
+      "materials": {
+        "cv": "cv/main_chime.tex",
+        "cv_pdf": "cv/main_chime.pdf",
+        "cover_letter": "cover_letters/cover_chime_growth_pmm.tex",
+        "cover_letter_pdf": "cover_letters/cover_chime_growth_pmm.pdf",
+        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. SF, 4 days/week in office \u2014 conflicts with AJ NYC on-site deal-breaker. Materials built; held in triage for human review, NOT auto-apply."
+      }
+    },
+    "https://jobs.ashbyhq.com/plaid/0661cdab-9bc9-4614-8d2f-8f38ba4f0ec3": {
+      "materials": {
+        "cv": "cv/main_plaid.tex",
+        "cv_pdf": "cv/main_plaid.pdf",
+        "cover_letter": "cover_letters/cover_plaid_product_lead_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_plaid_product_lead_growth.pdf",
+        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. JD asks 2+ yrs managing PMs; AJ has team leadership (FanBridge/Checkmate) but not documented PM-of-PMs. Likely screen topic."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "note",
+          "to": "Plaid",
+          "note": "Held for coach-dashboard referral verification before applying.",
+          "outcome": "pending"
+        }
+      ],
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in referral_pending)."
+    },
+    "https://jobs.ashbyhq.com/substack/e93b56aa-d7ff-4a0f-90b8-1404e2d30da7": {
+      "materials": {
+        "cv": "cv/main_substack.tex",
+        "cv_pdf": "cv/main_substack.pdf",
+        "cover_letter": "cover_letters/cover_substack_pm_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_substack_pm_growth.pdf",
+        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. Very strong creator-economy fit. SQL named as required, not a documented AJ skill; positioned Amplitude/analytics fluency instead."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Substack",
+          "note": "Auto-submitted application; confirmation received.",
+          "outcome": "submitted"
+        }
+      ],
+      "follow_up_due": "2026-07-06"
+    },
+    "https://jobs.ashbyhq.com/cohere/5cf3bd63-cf1d-441a-9db5-2032ca8449b8": {
+      "materials": {
+        "cv": "cv/main_cohere.tex",
+        "cv_pdf": "cv/main_cohere.pdf",
+        "cover_letter": "cover_letters/cover_cohere_pmm.tex",
+        "cover_letter_pdf": "cover_letters/cover_cohere_pmm.pdf",
+        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. PMM role; AJ growth/PLG-led rather than classic enterprise PMM. Foregrounded launches/positioning/AI-native fluency."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Cohere",
+          "note": "Auto-submitted application; confirmation received.",
+          "outcome": "submitted"
+        }
+      ],
+      "follow_up_due": "2026-07-06"
+    },
+    "https://jobs.lever.co/spotify/7d4e94b7-ca5f-41a0-9222-5d6bb24e4950": {
+      "materials": {
+        "cv": "cv/main_spotify.tex",
+        "cv_pdf": "cv/main_spotify.pdf",
+        "cover_letter": "cover_letters/cover_spotify_growth_creative.tex",
+        "cover_letter_pdf": "cover_letters/cover_spotify_growth_creative.pdf",
+        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. Remote North America/EST. Senior IC creative-strategy role; framed lifecycle+experimentation, not creative-production craft."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Spotify",
+          "note": "Form filled by auto-apply but blocked by Lever location geocode validator; needs manual submit.",
+          "outcome": "pending"
+        }
+      ]
+    },
+    "https://jobs.ashbyhq.com/modal/9fe70d84-1d3a-42ab-87c8-df0266628c16": {
+      "materials": {
+        "cv": "cv/main_modal.tex",
+        "cv_pdf": "cv/main_modal.pdf",
+        "cover_letter": "cover_letters/cover_modal_product_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_modal_product_growth.pdf",
+        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. NYC in-person (fine, AJ Brooklyn). Product-engineer/builder seat; strong engineer-PM + dev-audience PLG fit. JD reconstructed from sibling MTS-Product posting."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Modal",
+          "note": "Auto-submitted application; confirmation received.",
+          "outcome": "submitted"
+        }
+      ],
+      "follow_up_due": "2026-07-06"
+    },
+    "https://job-boards.greenhouse.io/ibkrexternal/jobs/8496670002": {
+      "materials": {
+        "cv": "cv/main_ibkr.tex",
+        "cv_pdf": "cv/main_ibkr.pdf",
+        "cover_letter": "cover_letters/cover_ibkr_head_growth_marketing.tex",
+        "cover_letter_pdf": "cover_letters/cover_ibkr_head_growth_marketing.pdf",
+        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. NYC hybrid, fintech growth leadership. Gap: explicit international/multi-market scaling, positioned aspirationally."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Interactive Brokers",
+          "note": "Auto-submitted application; confirmation received.",
+          "outcome": "submitted"
+        }
+      ],
+      "follow_up_due": "2026-07-06"
+    },
+    "https://jobs.ashbyhq.com/cohere/44af407e-28a2-4589-bede-6c5e8ee305bc": {
+      "materials": {
+        "cv": "cv/main_cohere_dirprod.tex",
+        "cv_pdf": "cv/main_cohere_dirprod.pdf",
+        "cover_letter": "cover_letters/cover_cohere_director_product.tex",
+        "cover_letter_pdf": "cover_letters/cover_cohere_director_product.pdf",
+        "notes": "Built 2026-06-22 (batch 2) via parallel drafter agents on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. Product-leadership role for Cohere North agent platform. Defensible: VP-Product leadership + AI-native. Gap: enterprise B2B platform/people-mgmt depth."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Cohere (Director of Product, North)",
+          "note": "Auto-submitted; confirmation received.",
+          "outcome": "submitted"
+        }
+      ],
+      "follow_up_due": "2026-07-06",
+      "events": [
+        {
+          "date": "2026-06-30",
+          "channel": "application",
+          "outcome": "rejected",
+          "note": "Rejected. (AJ referenced it as the Cohere growth-marketing director role.)"
+        }
+      ]
+    },
+    "https://jobs.ashbyhq.com/cohere/87e9fd4e-49ac-4242-97be-7da6f718020d": {
+      "materials": {
+        "cv": "cv/main_cohere_integrations.tex",
+        "cv_pdf": "cv/main_cohere_integrations.pdf",
+        "cover_letter": "cover_letters/cover_cohere_pm_integrations.tex",
+        "cover_letter_pdf": "cover_letters/cover_cohere_pm_integrations.pdf",
+        "notes": "Built 2026-06-22 (batch 2) via parallel drafter agents on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. Engineer-PM fit; DailyPay CDP/integration stack maps well. IC vs recent VP titles framed as deliberate."
+      }
+    },
+    "https://jobs.ashbyhq.com/lovable/6e0dd94f-a852-4ce9-8fe8-c6a0ca800901": {
+      "materials": {
+        "cv": "cv/main_lovable.tex",
+        "cv_pdf": "cv/main_lovable.pdf",
+        "cover_letter": "cover_letters/cover_lovable_community_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_lovable_community_growth.pdf",
+        "notes": "Built 2026-06-22 (batch 2) via parallel drafter agents on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. Community/ambassador growth at hot AI startup. NYC option works. Adjacent to AJ PLG/referral core; no formal ambassador-program title."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Lovable",
+          "note": "Auto-submitted; confirmation received.",
+          "outcome": "submitted"
+        }
+      ],
+      "follow_up_due": "2026-07-06"
+    },
+    "https://www.linkedin.com/jobs/view/ai-entrepreneur-in-residence-eir-at-confluent-4001957575": {
+      "materials": {
+        "cv": "cv/main_confluent_eir.tex",
+        "cv_pdf": "cv/main_confluent_eir.pdf",
+        "cover_letter": "cover_letters/cover_confluent_eir.tex",
+        "cover_letter_pdf": "cover_letters/cover_confluent_eir.pdf",
+        "notes": "Built 2026-06-22 (batch 2) via parallel drafter agents on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. Strong 3x-founder fit (AI EiR). CAVEAT: LinkedIn apply (cowork may not auto-submit) + JD could not be fetched (LinkedIn/429); glance at live posting before submit. Kafka-native depth is a gap."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "note",
+          "to": "Confluent",
+          "note": "LinkedIn-hosted posting; needs manual apply (login required).",
+          "outcome": "pending"
+        }
+      ],
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 2 in-network at Confluent. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://www.linkedin.com/jobs/view/ai-entrepreneur-in-residence-eir-at-confluent-4001957575\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nI'm a 3x founder (CEO/CTO twice) who takes 0-to-1 products through growth scaling, and I'm AI-native -- building agentic tools on Claude Code today. An EiR seat is where I do my best work: high ambiguity, build-from-scratch, mission-driven."
+      },
+      "notes": "Skipped 2026-06-25: EiR posting no longer available."
+    },
+    "https://jobs.ashbyhq.com/plaid/33379e81-e111-4bb8-8c6b-9e64d4fa51c5": {
+      "materials": {
+        "cv": "cv/main_plaid_gtm.tex",
+        "cv_pdf": "cv/main_plaid_gtm.pdf",
+        "cover_letter": "cover_letters/cover_plaid_gtm_strategy.tex",
+        "cover_letter_pdf": "cover_letters/cover_plaid_gtm_strategy.pdf",
+        "notes": "Built 2026-06-22 (batch 2) via parallel drafter agents on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. RevOps/GTM-strategy associate, SF HQ. Adjacent: AJ revenue-intelligence/KPI/forecasting. Level-down from VP; no Salesforce/Tableau. Confirm location is not SF-only on-site."
+      }
+    },
+    "https://jobs.ashbyhq.com/ramp/745c2fd2-b5a5-4149-b256-5e716ff2c18a": {
+      "materials": {
+        "cv": "cv/main_ramp_activation.tex",
+        "cv_pdf": "cv/main_ramp_activation.pdf",
+        "cover_letter": "cover_letters/cover_ramp_activation.tex",
+        "cover_letter_pdf": "cover_letters/cover_ramp_activation.pdf",
+        "notes": "Built 2026-06-22 (batch 2) via parallel drafter agents on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. Customer activation/onboarding (Bill Pay) seat. Adjacent: AJ lifecycle/activation system-building. Gap: no CS book-of-accounts / AP-implementation seat. Level-down."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Ramp",
+          "note": "Auto-submitted; confirmation received.",
+          "outcome": "submitted"
+        },
+        {
+          "date": "2026-06-25",
+          "channel": "application",
+          "to": "Ramp (Activation)",
+          "note": "Form rejection (no human contact, fast auto-reject). Cold auto-applied.",
+          "outcome": "declined"
+        }
+      ],
+      "follow_up_due": "2026-07-06"
+    },
+    "https://jobs.ashbyhq.com/harvey/4ebfa721-ab27-44fb-8359-6daaede4b43e": {
+      "materials": {
+        "cv": "cv/main_harvey_gtm.tex",
+        "cv_pdf": "cv/main_harvey_gtm.pdf",
+        "cover_letter": "cover_letters/cover_harvey_gtm_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_harvey_gtm_growth.pdf",
+        "notes": "Built 2026-06-22 (batch 2) via parallel drafter agents on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. HELD: SF on-site (AJ NYC deal-breaker) + RevOps/systems-analyst role (weak fit). Materials built if AJ wants it."
+      }
+    },
+    "https://jobs.ashbyhq.com/ramp/453fc2eb-3eba-42a1-8dd1-36689875b583": {
+      "materials": {
+        "cv": "cv/main_ramp_growth_op.tex",
+        "cv_pdf": "cv/main_ramp_growth_op.pdf",
+        "cover_letter": "cover_letters/cover_ramp_growth_operator.tex",
+        "cover_letter_pdf": "cover_letters/cover_ramp_growth_operator.pdf",
+        "notes": "Built 2026-06-22 (batch 2) via parallel drafter agents on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. HELD: SDR/BD outbound seat, $120-150K. VP-level exec auto-applying reads as spray-and-pray. Materials built if AJ wants it."
+      }
+    },
+    "https://job-boards.greenhouse.io/customerio/jobs/7964655": {
+      "materials": {
+        "cv": "cv/main_customerio.tex",
+        "cv_pdf": "cv/main_customerio.pdf",
+        "cover_letter": "cover_letters/cover_customerio_pmm.tex",
+        "cover_letter_pdf": "cover_letters/cover_customerio_pmm.pdf",
+        "notes": "Built 2026-06-23 (batch 3, expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. Remote. AJ exact depth: lifecycle/messaging platform (Iterable peer). PMM-title vs growth-leadership framed deliberate."
+      }
+    },
+    "https://jobs.ashbyhq.com/supabase/82665e7b-1dac-401d-ac0b-42e3f2485421": {
+      "materials": {
+        "cv": "cv/main_supabase.tex",
+        "cv_pdf": "cv/main_supabase.pdf",
+        "cover_letter": "cover_letters/cover_supabase_pmm.tex",
+        "cover_letter_pdf": "cover_letters/cover_supabase_pmm.pdf",
+        "notes": "Built 2026-06-23 (batch 3, expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. Remote. Dev-audience PMM; AJ engineer-PM is the edge. Enterprise-DB competitive intel is a gap."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Supabase",
+          "note": "Auto-submitted (no referral path); confirmation received.",
+          "outcome": "submitted"
+        },
+        {
+          "date": "2026-06-24",
+          "channel": "hm_outreach_planned",
+          "to": "(hiring manager / top growth leader -- cowork to identify)",
+          "note": "COWORK: identify the hiring manager or top growth person for this role and surface their name/LinkedIn. Then AJ sends a 2-line note:  \"Hi [name], I just applied for Product Marketing Manager at Supabase. I've spent a decade building growth and lifecycle systems (DailyPay 5.7x revenue, Beacons' 0-to-1 AI email to 50M sends), and a developer-first PLG motion is exactly where I want to point that next. Would a short call be worth it?\"",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-07-06"
+    },
+    "https://jobs.ashbyhq.com/dave/b3ea07b7-9e71-46bb-8315-04ed0a0471ac": {
+      "materials": {
+        "cv": "cv/main_dave.tex",
+        "cv_pdf": "cv/main_dave.pdf",
+        "cover_letter": "cover_letters/cover_dave_growth_pm.tex",
+        "cover_letter_pdf": "cover_letters/cover_dave_growth_pm.pdf",
+        "notes": "Built 2026-06-23 (batch 3, expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. Remote US. Consumer fintech acquisition PM; strong. Paid-channel depth lighter; VP->IC."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Dave",
+          "note": "Auto-submitted (no referral path); confirmation received.",
+          "outcome": "submitted"
+        },
+        {
+          "date": "2026-06-24",
+          "channel": "hm_outreach_planned",
+          "to": "(hiring manager / top growth leader -- cowork to identify)",
+          "note": "COWORK: identify the hiring manager or top growth person for this role and surface their name/LinkedIn. Then AJ sends a 2-line note:  \"Hi [name], I just applied for Senior PM, Growth Acquisition at Dave. I've spent a decade building growth and lifecycle systems (DailyPay 5.7x revenue, Beacons' 0-to-1 AI email to 50M sends), and consumer fintech acquisition is exactly where I want to point that next. Would a short call be worth it?\"",
+          "outcome": "pending"
+        },
+        {
+          "date": "2026-06-25",
+          "channel": "application",
+          "to": "Dave",
+          "note": "Form rejection (no human contact, fast auto-reject). Cold auto-applied.",
+          "outcome": "declined"
+        }
+      ],
+      "follow_up_due": "2026-07-06"
+    },
+    "https://careers.duolingo.com/jobs/8474673002?gh_jid=8474673002": {
+      "materials": {
+        "cv": "cv/main_duolingo.tex",
+        "cv_pdf": "cv/main_duolingo.pdf",
+        "cover_letter": "cover_letters/cover_duolingo_monetization.tex",
+        "cover_letter_pdf": "cover_letters/cover_duolingo_monetization.pdf",
+        "notes": "Built 2026-06-23 (batch 3, expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. NYC. Subscription monetization; strong (pricing 120%, 2x LTV). VP->IC level-down."
+      },
+      "referral_request": {
+        "channel": "Personal referral: Andrew Pierce (Duolingo). Connected on LinkedIn; he asked AJ to email his resume directly. Resume SENT 2026-06-30.",
+        "message": "Listing: https://careers.duolingo.com/jobs/8474673002?gh_jid=8474673002\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nConsumer subscription monetization is my depth area -- I designed a pricing experiment that lifted revenue 120% on conversion, ARPU, and LTV, and I've scaled consumer growth and monetization repeatedly. Duolingo's subscription engine is exactly the surface I want to optimize."
+      },
+      "events": [
+        {
+          "date": "2026-06-30",
+          "channel": "referral",
+          "outcome": "resume_sent",
+          "note": "Sent resume to Andrew Pierce by email at his request (instructed via LinkedIn) for the Senior PM, Monetization role."
+        }
+      ],
+      "notes": "Referral in motion via Andrew Pierce. Resume emailed 2026-06-30. Next: follow up if no response in ~1 week; ask Andrew about timeline/hiring manager."
+    },
+    "https://job-boards.greenhouse.io/gusto/jobs/7844197": {
+      "materials": {
+        "cv": "cv/main_gusto.tex",
+        "cv_pdf": "cv/main_gusto.pdf",
+        "cover_letter": "cover_letters/cover_gusto_growth_mktg.tex",
+        "cover_letter_pdf": "cover_letters/cover_gusto_growth_mktg.pdf",
+        "notes": "Built 2026-06-23 (batch 3, expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. NYC. Referral/WOM growth leadership; strong (PitchTop viral, Checkmate B2B2C loop). Paid-media buying gap."
+      },
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://jobs.lever.co/spotify/b2e65eb5-e558-45d1-b5ee-347cbbf3dae3": {
+      "materials": {
+        "cv": "cv/main_spotify_crm.tex",
+        "cv_pdf": "cv/main_spotify_crm.pdf",
+        "cover_letter": "cover_letters/cover_spotify_crm_martech.tex",
+        "cover_letter_pdf": "cover_letters/cover_spotify_crm_martech.pdf",
+        "notes": "Built 2026-06-23 (batch 3, expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. NYC. Among AJ strongest (CRM/martech/lifecycle leadership). FLAG: Lever form, cowork may NOT auto-submit (like the other Spotify role). Tools named Salesforce/mParticle vs his Iterable/Segment/Amplitude."
+      }
+    },
+    "https://jobs.ashbyhq.com/elevenlabs/19d9a7a0-10d9-41d8-b515-a61f1d85f186": {
+      "materials": {
+        "cv": "cv/main_elevenlabs.tex",
+        "cv_pdf": "cv/main_elevenlabs.pdf",
+        "cover_letter": "cover_letters/cover_elevenlabs_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_elevenlabs_growth.pdf",
+        "notes": "Built 2026-06-23 (batch 3, expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. NYC option confirmed. Full-stack growth IC at AI voice co; strong. VP->IC; B2B demand-gen lean."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "ElevenLabs",
+          "note": "Auto-submitted (no referral path); confirmation received.",
+          "outcome": "submitted"
+        },
+        {
+          "date": "2026-06-24",
+          "channel": "hm_outreach_planned",
+          "to": "(hiring manager / top growth leader -- cowork to identify)",
+          "note": "COWORK: identify the hiring manager or top growth person for this role and surface their name/LinkedIn. Then AJ sends a 2-line note:  \"Hi [name], I just applied for Growth Generalist at ElevenLabs. I've spent a decade building growth and lifecycle systems (DailyPay 5.7x revenue, Beacons' 0-to-1 AI email to 50M sends), and growth at an AI-voice company moving this fast is exactly where I want to point that next. Would a short call be worth it?\"",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-07-06"
+    },
+    "https://jobs.ashbyhq.com/ramp/8e91631a-7e69-4d76-a73b-de2f09d7de9f": {
+      "materials": {
+        "cv": "cv/main_ramp_cro.tex",
+        "cv_pdf": "cv/main_ramp_cro.pdf",
+        "cover_letter": "cover_letters/cover_ramp_cro.tex",
+        "cover_letter_pdf": "cover_letters/cover_ramp_cro.pdf",
+        "notes": "Built 2026-06-23 (batch 3, expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. NYC. CRO/experimentation; very strong on substance. Overqualified (min 1yr). 2nd Ramp role staged (Activation already applied)."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-22",
+          "channel": "application",
+          "to": "Ramp (Website CRO)",
+          "note": "Auto-submitted (no referral path); confirmation received.",
+          "outcome": "submitted"
+        },
+        {
+          "date": "2026-06-24",
+          "channel": "hm_outreach_planned",
+          "to": "(hiring manager / top growth leader -- cowork to identify)",
+          "note": "COWORK: identify the hiring manager or top growth person for this role and surface their name/LinkedIn. Then AJ sends a 2-line note:  \"Hi [name], I just applied for Growth Manager, Website CRO at Ramp. I've spent a decade building growth and lifecycle systems (DailyPay 5.7x revenue, Beacons' 0-to-1 AI email to 50M sends), and conversion and experimentation at your scale is exactly where I want to point that next. Would a short call be worth it?\"",
+          "outcome": "pending"
+        },
+        {
+          "date": "2026-06-25",
+          "channel": "application",
+          "to": "Ramp (Website CRO)",
+          "note": "Form rejection (no human contact, fast auto-reject). Cold auto-applied.",
+          "outcome": "declined"
+        }
+      ],
+      "follow_up_due": "2026-07-06"
+    },
+    "https://jobs.ashbyhq.com/vanta/b442c921-21ea-483a-a81e-1cb7d9a52fd5": {
+      "materials": {
+        "cv": "cv/main_vanta.tex",
+        "cv_pdf": "cv/main_vanta.pdf",
+        "cover_letter": "cover_letters/cover_vanta_lifecycle.tex",
+        "cover_letter_pdf": "cover_letters/cover_vanta_lifecycle.pdf",
+        "notes": "Built 2026-06-23 (batch 4, martech-expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. cowork double-checks coach referral paths before submitting. Remote US. AJ EXACT depth (lifecycle). Ashby=cowork auto-submits. Stack named HubSpot/Marketo vs his Iterable/Segment/Amplitude. Sr-IC vs VP."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "application",
+          "to": "Vanta",
+          "note": "Auto-submitted (overnight); confirmation received.",
+          "outcome": "submitted"
+        },
+        {
+          "date": "2026-06-24",
+          "channel": "hm_outreach_planned",
+          "to": "(hiring manager / top growth leader -- cowork to identify)",
+          "note": "COWORK: identify the hiring manager or top growth person for this role and surface their name/LinkedIn. Then AJ sends a 2-line note:  \"Hi [name], I just applied for Sr. Lifecycle Marketing Manager at Vanta. I've spent a decade building growth and lifecycle systems (DailyPay 5.7x revenue, Beacons' 0-to-1 AI email to 50M sends), and lifecycle as a compounding growth engine is exactly where I want to point that next. Would a short call be worth it?\"",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-07-08",
+      "events": [
+        {
+          "date": "2026-06-26",
+          "channel": "application",
+          "outcome": "rejected",
+          "note": "Automated rejection after cold auto-apply."
+        }
+      ]
+    },
+    "https://job-boards.greenhouse.io/attentive/jobs/4282610009": {
+      "materials": {
+        "cv": "cv/main_attentive.tex",
+        "cv_pdf": "cv/main_attentive.pdf",
+        "cover_letter": "cover_letters/cover_attentive_pmm.tex",
+        "cover_letter_pdf": "cover_letters/cover_attentive_pmm.pdf",
+        "notes": "Built 2026-06-23 (batch 4, martech-expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. cowork double-checks coach referral paths before submitting. US remote. SMS/lifecycle platform (AJ depth) + PMM leadership. FLAG: real role is Voice-of-Market/insights, requires analyst-relations (Gartner/Forrester) which AJ lacks. Greenhouse."
+      }
+    },
+    "https://job-boards.greenhouse.io/calendly/jobs/8536015002": {
+      "materials": {
+        "cv": "cv/main_calendly.tex",
+        "cv_pdf": "cv/main_calendly.pdf",
+        "cover_letter": "cover_letters/cover_calendly_growth_mktg.tex",
+        "cover_letter_pdf": "cover_letters/cover_calendly_growth_mktg.pdf",
+        "notes": "Built 2026-06-23 (batch 4, martech-expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. cowork double-checks coach referral paths before submitting. Remote US. Growth-marketing leadership, PLG. Paid-media depth lighter than PLG/lifecycle. Greenhouse."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "application",
+          "to": "Calendly",
+          "note": "Auto-submitted (overnight); confirmation received.",
+          "outcome": "submitted"
+        },
+        {
+          "date": "2026-06-24",
+          "channel": "hm_outreach_planned",
+          "to": "(hiring manager / top growth leader -- cowork to identify)",
+          "note": "COWORK: identify the hiring manager or top growth person for this role and surface their name/LinkedIn. Then AJ sends a 2-line note:  \"Hi [name], I just applied for Senior Director, Growth Marketing at Calendly. I've spent a decade building growth and lifecycle systems (DailyPay 5.7x revenue, Beacons' 0-to-1 AI email to 50M sends), and viral, product-led growth is exactly where I want to point that next. Would a short call be worth it?\"",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-07-08"
+    },
+    "https://job-boards.greenhouse.io/launchdarkly/jobs/7760404003": {
+      "materials": {
+        "cv": "cv/main_launchdarkly.tex",
+        "cv_pdf": "cv/main_launchdarkly.pdf",
+        "cover_letter": "cover_letters/cover_launchdarkly_pmm.tex",
+        "cover_letter_pdf": "cover_letters/cover_launchdarkly_pmm.pdf",
+        "notes": "Built 2026-06-23 (batch 4, martech-expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. cowork double-checks coach referral paths before submitting. Remote US. Experimentation platform = AJ depth; engineer-PM/dev-audience edge. PMM-title vs growth bg. Greenhouse."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "application",
+          "to": "LaunchDarkly",
+          "note": "Auto-submitted (overnight); confirmation received.",
+          "outcome": "submitted"
+        },
+        {
+          "date": "2026-06-24",
+          "channel": "hm_outreach_planned",
+          "to": "(hiring manager / top growth leader -- cowork to identify)",
+          "note": "COWORK: identify the hiring manager or top growth person for this role and surface their name/LinkedIn. Then AJ sends a 2-line note:  \"Hi [name], I just applied for Product Marketing Manager at LaunchDarkly. I've spent a decade building growth and lifecycle systems (DailyPay 5.7x revenue, Beacons' 0-to-1 AI email to 50M sends), and experimentation as the product is exactly where I want to point that next. Would a short call be worth it?\"",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-07-08",
+      "events": [
+        {
+          "date": "2026-06-26",
+          "channel": "application",
+          "outcome": "rejected",
+          "note": "Automated rejection after cold auto-apply."
+        }
+      ]
+    },
+    "https://job-boards.greenhouse.io/affirm/jobs/7694934003": {
+      "materials": {
+        "cv": "cv/main_affirm.tex",
+        "cv_pdf": "cv/main_affirm.pdf",
+        "cover_letter": "cover_letters/cover_affirm_pmm.tex",
+        "cover_letter_pdf": "cover_letters/cover_affirm_pmm.pdf",
+        "notes": "Built 2026-06-23 (batch 4, martech-expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. cowork double-checks coach referral paths before submitting. Remote US. Fintech PMM; strong domain (DailyPay). VP->IC lateral. Greenhouse."
+      },
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://job-boards.greenhouse.io/cresta/jobs/4969380008": {
+      "materials": {
+        "cv": "cv/main_cresta.tex",
+        "cv_pdf": "cv/main_cresta.pdf",
+        "cover_letter": "cover_letters/cover_cresta_demandgen.tex",
+        "cover_letter_pdf": "cover_letters/cover_cresta_demandgen.pdf",
+        "notes": "Built 2026-06-23 (batch 4, martech-expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. cowork double-checks coach referral paths before submitting. Remote US. Growth leadership at AI contact-center co. Gap: enterprise B2B pipeline + named tools (Google/LinkedIn Ads, GA4, HubSpot/SFDC). Greenhouse."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "application",
+          "to": "Cresta",
+          "note": "Auto-submitted (overnight); confirmation received.",
+          "outcome": "submitted"
+        },
+        {
+          "date": "2026-06-24",
+          "channel": "hm_outreach_planned",
+          "to": "(hiring manager / top growth leader -- cowork to identify)",
+          "note": "COWORK: identify the hiring manager or top growth person for this role and surface their name/LinkedIn. Then AJ sends a 2-line note:  \"Hi [name], I just applied for Head of Demand Generation & Growth at Cresta. I've spent a decade building growth and lifecycle systems (DailyPay 5.7x revenue, Beacons' 0-to-1 AI email to 50M sends), and demand and growth for an AI platform is exactly where I want to point that next. Would a short call be worth it?\"",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-07-08"
+    },
+    "https://instacart.careers/job/?gh_jid=7991599": {
+      "materials": {
+        "cv": "cv/main_instacart.tex",
+        "cv_pdf": "cv/main_instacart.pdf",
+        "cover_letter": "cover_letters/cover_instacart_pmm.tex",
+        "cover_letter_pdf": "cover_letters/cover_instacart_pmm.pdf",
+        "notes": "Built 2026-06-23 (batch 4, martech-expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. cowork double-checks coach referral paths before submitting. US remote (also Canada variant). PMM leadership, B2B2C/marketplace = AJ model. Gap: grocery/retail-media + enterprise sales-led motion. Greenhouse-backed."
+      }
+    },
+    "https://job-boards.greenhouse.io/pallet/jobs/5169332007": {
+      "materials": {
+        "cv": "cv/main_pallet.tex",
+        "cv_pdf": "cv/main_pallet.pdf",
+        "cover_letter": "cover_letters/cover_pallet_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_pallet_growth.pdf",
+        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. HELD: real JD is SDR/BDR sales-team leadership (Salesforce/Outreach/Apollo), AJ has no SDR-mgmt experience. Materials built if AJ wants it."
+      }
+    },
+    "https://jobs.ashbyhq.com/misfitsandmachines/d67330a5-a44a-44ec-afc8-a12e6d906cbe": {
+      "materials": {
+        "cv": "cv/main_misfits.tex",
+        "cv_pdf": "cv/main_misfits.pdf",
+        "cover_letter": "cover_letters/cover_misfits_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_misfits_growth.pdf",
+        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Strong fit. Marketing Architects venture incubator, AI-native ads. Remote (no CA)."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "application",
+          "to": "Misfits & Machines",
+          "note": "Auto-submitted (overnight); confirmation received.",
+          "outcome": "submitted"
+        }
+      ],
+      "follow_up_due": "2026-07-08"
+    },
+    "https://job-boards.greenhouse.io/mavenclinic/jobs/8580439002": {
+      "materials": {
+        "cv": "cv/main_maven.tex",
+        "cv_pdf": "cv/main_maven.pdf",
+        "cover_letter": "cover_letters/cover_maven_member_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_maven_member_growth.pdf",
+        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Strong fit. Consumer digital-health, B2B2C member lifecycle. NYC."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "application",
+          "to": "Maven Clinic",
+          "note": "Auto-submitted (overnight).",
+          "outcome": "submitted"
+        }
+      ]
+    },
+    "https://shelf.io/careers/listing/?gh_jid=6007778004": {
+      "materials": {
+        "cv": "cv/main_shelf.tex",
+        "cv_pdf": "cv/main_shelf.pdf",
+        "cover_letter": "cover_letters/cover_shelf_gtm.tex",
+        "cover_letter_pdf": "cover_letters/cover_shelf_gtm.pdf",
+        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Strong fit. AI knowledge-automation, hands-on GTM/growth IC. NYC in-person."
+      }
+    },
+    "https://job-boards.greenhouse.io/altanaai/jobs/7748625003": {
+      "materials": {
+        "cv": "cv/main_altana.tex",
+        "cv_pdf": "cv/main_altana.pdf",
+        "cover_letter": "cover_letters/cover_altana_product_director.tex",
+        "cover_letter_pdf": "cover_letters/cover_altana_product_director.pdf",
+        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Strong fit. AI supply-chain, Brooklyn (ideal loc). Amplitude/Segment depth. $230-270k."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "application",
+          "to": "Altana",
+          "note": "Auto-submitted (overnight).",
+          "outcome": "submitted"
+        }
+      ]
+    },
+    "https://jobs.ashbyhq.com/stepful/17e62cf3-0745-4928-bb25-8e1f4c70026f": {
+      "materials": {
+        "cv": "cv/main_stepful.tex",
+        "cv_pdf": "cv/main_stepful.pdf",
+        "cover_letter": "cover_letters/cover_stepful_b2b_mktg.tex",
+        "cover_letter_pdf": "cover_letters/cover_stepful_b2b_mktg.pdf",
+        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Adjacent fit (growth vs field-mktg). Healthcare workforce, NYC. JD reconstructed from sibling postings."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "application",
+          "to": "Stepful",
+          "note": "Auto-submitted (overnight).",
+          "outcome": "submitted"
+        },
+        {
+          "date": "2026-06-25",
+          "channel": "application",
+          "to": "Stepful",
+          "note": "Form rejection (no human contact, fast auto-reject). Cold auto-applied.",
+          "outcome": "declined"
+        }
+      ]
+    },
+    "https://boards.greenhouse.io/geniussports/jobs/7734976003?gh_jid=7734976003": {
+      "materials": {
+        "cv": "cv/main_geniussports.tex",
+        "cv_pdf": "cv/main_geniussports.pdf",
+        "cover_letter": "cover_letters/cover_geniussports_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_geniussports_growth.pdf",
+        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. HELD: role is LA (not NYC) + partnership deal-closing seat, not PLG. Materials built if AJ wants it."
+      }
+    },
+    "https://jobs.ashbyhq.com/abacum/0065df8b-b21c-43e9-86e2-3774a25ee740": {
+      "materials": {
+        "cv": "cv/main_abacum.tex",
+        "cv_pdf": "cv/main_abacum.pdf",
+        "cover_letter": "cover_letters/cover_abacum_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_abacum_growth.pdf",
+        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Good fit. AI FP&A SaaS, NYC ~$200-215k. Title may be Head of Marketing/DemandGen on board, confirm."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "application",
+          "to": "Abacum",
+          "note": "Auto-submitted (overnight); confirmation received.",
+          "outcome": "submitted"
+        }
+      ],
+      "follow_up_due": "2026-07-08"
+    },
+    "https://job-boards.greenhouse.io/thefarmersdog/jobs/8600856002": {
+      "materials": {
+        "cv": "cv/main_farmersdog.tex",
+        "cv_pdf": "cv/main_farmersdog.pdf",
+        "cover_letter": "cover_letters/cover_farmersdog_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_farmersdog_growth.pdf",
+        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Good fit (consumer DTC/subscription). Gap: wants 3-5yr management consulting. NYC SoHo 4-5 days in office."
+      },
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "application",
+          "to": "The Farmer's Dog",
+          "note": "Auto-submitted (overnight).",
+          "outcome": "submitted"
+        }
+      ],
+      "events": [
+        {
+          "date": "2026-07-02",
+          "channel": "interview",
+          "outcome": "advanced",
+          "note": "Moved forward from cold auto-apply (first cold-apply advance). Awaiting scheduling / next-round details."
+        }
+      ],
+      "notes": "Advanced from cold apply 2026-07-02. Strategic Initiatives & Platform Growth Lead."
+    },
+    "https://www.linkedin.com/jobs/view/4432465051/": {
+      "materials": {
+        "cv": "cv/main_lyna.tex",
+        "cv_pdf": "cv/main_lyna.pdf",
+        "cover_letter": "cover_letters/cover_lyna_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_lyna_growth.pdf",
+        "notes": "Built 2026-06-24. MANUAL APPLY (LinkedIn, no ATS). Strong activation/monetization fit. FLAG: 3-month EQUITY-ONLY founding sprint, women health app."
+      }
+    },
+    "https://www.linkedin.com/jobs/view/4428104338/": {
+      "materials": {
+        "cv": "cv/main_propertypilot.tex",
+        "cv_pdf": "cv/main_propertypilot.pdf",
+        "cover_letter": "cover_letters/cover_propertypilot_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_propertypilot_growth.pdf",
+        "notes": "Built 2026-06-24. MANUAL APPLY (LinkedIn, no ATS). Strong growth-leadership fit, $250-300k. FLAG: 4 days on-site NYC metro/NJ, proptech."
+      }
+    },
+    "https://www.linkedin.com/jobs/view/4410656368/": {
+      "referral_request": {
+        "channel": "2-hop -- Kayvon Bina (your strong connection, CEO @ Sagan) -> Nick Dellis (Sales/Partnerships @ Mercury). Send to Kayvon.",
+        "message": "Kayvon, good to see Sagan moving. Mercury opened a Head of Growth Marketing in NYC, and it sits right in my lane: fintech lifecycle and growth, the DailyPay and Checkmate work. You're connected to Nick Dellis there. Would you be open to a quick intro, or steering me to whoever runs growth hiring? I'll hand you a two-line blurb to forward. Either way, let's catch up soon."
+      }
+    },
+    "https://www.linkedin.com/jobs/view/4318538953/": {
+      "referral_request": {
+        "channel": "Tier 2 connector -- Stephanie Palmeri (Partner @ NextView, ex-ClassDojo board observer). Backups: Jeff Clavier (Uncork), Joe Greenstein. Send to Stephanie.",
+        "message": "Stephanie, a quick favor. ClassDojo just posted a Senior Growth Engineer role, and consumer self-serve growth at scale is exactly what I built at Beacons and DailyPay. Given your time on their board, would you be comfortable flagging my name to the right person, or making a short intro? I'll send a two-line blurb so forwarding is zero work. Grateful either way."
+      }
+    },
+    "https://www.linkedin.com/jobs/view/4430903025/": {
+      "referral_request": {
+        "channel": "2-hop -- Alex Ortiz (strong connection, TPM Wearables @ Meta) -> Jordan MacDonald (Building Cursor). Send to Alex (can bundle with the Samsara ask, same broker).",
+        "message": "Alex, quick one. Cursor opened a Strategic Partnerships and Growth Lead, and it's one of the few AI-coding companies I'd reshuffle everything for. You're connected to Jordan MacDonald there. Open to a short intro, or pointing me to whoever owns growth hiring? I'll give you a two-line blurb to forward. Appreciate you."
+      }
+    },
+    "https://www.linkedin.com/jobs/view/4374853199/": {
+      "referral_request": {
+        "channel": "2-hop -- Alex Ortiz -> Mari Cantu (Technical Recruiter @ Samsara, direct route). Send to Alex (bundle with the Cursor ask).",
+        "message": "Alex, one more if you're game. Samsara has a Senior Growth Engineer role, remote, that fits my growth-engineering background well. You're connected to Mari Cantu, a technical recruiter there, so a quick intro would short-circuit the whole process. I'll send a blurb. Thanks again."
+      }
+    },
+    "https://www.linkedin.com/jobs/view/4422756894/": {
+      "referral_request": {
+        "channel": "Tier 2 connector -- Mark McLaughlin (General Partner @ Alkeon, Legora investor). Send to Mark.",
+        "message": "Mark, a quick ask. Legora opened an AI Marketing Engineer role in NYC, and the growth-engineering-meets-lifecycle scope is squarely mine: I built the lifecycle stack at DailyPay and shipped Beacons' AI email product. As an investor there, would you be open to flagging me to the team, or a short intro? I'll send a tight blurb. Thanks, Mark."
+      }
+    },
+    "https://www.linkedin.com/jobs/view/4414848706/": {
+      "referral_request": {
+        "channel": "NO referral path on file -- SOURCE one (VERY-HIGH priority, AJ extra effort). Ideas: music/creator-industry network, Stanford Symbolic Systems alumni at Suno, or a warm path to their growth/eng lead before applying cold.",
+        "message": "(Draft for once a path is found -- warm note to a Suno growth or eng leader)\nHi [name], I've lived in AI music as both a user and a builder, and Suno's Growth Engineer role hits my exact background: growth engineering plus consumer AI, the work I did at Beacons and DailyPay. I'd love twenty minutes to hear what you're solving on growth. Worth a short call?"
+      }
+    },
+    "inbound:aios-head-of-product-growth": {
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "recruiter_call",
+          "to": "AIOS recruiter",
+          "note": "Inbound -> 15-min recruiter screen scheduled FRIDAY 2026-06-26 for Head of Product Growth. Role heavily focused on referral lift / viral growth.",
+          "outcome": "pending"
+        }
+      ],
+      "follow_up_due": "2026-06-26",
+      "events": [
+        {
+          "date": "2026-06-30",
+          "channel": "interview",
+          "outcome": "advanced",
+          "note": "PASSED internal phone screen (round 1). Advancing to a Topgrading interview (chronological, full-career-history deep-dive methodology)."
+        }
+      ],
+      "notes": "Round 2 = Topgrading interview (2026-06-30 advance). Prep: chronological career walkthrough, accomplishments+failures per role, TORC (reference-check honesty).",
+      "materials": {
+        "topgrading_prep": "documents/applications/aios-head-of-product-growth/topgrading-prep.md"
+      }
+    },
+    "https://owwlsales.ai": {
+      "outreach": [
+        {
+          "date": "2026-06-24",
+          "channel": "founder_conversation",
+          "to": "Owwl CEO / founders",
+          "note": "Inbound. First founder conversation complete. Deeper-dive call scheduled early next week.",
+          "outcome": "pending"
+        }
+      ]
+    },
+    "https://jobs.ashbyhq.com/headway/be0643aa-8571-47c1-a3aa-0fac81105c58": {
+      "materials": {
+        "cv": "cv/main_headway_growth.tex",
+        "cv_pdf": "cv/main_headway_growth.pdf",
+        "cover_letter": "cover_letters/cover_headway_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_headway_growth.pdf",
+        "notes": "Built 2026-06-24 (tonight sweep, expanded universe). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. Remote-NY. Consumer healthtech B2B2C growth-marketing leadership + lifecycle. Strong. Gap: heavy paid-media craft (Search/Social/Programmatic) lighter than PLG/lifecycle."
+      }
+    },
+    "https://jobs.ashbyhq.com/headway/5dea9dc5-8cc7-4721-96c9-589c3a53199e": {
+      "materials": {
+        "cv": "cv/main_headway_pricing.tex",
+        "cv_pdf": "cv/main_headway_pricing.pdf",
+        "cover_letter": "cover_letters/cover_headway_pricing.tex",
+        "cover_letter_pdf": "cover_letters/cover_headway_pricing.pdf",
+        "notes": "Built 2026-06-24 (tonight sweep, expanded universe). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. NY. Pricing/monetization PM = AJ depth (Beacons 120% pricing). Pricing JD body not fetchable; tailored from title+company. Staff-IC vs VP."
+      }
+    },
+    "https://boards.greenhouse.io/faire/jobs/8564041002?gh_jid=8564041002": {
+      "materials": {
+        "cv": "cv/main_faire_lifecycle.tex",
+        "cv_pdf": "cv/main_faire_lifecycle.pdf",
+        "cover_letter": "cover_letters/cover_faire_lifecycle.tex",
+        "cover_letter_pdf": "cover_letters/cover_faire_lifecycle.pdf",
+        "notes": "Built 2026-06-24 (tonight sweep, expanded universe). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. NYC hybrid 3 days. Near-textbook: JD names Iterable. Lifecycle = AJ exact depth. Over-qualified (senior-IC)."
+      }
+    },
+    "https://boards.greenhouse.io/faire/jobs/8572160002?gh_jid=8572160002": {
+      "materials": {
+        "cv": "cv/main_faire_growth.tex",
+        "cv_pdf": "cv/main_faire_growth.pdf",
+        "cover_letter": "cover_letters/cover_faire_growth.tex",
+        "cover_letter_pdf": "cover_letters/cover_faire_growth.pdf",
+        "notes": "Built 2026-06-24 (tonight sweep, expanded universe). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. NYC. Growth-loop/marketplace product. Strong (B2B2C loops, marketplace). Staff-IC vs VP; wholesale-B2B by analogy."
+      }
+    },
+    "https://job-boards.greenhouse.io/life360/jobs/8562336002": {
+      "materials": {
+        "cv": "cv/main_life360_pm.tex",
+        "cv_pdf": "cv/main_life360_pm.pdf",
+        "cover_letter": "cover_letters/cover_life360_pm.tex",
+        "cover_letter_pdf": "cover_letters/cover_life360_pm.pdf",
+        "notes": "Built 2026-06-24 (tonight sweep, expanded universe). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. Remote USA. Consumer engagement/retention + AI-native. ~98M MAU. Strong. Principal-IC vs VP."
+      }
+    },
+    "https://job-boards.greenhouse.io/life360/jobs/8592974002": {
+      "materials": {
+        "cv": "cv/main_life360_pmm.tex",
+        "cv_pdf": "cv/main_life360_pmm.pdf",
+        "cover_letter": "cover_letters/cover_life360_pmm.tex",
+        "cover_letter_pdf": "cover_letters/cover_life360_pmm.pdf",
+        "notes": "Built 2026-06-24 (tonight sweep, expanded universe). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. HELD: real role is B2B AdTech PMM (DSP/SSP/attribution/identity) -- AJ lacks ad-tech-platform depth. Reach. Materials built if AJ wants it."
+      }
+    },
+    "https://jobs.ashbyhq.com/decagon/e31c0645-7325-43b9-9d58-0acc40904240": {
+      "materials": {
+        "cv": "cv/main_decagon.tex",
+        "cv_pdf": "cv/main_decagon.pdf",
+        "cover_letter": "cover_letters/cover_decagon.tex",
+        "cover_letter_pdf": "cover_letters/cover_decagon.pdf",
+        "notes": "Built 2026-06-24 (AI-PM sweep). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. Agentic-AI PM = AJ exact AI-native lane (Warmode/Matic on Claude Code). NYC. Decagon customers Notion/Duolingo/Affirm."
+      }
+    },
+    "https://jobs.ashbyhq.com/pinecone/7261adcb-026d-4552-8f89-7a46156c40c5": {
+      "materials": {
+        "cv": "cv/main_pinecone.tex",
+        "cv_pdf": "cv/main_pinecone.pdf",
+        "cover_letter": "cover_letters/cover_pinecone.tex",
+        "cover_letter_pdf": "cover_letters/cover_pinecone.pdf",
+        "notes": "Built 2026-06-24 (AI-PM sweep). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. Remote. STRETCH: vector-DB internals gap (no DB-engine experience). Engineer-PM + data-infra is the bridge. Cover names the gap."
+      },
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in ready_to_apply)."
+    },
+    "https://jobs.ashbyhq.com/linear/b7669c4b-eeca-421d-ba9a-d90203f6fcb2": {
+      "materials": {
+        "cv": "cv/main_linear.tex",
+        "cv_pdf": "cv/main_linear.pdf",
+        "cover_letter": "cover_letters/cover_linear.tex",
+        "cover_letter_pdf": "cover_letters/cover_linear.pdf",
+        "notes": "Built 2026-06-24 (AI-PM sweep). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. Remote NA. Engineer-PM + PLG + craft, strong. IC vs VP framed deliberate."
+      }
+    },
+    "https://jobs.lever.co/mistral/ca22a1ac-c87e-4463-914a-6753ca79318c": {
+      "materials": {
+        "cv": "cv/main_mistral.tex",
+        "cv_pdf": "cv/main_mistral.pdf",
+        "cover_letter": "cover_letters/cover_mistral.tex",
+        "cover_letter_pdf": "cover_letters/cover_mistral.pdf",
+        "notes": "Built 2026-06-24 (AI-PM sweep). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. NYC. ADJACENT: partnerships PM not core; FanBridge->Stensul partnership is the proof. Lever (cowork may referral-route)."
+      }
+    },
+    "https://jobs.ashbyhq.com/openai/fc38c6bf-5330-435c-99b6-1bcf1f5829a8": {
+      "referral_request": {
+        "channel": "PRIMARY: your active OpenAI recruiter relationship from the Growth final-round (Jan-May 2026) -- re-engage directly about THIS role. BACKUP 2-hop: Jesse Zhang (strong connection, Beacons founder/CEO) -> Teri Yu (Product @ OpenAI). Coach dashboard: 3 in-network.",
+        "message": "Hi [recruiter], good to be back in touch. When the Growth process wrapped you mentioned keeping me on the active pipeline, and the Product Manager, API Agents role just opened, which is the surface I'd most want to own. Agentic products are exactly where I've been building: my own projects Warmode and Matic run on agent harnesses, on top of the kind of API this role is about. Would you put me forward for it, or point me to the hiring manager? Happy to send whatever's useful."
+      }
+    },
+    "https://jobs.ashbyhq.com/sierra/4f0e65ba-b262-4d79-b926-3988f8eb0c00": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 2 in-network at Sierra. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://jobs.ashbyhq.com/sierra/4f0e65ba-b262-4d79-b926-3988f8eb0c00\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nI'm building agentic products right now (Warmode and Matic on Claude Code) and I've shipped 0-to-1 AI at scale (Beacons' AI email to 50M sends). Sierra's agent platform is the product I'd most want to own, and I'm an engineer-PM so I can go deep with the team."
+      },
+      "notes": "Skipped 2026-06-25: Agent Development role requires Brazilian Portuguese; AJ is a beginner (studying). Pursuing Agent SDK role instead."
+    },
+    "https://jobs.ashbyhq.com/sierra/10d2e2f1-6657-40c9-b6fb-6999c76df6cf": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 2 in-network at Sierra. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://jobs.ashbyhq.com/sierra/10d2e2f1-6657-40c9-b6fb-6999c76df6cf\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nAn agent SDK is a developer product, and I've spent my career on developer-adjacent and PLG products as an engineer-PM (first eng hire at RockYou, 2x CTO). I build on agent SDKs daily, so I'd be a real user of what I'd manage."
+      }
+    },
+    "https://salesforce.wd12.myworkdayjobs.com/job/California---San-Francisco/Director-of-Product-Management--Agentic-Workflows_JR345400": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 23 in-network at Salesforce. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://salesforce.wd12.myworkdayjobs.com/job/California---San-Francisco/Director-of-Product-Management--Agentic-Workflows_JR345400\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nI've been building agentic products hands-on -- my own tools Warmode and Matic run on agent harnesses -- and I've shipped 0-to-1 AI products before (Beacons' AI email, the fastest ESP to 50M sends). I'm an engineer-turned-PM who's led product through 3-9x revenue, so I can own an agentic-workflow roadmap and build right alongside the team."
+      },
+      "notes": "Skipped 2026-06-25: posting no longer valid."
+    },
+    "https://salesforce.wd12.myworkdayjobs.com/job/Washington---Bellevue/Director-of-Product-Management--Tableau-AI_JR343860-1": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 23 in-network at Salesforce. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://salesforce.wd12.myworkdayjobs.com/job/Washington---Bellevue/Director-of-Product-Management--Tableau-AI_JR343860-1\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nI'm an engineer-PM with a real data/analytics background (built DailyPay's analytics + CDP stack on Segment and Amplitude) and I'm AI-native in how I work. Tableau AI sits right at data + AI + product, which is my exact intersection."
+      },
+      "notes": "Skipped 2026-06-25: posting no longer valid."
+    },
+    "https://boards.greenhouse.io/figma/jobs/6092343004?gh_jid=6092343004": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 5 in-network at Figma. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://boards.greenhouse.io/figma/jobs/6092343004?gh_jid=6092343004\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nMonetization is one of my deepest lanes -- I designed a pricing and packaging experiment at Beacons that lifted revenue 120% across conversion, ARPU, and LTV together, and I've owned revenue strategy as a VP of Growth. I think in pricing systems, not one-off tests."
+      }
+    },
+    "https://instacart.careers/job/?gh_jid=7967233": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 4 in-network at Instacart. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://instacart.careers/job/?gh_jid=7967233\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nThis hits both my strengths at once: AI-native building and commerce/marketplace growth. I co-founded a D2C launch platform (11k+ campaigns), built B2B2C growth loops, and I'm shipping agentic tooling now -- so agentic commerce is a natural fit."
+      },
+      "notes": "Holding off 2026-06-25 per AJ. Leave staged in referral_request_ready; revisit."
+    },
+    "https://job-boards.greenhouse.io/gusto/jobs/7904943": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 2 in-network at Gusto. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://job-boards.greenhouse.io/gusto/jobs/7904943\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nPricing and monetization is a core strength -- I ran a packaging experiment that lifted revenue 120% and owned monetization as a growth leader in fintech-adjacent settings (DailyPay). I'd bring a systems approach to Gusto's pricing, not a one-off."
+      },
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in referral_request_ready)."
+    },
+    "https://boards.greenhouse.io/robinhood/jobs/7985803?t=gh_src=&gh_jid=7985803": {
+      "referral_request": {
+        "channel": "Personal connection -- AJ's friend Gio works at Robinhood. Reach out to Gio directly for the referral. (Coach path skipped in favor of the warmer personal intro.)",
+        "message": "Listing: https://boards.greenhouse.io/robinhood/jobs/7985803?t=gh_src=&gh_jid=7985803\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nGrowth bets are my whole career -- 3-9x revenue across consumer fintech and B2C, high-velocity experimentation, and I'm an engineer-PM who can ship the bets, not just spec them. Robinhood's consumer-fintech surface is squarely my background (DailyPay)."
+      },
+      "notes": "Skipped 2026-06-30: posting no longer active (gone from live Robinhood board)."
+    },
+    "https://job-boards.greenhouse.io/affirm/jobs/7718661003": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 1 in-network at Affirm. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://job-boards.greenhouse.io/affirm/jobs/7718661003\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nConsumer fintech product and growth is my lane -- I drove 5.7x revenue at DailyPay (employee-pay fintech), built lifecycle and monetization systems, and I'm an engineer-PM who can own a financial-product roadmap end to end."
+      }
+    },
+    "https://www.linkedin.com/jobs/view/4411788172/": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 1 in-network at Close. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://www.linkedin.com/jobs/view/4411788172/\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nMonetization PM is a clean fit -- I've designed pricing/packaging that moved revenue 120%, owned PLG monetization at Beacons, and I'm technical enough to build with the team. Close is a PLG B2B product, exactly the motion I know."
+      }
+    },
+    "https://careers.roblox.com/jobs/8009151?gh_jid=8009151": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 3 in-network at Roblox. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://careers.roblox.com/jobs/8009151?gh_jid=8009151\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nConsumer monetization is my lane -- subscriptions, payments, pricing (a 120% revenue-lift packaging experiment at Beacons), at consumer scale (I helped build apps to 100M+ MAU early in my career). Roblox's payments and subscriptions surface is a natural fit."
+      },
+      "notes": "Skipped 2026-06-25: requires gaming background or CA on-site. Out of fit."
+    },
+    "https://careers.roblox.com/jobs/7701763?gh_jid=7701763": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 3 in-network at Roblox. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://careers.roblox.com/jobs/7701763?gh_jid=7701763\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nCreator growth and monetization is literally what I did at Beacons (a creator platform) -- scaled the self-serve funnel ~3x and ran pricing that lifted revenue 120%. Roblox's creator economy is the same problem at bigger scale."
+      },
+      "notes": "Skipped 2026-06-25: requires gaming background or CA on-site. Out of fit."
+    },
+    "https://jobs.lever.co/spotify/a69512de-6754-411c-a83f-1f944820e559": {
+      "referral_request": {
+        "channel": "Upward PM coach dashboard -- 2 in-network at Spotify. Log in (referrals.upwardproductmanagement.com), get the name(s), reach out. Coach-only (no personal path).",
+        "message": "Listing: https://jobs.lever.co/spotify/a69512de-6754-411c-a83f-1f944820e559\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nPartner-led growth is in my background -- I cultivated a partnership at FanBridge that spun out as Stensul (8-figure-valued), and I've built B2B2C growth loops. Add my PLG and experimentation chops and partner growth is a clean fit."
+      },
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in referral_pending). NOTE: a referral was in motion via coach -- tell them this req closed; redirect to a live role."
+    },
+    "https://boards.greenhouse.io/robinhood/jobs/7489427?t=gh_src=&gh_jid=7489427": {
+      "referral_request": {
+        "channel": "Personal connection -- AJ's friend Gio works at Robinhood. Reach out to Gio directly for the referral. (Coach path skipped in favor of the warmer personal intro.)",
+        "message": "Listing: https://boards.greenhouse.io/robinhood/jobs/7489427?t=gh_src=&gh_jid=7489427\n\nWhy AJ's a good fit (casual, for the coach to relay to their contact):\nGrowth PM in consumer fintech is my exact background (5.7x at DailyPay), and I've built growth loops and experimentation engines that scale. International is new terrain, but the growth-systems thinking transfers directly."
+      },
+      "notes": "Skipped 2026-06-30: role is London, UK only -- geo deal-breaker (on-site outside NYC). Was mis-staged as high fit."
+    },
+    "https://www.linkedin.com/jobs/view/4432183386/": {
+      "materials": {
+        "cv": "cv/main_ngrok.tex",
+        "cv_pdf": "cv/main_ngrok.pdf",
+        "cover": "cover_letters/cover_ngrok_head_of_growth.tex",
+        "cover_pdf": "cover_letters/cover_ngrok_head_of_growth.pdf"
+      },
+      "notes": "High fit (added 2026-06-26). Tailored CV+cover built & verified (2pp/1pp). AJ is an ngrok user; role wants PLG/PQL infra/experiment cadence/AI-tool fluency (Claude, Cursor). AJ checking referral paths via Claude Code; if none, eligible for cold apply (Greenhouse/Lever ATS)."
+    },
+    "https://www.linkedin.com/jobs/view/4430213449/": {
+      "notes": "Medium-high fit (added 2026-06-26). Founder/0-to-1/GM match strong; gap = healthcare domain. Docs not yet built. AJ checking referral paths via Claude Code."
+    },
+    "https://job-boards.greenhouse.io/netlify/jobs/8603652002": {
+      "notes": "ngrok-twin: dev-infra PLG, Principal PM Growth, fully remote. Top fit of the 2026-06-28 sweep. Worth tailored package + referral check. | Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://jobs.ashbyhq.com/gorgias/7025f159-96f0-4621-81e9-7b985c8a959d": {
+      "notes": "NYC, AI, ecommerce-SaaS growth surface."
+    },
+    "https://jobs.ashbyhq.com/commure/613f9eab-8af5-4f8a-bf99-cf5d2a3962aa": {
+      "notes": "Growth-leadership title, remote-friendly. Healthcare-AI domain (minor gap)."
+    },
+    "https://jobs.ashbyhq.com/suno/bae3aa2a-ba82-4015-9f62-2fd0aa35aaee": {
+      "notes": "NYC AI-native consumer. NOTE: existing warm/personal path to Suno -- pursue via that."
+    },
+    "https://instacart.careers/job/?gh_jid=8024357": {
+      "notes": "Clean AI-PM, US remote. NOTE: AJ holding on Instacart broadly. | Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://instacart.careers/job/?gh_jid=8024428": {
+      "notes": "Clean AI-PM (Senior), US remote. NOTE: AJ holding on Instacart broadly."
+    },
+    "https://adobe.wd5.myworkdayjobs.com/job/Remote-California/Product-Manager--Activation_R169976": {
+      "notes": "Skipped 2026-06-30: posting no longer active."
+    },
+    "https://jobs.ashbyhq.com/decagon/9109be1c-b6e3-430f-a964-887253ef891a": {
+      "notes": "AI agents PM, but SF onsite."
+    },
+    "https://boards.greenhouse.io/cloudflare/jobs/8022491?gh_jid=8022491": {
+      "notes": "Dev-growth, but strategy/GTM-flavored. Hybrid."
+    },
+    "https://job-boards.greenhouse.io/netlify/jobs/8603630002": {
+      "notes": "Monetization/billing at dev-infra co. Remote. | Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://boards.greenhouse.io/robinhood/jobs/7821803?t=gh_src=&gh_jid=7821803": {
+      "referral_request": {
+        "channel": "Personal connection -- AJ's friend Gio works at Robinhood. Ask Gio directly for the referral.",
+        "message": "Listing: https://boards.greenhouse.io/robinhood/jobs/7821803?t=gh_src=&gh_jid=7821803\n\nWhy AJ's a good fit (for Gio to relay):\nCortex is exactly the work I'd want -- a consumer-facing agentic AI that reasons, plans, and acts on a customer's behalf. I'm an engineer-turned-PM who builds agentic tooling every day (my own Warmode and Matic, on Claude Code), I shipped 0-to-1 AI at scale (Beacons' AI email, fastest ESP to 50M sends), and I come from consumer fintech (drove 5.7x revenue at DailyPay). AI + fintech + agentic is my exact intersection, and I can go deep with the eng team."
+      },
+      "notes": "TOP Robinhood fit. Consumer-facing agentic AI. NYC office available. Route via Gio."
+    },
+    "https://boards.greenhouse.io/robinhood/jobs/7587151?t=gh_src=&gh_jid=7587151": {
+      "referral_request": {
+        "channel": "Personal connection -- AJ's friend Gio works at Robinhood. Ask Gio directly for the referral.",
+        "message": "Listing: https://boards.greenhouse.io/robinhood/jobs/7587151?t=gh_src=&gh_jid=7587151\n\nWhy AJ's a good fit (for Gio to relay):\nRobinhood's banking/Money product is squarely my background -- I drove 5.7x revenue at DailyPay (employee-pay fintech) taking products from concept to hyperscale, and I'm an engineer-PM who ships alongside the team. Consumer fintech 0-to-1 and growth is what I do."
+      },
+      "notes": "Strong Robinhood fit. Consumer banking 0-to-1. NYC office (hybrid ~3 days). Route via Gio."
+    },
+    "https://www.linkedin.com/jobs/view/4434935666/": {
+      "notes": "Recruiter-masked (Motion Recruitment agency). Fully remote, $250-400k. Strong growth/PLG/experimentation fit; \"Referral experience a must\" maps directly to AJ (PitchTop viral referral mechanics, B2B2C loops). KEY UNKNOWN: actual company/sector/mission -- qualify on the call before investing.",
+      "events": [
+        {
+          "date": "2026-07-01",
+          "time": "12:00 ET",
+          "channel": "interview",
+          "outcome": "scheduled",
+          "note": "Intro/recruiter call. Priority: surface the company name, stage, sector, and mission to assess thesis fit; then give the growth pitch."
+        }
+      ]
+    },
+    "recruiter:amex-digital-labs-mcp-tpm": {
+      "notes": "Recruiter-sourced (JD in ~/Downloads). Build consumer-facing MCP capabilities for agentic Membership experiences in AI/LLM partner channels: MCP servers, tool schemas, agent-to-agent orchestration, governance. Fit: AJ builds with MCP/agentic frameworks daily (Warmode, Matic on Claude Code) + engineer-PM + consumer fintech (DailyPay). Platform/technical PM (not growth); Sr Manager ~IC level; Amex Digital Labs = NYC innovation arm. Referral/recruiter in motion."
+    },
+    "recruiter:junior-ai-lead-pm-summer26": {
+      "notes": "Recruiter-sourced (JD in ~/Downloads). LLM investment-research tools for PE/Big-4/consulting. Bootstrapped, profitable, ~30 ppl (London+NYC), 10x revenue 2025, ship ~1 feature/week. High-ownership IC PM, own core research workflow, build 0-1 add-ons, grow into leadership. Builder culture, explicitly uses Claude Code/Codex. CAVEATS: IC level (down from VP); NYC ONSITE 5 days/week (acceptable per AJ but full in-office). Referral/recruiter in motion."
+    },
+    "https://careers.adobe.com/us/en/job/R167716/Principal-Product-Manager": {
+      "notes": "Adobe Express dev platform: APIs + MCP integrations, pricing/onboarding/access/monetization/developer experience on a high-profile growth product. TOP Adobe fit -- PLG + monetization + MCP. SF + NYC. Referral via Chantel in motion."
+    },
+    "https://careers.adobe.com/us/en/job/R167418/Principal-Product-Manager": {
+      "notes": "Own a major growth area within Frame.io; AI-powered creative workflows. NYC-primary + Remote CA. Strong fit (growth ownership, creative SaaS). Referral via Chantel in motion. | Skipped 2026-07-06: listing no longer active (liveness check, was in referral_pending). NOTE: a referral was in motion via Chantel -- tell them this req closed; redirect to a live role."
+    },
+    "https://careers.adobe.com/us/en/job/R169015/Senior-Product-Manager": {
+      "notes": "AI-powered web video for millions of creators; experimentation + consumer creative. NYC + SF/SJ/Seattle. Medium-high fit (Senior level, a notch below target). Referral via Chantel in motion."
+    },
+    "https://job-boards.greenhouse.io/mercury/jobs/6106974004": {
+      "notes": "Head of Product for Business Lending at Mercury (fintech). SF/NY/REMOTE US-eligible. Senior product leadership, B2B fintech lending -- strong fit + good geo. Added 2026-07-06."
+    },
+    "https://jobs.ashbyhq.com/pika/ab076a0a-8abc-4110-a0ab-a56e276ac891": {
+      "notes": "AI video Growth PM -- on-thesis (AI-core) BUT Palo Alto HQ on-site = geo deal-breaker unless AJ will relocate. Medium."
+    },
+    "https://jobs.ashbyhq.com/character/56dcfddd-ba6d-48a8-81fb-3332abb1c032": {
+      "notes": "Technical PM at Character.AI -- AI-core BUT Redwood City CA on-site. Medium (geo)."
+    },
+    "https://jobs.lever.co/wealthfront/ce8c7505-d8bf-445e-a670-bda99583616e": {
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://job-boards.greenhouse.io/vercel/jobs/5199830004": {
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://job-boards.greenhouse.io/anthropic/jobs/5127559008": {
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://jobs.ashbyhq.com/cursor/21110d73-77cb-465b-9977-65afb3e82cec": {
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://jobs.ashbyhq.com/cursor/66e67c2e-c828-4ddb-a2c0-7d3cb672f19d": {
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://jobs.ashbyhq.com/notion/2dd301f6-42da-40a2-a064-0f6fcfbdca77": {
+      "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    }
+  }
+}

@@ -67,3 +67,6 @@ upskill/*.md
 
 # Agent usage logs
 .agents/
+
+# Pipeline vault (Obsidian projection)
+vault/

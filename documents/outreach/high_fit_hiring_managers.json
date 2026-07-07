@@ -1,0 +1,79 @@
+{
+  "generated": "2026-06-24",
+  "scope": "7 high-fit roles already applied to",
+  "source": "LinkedIn people search; Dave via domain-resolved lookup (name collision)",
+  "note": "Drafts only — not sent. Verify the mutual is a trusted broker before cold outreach; prefer 2-hop intro.",
+  "targets": [
+    {
+      "company": "ElevenLabs", "role": "Growth Generalist", "fit": "high",
+      "primary": {"name": "Raman Khanna", "title": "Growth @ ElevenLabs", "location": "New York, NY", "degree": "2nd", "mutuals": ["Ian Salter", "Jack Armstrong"], "type": "peer/advocate"},
+      "alternates": [
+        {"name": "Marc Pierre", "title": "GTM Director (LATAM) @ ElevenLabs", "location": "Mexico City"},
+        {"name": "Anjali Khandelwal", "title": "Growth @ ElevenLabs", "location": "Philadelphia"}
+      ],
+      "draft": "Hi Raman — I just applied for the Growth Generalist role and wanted to connect with someone actually on the team. I'm a longtime ElevenLabs user and have spent the last few years building 0-to-1 growth at Beacons and Checkmate; would value any read on what the growth org is optimizing for right now."
+    },
+    {
+      "company": "Vanta", "role": "Sr. Lifecycle Marketing Manager", "fit": "high",
+      "primary": {"name": "Koryn Farber", "title": "Customer Lifecycle + Growth Marketing Lead @ Vanta", "location": "Denver, CO", "degree": "2nd", "mutuals": ["Sarah Pike"], "type": "lead/likely HM"},
+      "alternates": [
+        {"name": "Jess Peters", "title": "Head of Growth Marketing @ Vanta", "location": "Sydney, AU", "mutuals": ["Samantha Uslubas"]},
+        {"name": "Lauren Wade", "title": "Director, Growth Marketing Campaigns @ Vanta", "location": "Denver, CO", "mutuals": ["Adam Lomas"]}
+      ],
+      "draft": "Hi Koryn — I just applied for the Sr. Lifecycle Marketing Manager role and saw you lead customer lifecycle + growth marketing at Vanta. I've built lifecycle and experimentation stacks at DailyPay and Beacons (Iterable/Segment/Amplitude, ~10x test velocity); would love a few minutes on how your team approaches lifecycle."
+    },
+    {
+      "company": "Calendly", "role": "Senior Director, Growth Marketing", "fit": "high",
+      "primary": {"name": "Taylor Burbank", "title": "Director, Lifecycle Marketing @ Calendly", "location": "Boston, MA", "degree": "2nd", "mutuals": ["Jonathan Ou"], "type": "advocate"},
+      "alternates": [
+        {"name": "Jennifer Garcia", "title": "Sr. Manager, Web Marketing @ Calendly", "mutuals": ["Aaron Martin"]},
+        {"name": "Daniel Tien", "title": "Sr. Lifecycle Marketing Manager @ Calendly", "mutuals": ["Arman Javaherian"]}
+      ],
+      "hm_note": "VP/CMO Marketing (true hiring manager) not surfaced.",
+      "draft": "Hi Taylor — I recently applied for the Senior Director, Growth Marketing role at Calendly. I've spent my career on PLG growth (3x revenue at Beacons, 10x at Checkmate) and would really value a quick insider read on the team and what success looks like in that seat."
+    },
+    {
+      "company": "Cresta", "role": "Head of Demand Generation & Growth", "fit": "high",
+      "primary": {"name": "Russell Banzon", "title": "CMO @ Cresta", "location": "SF Bay Area", "degree": "2nd", "mutuals": ["Ryan Kirkman", "Matt Estes"], "type": "hiring manager"},
+      "alternates": [
+        {"name": "Courtney Ogawa", "title": "VP, Revenue Marketing @ Cresta", "mutuals": ["Ryan Kirkman", "Christian Svizzero"]}
+      ],
+      "draft": "Hi Russell — I just applied for the Head of Demand Generation & Growth role and wanted to reach out directly. I've built demand/growth engines across B2B and B2B2C (10x revenue at Checkmate, 5.7x at DailyPay) and would welcome a chance to share how I'd approach demand gen for Cresta's human + AI platform."
+    },
+    {
+      "company": "Abacum", "role": "Head of Growth", "fit": "high",
+      "primary": {"name": "Max Beauroyre", "title": "Former Head of Growth @ Abacum (now @ Taxwire)", "location": "New York, NY", "degree": "2nd", "type": "predecessor — insider read + possible referral"},
+      "alternates": [
+        {"name": "Molly Selin", "title": "Ecosystem Marketing Manager @ Abacum", "location": "Brooklyn, NY", "mutuals": ["Kevin Weatherman", "Sophie Cheston Beaudoin"]}
+      ],
+      "hm_note": "Hiring manager likely Abacum CEO/co-founder; not surfaced.",
+      "draft": "Hi Max — I just applied for the Head of Growth role at Abacum, which I believe you held. Would you be open to a quick chat about the role and team? I've run growth at Checkmate and Beacons and would really value your honest perspective."
+    },
+    {
+      "company": "Maven Clinic", "role": "Head of Member Growth Marketing", "fit": "high",
+      "primary": {"name": "Andrew Silard", "title": "Fractional Head of Growth @ Maven Clinic (ex-Notion Head of Growth Mktg)", "location": "San Francisco, CA", "degree": "2nd", "mutuals": ["Igor Gonebnyy", "Georgina Hill"], "type": "head of growth / likely HM"},
+      "alternates": [
+        {"name": "Wesley Braden", "title": "Director, Growth Marketing — New Ventures @ Maven"},
+        {"name": "McKenzie Curran Lake", "title": "Director, Growth Marketing @ Maven"},
+        {"name": "Diana Slater", "title": "Sr. Manager, Member Growth Marketing @ Maven", "type": "would-be report"}
+      ],
+      "draft": "Hi Andrew — I recently applied for the Head of Member Growth Marketing role at Maven. I've led member/consumer growth across fintech and creator platforms (helped drive DailyPay $14M→$80M, ~3x at Beacons) and would love a brief conversation about how you're thinking about member growth right now."
+    },
+    {
+      "company": "Dave", "role": "Senior Product Manager, Growth Acquisition", "fit": "high",
+      "company_linkedin": "https://www.linkedin.com/company/dave-com",
+      "primary": {"name": "Joan Liu", "title": "Growth Product @ Dave", "location": "New York, NY", "url": "https://www.linkedin.com/in/joan-liu-9752a118/", "type": "peer (same team, same city)"},
+      "alternates": [
+        {"name": "Jon Rhome", "title": "Director of Product @ Dave", "location": "Los Angeles, CA", "url": "https://www.linkedin.com/in/jon-rhome/", "type": "likely hiring manager"},
+        {"name": "Amrita Kaushik", "title": "Director of Product Management @ Dave", "location": "San Jose, CA", "url": "https://www.linkedin.com/in/kaushikamrita/", "type": "likely hiring manager"}
+      ],
+      "draft": "Hi Joan — fellow New Yorker. I just applied for the Senior PM, Growth Acquisition role at Dave, and would love to hear what it's like on the growth-product team. I've spent years on PLG/acquisition in fintech (helped drive DailyPay from ~$14M to ~$80M) — would a few minutes work sometime this week?"
+    }
+  ],
+  "recurring_brokers": {
+    "Ian Salter": ["ElevenLabs"],
+    "Jonathan Ou": ["Calendly", "Vanta"],
+    "Ryan Kirkman": ["Cresta"],
+    "Igor Gonebnyy": ["Maven Clinic"]
+  }
+}

@@ -5,7 +5,23 @@
       "Bash(python3:*)",
       "Bash(python:*)",
       "Bash(curl:*)",
-      "Bash(bun:*)"
+      "Bash(bun:*)",
+      "Bash(printf '\\\\n# MacTeX / TeXLive 2026 binaries \\(lualatex, xelatex\\)\\\\nexport PATH=\"/Library/TeX/texbin:$PATH\"\\\\n')",
+      "Read(//Users/aemagnuson/**)",
+      "Bash(rm -f cv/main_cohere_dirprod.aux cv/main_cohere_dirprod.log cv/main_cohere_dirprod.out)",
+      "Bash(rm -f cover_letters/cover_cohere_director_product.aux cover_letters/cover_cohere_director_product.log cover_letters/cover_cohere_director_product.out)",
+      "Bash(rm -f cv/main_confluent_eir.aux cv/main_confluent_eir.log cv/main_confluent_eir.out)",
+      "Bash(rm -f cover_letters/cover_confluent_eir.aux cover_letters/cover_confluent_eir.log cover_letters/cover_confluent_eir.out)",
+      "Bash(rm -f cv/main_gusto.aux cv/main_gusto.log cv/main_gusto.out)",
+      "Bash(rm -f cover_letters/cover_gusto_growth_mktg.aux cover_letters/cover_gusto_growth_mktg.log cover_letters/cover_gusto_growth_mktg.out)",
+      "Bash(rm -f cv/main_duolingo.aux cv/main_duolingo.log cv/main_duolingo.out)",
+      "Bash(rm -f cover_letters/cover_duolingo_monetization.aux cover_letters/cover_duolingo_monetization.log cover_letters/cover_duolingo_monetization.out)",
+      "Bash(rm -f cv/main_launchdarkly.aux cv/main_launchdarkly.log cv/main_launchdarkly.out)",
+      "Bash(rm -f cover_letters/cover_launchdarkly_pmm.aux cover_letters/cover_launchdarkly_pmm.log cover_letters/cover_launchdarkly_pmm.out)",
+      "Bash(rm -f cv/main_abacum.aux cv/main_abacum.log cv/main_abacum.out)",
+      "Bash(rm -f cover_letters/cover_abacum_growth.aux cover_letters/cover_abacum_growth.log cover_letters/cover_abacum_growth.out)",
+      "Bash(rm -f cv/main_propertypilot.aux cv/main_propertypilot.log cv/main_propertypilot.out)",
+      "Bash(rm -f cover_letters/cover_propertypilot_growth.aux cover_letters/cover_propertypilot_growth.log cover_letters/cover_propertypilot_growth.out)"
     ]
   }
 }

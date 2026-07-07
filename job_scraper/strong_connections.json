@@ -1,0 +1,209 @@
+{
+  "_about": "AJ's hand-picked 'strong' connections — trusted close contacts to use as referral BROKERS. The valuable path is 2-hop: AJ -> strong connection -> THEIR connection at a target company. Do NOT treat AJ's raw 1st-degree connections at a company as good paths by default; route through these trusted people instead.",
+  "_methodology": "For a target company, find which of these strong connections has 1st-degree connections there (LinkedIn people search filtered by 'Connections of' = the strong connection, currentCompany = target). Those 2nd-degree people, vouched-for by a trusted broker, are the high-value referral paths.",
+  "_explicitly_deprioritized": "AJ flagged these direct 1st-degree connections as NO-GO (low value despite being at target companies): Terri Wang, Jeremy Schwartz, Ibrahim Okuyucu (OpenAI); Art Levy, Sarah Pike (Brex).",
+  "last_updated": "2026-06-22",
+  "strong_connections": [
+    {
+      "name": "Seth Stephens-Davidowitz",
+      "linkedin": "https://www.linkedin.com/in/seth-stephens-davidowitz-b7053918/",
+      "role": "Economist/Data Scientist, NYT Bestselling Author, Keynote Speaker",
+      "company": "Independent / Author",
+      "location": "Brooklyn, NY",
+      "followers": "8K",
+      "status": "found"
+    },
+    {
+      "name": "Vinay Patankar",
+      "linkedin": "https://www.linkedin.com/in/vinaypatankar/",
+      "role": "CEO",
+      "company": "Process Street",
+      "location": "New York, NY",
+      "followers": "14K",
+      "status": "found"
+    },
+    {
+      "name": "Tom King",
+      "linkedin": "https://www.linkedin.com/in/tomking1/",
+      "role": "Entrepreneur | Product/Growth Engineer",
+      "company": "Independent",
+      "location": "San Francisco Bay Area",
+      "mutual_connections": "170 (super-connector)",
+      "status": "found"
+    },
+    {
+      "name": "Alec Howard",
+      "linkedin": "https://www.linkedin.com/in/alexandermhoward/",
+      "role": "Co-Founder & CEO",
+      "company": "Ruvo (YC S25)",
+      "location": "São Paulo, Brazil",
+      "status": "found"
+    },
+    {
+      "name": "Biju Ashokan",
+      "linkedin": "https://www.linkedin.com/in/bijuashokan/",
+      "role": "CEO",
+      "company": "Radius (AI-powered real estate brokerage)",
+      "location": "San Francisco, CA",
+      "mutual_connections": "74",
+      "status": "found"
+    },
+    {
+      "name": "Jesse Zhang",
+      "linkedin": "https://www.linkedin.com/in/jessemzhang/",
+      "role": "Cofounder (Stanford AI PhD, Forbes 30U30)",
+      "company": "Beacons (AI for creators)",
+      "location": "San Francisco, CA",
+      "mutual_connections": "72",
+      "status": "found",
+      "note": "AJ's former company (Beacons)"
+    },
+    {
+      "name": "Yousef Ali",
+      "linkedin": "https://www.linkedin.com/in/yousef-ali-29155b19/",
+      "role": "Founder & CEO",
+      "company": "Blast Radio",
+      "location": "New York, NY",
+      "status": "found",
+      "note": "AJ advises Blast Radio"
+    },
+    {
+      "name": "David Guilfoyle",
+      "linkedin": "https://www.linkedin.com/in/davedkg/",
+      "role": "Staff AI Platform Engineer | 0->1 Builder of Agentic Workflows & SaaS",
+      "company": "(see profile)",
+      "location": "New York, NY",
+      "mutual_connections": "35",
+      "status": "found"
+    },
+    {
+      "name": "Jason Hreha",
+      "linkedin": "https://www.linkedin.com/in/hreha/",
+      "role": "Applied behavioral scientist",
+      "company": "Independent",
+      "location": "Nashville, TN",
+      "mutual_connections": "37",
+      "status": "found"
+    },
+    {
+      "name": "Cameron McKay",
+      "linkedin": "https://www.linkedin.com/in/cdmckay/",
+      "role": "CTO",
+      "company": "Process Street",
+      "location": "Barcelona, Spain",
+      "mutual_connections": "50",
+      "status": "found"
+    },
+    {
+      "name": "Chantel Benson",
+      "linkedin": "https://www.linkedin.com/in/chantelbenson/",
+      "role": "Director of Product Management",
+      "company": "Adobe",
+      "location": "San Francisco, CA",
+      "mutual_connections": "39",
+      "status": "found",
+      "note": "Adobe is a target (15 in coach network) — strong internal node"
+    },
+    {
+      "name": "Alex Ortiz",
+      "linkedin": "https://www.linkedin.com/in/alex--ortiz/",
+      "role": "Technical Program Manager, Wearables",
+      "company": "Meta",
+      "location": "Brooklyn, NY",
+      "mutual_connections": "14",
+      "status": "found"
+    },
+    {
+      "name": "Caren Kelleher",
+      "linkedin": "https://www.linkedin.com/in/carenkelleher/",
+      "role": "Founder (Gold Rush Vinyl) // Co-Owner (Waterloo Records)",
+      "company": "Gold Rush Vinyl",
+      "location": "Austin, TX",
+      "mutual_connections": "56",
+      "status": "found"
+    },
+    {
+      "name": "Kayvon Bina",
+      "linkedin": "https://www.linkedin.com/in/kayvon/",
+      "role": "CEO (4x Inc. 500/5000 Founder)",
+      "company": "Sagan (AI Agents + Global Talent)",
+      "location": "New York, NY",
+      "mutual_connections": "39",
+      "status": "found"
+    },
+    {
+      "name": "Ben Woytowich",
+      "linkedin": "https://www.linkedin.com/in/benjaminwoytowich/",
+      "role": "Product Manager",
+      "company": "Beacons (YC S19)",
+      "location": "San Francisco, CA",
+      "mutual_connections": "56",
+      "status": "found",
+      "note": "Name was misspelled as 'Woykowitz' in original list"
+    },
+    {
+      "name": "Tyler Schuett",
+      "linkedin": null,
+      "role": null,
+      "company": null,
+      "location": null,
+      "status": "not_found",
+      "note": "No 1st-degree match. Verify spelling (e.g., Schütt / Schutt) and re-run."
+    },
+    {
+      "name": "Harold Penson",
+      "linkedin": null,
+      "role": null,
+      "company": null,
+      "location": null,
+      "status": "not_on_linkedin",
+      "note": "Harold isn't on LinkedIn (confirmed by AJ). Reach directly via AJ — not usable for LinkedIn-based 2-hop pathing."
+    },
+    {
+      "name": "Jeff Maselli",
+      "linkedin": "https://www.linkedin.com/in/jeffmaselli/",
+      "role": "Leads search efforts across Executive and AI",
+      "company": "Perplexity",
+      "location": "San Francisco Bay Area",
+      "followers": "3K",
+      "status": "found",
+      "note": "Added 2026-06-22; AJ confirmed direct relationship. Senior function lead at Perplexity."
+    },
+    {
+      "name": "Cody Page",
+      "linkedin": null,
+      "role": null,
+      "company": null,
+      "location": null,
+      "status": "pending_verification",
+      "note": "Added 2026-06-22 by AJ. Needs LinkedIn URL + current company filled in to enable broker matching."
+    },
+    {
+      "name": "Kendra Arimoto",
+      "linkedin": null,
+      "role": null,
+      "company": null,
+      "location": null,
+      "status": "pending_verification",
+      "note": "Added 2026-06-22 by AJ. Possible last name is Maselli (married name). Needs LinkedIn URL + company filled in."
+    },
+    {
+      "name": "Ali Boozer",
+      "linkedin": null,
+      "role": null,
+      "company": null,
+      "location": null,
+      "status": "pending_verification",
+      "note": "Added 2026-06-22 by AJ. Needs LinkedIn URL + current company filled in."
+    },
+    {
+      "name": "Kalilah Robinson",
+      "linkedin": null,
+      "role": null,
+      "company": null,
+      "location": null,
+      "status": "pending_verification",
+      "note": "Added 2026-06-22 by AJ. Needs LinkedIn URL + current company filled in."
+    }
+  ]
+}

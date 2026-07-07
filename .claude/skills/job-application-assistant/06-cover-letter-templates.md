@@ -1,8 +1,66 @@
 # Cover Letter Templates and Tailoring Guide
 
-## Template: Custom cover.cls (XeLaTeX)
+## Two templates (pick one — match the CV)
 
-Cover letters use a custom LaTeX document class (`cover.cls`) with Lato/Raleway fonts.
+Both compile to **exactly 1 page**. Choose the cover letter class that matches the CV template you used, so the pair is visually cohesive. The tailoring guidance, length limits, and checklist below apply to **both**.
+
+- **Template A — `cover_aj.cls` (DEFAULT).** Matches the single-column `ajcv.cls` CV: identical header (Josefin Sans name + grey contact + rule), Carlito body. Compile with **lualatex**. Use this whenever the CV uses `ajcv.cls`. See "Template A" below.
+- **Template B — `cover.cls`.** The original Lato/Raleway letter that pairs with moderncv. Compile with **xelatex**. Use only when the CV uses moderncv. See "Template B" below.
+
+---
+
+## Template A: `cover_aj.cls` — DEFAULT (matches ajcv CV)
+
+A custom class at `cover_letters/cover_aj.cls`. Fonts resolve by name from TeX Live (Carlito + Josefin Sans), no OpenFonts paths needed.
+
+**Output file:** `cover_letters/cover_<company>_<role>.tex` with `\documentclass{cover_aj}`
+**Compile with:** **lualatex** (run from `cover_letters/`).
+
+```bash
+cd cover_letters && lualatex -interaction=nonstopmode cover_<company>_<role>.tex
+```
+
+### Structure
+
+```latex
+\documentclass{cover_aj}
+\begin{document}
+
+\coverheader{A. J. Magnuson}{%                 % same header as the CV
+  \href{mailto:ae@alumni.stanford.edu}{ae@alumni.stanford.edu} \ \textbar\ 650.814.7296 \\[1pt]
+  \href{https://linkedin.com/in/ajmagnuson}{linkedin.com/in/ajmagnuson}}
+
+\coverdate{June 22, 2026}                      % right-aligned grey date
+
+\lettercontent{Dear [Name/Team],}
+\lettercontent{[Opening paragraph]}
+\lettercontent{[Body paragraph]}
+
+\begin{coverbullets}                           % bullets live OUTSIDE \lettercontent (no font hack needed)
+  \item \textbf{Label.} ...
+\end{coverbullets}
+
+\lettercontent{[Fit paragraph]}
+\lettercontent{[Forward-looking close]}
+
+\vspace{6pt}
+\closing{Kind regards,}                        % no trailing \\ — the macro handles spacing
+\vspace{10pt}
+\signature{A. J. Magnuson}                      % rendered in Josefin Sans
+\end{document}
+```
+
+### Notes / pitfalls (Template A)
+
+- **Bullets use the `coverbullets` environment** and sit between `\lettercontent{}` blocks, not inside them. No `\fontspec` wrapper needed — the environment sets the font itself. (This is the clean replacement for the cover.cls itemize pitfall described under Template B.)
+- **`\closing{}` takes no trailing `\\`.** Unlike cover.cls, passing `\closing{Kind regards,\\}` is unnecessary; the macro adds its own spacing.
+- Keep `\textasciitilde{}` / `\textperiodcentered{}` instead of `$\sim$` / `$\cdot$` to stay on-font.
+
+---
+
+## Template B: Custom cover.cls (XeLaTeX)
+
+This is the moderncv-paired option. Cover letters in this style use a custom LaTeX document class (`cover.cls`) with Lato/Raleway fonts.
 
 **Output file:** `cover_letters/cover_<company>_<role>.tex`
 **Compile with:** XeLaTeX (cover.cls requires fontspec)

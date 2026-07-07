@@ -16,9 +16,25 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:**
+- Product-Led Growth (PLG) across B2C / B2B / B2B2C
+- **Lifecycle, messaging, and email marketing (depth area, not a side skill)** - Iterable, Segment, Amplitude; 0-to-1 AI Email Marketing at Beacons; DailyPay lifecycle stack
+- Experimentation engines (10x velocity track record)
+- Pricing & packaging (Beacons 120% revenue lift)
+- Growth engineering, full-stack development
+- KPI & analytics frameworks, revenue intelligence
+- 0-to-1 product launches (Beacons AI Emails, DailyPay WorkLife, Checkmate Enrichment)
+
+**Moderate match areas:**
+- AI-driven personalization (built it, but at startup scale not lab scale)
+- ML-driven recommendation systems
+- Direct-to-consumer / D2C commerce (PitchTop)
+- Enterprise PLG hybrid motions (DailyPay, Checkmate)
+
+**Weak match areas:**
+- Pure enterprise-sales-led growth (no PLG component)
+- Pure-IC roles inside 1000+ person orgs (track record is mostly leadership)
+- Pure data science / causal inference ownership (partners with DS, doesn't own)
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -30,9 +46,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** B2C / B2B / B2B2C SaaS, vertical SaaS for creators, fintech (employee pay), D2C commerce, social/audio, consumer at scale (RockYou 100M+ MAU)
+**Moderate:** AI-lab Growth orgs (validated via OpenAI Growth final-round, but not yet inside), enterprise PLG hybrids
+**Entry-level:** Frontier AI lab IC roles (pivot from leadership track), pure enterprise-sales-led environments
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -62,20 +78,24 @@ Does this role advance career goals and contain tasks that energize?
 | 40-59 | Decent job but doesn't build toward career goals |
 | 0-39 | Dead end or backwards step |
 
-**Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+**Career direction:**
+- Round out leadership track with senior IC growth work at a frontier AI lab (OpenAI, Anthropic). IC at later-stage AI orgs is explicitly in scope, not just senior/VP roles.
+- Keep operating in growth roles where lifecycle/messaging/email and experimentation are the central problem, not bolt-ons.
+- Continue fractional growth advisory (Omega Point) in parallel until a stellar full-time role lands.
 
-**Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
-- Non-task factors: leadership style, department culture, company values, degree of autonomy
+**Motivation filter:** Evaluate not just whether AJ *can* do the tasks, but whether the tasks will *energize* him. Consider:
+- **Tasks that energize:** 0-to-1 product launches with AI as core capability, experiment design end-to-end, growth-loop architecture, pricing/packaging strategy, building data and experimentation infra, lifecycle/personalization systems at scale
+- **Tasks that drain:** Pure maintenance, status-meeting-heavy cultures, approval-gated execution, work with no experimentation latitude
+- **Non-task factors:** Mission of the company (frontier AI mission is a major draw), degree of autonomy, co-design culture with engineering, quality of the data/experimentation stack
 
-**Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+**Life situation alignment:**
+- **Location:** Brooklyn-based. Prefers remote. Hybrid/on-site in NYC is fine. Relocation only for a stellar role or comp package.
+- **Stage:** Founder of Omega Point in parallel, so fractional opportunities are also viable. Full-time roles are weighted against opportunity cost.
+- **Professional development priority:** Time inside a frontier AI lab is a stated growth target, even at IC.
+
+## Confirmed Strong-Fit Signals (Calibration)
+
+- **OpenAI Growth (final round, Jan-mid-May 2026, kept on active pipeline):** AI-lab Growth orgs are a real fit, not aspirational. Use this as evidence when evaluating similar roles (Anthropic, Cohere, Mistral, frontier AI startups with Growth functions).
 
 ### 6. Salary Benchmark (Optional)
 

@@ -1,5 +1,17 @@
 # Writing Style Guide
 
+## Voice (AJ Magnuson)
+
+**Authenticity first.** Original phrasing over formulaic patterns. The reader should not be able to guess the next sentence from the previous one. If a sentence could appear in a LinkedIn influencer post, rewrite it.
+
+**Condensed word count.** Cut filler aggressively. Short sentences over long ones when both work. If a paragraph can become two sentences without losing signal, make it two sentences.
+
+**Vivid verbs.** Specific action verbs over generic ones. "Rebuilt", "shipped", "rewired", "compounded", "killed" over "worked on", "managed", "handled", "drove".
+
+**Creative analogies welcome.** A sharp metaphor that earns its keep is better than the safe phrasing. Don't shy away from one because it feels too distinctive.
+
+**Avoid trendy patterns.** No "Here's the thing:", no "Let me explain why...", no rhetorical-question openers, no "X is the new Y" formulas, no list-of-three closings. If the pattern feels like it's from a thread on X, it's out.
+
 ## Critical Rules
 
 1. **NO em-dashes (--).**  Use commas, periods, or restructure the sentence instead.

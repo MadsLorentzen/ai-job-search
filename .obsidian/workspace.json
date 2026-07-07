@@ -1,0 +1,225 @@
+{
+  "main": {
+    "id": "1a0cc65ead38eb69",
+    "type": "split",
+    "children": [
+      {
+        "id": "e4d81bf05690b4f6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7e7ebe457ac250ab",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "vault/Job Pipeline/Kanban.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Kanban"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "6d895d702977a072",
+    "type": "split",
+    "children": [
+      {
+        "id": "6825a76a881cc135",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1bcb482a58a2214b",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "625eb63cdf62d7d5",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "14ee565cc0350e25",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "59cfdc6255c7ff2b",
+    "type": "split",
+    "children": [
+      {
+        "id": "0b13e5f05f31a5ae",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a5f89d846f81c6f4",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "vault/Job Pipeline/Kanban.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Kanban"
+            }
+          },
+          {
+            "id": "e1891bcfd7b67014",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "vault/Job Pipeline/Kanban.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Kanban"
+            }
+          },
+          {
+            "id": "7fceef161a5dc8c2",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "9adedee5345f935f",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "43f4b7099a790bbf",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "vault/Job Pipeline/Kanban.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Kanban"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "7e7ebe457ac250ab",
+  "lastOpenFiles": [
+    "vault/Job Pipeline/02 Triaged/Character.AI - Technical Product Manager, Product Experience.md",
+    "vault/Job Pipeline/02 Triaged/Mercury - Head of Product - Business Lending.md",
+    "vault/Job Pipeline/02 Triaged/Pika - Product Manager, Growth.md",
+    "vault/Job Pipeline/09 Skipped/Adobe - Principal Product Manager, Frame.io (Growth).md",
+    "vault/Job Pipeline/09 Skipped/Instacart - Principal Product Manager, AI.md",
+    "vault/Job Pipeline/09 Skipped/Netlify - Staff Product Manager (Accounts & Billing).md",
+    "vault/Job Pipeline/09 Skipped/Netlify - Principal Product Manager (Growth).md",
+    "vault/Job Pipeline/09 Skipped/Pinecone - StaffPrincipal Product Manager, Database.md",
+    "vault/Job Pipeline/09 Skipped/Affirm - Product Marketing Manager.md",
+    "vault/Job Pipeline/09 Skipped/Gusto - Senior Pricing and Monetization Manager.md",
+    "vault/Job Pipeline/09 Skipped/Gusto - Growth Marketing Lead (Head of Customer Referral & Emerging.md",
+    "vault/Job Pipeline/09 Skipped/Notion - Product Manager, AI Governance and Admin Experience.md",
+    "vault/Job Pipeline/09 Skipped/Cursor - Product Manager, Agent Harness.md",
+    "vault/Job Pipeline/09 Skipped/Cursor - Product Manager.md",
+    "vault/Job Pipeline/09 Skipped/Cursor - Product Manager, Cloud Agents.md",
+    "vault/Job Pipeline/09 Skipped/Anthropic - Product Manager, Consumer.md",
+    "vault/Job Pipeline/09 Skipped/Spotify - Senior Product Manager – Partner Growth.md",
+    "vault/Job Pipeline/09 Skipped/Vercel - Head of Product Marketing.md",
+    "vault/Job Pipeline/09 Skipped/Plaid - Product Lead - Growth.md",
+    "vault/Job Pipeline/09 Skipped/Wealthfront - Marketing Manager, Lifecycle.md",
+    "vault/Job Pipeline/09 Skipped/Notion - Lifecycle Marketing Manager.md",
+    "vault/Job Pipeline/01 New/Pika - Product Manager.md",
+    "vault/Job Pipeline/01 New/Harvey - Staff Product Manager, Legal Operations Platform (99009a).md",
+    "vault/Job Pipeline/01 New/Harvey - Staff Product Manager, Legal Operations Platform.md",
+    "vault/Job Pipeline/01 New/Weaviate - Product Manager, Database.md",
+    "vault/Job Pipeline/01 New/ElevenLabs - Digital Customer Experience - North America.md",
+    "documents/proposals/project-blue-proposal-lean.pdf",
+    "documents/proposals",
+    "documents/applications/aios-head-of-product-growth",
+    "job_scraper/browser_finds.backup.json",
+    "vault/Warmode Pipeline/05 Outcome",
+    "vault/Warmode Pipeline/04 Conversation",
+    "vault/Warmode Pipeline/03 Outreach Sent",
+    "vault/Warmode Pipeline/02 Researching",
+    "cover_letters/cover_ngrok_head_of_growth.pdf",
+    "cover_letters/cover_ngrok_head_of_growth.aux"
+  ]
+}

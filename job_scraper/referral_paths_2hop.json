@@ -1,0 +1,574 @@
+{
+  "_about": "2-hop referral paths: AJ -> trusted strong-connection BROKER -> the broker's 1st-degree connection (2nd-degree to AJ) who currently works at a target company. Ask the broker for a warm intro to the person listed.",
+  "_method": "LinkedIn people search with connectionOf=<broker memberId> + keyword OR-group of target companies, filtered to 2nd-degree results whose current role is at the target. Verified current-employment by headline/Current line; excluded 'Ex-' and false-positive name collisions (e.g., 'Mercury Global Partners' != Mercury fintech).",
+  "_batch_scope": "Batch 1 (frontier labs + fintech): Jesse Zhang, Biju Ashokan, Kayvon Bina, Chantel Benson, Ben Woytowich, David Guilfoyle. Batch 2 (frontier labs, broker coverage): Vinay Patankar, Cameron McKay, Alec Howard, Yousef Ali, Seth Stephens-Davidowitz, Alex Ortiz, Caren Kelleher. Tom King intentionally skipped (network overlaps AJ's). NOT yet covered: startup targets (Suno, Oscilar, HappyRobot, etc.) and the Cursor/Harvey/Replit/Notion group for some batch-1 brokers.",
+  "last_run": "2026-06-23 11:30",
+  "paths_by_broker": {
+    "Jesse Zhang": {
+      "broker_linkedin": "https://www.linkedin.com/in/jessemzhang/",
+      "broker_role": "Cofounder @ Beacons (AI for creators)",
+      "paths": [
+        {
+          "name": "Teri Yu",
+          "role": "Product @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/teriyu/",
+          "note": "Product \u2014 highly relevant to AJ's growth-PM target"
+        },
+        {
+          "name": "Giancarlo 'GC' Lionetti",
+          "role": "Chief Commercial Officer @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": null,
+          "note": "CCO \u2014 senior GTM exec; profile slug not captured, find via name"
+        },
+        {
+          "name": "Andrew Hillis",
+          "role": "Codex @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/andrewhillis/",
+          "note": "Codex team \u2014 growth-adjacent"
+        },
+        {
+          "name": "Nate Munger",
+          "role": "AI Deployment Manager @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/natemunger/"
+        },
+        {
+          "name": "Victor Zhu",
+          "role": "Engineer @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/victorszhu/"
+        },
+        {
+          "name": "Henry Shi",
+          "role": "AI @ Anthropic (Co-Founder of Super.com)",
+          "company": "Anthropic",
+          "linkedin": "https://www.linkedin.com/in/henrythe9th/"
+        },
+        {
+          "name": "Mikkoh Chen",
+          "role": "Perplexity AI Fellow / GTM",
+          "company": "Perplexity",
+          "linkedin": "https://www.linkedin.com/in/mikkohchen/",
+          "note": "Verify current Perplexity affiliation"
+        },
+        {
+          "name": "Sam Saliba",
+          "role": "Brand & Product Marketing Leader @ Replit",
+          "company": "Replit",
+          "linkedin": "https://www.linkedin.com/in/saliba/"
+        },
+        {
+          "name": "Tony Xiao",
+          "role": "Experimental projects @ Stripe",
+          "company": "Stripe",
+          "linkedin": "https://www.linkedin.com/in/tonyxiao/"
+        },
+        {
+          "name": "Phil Chen",
+          "role": "Relationship Management @ Brex",
+          "company": "Brex",
+          "linkedin": "https://www.linkedin.com/in/philipalexanderchen/"
+        },
+        {
+          "name": "Janie Gu",
+          "role": "Product @ Wealthfront",
+          "company": "Wealthfront",
+          "linkedin": "https://www.linkedin.com/in/janiehgu/",
+          "note": "Product; from triaged-roles check (Wealthfront Lifecycle Marketing role)"
+        }
+      ]
+    },
+    "Alex Ortiz": {
+      "broker_linkedin": "https://www.linkedin.com/in/alex--ortiz/",
+      "broker_role": "Technical Program Manager, Wearables @ Meta",
+      "paths": [
+        {
+          "name": "Charles Porch",
+          "role": "VP, Global Creative Partnerships @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/charlesporch/",
+          "note": "Senior partnerships exec"
+        },
+        {
+          "name": "Sheila Chinichian",
+          "role": "GTM @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/sheilachinichian/",
+          "note": "GTM \u2014 relevant to growth roles"
+        },
+        {
+          "name": "Alyssa Pereira",
+          "role": "Model Design @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/alyssa-pereira/"
+        },
+        {
+          "name": "Kat Killion",
+          "role": "GTM @ Anthropic",
+          "company": "Anthropic",
+          "linkedin": "https://www.linkedin.com/in/katkillion/",
+          "note": "GTM \u2014 relevant to growth roles"
+        },
+        {
+          "name": "Ryan Ball",
+          "role": "Enterprise Sales Leader @ Anthropic",
+          "company": "Anthropic",
+          "linkedin": "https://www.linkedin.com/in/ballr/"
+        },
+        {
+          "name": "David Mercurio",
+          "role": "Member of Technical Staff @ Anthropic",
+          "company": "Anthropic",
+          "linkedin": "https://www.linkedin.com/in/dave-mercurio/"
+        },
+        {
+          "name": "Ish Verduzco",
+          "role": "Social Lead @ Notion",
+          "company": "Notion",
+          "linkedin": "https://www.linkedin.com/in/ishverduzco/"
+        },
+        {
+          "name": "Jordan MacDonald",
+          "role": "Building Cursor",
+          "company": "Cursor",
+          "linkedin": "https://www.linkedin.com/in/j-mac/"
+        },
+        {
+          "name": "Mari Cant\u00fa",
+          "role": "Technical Recruiter, Hardware Eng & Product @ Samsara",
+          "company": "Samsara",
+          "linkedin": "https://www.linkedin.com/in/maricantu/",
+          "note": "Recruiter \u2014 direct referral route"
+        },
+        {
+          "name": "Angie Bush",
+          "role": "Global Head of Technology for Good @ Adobe",
+          "company": "Adobe",
+          "linkedin": "https://www.linkedin.com/in/angiebush/"
+        },
+        {
+          "name": "Talha Tariq",
+          "role": "CTO (Security) @ Vercel",
+          "company": "Vercel",
+          "linkedin": "https://www.linkedin.com/in/talhatariq/",
+          "note": "Senior exec; from triaged-roles check"
+        }
+      ]
+    },
+    "Cameron McKay": {
+      "broker_linkedin": "https://www.linkedin.com/in/cdmckay/",
+      "broker_role": "CTO @ Process Street",
+      "paths": [
+        {
+          "name": "Cooper Reid",
+          "role": "Codex @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/cooper-reid/"
+        },
+        {
+          "name": "Ryan Lopopolo",
+          "role": "Member of Technical Staff @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/ryanlopopolo/"
+        },
+        {
+          "name": "Michael Pope",
+          "role": "Full-stack developer (OpenAI mention)",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/mpope/",
+          "note": "Verify current OpenAI employment \u2014 headline ambiguous"
+        }
+      ]
+    },
+    "Biju Ashokan": {
+      "broker_linkedin": "https://www.linkedin.com/in/bijuashokan/",
+      "broker_role": "CEO @ Radius (AI real estate)",
+      "paths": [
+        {
+          "name": "Punit S.",
+          "role": "Product @ Stripe",
+          "company": "Stripe",
+          "linkedin": "https://www.linkedin.com/in/punitsarin/"
+        },
+        {
+          "name": "Rohit S.",
+          "role": "Product Strategy & TPM Leader @ Stripe",
+          "company": "Stripe",
+          "linkedin": "https://www.linkedin.com/in/rohitsubramanian/"
+        },
+        {
+          "name": "Eddie Serrill",
+          "role": "Business Lead, Stripe Ecosystem & Startup Products",
+          "company": "Stripe",
+          "linkedin": "https://www.linkedin.com/in/eddie-serrill-81017a3/"
+        }
+      ]
+    },
+    "Kayvon Bina": {
+      "broker_linkedin": "https://www.linkedin.com/in/kayvon/",
+      "broker_role": "CEO @ Sagan (AI Agents + Global Talent)",
+      "paths": [
+        {
+          "name": "Nick Dellis",
+          "role": "Sales, Account Management & Partnerships @ Mercury",
+          "company": "Mercury",
+          "linkedin": "https://www.linkedin.com/in/1nickdellis/"
+        },
+        {
+          "name": "Jeremy Clemenson",
+          "role": "Engineering Leader @ Stripe",
+          "company": "Stripe",
+          "linkedin": "https://www.linkedin.com/in/jclemenson/"
+        }
+      ]
+    },
+    "Chantel Benson": {
+      "broker_linkedin": "https://www.linkedin.com/in/chantelbenson/",
+      "broker_role": "Director of Product Management @ Adobe",
+      "paths": [
+        {
+          "name": "Shiao Lee",
+          "role": "Associate General Counsel, Product Legal @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/shiao-lee-600bb8a/"
+        },
+        {
+          "name": "Shad Ahmed",
+          "role": "Economic Mobility & AI @ Anthropic",
+          "company": "Anthropic",
+          "linkedin": "https://www.linkedin.com/in/shadzahmed/"
+        },
+        {
+          "name": "Eric Snowden",
+          "role": "SVP of Design, Head of Adobe Design",
+          "company": "Adobe",
+          "linkedin": "https://www.linkedin.com/in/ericsnowden/"
+        },
+        {
+          "name": "Colleen Schweizer",
+          "role": "Principal Strategic Development Manager, Adobe Express",
+          "company": "Adobe",
+          "linkedin": "https://www.linkedin.com/in/csschweizer/"
+        },
+        {
+          "name": "Matt Niemitz",
+          "role": "EdTech Product & Community Leader (Adobe Education)",
+          "company": "Adobe",
+          "linkedin": "https://www.linkedin.com/in/mattniemitz/"
+        },
+        {
+          "name": "Yiying Lu",
+          "role": "Creative Leader @ Adobe",
+          "company": "Adobe",
+          "linkedin": "https://www.linkedin.com/in/yiyinglu/"
+        },
+        {
+          "name": "Vladimir Petkovic",
+          "role": "Senior Creative Technologist @ Adobe Foundry",
+          "company": "Adobe",
+          "linkedin": "https://www.linkedin.com/in/vladpetkovic/"
+        }
+      ],
+      "note": "Chantel is herself a Director of PM AT Adobe \u2014 a DIRECT path for the Adobe Firefly Growth PM role, plus the Adobe connections below."
+    },
+    "Yousef Ali": {
+      "broker_linkedin": "https://www.linkedin.com/in/yousef-ali-29155b19/",
+      "broker_role": "Founder & CEO @ Blast Radio",
+      "paths": [
+        {
+          "name": "George Panagopoulos",
+          "role": "Strategic Finance - Ads @ OpenAI",
+          "company": "OpenAI",
+          "linkedin": "https://www.linkedin.com/in/georgepanagopoulos1/"
+        }
+      ]
+    },
+    "Caren Kelleher": {
+      "broker_linkedin": "https://www.linkedin.com/in/carenkelleher/",
+      "broker_role": "Founder, Gold Rush Vinyl",
+      "paths": [
+        {
+          "name": "Adrian Santos",
+          "role": "Event Marketing Leader @ Anthropic",
+          "company": "Anthropic",
+          "linkedin": "https://www.linkedin.com/in/theadriansantos/",
+          "note": "Verify current vs past Anthropic"
+        }
+      ]
+    },
+    "Ben Woytowich": {
+      "broker_linkedin": "https://www.linkedin.com/in/benjaminwoytowich/",
+      "broker_role": "Product Manager @ Beacons",
+      "paths": [
+        {
+          "name": "Jessica Lozano Schmitt",
+          "role": "Comms @ Stripe",
+          "company": "Stripe",
+          "linkedin": "https://www.linkedin.com/in/jessica-lozano-schmitt/"
+        }
+      ]
+    },
+    "David Guilfoyle": {
+      "broker_linkedin": "https://www.linkedin.com/in/davedkg/",
+      "broker_role": "Staff AI Platform Engineer",
+      "paths": [],
+      "note": "No current-employee 2nd-degree paths found at the targets searched."
+    },
+    "Vinay Patankar": {
+      "broker_linkedin": "https://www.linkedin.com/in/vinaypatankar/",
+      "broker_role": "CEO @ Process Street",
+      "paths": [],
+      "note": "No current-employee 2nd-degree paths found at the frontier labs."
+    },
+    "Alec Howard": {
+      "broker_linkedin": "https://www.linkedin.com/in/alexandermhoward/",
+      "broker_role": "Co-Founder & CEO @ Ruvo (YC S25)",
+      "paths": [],
+      "note": "No frontier-lab paths (Brazil-based network)."
+    },
+    "Seth Stephens-Davidowitz": {
+      "broker_linkedin": "https://www.linkedin.com/in/seth-stephens-davidowitz-b7053918/",
+      "broker_role": "Economist / NYT Bestselling Author",
+      "paths": [],
+      "note": "No current-employee 2nd-degree paths found at the frontier labs."
+    }
+  },
+  "paths_by_company": {
+    "OpenAI": [
+      {
+        "person": "Teri Yu (Product)",
+        "via": "Jesse Zhang"
+      },
+      {
+        "person": "Giancarlo Lionetti (CCO)",
+        "via": "Jesse Zhang"
+      },
+      {
+        "person": "Andrew Hillis (Codex)",
+        "via": "Jesse Zhang"
+      },
+      {
+        "person": "Nate Munger (AI Deployment)",
+        "via": "Jesse Zhang"
+      },
+      {
+        "person": "Victor Zhu (Eng)",
+        "via": "Jesse Zhang"
+      },
+      {
+        "person": "Charles Porch (VP Partnerships)",
+        "via": "Alex Ortiz"
+      },
+      {
+        "person": "Sheila Chinichian (GTM)",
+        "via": "Alex Ortiz"
+      },
+      {
+        "person": "Alyssa Pereira (Model Design)",
+        "via": "Alex Ortiz"
+      },
+      {
+        "person": "Cooper Reid (Codex)",
+        "via": "Cameron McKay"
+      },
+      {
+        "person": "Ryan Lopopolo (MTS)",
+        "via": "Cameron McKay"
+      },
+      {
+        "person": "George Panagopoulos (Strategic Finance, Ads)",
+        "via": "Yousef Ali"
+      },
+      {
+        "person": "Shiao Lee (Product Legal)",
+        "via": "Chantel Benson"
+      }
+    ],
+    "Anthropic": [
+      {
+        "person": "Henry Shi (AI)",
+        "via": "Jesse Zhang"
+      },
+      {
+        "person": "Kat Killion (GTM)",
+        "via": "Alex Ortiz"
+      },
+      {
+        "person": "Ryan Ball (Enterprise Sales)",
+        "via": "Alex Ortiz"
+      },
+      {
+        "person": "David Mercurio (MTS)",
+        "via": "Alex Ortiz"
+      },
+      {
+        "person": "Shad Ahmed (Economic Mobility & AI)",
+        "via": "Chantel Benson"
+      },
+      {
+        "person": "Adrian Santos (Event Marketing)",
+        "via": "Caren Kelleher"
+      }
+    ],
+    "Perplexity": [
+      {
+        "person": "Mikkoh Chen (GTM/Fellow)",
+        "via": "Jesse Zhang"
+      }
+    ],
+    "Cursor": [
+      {
+        "person": "Jordan MacDonald",
+        "via": "Alex Ortiz"
+      }
+    ],
+    "Notion": [
+      {
+        "person": "Ish Verduzco (Social Lead)",
+        "via": "Alex Ortiz"
+      }
+    ],
+    "Replit": [
+      {
+        "person": "Sam Saliba (Product Marketing)",
+        "via": "Jesse Zhang"
+      }
+    ],
+    "Stripe": [
+      {
+        "person": "Tony Xiao",
+        "via": "Jesse Zhang"
+      },
+      {
+        "person": "Punit S. (Product)",
+        "via": "Biju Ashokan"
+      },
+      {
+        "person": "Rohit S. (Product Strategy/TPM)",
+        "via": "Biju Ashokan"
+      },
+      {
+        "person": "Eddie Serrill (Business Lead)",
+        "via": "Biju Ashokan"
+      },
+      {
+        "person": "Jeremy Clemenson (Eng Leader)",
+        "via": "Kayvon Bina"
+      },
+      {
+        "person": "Jessica Lozano Schmitt (Comms)",
+        "via": "Ben Woytowich"
+      }
+    ],
+    "Brex": [
+      {
+        "person": "Phil Chen (Relationship Mgmt)",
+        "via": "Jesse Zhang"
+      }
+    ],
+    "Mercury": [
+      {
+        "person": "Nick Dellis (Sales/Partnerships)",
+        "via": "Kayvon Bina"
+      }
+    ],
+    "Samsara": [
+      {
+        "person": "Mari Cant\u00fa (Technical Recruiter)",
+        "via": "Alex Ortiz"
+      }
+    ],
+    "Adobe": [
+      {
+        "person": "Chantel Benson herself (Director of PM)",
+        "via": "Chantel Benson (direct \u2014 she works at Adobe)"
+      },
+      {
+        "person": "Eric Snowden (SVP Design)",
+        "via": "Chantel Benson"
+      },
+      {
+        "person": "Colleen Schweizer (Adobe Express)",
+        "via": "Chantel Benson"
+      },
+      {
+        "person": "Matt Niemitz (Adobe Education)",
+        "via": "Chantel Benson"
+      },
+      {
+        "person": "Yiying Lu (Creative)",
+        "via": "Chantel Benson"
+      },
+      {
+        "person": "Vladimir Petkovic (Adobe Foundry)",
+        "via": "Chantel Benson / Alex Ortiz"
+      },
+      {
+        "person": "Angie Bush (Tech for Good)",
+        "via": "Alex Ortiz"
+      }
+    ],
+    "Vercel": [
+      {
+        "person": "Talha Tariq (CTO Security)",
+        "via": "Alex Ortiz"
+      }
+    ],
+    "Wealthfront": [
+      {
+        "person": "Janie Gu (Product)",
+        "via": "Jesse Zhang"
+      }
+    ]
+  },
+  "_batch3_startups_finding": "Ran top brokers (Jesse Zhang, Alex Ortiz, Biju Ashokan) against the browser_finds + lead startups (Suno, Oscilar, HappyRobot, Legora, TrueBuilt, Taste Labs, Pallet, Gradial, StackAI, Legion Health, Salient, 11x, ClassDojo, Rula, Arcadia, Playbook, Cashera, etc.). Result: essentially NO 2-hop paths \u2014 these companies are too small/early (<~50 employees) for brokers' networks to overlap. The only hit was Samsara (a large public company), via Alex Ortiz. Takeaway: 2-hop referral pathing pays off at mid/large companies; for the small startups, direct founder outreach (or AJ's own 1st-degree) is the better play.",
+  "_batch4_new_finds_finding": "Ran top brokers (Alex, Jesse, Chantel, Kayvon, Cameron) vs the strongest NEW finds. ADOBE is strongly covered (Chantel Benson is a Director of PM there = direct path for the Firefly Growth PM role, plus 6 more Adobe people via Chantel/Alex). Mercury's new Head of Growth Marketing reuses the existing path (Nick Dellis via Kayvon). NO 2-hop paths found for the other new targets \u2014 consumer cos (Poshmark, Hinge, Maven Clinic, Justworks, Commure, Unite Us, Genius Sports, The Farmer's Dog) and small AI startups (Abacum, Inworld, Listen Labs, Lemurian, LYNA): brokers' networks don't reach them. Direct application / founder outreach is the better play there.",
+  "_triaged_undocumented_check": {
+    "_about": "Referral check for triaged-status roles not previously documented (incl. the ngrok Head of Growth role AJ flagged). 2-hop run across Alex Ortiz, Jesse Zhang, Kayvon Bina, Cameron McKay; tier3 = Upward coach dashboard counts.",
+    "last_run": "2026-06-23 11:30",
+    "ngrok": {
+      "role": "Head of Growth (high fit, triaged)",
+      "two_hop": "none found (no broker connections at ngrok)",
+      "coach_dashboard": "1 referrer in Upward network \u2014 log in to get the name; this is the viable referral path",
+      "recommendation": "Use the coach-dashboard referrer; otherwise apply direct / recruiter."
+    },
+    "two_hop_found": {
+      "Vercel": "Talha Tariq, CTO (Security) \u2014 via Alex Ortiz",
+      "Wealthfront": "Janie Gu, Product \u2014 via Jesse Zhang"
+    },
+    "two_hop_none": [
+      "ngrok",
+      "Affirm",
+      "Chime",
+      "Customer.io",
+      "Attentive",
+      "Gusto",
+      "Harvey",
+      "Ramp",
+      "Instacart",
+      "Spotify",
+      "Life360",
+      "Ladders"
+    ],
+    "coach_dashboard_counts": {
+      "ngrok": 1,
+      "Customer.io": 1,
+      "Gusto": 2,
+      "Attentive": 1,
+      "Affirm": 1,
+      "Spotify": 2,
+      "Instacart": 4,
+      "Life360": 1,
+      "Wealthfront": 0,
+      "Vercel": 0,
+      "Harvey": 0,
+      "Chime": 0,
+      "Ramp": 0,
+      "Ladders": 0
+    },
+    "note": "Best undocumented coach-dashboard paths: Instacart (4), Gusto (2), Spotify (2), then ngrok/Customer.io/Attentive/Affirm/Life360 (1 each). Combine with 2-hop for Vercel & Wealthfront. Martech cluster (Customer.io, Attentive, Gusto) has only dashboard paths, no broker paths."
+  }
+}

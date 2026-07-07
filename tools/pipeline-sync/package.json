@@ -1,0 +1,19 @@
+{
+  "name": "pipeline-sync",
+  "version": "1.0.0",
+  "description": "Sync job_scraper JSON sources into an Obsidian vault projection at ./vault/. JSON is source of truth.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "pipeline-sync": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "sync": "bun run src/cli.ts sync",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "latest"
+  }
+}

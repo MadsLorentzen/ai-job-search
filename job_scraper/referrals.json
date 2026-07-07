@@ -1,0 +1,428 @@
+{
+  "_about": "Tiered referral paths into target companies across all three source files (seen_jobs.json, browser_finds.json, warmode_leads.json). Discovery only — no outreach performed. Use to decide who to ask for an intro before applying or pitching.",
+  "_tiers": {
+    "tier1_email": "AJ's direct Gmail. A real path = human, two-way correspondence with someone at the company.",
+    "tier2_linkedin": "AJ's 1st-degree LinkedIn connections. 'current_employees' = work there now (strongest). 'connectors' = investors/advisors/ex-employees who can broker an intro. Prioritized by influence (mutual-connection count + follower count) per AJ's request.",
+    "tier3_coach_dashboard": "Upward Product Management referral network (https://referrals.upwardproductmanagement.com/). Number = in-network people who list that company and can refer. Log in to see names."
+  },
+  "_method_caveats": [
+    "Tier 1: searched by company email domain (sent + received). Result was conclusive across the priority set — see summary.",
+    "Tier 2: LinkedIn people search filtered to 1st-degree, keyword = company name. Reliable for distinctive names (OpenAI, Brex, Anthropic, ClassDojo); UNRELIABLE for common-word names (Mercury, Suno, Close, Ramp, Cursor, Harvey, Salient) which need a company-ID facet pass — those are listed under tier2_pending.",
+    "Tier 2 profile URLs not captured (search text only) — names + headlines + mutual-count are enough to locate each person.",
+    "Tier 3 captured in one client-side pass over the dashboard; counts are company-level."
+  ],
+  "last_run": "2026-06-21 12:43",
+  "summary": {
+    "tier1_email_finding": "NO warm email paths. AJ has never emailed a human at any priority company; all mail is transactional (noreply@, invoice@, billing@, support@, newsletters like Robinhood Snacks). Email is not a viable referral channel for these targets.",
+    "tier2_strongest": [
+      "OpenAI — Terri Wang (Growth @ OpenAI) and Jeremy Schwartz (Growth for Codex) are 1st-degree connections ON the growth team AJ reached the final round with; Ibrahim Okuyucu (ex-Head of Growth Engineering, 11K followers) also 1st-degree.",
+      "Brex — Art Levy (Chief Business Officer, current) and Sarah Pike (GTM People Partner, current) are 1st-degree."
+    ],
+    "tier3_best_counts": "Salesforce 23, Capital One 18, Adobe 15, NVIDIA 10, Airbnb 6, Coinbase 5, Figma 5, Anthropic 3, OpenAI 3, Stripe 3, MongoDB 3, Roblox 3, Reddit 2, SpaceX 2, Sierra 2, Klaviyo 2, Okta 2, Salient 2, Databricks 2, Robinhood 1, Rula 1, Notion 1, Scribd 1."
+  },
+  "companies": [
+    {
+      "company": "OpenAI",
+      "in_lists": [
+        "seen_jobs"
+      ],
+      "tier1_email": {
+        "status": "none",
+        "detail": "Transactional only (noreply@email.openai.com); never emailed a person there."
+      },
+      "tier2_linkedin": {
+        "status": "strong",
+        "current_employees": [
+          {
+            "name": "Terri Wang",
+            "headline": "Growth @ OpenAI — driving user & revenue growth for ChatGPT, Codex across B2C/B2B",
+            "mutual_connections": "5 (incl. Anish Shah, Ibrahim Okuyucu)",
+            "note": "TOP path — exact growth team AJ interviewed with"
+          },
+          {
+            "name": "Jeremy Schwartz",
+            "headline": "Growth for Codex / Growth at OpenAI",
+            "mutual_connections": "4 (incl. Ibrahim Okuyucu)",
+            "note": "TOP path — growth team"
+          },
+          {
+            "name": "Avital Oliver",
+            "headline": "Neural Network Plumber, OpenAI",
+            "mutual_connections": "10"
+          },
+          {
+            "name": "William Li",
+            "headline": "Researcher @ OpenAI",
+            "mutual_connections": "39"
+          }
+        ],
+        "connectors": [
+          {
+            "name": "Ibrahim Okuyucu",
+            "headline": "Engineering; ex-Head of Growth Engineering at OpenAI",
+            "mutual_connections": "35",
+            "followers": "11K",
+            "note": "Ex-growth-eng lead AND a mutual of both Terri Wang & Jeremy Schwartz — ideal warm-intro broker"
+          }
+        ]
+      },
+      "tier3_coach_dashboard": {
+        "connections": 3,
+        "url": "https://referrals.upwardproductmanagement.com/"
+      }
+    },
+    {
+      "company": "Brex",
+      "in_lists": [
+        "seen_jobs"
+      ],
+      "tier1_email": {
+        "status": "none",
+        "detail": "No correspondence found."
+      },
+      "tier2_linkedin": {
+        "status": "strong",
+        "current_employees": [
+          {
+            "name": "Art Levy",
+            "headline": "Chief Business Officer at Brex",
+            "mutual_connections": "40",
+            "note": "TOP path — senior exec, can route to growth org"
+          },
+          {
+            "name": "Sarah Pike",
+            "headline": "People Partner Manager - GTM at Brex (currently listed at Strive Health profile, current role Brex GTM)",
+            "mutual_connections": "4",
+            "note": "GTM People — useful for warm referral into growth roles"
+          }
+        ],
+        "connectors": [
+          {
+            "name": "Marty Ringlein",
+            "headline": "ex-Head of Product, AR/AP Automation at Brex (Brooklyn, NY)",
+            "mutual_connections": "22",
+            "followers": "13K"
+          },
+          {
+            "name": "Matt Estes",
+            "headline": "ex-Sr. Director, Partnerships at Brex",
+            "mutual_connections": "68",
+            "followers": "32K"
+          },
+          {
+            "name": "Dalton Caldwell",
+            "headline": "YC Partner Emeritus — funded/advised Brex",
+            "mutual_connections": "25",
+            "followers": "105K"
+          }
+        ]
+      },
+      "tier3_coach_dashboard": {
+        "connections": null,
+        "url": "https://referrals.upwardproductmanagement.com/",
+        "note": "Not in coach network"
+      }
+    },
+    {
+      "company": "Anthropic",
+      "in_lists": [
+        "seen_jobs"
+      ],
+      "tier1_email": {
+        "status": "none",
+        "detail": "Transactional only (invoice/billing/notice @anthropic.com); never emailed a person there."
+      },
+      "tier2_linkedin": {
+        "status": "no_direct_employees",
+        "current_employees": [],
+        "connectors": [
+          {
+            "name": "Auren Hoffman",
+            "headline": "(appears as high-frequency mutual connection across Anthropic-adjacent profiles)",
+            "note": "Well-connected potential intro broker"
+          },
+          {
+            "name": "Jeff Clavier",
+            "headline": "Founding Partner, Uncork Capital",
+            "note": "Investor connector"
+          },
+          {
+            "name": "Ashwin Navin",
+            "headline": "(frequent mutual connection)",
+            "note": "Potential intro broker"
+          }
+        ],
+        "note": "No 1st-degree CURRENT Anthropic employees surfaced via keyword search (famous name = noisy). Best routes: coach dashboard (3) + recruiter pipeline (AJ already on OpenAI active pipeline; Anthropic via connectors)."
+      },
+      "tier3_coach_dashboard": {
+        "connections": 3,
+        "url": "https://referrals.upwardproductmanagement.com/"
+      }
+    },
+    {
+      "company": "ClassDojo",
+      "in_lists": [
+        "browser_finds",
+        "warmode_leads"
+      ],
+      "tier1_email": {
+        "status": "none"
+      },
+      "tier2_linkedin": {
+        "status": "connectors_only",
+        "current_employees": [],
+        "connectors": [
+          {
+            "name": "Stephanie Palmeri",
+            "headline": "Partner at NextView Ventures; ex-Board Observer at ClassDojo",
+            "mutual_connections": "46",
+            "note": "Investor — strong intro path"
+          },
+          {
+            "name": "Jeff Clavier",
+            "headline": "Founding Partner, Uncork Capital (ClassDojo investor)",
+            "mutual_connections": "58"
+          },
+          {
+            "name": "Joe Greenstein",
+            "headline": "Entrepreneur/investor (ClassDojo among portfolio)",
+            "mutual_connections": "38"
+          }
+        ]
+      },
+      "tier3_coach_dashboard": {
+        "connections": null,
+        "url": "https://referrals.upwardproductmanagement.com/",
+        "note": "Not in coach network"
+      }
+    },
+    {
+      "company": "HappyRobot",
+      "in_lists": [
+        "browser_finds",
+        "warmode_leads"
+      ],
+      "tier1_email": {
+        "status": "none"
+      },
+      "tier2_linkedin": {
+        "status": "connectors_only",
+        "current_employees": [],
+        "connectors": [
+          {
+            "name": "Andrew Berman",
+            "headline": "CEO of Runlayer, ex-Director of AI at Zapier; angel/advisor across AI incl. HappyRobot",
+            "mutual_connections": "29",
+            "followers": "16K",
+            "note": "AI investor/advisor — possible warm intro"
+          }
+        ]
+      },
+      "tier3_coach_dashboard": {
+        "connections": null,
+        "url": "https://referrals.upwardproductmanagement.com/",
+        "note": "Not in coach network"
+      }
+    },
+    {
+      "company": "Legora",
+      "in_lists": [
+        "browser_finds",
+        "warmode_leads"
+      ],
+      "tier1_email": {
+        "status": "none"
+      },
+      "tier2_linkedin": {
+        "status": "connectors_only",
+        "current_employees": [],
+        "connectors": [
+          {
+            "name": "Mark McLaughlin",
+            "headline": "General Partner @ Alkeon (Legora investor)",
+            "mutual_connections": "25",
+            "followers": "5K",
+            "note": "Investor — possible warm intro"
+          }
+        ]
+      },
+      "tier3_coach_dashboard": {
+        "connections": null,
+        "url": "https://referrals.upwardproductmanagement.com/",
+        "note": "Not in coach network"
+      }
+    },
+    {
+      "company": "Reddit",
+      "in_lists": [
+        "seen_jobs"
+      ],
+      "tier1_email": {
+        "status": "none",
+        "detail": "Newsletter only (Robinhood Snacks-style); no human contact."
+      },
+      "tier2_linkedin": {
+        "status": "past_only",
+        "current_employees": [],
+        "connectors": [
+          {
+            "name": "Ryan Merket",
+            "headline": "ex-Reddit (sole Product leader for Reddit Ads, '14); now elsewhere",
+            "mutual_connections": "69",
+            "followers": "9K",
+            "note": "Ex-Reddit product — knows the org"
+          }
+        ],
+        "note": "No current Reddit employees in 1st-degree top results."
+      },
+      "tier3_coach_dashboard": {
+        "connections": 2,
+        "url": "https://referrals.upwardproductmanagement.com/",
+        "note": "Listed as 'Reddit, Inc.'"
+      }
+    },
+    {
+      "company": "Mercury",
+      "in_lists": [
+        "seen_jobs"
+      ],
+      "tier1_email": {
+        "status": "none"
+      },
+      "tier2_linkedin": {
+        "status": "unreliable_keyword",
+        "current_employees": [],
+        "connectors": [],
+        "note": "Keyword 'Mercury' returns noise (SJ Mercury News, Mercury Records). Needs company-ID facet pass — see tier2_pending."
+      },
+      "tier3_coach_dashboard": {
+        "connections": null,
+        "url": "https://referrals.upwardproductmanagement.com/",
+        "note": "Not in coach network"
+      }
+    },
+    {
+      "company": "Suno",
+      "in_lists": [
+        "browser_finds",
+        "warmode_leads"
+      ],
+      "tier1_email": {
+        "status": "none",
+        "detail": "Transactional only (support@suno.com); product user, not a contact."
+      },
+      "tier2_linkedin": {
+        "status": "none_found",
+        "current_employees": [],
+        "connectors": [],
+        "note": "No 1st-degree matches for 'Suno music'. Re-check with company-ID facet."
+      },
+      "tier3_coach_dashboard": {
+        "connections": null,
+        "url": "https://referrals.upwardproductmanagement.com/",
+        "note": "Not in coach network"
+      }
+    },
+    {
+      "company": "Oscilar",
+      "in_lists": [
+        "browser_finds",
+        "warmode_leads"
+      ],
+      "tier1_email": {
+        "status": "none"
+      },
+      "tier2_linkedin": {
+        "status": "none_found",
+        "current_employees": [],
+        "connectors": [],
+        "note": "No 1st-degree connections at Oscilar."
+      },
+      "tier3_coach_dashboard": {
+        "connections": null,
+        "url": "https://referrals.upwardproductmanagement.com/",
+        "note": "Not in coach network"
+      }
+    }
+  ],
+  "tier3_only_matches": {
+    "_note": "Companies present in the coach dashboard with referral capacity but not yet run through Tier 1/2. Counts = in-network referrers.",
+    "Salesforce": 23,
+    "Capital One": 18,
+    "Adobe": 15,
+    "NVIDIA": 10,
+    "Airbnb": 6,
+    "Coinbase": 5,
+    "Figma": 5,
+    "Stripe": 3,
+    "MongoDB": 3,
+    "Roblox": 3,
+    "SpaceX": 2,
+    "Sierra": 2,
+    "Klaviyo": 2,
+    "Okta": 2,
+    "Salient": 2,
+    "Databricks": 2,
+    "Robinhood": 1,
+    "Rula": 1,
+    "Notion": 1,
+    "Scribd": 1,
+    "Spotify": 2,
+    "Duolingo": 1,
+    "Customer.io": 1,
+    "Gusto": 2,
+    "Confluent": 2,
+    "Affirm": 1,
+    "Attentive": 1,
+    "Instacart": 4,
+    "Hinge": 2,
+    "Justworks": 1,
+    "Close": 1
+  },
+  "tier2_pending": {
+    "_note": "Common-word company names that need a LinkedIn company-ID facet pass for accurate 1st-degree employee lookup (keyword search too noisy). Plus all lower-priority seen_jobs companies not yet processed.",
+    "common_word_names": [
+      "Mercury",
+      "Suno",
+      "Close",
+      "Ramp",
+      "Cursor",
+      "Harvey",
+      "Salient",
+      "Sierra",
+      "Arcadia",
+      "Playbook",
+      "Margaux"
+    ],
+    "not_yet_processed": "All remaining seen_jobs (medium/low fit) and warmode_leads companies beyond the priority set above."
+  },
+  "_coach_recheck_2026-06-22": {
+    "checked_live": "referrals.upwardproductmanagement.com (logged-in session)",
+    "with_path": {
+      "Spotify": 2,
+      "Duolingo": 1,
+      "Customer.io": 1,
+      "Gusto": 2,
+      "Confluent": 2
+    },
+    "not_in_network": [
+      "Dave",
+      "ElevenLabs",
+      "Ramp",
+      "Supabase"
+    ],
+    "note": "Earlier captured referral data did NOT cover these companies; this is a fresh live check. Direct-email (Gmail) check found only automated/product emails (no personal contacts). 2-hop via strong connections NOT computed (needs LinkedIn access)."
+  },
+  "_coach_recheck_2026-06-24": {
+    "with_path": {
+      "Affirm": 1,
+      "Attentive": 1,
+      "Instacart": 4,
+      "Hinge": 2,
+      "Justworks": 1,
+      "Close": 1
+    },
+    "checked": "live dashboard, 30 RTA companies",
+    "no_path_count": 24
+  }
+}

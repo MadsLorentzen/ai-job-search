@@ -2,9 +2,77 @@
 
 <!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
 
-## Template: LaTeX moderncv (Banking Style)
+## Two templates (pick one per application)
 
-All CVs use the moderncv LaTeX package with the "banking" style and "blue" color scheme.
+There are two CV templates. Both compile with **lualatex** and must produce **exactly 2 pages**. The tailoring guidance, page-budget rules, and compile-and-inspect loop in the rest of this doc apply to **both**.
+
+- **Template A — `ajcv.cls` (single-column, DEFAULT).** Reproduces AJ's own "2026 Growth Lead" resume: Josefin Sans display + Carlito body (Calibri metric-compatible), monochrome. This is the preferred look — it matches the resume AJ actually uses. Master reference: `cv/main_example_ajstyle.tex`. See "Template A" below.
+- **Template B — moderncv banking.** The original blue-accent moderncv style. Kept as an alternative. Master reference: `cv/main_example.tex`. See "Template B" below.
+
+Default to Template A unless the user asks for the moderncv look. The live Vercel application (`cv/main_vercel.tex`) uses Template A as the reference implementation.
+
+---
+
+## Template A: Single-column (`ajcv.cls`) — DEFAULT
+
+A custom class at `cv/ajcv.cls`. Reproduces AJ's real resume format.
+
+**Output file:** `cv/main_<company>.tex` with `\documentclass{ajcv}`
+**Compile with:** **lualatex** (fontspec + Josefin Sans/Carlito need it; pdflatex will not work). Run from the `cv/` directory so the class resolves.
+**Fonts (resolve by name from TeX Live, no install):** body = **Carlito** (metric-compatible Calibri substitute; true Calibri is proprietary and non-portable), display = **Josefin Sans**. Monochrome: ink `#1A1A1A`, mid-grey `#4D4D4D`, grey `#808080`.
+**Master reference:** `cv/main_example_ajstyle.tex` (full untailored CV — copy and tailor Summary + Core Competencies + bullet emphasis).
+
+### Compile command
+
+```bash
+cd cv && lualatex -interaction=nonstopmode main_<company>.tex
+```
+
+Expected: `Output written on main_<company>.pdf (2 pages, ...)`. Harmless `Font shape ... not available` warnings come only from math glyphs (`$\rightarrow$`); prefer `\textasciitilde{}` and `\textperiodcentered{}` over `$\sim$`/`$\cdot$` to keep text on-font.
+
+### Macros (provided by ajcv.cls)
+
+```latex
+\documentclass{ajcv}
+\hypersetup{pdftitle={AJ Magnuson - CV - <Company>}}
+\begin{document}
+
+\cvheader{A. J. Magnuson}{%                     % name (left) + contact (right), with rule
+  \href{mailto:ae@alumni.stanford.edu}{ae@alumni.stanford.edu} \ \textbar\ 650.814.7296 \\[1pt]
+  \href{https://linkedin.com/in/ajmagnuson}{linkedin.com/in/ajmagnuson}}
+
+\cvsection{Summary}                            % small tracked grey caps label
+\cvsummary{...tailored 3-4 line summary...}
+
+\cvsection{Core Competencies}
+\begin{cvbullets}                              % round bullets, metrics in \textbf
+  \item \textbf{Label:} ...
+\end{cvbullets}
+
+\cvsection{Experience}
+\cventry{Company}{Location}{Dates}             % bold-caps company, grey location, right-aligned dates
+\cvdescriptor{One-line company descriptor.}    % optional grey line under company
+\cvrole{Role Title}                            % rounded display accent, indented
+\begin{cvbullets}
+  \item ...
+\end{cvbullets}
+
+\cvskillline{A \textperiodcentered{} B \textperiodcentered{} C}  % middot-separated inline list
+
+\end{document}
+```
+
+- **LinkedIn in the header** sits on a second contact line (the full URL will not fit on one line beside the name); the contact block is vertically centered against the name.
+- **Orphan control** is built into `\cventry` (`\needspace{5\baselineskip}`). If a company title still orphans from its bullets, nudge with `\enlargethispage{2\baselineskip}` on the prior page.
+- The optional footer sections (`Highlights`, `Growth Systems & Infrastructure`) from `main_example_ajstyle.tex` are good page-2 fillers when a tailored CV runs thin.
+
+---
+
+## Template B: LaTeX moderncv (Banking Style)
+
+This is the moderncv option. Use it when the user specifically wants the blue-accent moderncv look; otherwise prefer Template A.
+
+CVs in this style use the moderncv LaTeX package with the "banking" style and "blue" color scheme.
 
 **Output file:** `cv/main_<company>.tex`
 **Compile with:** **lualatex** on MiKTeX/TeX Live. pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors; lualatex handles the same sources cleanly.
@@ -105,12 +173,17 @@ Write 5-7 lines that function as an "elevator pitch": a concise, compelling intr
 
 **Create 2-3 profile statement templates for your main role types:**
 
-<!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Growth Executive / VP of Growth / Head of Growth roles:**
+> Product-led Growth executive and former engineer with a track record of driving 3-9x revenue growth across B2C, B2B, and B2B2C platforms. Builder of scalable growth engines spanning acquisition, activation, retention, monetization, and pricing. Experienced leading experimentation orgs, establishing KPI systems, architecting growth loops, and turning data infrastructure into predictable revenue acceleration.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For Sr. Product Manager (Growth) / Growth Lead roles:**
+> Senior product leader with engineering roots and a consistent track record of scaling self-serve PLG funnels. Specialized in experimentation velocity, lifecycle architecture, and pricing and packaging strategy that compound into predictable revenue growth. Comfortable building the experimentation and lifecycle stack alongside engineering rather than handing off specs.
+
+**For Growth IC at a frontier AI lab (OpenAI, Anthropic, etc.):**
+> Growth operator with a builder background and an AI-native default. Three-time founder, former first engineering hire (RockYou, 100M+ MAU), and operator who launched 0-to-1 AI Email Marketing at Beacons, the fastest ESP to reach 50M cumulative email volume. Looking to focus deep on a single surface inside a mission I believe in.
+
+**For Lifecycle / Email Marketing leadership roles:**
+> Lifecycle and messaging specialist with end-to-end ownership of the stack: built DailyPay's lifecycle and analytics stack (Iterable + Segment + Amplitude) that supported 5.7x revenue expansion, and shipped Beacons' 0-to-1 AI Email Marketing, the fastest ESP to 50M cumulative email volume. Treats lifecycle as a compounding growth system, not a campaign function.
 
 ### Core Competencies / Skills Section (Best Practice)
 Reorder and emphasize based on the role. Use bold category labels.
