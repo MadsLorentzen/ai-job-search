@@ -42,6 +42,9 @@ Thumbs.db
 # Memory files (Claude Code user-specific)
 .claude/projects/
 
+# OpenCode planning artifacts (local working files — regenerable)
+.sisyphus/
+
 # Skills lock (auto-generated)
 skills-lock.json
 
