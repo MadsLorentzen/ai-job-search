@@ -67,6 +67,15 @@ export interface JobDetail extends JobCard {
   applyUrl: string | null
 }
 
+/**
+ * Convert a Unicode code point to a string. Uses `fromCodePoint` (not
+ * `fromCharCode`) so supplementary-plane code points (e.g. emoji, U+1F600)
+ * decode correctly, and drops out-of-range values instead of throwing.
+ */
+function numericEntity(cp: number): string {
+  return cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : ""
+}
+
 function decodeHtmlEntities(text: string): string {
   return text
     .replace(/&amp;/g, "&")
@@ -75,7 +84,9 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+    // Numeric character references: decimal (&#233;) and hexadecimal (&#xE9;).
+    .replace(/&#(\d+);/g, (_, dec) => numericEntity(parseInt(dec, 10)))
+    .replace(/&#[xX]([0-9a-fA-F]+);/g, (_, hex) => numericEntity(parseInt(hex, 16)))
     .replace(/&nbsp;/g, " ")
 }
 
