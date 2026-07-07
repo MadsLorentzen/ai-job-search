@@ -4,7 +4,7 @@
 
 # AI Job Search
 
-An AI-powered job application framework built on [Claude Code](https://claude.com/claude-code). Fork it, fill in your profile, and let Claude evaluate job postings, tailor your CV, write cover letters, and prepare you for interviews.
+An AI-powered job application framework built for [Claude Code](https://claude.com/claude-code) and [opencode](https://github.com/opencode-ai/opencode). Fork it, fill in your profile, and let AI evaluate job postings, tailor your CV, write cover letters, and prepare you for interviews.
 
 <p align="center">
   <a href="https://ko-fi.com/madslorentzen">
@@ -14,7 +14,7 @@ An AI-powered job application framework built on [Claude Code](https://claude.co
 
 ## What this is
 
-A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Danish market (Jobindex, Jobnet, Akademikernes Jobbank, etc.), but the pattern is designed to be swapped for your local job boards.
+A structured workflow that turns an AI coding agent into a full-stack job application assistant. Works with both [Claude Code](https://claude.com/claude-code) and [opencode](https://github.com/opencode-ai/opencode). The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Danish market (Jobindex, Jobnet, Akademikernes Jobbank, etc.), but the pattern is designed to be swapped for your local job boards.
 
 ```
 /setup          /scrape              /apply <url>
@@ -36,7 +36,7 @@ The framework encodes career guidance best practices, including structured evalu
 
 ## Prerequisites
 
-- [Claude Code](https://claude.com/claude-code) (CLI)
+- [Claude Code](https://claude.com/claude-code) or [opencode](https://github.com/opencode-ai/opencode) (CLI)
 - Python 3.10+
 - [Bun](https://bun.sh) (for Danish job search CLI tools)
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/) or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`.
@@ -69,6 +69,18 @@ claude
 # Then inside Claude Code:
 /setup
 ```
+
+#### Alternative: opencode
+
+If you use [opencode](https://github.com/opencode-ai/opencode) instead of Claude Code:
+
+```bash
+opencode
+# Then inside opencode:
+/setup
+```
+
+The project auto-detects opencode's AGENTS.md format and the `.opencode/command/` command files. All workflows (`/setup`, `/scrape`, `/apply`) work identically.
 
 `/setup` offers three paths: read your `documents/` folder if you have one populated (CV PDF, LinkedIn export, diplomas, reference letters, past applications), import a single CV pasted in chat, or walk through an interview. It auto-detects what you have and asks. Documents-folder mode is idempotent and safe to re-run as you add more material; see `documents/README.md` for the layout.
 
@@ -110,6 +122,15 @@ This runs the full workflow: evaluate fit, draft CV + cover letter, review with 
 ```
 ai-job-search/
 ├── CLAUDE.md                          # Main candidate profile + workflow rules
+├── AGENTS.md                          # opencode project instructions (equivalent to CLAUDE.md)
+├── .opencode/
+│   └── command/                       # opencode command definitions
+│       ├── apply.md                   # /apply workflow (drafter-reviewer)
+│       ├── setup.md                   # /setup onboarding
+│       ├── expand.md                  # /expand competency enrichment
+│       ├── add-template.md            # /add-template register custom LaTeX templates
+│       ├── add-portal.md              # /add-portal generate job-portal skill
+│       └── reset.md                   # /reset wipe profile data
 ├── .claude/
 │   ├── commands/
 │   │   ├── apply.md                   # /apply workflow (drafter-reviewer)
@@ -276,7 +297,7 @@ To get the most from this, invest time during `/setup` in describing not just yo
 ## Acknowledgements
 
 - [Mikkel Krogholm](https://github.com/mikkelkrogsholm) ([skills repo](https://github.com/mikkelkrogsholm/skills)) for the job search CLI skills
-- Built with [Claude Code](https://claude.com/claude-code) by [Anthropic](https://anthropic.com)
+- Built with [Claude Code](https://claude.com/claude-code) by [Anthropic](https://anthropic.com) and [opencode](https://github.com/opencode-ai/opencode)
 
 ## License
 
