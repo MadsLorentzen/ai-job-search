@@ -220,7 +220,7 @@ Do not proceed to Step 6 until both PDFs pass inspection.
 
 ### 5d. Clean up build artifacts
 
-After the final clean compile, delete the `.aux`, `.log`, `.out` files (keep` files (keep the `.tex` and `.pdf`).
+After the final clean compile, delete the `.aux`, `.log`, `.out` files (keep the `.tex` and `.pdf`).
 
 ---
 
