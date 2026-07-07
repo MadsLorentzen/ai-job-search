@@ -103,6 +103,7 @@ This runs the full workflow: evaluate fit, draft CV + cover letter, review with 
 - **`/upskill`** analyzes the gap between your profile and your tracked job postings (or a single posting via `/upskill <URL>`). Produces a prioritized heatmap of skill gaps and a learning plan with web-searched study resources and time estimates. Useful for career planning between applications.
 - **`/add-template`** registers your own LaTeX CV or cover letter template in place of the stock ones. It captures the template's instructions (compile engine, fonts, style rules, page limit), runs a mandatory test compile, and wires the template into `/apply`. See [LaTeX templates](#latex-templates) below.
 - **`/add-portal`** generates a job-portal search skill for a job board in your market. It investigates the portal (search URL pattern, result structure, access rules), scaffolds the CLI skill from the same structure as the shipped ones, and test-runs a live query before registering. See [Job search tools](#job-search-tools) below.
+- **`/followup`** scans job_search_tracker.csv for applications that have gone quiet (default: 10 business days with no response), drafts a short, context-aware follow-up email per application using the original job posting and cover letter from documents/applications/, and only after you confirm you've sent it, logs the follow-up date and updates the tracker status. It never sends email itself.
 
 `/reset` is also available, see [Starting over](#starting-over) below.
 
