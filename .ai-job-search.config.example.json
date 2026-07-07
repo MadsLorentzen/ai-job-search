@@ -1,0 +1,13 @@
+{
+  "backend": "openai",
+  "openai_model": "gpt-4o",
+  "codex_model": "gpt-4o",
+  "max_tokens": 4096,
+  "temperature": 0.1,
+  "context_token_limit": 16000,
+  "request_timeout_seconds": 60,
+  "safety": {
+    "local_only": false,
+    "log_full_prompts": false
+  }
+}

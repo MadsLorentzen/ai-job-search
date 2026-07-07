@@ -106,6 +106,63 @@ This runs the full workflow: evaluate fit, draft CV + cover letter, review with 
 
 `/reset` is also available, see [Starting over](#starting-over) below.
 
+## Other LLM backends
+
+The repository includes an opt-in Python orchestrator for running the `/apply` workflow against pluggable LLM backends while keeping the Claude markdown files as the canonical spec.
+
+Run a no-secret smoke test with the mock backend:
+
+```bash
+python -m orchestrator.runner apply \
+  --job-text-file orchestrator/tests/fixtures/example_job.md \
+  --profile orchestrator/tests/fixtures/example_profile.md \
+  --backend mock \
+  --output-dir /tmp/ai-job-search-smoke \
+  --skip-compile \
+  --yes
+```
+
+Run with OpenAI:
+
+```bash
+export OPENAI_API_KEY=...
+python -m orchestrator.runner apply \
+  --job-text-file ./job.md \
+  --profile ./CLAUDE.md \
+  --backend openai \
+  --yes
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:OPENAI_API_KEY = "..."
+python -m orchestrator.runner apply --job-text-file .\job.md --profile .\CLAUDE.md --backend openai --yes
+```
+
+To run the non-PII OpenAI adapter PoC against a local env file:
+
+```powershell
+python -m orchestrator.examples.openai_adapter_poc --env-file ..\.env --model gpt-4o
+```
+
+The redacted PoC evidence lives in `docs/OPENAI_POC.md`.
+
+Configuration starts from `.ai-job-search.config.example.json`:
+
+```json
+{
+  "backend": "openai",
+  "openai_model": "gpt-4o",
+  "max_tokens": 4096,
+  "safety": {
+    "local_only": false
+  }
+}
+```
+
+See `docs/ORCHESTRATOR.md` for the adapter interface, privacy guidance, prompt templates, and contribution notes.
+
 ## File structure
 
 ```
