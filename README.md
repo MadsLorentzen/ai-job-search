@@ -36,7 +36,13 @@ The framework encodes career guidance best practices, including structured evalu
 
 ## Prerequisites
 
+For **Claude Code**:
 - [Claude Code](https://claude.com/claude-code) (CLI)
+
+For **Antigravity CLI** (`agy`):
+- [Antigravity CLI](https://antigravity.google/docs) (`agy` / `gemini`)
+
+For **both**:
 - Python 3.10+
 - [Bun](https://bun.sh) (for Danish job search CLI tools)
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/) or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`.
@@ -64,9 +70,17 @@ For `linkedin-search` the install is optional: it has zero runtime dependencies 
 
 ### 3. Set up your profile
 
+Using **Claude Code**:
 ```bash
 claude
 # Then inside Claude Code:
+/setup
+```
+
+Using **Antigravity CLI** (`agy`):
+```bash
+agy
+# Then inside Antigravity CLI:
 /setup
 ```
 
@@ -74,6 +88,7 @@ claude
 
 ### 4. Search for jobs
 
+Using **Claude Code** or **Antigravity CLI** (`agy`):
 ```bash
 /scrape
 ```
@@ -82,6 +97,7 @@ This searches multiple job portals for positions matching your profile, deduplic
 
 ### 5. Apply to a job
 
+Using **Claude Code** or **Antigravity CLI** (`agy`):
 ```bash
 /apply https://jobindex.dk/job/1234567
 ```
@@ -109,34 +125,13 @@ This runs the full workflow: evaluate fit, draft CV + cover letter, review with 
 
 ```
 ai-job-search/
-├── CLAUDE.md                          # Main candidate profile + workflow rules
-├── .claude/
-│   ├── commands/
-│   │   ├── apply.md                   # /apply workflow (drafter-reviewer)
-│   │   ├── setup.md                   # /setup onboarding (documents folder, CV import, or interview)
-│   │   ├── expand.md                  # /expand competency enrichment from documents and online presence
-│   │   ├── add-template.md            # /add-template register custom LaTeX templates
-│   │   ├── add-portal.md              # /add-portal generate a job-portal search skill for your market
-│   │   └── reset.md                   # /reset wipe profile data or documents folder
-│   ├── skills/
-│   │   ├── job-application-assistant/  # Core application skill
-│   │   │   ├── SKILL.md               # Skill definition
-│   │   │   ├── 01-candidate-profile.md # Your education, experience, skills
-│   │   │   ├── 02-behavioral-profile.md# PI/DISC/personality assessment
-│   │   │   ├── 03-writing-style.md    # Tone, structure, do's and don'ts
-│   │   │   ├── 04-job-evaluation.md   # Scoring framework for job fit
-│   │   │   ├── 05-cv-templates.md     # LaTeX CV structure + tailoring rules
-│   │   │   ├── 06-cover-letter-templates.md # LaTeX cover letter templates
-│   │   │   └── 07-interview-prep.md   # STAR examples + interview framework
-│   │   ├── job-scraper/               # Job search orchestration
-│   │   └── upskill/                   # /upskill skill gap analysis and learning plan
-│   └── settings.json                  # Claude Code permissions (shared, scoped)
-├── .agents/skills/                    # Job portal CLI tools
-│   ├── jobbank-search/                # Akademikernes Jobbank (Denmark)
-│   ├── jobdanmark-search/             # Jobdanmark.dk (Denmark)
-│   ├── jobindex-search/               # Jobindex.dk (Denmark)
-│   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
-│   └── linkedin-search/               # LinkedIn public job listings (country-agnostic)
+├── CLAUDE.md                          # Main candidate profile + workflow rules (Claude Code)
+├── .claude/                           # Claude Code customizations
+│   ├── commands/                      # Slash commands (/apply, /setup, etc.)
+│   └── skills/                        # AI skill definitions and candidate profile details
+├── .agents/                           # Antigravity CLI customizations
+│   ├── AGENTS.md                      # Workspace guidelines and checklists (Antigravity CLI)
+│   └── skills/                        # Antigravity CLI skills (setup, apply, scraping, and portal search tools)
 ├── cv/
 │   └── main_example.tex               # moderncv LaTeX template
 ├── cover_letters/
@@ -277,6 +272,7 @@ To get the most from this, invest time during `/setup` in describing not just yo
 
 - [Mikkel Krogholm](https://github.com/mikkelkrogsholm) ([skills repo](https://github.com/mikkelkrogsholm/skills)) for the job search CLI skills
 - Built with [Claude Code](https://claude.com/claude-code) by [Anthropic](https://anthropic.com)
+- Ported to [Google Antigravity CLI](https://antigravity.google) by Antigravity
 
 ## License
 
