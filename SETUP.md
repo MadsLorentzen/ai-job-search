@@ -52,6 +52,51 @@ Install a LaTeX distribution to compile the generated `.tex` files to PDF:
 
 The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors). The cover letter compiles with `xelatex` because `cover.cls` requires `fontspec` for its custom Lato/Raleway fonts.
 
+#### Minimal TeX install: TinyTeX/BasicTeX
+
+Full TeX distributions work out of the box, but minimal distributions need a few extra packages before the stock templates compile.
+
+On macOS, a user-level TinyTeX install avoids a system-wide installer and does not require `sudo`:
+
+```bash
+curl -fsSL https://yihui.org/tinytex/install-bin-unix.sh -o /tmp/tinytex-install-bin-unix.sh
+sh /tmp/tinytex-install-bin-unix.sh /tmp --no-path
+export PATH="$HOME/Library/TinyTeX/bin/universal-darwin:$PATH"
+```
+
+Then install the template dependencies:
+
+```bash
+tlmgr install \
+  moderncv fontawesome5 fontawesome6 academicons import luatexbase pgf \
+  titlesec textpos xltxtra xunicode cite realscripts
+```
+
+For BasicTeX/MacTeX, make sure the TeX binary directory is on `PATH` first (for example via `/Library/TeX/texbin`), then run the same `tlmgr install ...` command.
+
+Quick smoke tests after setup:
+
+```bash
+cd cv && lualatex -interaction=nonstopmode -halt-on-error main_example.tex && cd ..
+
+SMOKE_DIR="$(mktemp -d /tmp/ai-job-cover-smoke.XXXXXX)"
+cp -R cover_letters/cover.cls cover_letters/OpenFonts "$SMOKE_DIR/"
+cat >"$SMOKE_DIR/cover_smoke.tex" <<'EOF'
+\documentclass[]{cover}
+\begin{document}
+\namesection{Test}{Candidate}{test@example.com}
+\companyname{Example Company}
+\companyaddress{123 Hiring Street\\Example City}
+\currentdate{\today}
+\lettercontent{Dear Hiring Manager,}
+\lettercontent{This smoke test verifies that xelatex can load cover.cls and the bundled fonts.}
+\closing{Sincerely,}
+\signature{Test Candidate}
+\end{document}
+EOF
+(cd "$SMOKE_DIR" && xelatex -interaction=nonstopmode -halt-on-error cover_smoke.tex)
+```
+
 ### Optional: pdftotext (for the ATS check)
 
 `/apply` runs an ATS parseability check on the compiled CV: it extracts the PDF's text layer and verifies contact details, reading order, and keyword coverage the way an applicant-tracking system sees them. This uses `pdftotext` from [poppler](https://poppler.freedesktop.org/), which is not part of TeX distributions:
