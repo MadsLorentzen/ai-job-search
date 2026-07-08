@@ -19,7 +19,7 @@ description: >
   jobbank søgning, find stilling, data scientist job, software developer job,
   projektleder stilling, konsulent job, data analyse job.
 context: fork
-allowed-tools: Bash(bun run skills/jobbank-search/cli/src/cli.ts *)
+allowed-tools: Bash(bun run .agents/skills/jobbank-search/cli/src/cli.ts *)
 ---
 
 # Jobbank Search Skill
@@ -43,7 +43,7 @@ Invoke this skill when the user wants to:
 ### Search jobs
 
 ```bash
-bun run skills/jobbank-search/cli/src/cli.ts search [flags]
+bun run .agents/skills/jobbank-search/cli/src/cli.ts search [flags]
 ```
 
 Key flags:
@@ -66,7 +66,7 @@ Key flags:
 ### Full job detail
 
 ```bash
-bun run skills/jobbank-search/cli/src/cli.ts detail <id> [--format json|plain]
+bun run .agents/skills/jobbank-search/cli/src/cli.ts detail <id> [--format json|plain]
 ```
 
 `id` is the numeric job ID from `search` results. Fetches the job page and parses the embedded Schema.org `JobPosting` JSON-LD for structured data.
@@ -84,7 +84,7 @@ bun run skills/jobbank-search/cli/src/cli.ts detail <id> [--format json|plain]
 
 ```bash
 # IT or Finance industry, Copenhagen or Aarhus
-bun run skills/jobbank-search/cli/src/cli.ts search \
+bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
   --industry 10331 --industry 10358 \
   --location 2 --location 8
 ```
@@ -98,7 +98,7 @@ bun run skills/jobbank-search/cli/src/cli.ts search \
 ### Find data scientist jobs in Copenhagen
 
 ```bash
-bun run skills/jobbank-search/cli/src/cli.ts search \
+bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
   --key "data scientist" \
   --location 2 \
   --format table
@@ -107,7 +107,7 @@ bun run skills/jobbank-search/cli/src/cli.ts search \
 ### Graduate trainee positions for new graduates
 
 ```bash
-bun run skills/jobbank-search/cli/src/cli.ts search \
+bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
   --type 6 \
   --suitable-for 2 \
   --format table
@@ -116,7 +116,7 @@ bun run skills/jobbank-search/cli/src/cli.ts search \
 ### Remote IT software jobs
 
 ```bash
-bun run skills/jobbank-search/cli/src/cli.ts search \
+bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
   --work-area 31 \
   --remote helt \
   --format table
@@ -125,7 +125,7 @@ bun run skills/jobbank-search/cli/src/cli.ts search \
 ### Ph.d. and postdoc positions in research
 
 ```bash
-bun run skills/jobbank-search/cli/src/cli.ts search \
+bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
   --type 12 \
   --industry 10442 \
   --format table
@@ -134,7 +134,7 @@ bun run skills/jobbank-search/cli/src/cli.ts search \
 ### Recent full-time jobs posted since March 1
 
 ```bash
-bun run skills/jobbank-search/cli/src/cli.ts search \
+bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
   --type 3 \
   --since 2026-03-01 \
   --format table
@@ -143,13 +143,13 @@ bun run skills/jobbank-search/cli/src/cli.ts search \
 ### Full details for a specific job
 
 ```bash
-bun run skills/jobbank-search/cli/src/cli.ts detail 1234567 --format plain
+bun run .agents/skills/jobbank-search/cli/src/cli.ts detail 1234567 --format plain
 ```
 
 ### IT jobs in Aarhus or Copenhagen
 
 ```bash
-bun run skills/jobbank-search/cli/src/cli.ts search \
+bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
   --key developer \
   --location 2 --location 8 \
   --work-area 31 \

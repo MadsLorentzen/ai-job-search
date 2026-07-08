@@ -55,11 +55,19 @@ def check_skill(path: Path) -> None:
 
     allowed = data.get("allowed-tools", "")
     if isinstance(allowed, str):
-        for match in re.finditer(r"bun run ([^\s*)]+)", allowed):
-            target = match.group(1)
-            candidates = [ROOT / target, ROOT / ".agents" / target]
-            if not any(c.is_file() for c in candidates):
-                errors.append(f"{rel(path)}: allowed-tools references a missing file: {target}")
+        for match in re.finditer(r"bun run ([^\s)]+)", allowed):
+            target = match.group(1).rstrip("*")
+            if not target or target.endswith("/"):
+                continue
+            # Targets may contain globs (e.g. .agents/skills/*/cli/src/cli.ts);
+            # require at least one existing file to match.
+            if "*" in target:
+                if not list(ROOT.glob(target)) and not list((ROOT / ".agents").glob(target)):
+                    errors.append(f"{rel(path)}: allowed-tools glob matches no files: {target}")
+            else:
+                candidates = [ROOT / target, ROOT / ".agents" / target]
+                if not any(c.is_file() for c in candidates):
+                    errors.append(f"{rel(path)}: allowed-tools references a missing file: {target}")
 
 
 def check_command(path: Path) -> None:
