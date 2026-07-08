@@ -28,13 +28,13 @@ with paired count/index columns per category, it groups them automatically.
 import json
 import sys
 import argparse
+import re
 from pathlib import Path
 
 try:
     import openpyxl
 except ImportError:
-    print("Error: openpyxl is required. Install it with: pip install openpyxl", file=sys.stderr)
-    sys.exit(1)
+    openpyxl = None
 
 
 # Column name patterns for auto-detection
@@ -44,15 +44,37 @@ COUNT_PATTERNS = {"antal", "count", "number", "n", "employees", "medarbejdere"}
 INDEX_PATTERNS = {"indeks", "index", "idx", "salary", "løn", "median", "average", "gennemsnit"}
 
 
+def header_matches(header, patterns):
+    """Return True when a header contains a meaningful pattern match."""
+    h = header.lower().strip()
+    tokens = set(re.findall(r"[a-zæøåöäü0-9]+", h))
+
+    for p in patterns:
+        if len(p) == 1:
+            if p in tokens:
+                return True
+        elif p in h:
+            return True
+    return False
+
+
+def strip_type_patterns(header, patterns):
+    """Remove count/index words from a header to derive a category name."""
+    name = header.lower()
+    for p in patterns:
+        if len(p) == 1:
+            name = re.sub(rf"\b{re.escape(p)}\b", "", name)
+        else:
+            name = name.replace(p, "")
+    return name.strip(" _-")
+
+
 def detect_column_type(header):
     """Detect whether a column header refers to count or index data."""
-    h = header.lower().strip()
-    for p in COUNT_PATTERNS:
-        if p in h:
-            return "count"
-    for p in INDEX_PATTERNS:
-        if p in h:
-            return "index"
+    if header_matches(header, COUNT_PATTERNS):
+        return "count"
+    if header_matches(header, INDEX_PATTERNS):
+        return "index"
     return None
 
 
@@ -113,9 +135,7 @@ def parse_sheet(ws, sheet_label=None):
             # If we have a count/index pair, group them
             if col_type == "count" and next_col_type == "index":
                 # Use the header minus the count/index suffix as category name
-                cat_name = col_header
-                for p in COUNT_PATTERNS:
-                    cat_name = cat_name.lower().replace(p, "").strip(" _-")
+                cat_name = strip_type_patterns(col_header, COUNT_PATTERNS)
                 if not cat_name:
                     cat_name = f"category_{len(categories)+1}"
                 categories.append({
@@ -126,9 +146,7 @@ def parse_sheet(ws, sheet_label=None):
                 i += 2
                 continue
             elif col_type == "index" and next_col_type == "count":
-                cat_name = col_header
-                for p in INDEX_PATTERNS:
-                    cat_name = cat_name.lower().replace(p, "").strip(" _-")
+                cat_name = strip_type_patterns(col_header, INDEX_PATTERNS)
                 if not cat_name:
                     cat_name = f"category_{len(categories)+1}"
                 categories.append({
@@ -217,6 +235,10 @@ def main():
     excel_path = Path(args.excel_file)
     if not excel_path.exists():
         print(f"Error: File not found: {excel_path}", file=sys.stderr)
+        sys.exit(1)
+
+    if openpyxl is None:
+        print("Error: openpyxl is required. Install it with: pip install openpyxl", file=sys.stderr)
         sys.exit(1)
 
     output_path = Path(args.output) if args.output else Path(__file__).parent.parent / "salary_data.json"
