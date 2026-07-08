@@ -37,6 +37,10 @@ class DetectColumnTypeTests(unittest.TestCase):
             with self.subTest(header=header):
                 self.assertEqual(detect_column_type(header), "count")
 
+    def test_count_inside_word_does_not_make_count_header(self):
+        self.assertEqual(detect_column_type("Accounting Index"), "index")
+        self.assertEqual(detect_column_type("Country Index"), "index")
+
     def test_parse_sheet_preserves_category_name_with_letter_n(self):
         ws = FakeWorksheet([
             ("Company", "Engineering Count", "Engineering Index"),
@@ -46,6 +50,16 @@ class DetectColumnTypeTests(unittest.TestCase):
         companies = parse_sheet(ws)
 
         self.assertEqual(companies[0]["categories"]["engineering"], {"count": 12, "index": 105.5})
+
+    def test_parse_sheet_groups_accounting_count_index_pair(self):
+        ws = FakeWorksheet([
+            ("Company", "Accounting Count", "Accounting Index"),
+            ("Example Corp", 12, 105.5),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(companies[0]["categories"]["accounting"], {"count": 12, "index": 105.5})
 
 
 if __name__ == "__main__":
