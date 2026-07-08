@@ -38,8 +38,11 @@ class DetectColumnTypeTests(unittest.TestCase):
                 self.assertEqual(detect_column_type(header), "count")
 
     def test_count_inside_word_does_not_make_count_header(self):
+        self.assertIsNone(detect_column_type("Accounting Total"))
         self.assertEqual(detect_column_type("Accounting Index"), "index")
-        self.assertEqual(detect_column_type("Country Index"), "index")
+
+    def test_danish_compound_headers_still_match(self):
+        self.assertEqual(detect_column_type("Lønindeks"), "index")
 
     def test_parse_sheet_preserves_category_name_with_letter_n(self):
         ws = FakeWorksheet([

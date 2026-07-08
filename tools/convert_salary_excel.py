@@ -42,6 +42,7 @@ COMPANY_PATTERNS = {"firma", "company", "virksomhed", "employer", "arbejdsgiver"
 CITY_PATTERNS = {"by", "city", "kommune", "location", "lokation", "sted"}
 COUNT_PATTERNS = {"antal", "count", "number", "n", "employees", "medarbejdere"}
 INDEX_PATTERNS = {"indeks", "index", "idx", "salary", "løn", "median", "average", "gennemsnit"}
+DANISH_COMPOUND_PATTERNS = {"antal", "indeks", "løn", "gennemsnit", "medarbejdere"}
 
 
 def header_matches(header, patterns):
@@ -49,7 +50,12 @@ def header_matches(header, patterns):
     h = header.lower().strip()
     tokens = set(re.findall(r"[a-zæøåöäü0-9]+", h))
 
-    return any(p in tokens for p in patterns)
+    for p in patterns:
+        if p in tokens:
+            return True
+        if p in DANISH_COMPOUND_PATTERNS and p in h:
+            return True
+    return False
 
 
 def strip_type_patterns(header, patterns):
