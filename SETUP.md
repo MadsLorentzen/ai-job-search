@@ -4,6 +4,15 @@ Step-by-step instructions for getting the AI Job Search framework running.
 
 ## 1. Prerequisites
 
+### Agent runtime
+
+This framework supports two agent runtimes:
+
+- **Claude Code** through `CLAUDE.md`, `.claude/commands/`, and `.claude/skills/`
+- **Codex** through `AGENTS.md` and `.agents/skills/`
+
+Use the setup path for the runtime you plan to work in.
+
 ### Claude Code
 
 Install Claude Code (Anthropic's CLI for Claude):
@@ -13,6 +22,10 @@ npm install -g @anthropic-ai/claude-code
 ```
 
 You'll need an Anthropic API key or a Claude Pro/Team subscription. See the [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for details.
+
+### Codex
+
+Install and authenticate Codex using the instructions for your environment. See [`CODEX_SETUP.md`](CODEX_SETUP.md) for the Codex-specific workflow.
 
 ### Python
 
@@ -98,6 +111,24 @@ If you're outside Denmark, you can generate an equivalent search skill for your 
 
 ## 4. Run the setup interview
 
+### Codex
+
+Start Codex in the repository:
+
+```bash
+codex
+```
+
+Then ask Codex:
+
+```text
+Run setup for this job search workspace.
+```
+
+Codex reads `AGENTS.md` and uses `.agents/skills/setup/SKILL.md`.
+
+### Claude Code
+
 Start Claude Code in the repository:
 
 ```bash
@@ -122,7 +153,7 @@ All three paths produce the same result: fully populated profile files.
 
 | File | Content |
 |------|---------|
-| `CLAUDE.md` | Your full candidate profile |
+| `CLAUDE.md` / `AGENTS.md` | Your full candidate profile and workflow rules |
 | `01-candidate-profile.md` | Structured education, experience, skills |
 | `02-behavioral-profile.md` | Behavioral assessment |
 | `04-job-evaluation.md` | Personalized skill match areas and career goals |
@@ -170,11 +201,11 @@ Or paste the job description directly:
 /apply [paste job posting text here]
 ```
 
-Claude will:
+The agent will:
 1. Evaluate the fit against your profile
 2. Ask if you want to proceed
 3. Draft a tailored CV and cover letter
-4. Have a reviewer agent critique the drafts
+4. Run a reviewer pass on the drafts
 5. Revise and present the final output
 
 ## 7. Compile your documents

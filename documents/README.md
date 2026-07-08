@@ -1,6 +1,6 @@
 # Documents Folder
 
-This folder holds your actual career documents. The `/setup` command reads everything here and uses it to populate the candidate skill files under `.claude/skills/job-application-assistant/`. It is safe to re-run `/setup` as you add new documents — it merges intelligently and will never overwrite existing content without asking you first.
+This folder holds your actual career documents. The `/setup` workflow reads everything here and uses it to populate the candidate skill files. Claude Code uses `.claude/skills/job-application-assistant/`; Codex uses `.agents/skills/job-application-assistant/`. It is safe to re-run `/setup` as you add new documents — it merges intelligently and will never overwrite existing content without asking you first.
 
 ---
 
@@ -154,7 +154,7 @@ Any signal about what they valued or didn't?
 
 | Format | Readable by `/setup` | Notes |
 |--------|--------------------------|-------|
-| `.pdf` | Yes | Parsed directly with the Read tool |
+| `.pdf` | Yes | Parsed directly with the agent's available PDF/file-reading tools |
 | `.tex` | Yes | LaTeX source — structure and content both readable |
 | `.md` | Yes | Plain text |
 | `.txt` | Yes | Plain text |
