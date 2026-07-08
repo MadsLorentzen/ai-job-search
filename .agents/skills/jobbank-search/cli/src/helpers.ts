@@ -152,3 +152,19 @@ export function extractJobIdFromUrl(url: string): string {
   const match = url.match(/\/job\/(\d+)\//)
   return match ? match[1] : ""
 }
+
+/**
+ * Cap a result list to the first `limit` items.
+ *
+ * Only applies when `limit` is a positive, finite number; a negative, zero,
+ * NaN, or `undefined` limit returns the full list unchanged. This mirrors the
+ * linkedin-search CLI's `limit > 0` guard and avoids `Array.prototype.slice`'s
+ * negative-index semantics, where `slice(0, -1)` silently drops the trailing
+ * item instead of capping (e.g. `--limit -1` on 20 results would return 19).
+ */
+export function capResults<T>(items: T[], limit?: number): T[] {
+  if (limit !== undefined && Number.isFinite(limit) && limit > 0) {
+    return items.slice(0, limit)
+  }
+  return items
+}

@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { apiFetch, writeError } from "../helpers.js"
+import { apiFetch, capResults, writeError } from "../helpers.js"
 
 interface Category {
   id: number
@@ -24,13 +24,11 @@ export const categories = defineCommand({
     if (signal.aborted) return
 
     try {
-      let data = await apiFetch<Category[]>("/api/categorycount/getcounts")
+      const rawData = await apiFetch<Category[]>("/api/categorycount/getcounts")
 
       if (signal.aborted) return
 
-      if (flags.limit !== undefined) {
-        data = data.slice(0, flags.limit)
-      }
+      const data = capResults(rawData, flags.limit)
 
       if (flags.format === "json") {
         console.log(JSON.stringify(data, null, 2))

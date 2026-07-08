@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { apiFetch, writeError } from "../helpers.js"
+import { apiFetch, capResults, writeError } from "../helpers.js"
 
 export const suggestions = defineCommand({
   name: "suggestions",
@@ -33,10 +33,7 @@ export const suggestions = defineCommand({
 
       if (signal.aborted) return
 
-      let results = data
-      if (flags.limit !== undefined) {
-        results = results.slice(0, flags.limit)
-      }
+      const results = capResults(data, flags.limit)
 
       if (flags.format === "json") {
         console.log(JSON.stringify(results, null, 2))

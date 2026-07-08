@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { apiFetch, writeError } from "../helpers.js"
+import { apiFetch, capResults, writeError } from "../helpers.js"
 
 interface OccupationAlias {
   aliasIdentifier: string
@@ -47,7 +47,7 @@ export const occupations = defineCommand({
       if (signal.aborted) return
 
       // Client-side filter — API does not enforce pageSize reliably
-      const data = rawData.slice(0, flags["per-page"])
+      const data = capResults(rawData, flags["per-page"])
 
       if (flags.format === "json") {
         console.log(JSON.stringify(data, null, 2))

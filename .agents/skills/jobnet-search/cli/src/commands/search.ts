@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { apiFetch, writeError } from "../helpers.js"
+import { apiFetch, capResults, writeError } from "../helpers.js"
 
 interface SearchApiResponse {
   jobAds: JobAdRaw[]
@@ -137,9 +137,7 @@ export const search = defineCommand({
         isFavorite: job.isFavorite,
       }))
 
-      if (flags.limit !== undefined) {
-        results = results.slice(0, flags.limit)
-      }
+      results = capResults(results, flags.limit)
 
       const facets = {
         regions: data.searchFacets.regions ?? [],

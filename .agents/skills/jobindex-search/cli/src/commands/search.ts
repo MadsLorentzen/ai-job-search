@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { BASE_URL, htmlFetch, parseSearchPage, writeError, type JobCard } from "../helpers.js"
+import { BASE_URL, capResults, htmlFetch, parseSearchPage, writeError, type JobCard } from "../helpers.js"
 
 export const search = defineCommand({
   name: "search",
@@ -48,11 +48,7 @@ export const search = defineCommand({
 
       const parsed = parseSearchPage(html)
       const total = parsed.total
-      let results = parsed.results
-
-      if (flags.limit !== undefined) {
-        results = results.slice(0, flags.limit)
-      }
+      const results = capResults(parsed.results, flags.limit)
 
       const output = {
         meta: {

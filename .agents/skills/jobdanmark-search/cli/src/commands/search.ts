@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { apiPost, writeError, BASE_URL } from "../helpers.js"
+import { apiPost, capResults, writeError, BASE_URL } from "../helpers.js"
 
 interface ApiSearchItem {
   title: string
@@ -155,10 +155,7 @@ export const search = defineCommand({
 
       if (signal.aborted) return
 
-      let results = data.items.map(normalizeItem)
-      if (flags.limit !== undefined) {
-        results = results.slice(0, flags.limit)
-      }
+      const results = capResults(data.items.map(normalizeItem), flags.limit)
 
       const meta = {
         currentPage: data.currentPage,
