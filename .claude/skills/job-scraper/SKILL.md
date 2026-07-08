@@ -1,5 +1,5 @@
 ---
-name: job-scraper
+name: scrape
 description: >
   Scrapes Danish job sites for new positions matching your profile. Deduplicates across runs.
   Triggers on: job scrape, find jobs, search jobs, new jobs, job search, scrape jobs, /scrape
