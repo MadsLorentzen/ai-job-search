@@ -56,14 +56,32 @@ jobs:
 
   dependency-review:
     name: Dependency review (upstream PRs only)
-    # Requires the repo's Dependency graph (enabled by default on public
-    # repos, but NOT on forks) - so this runs only on PRs to the upstream
-    # repo, same pattern as the other upstream-only jobs.
+    # Requires the repo's Dependency graph, which forks never inherit and
+    # which may be disabled upstream - so: upstream PRs only, and the
+    # graph is probed first. If it is unavailable, the job warns and
+    # passes instead of hard-failing (the same graceful-skip pattern the
+    # workflow uses for optional tools). Enabling Dependency graph under
+    # Settings -> Advanced Security activates the real check.
     if: github.event_name == 'pull_request' && github.repository == 'MadsLorentzen/ai-job-search'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+      - name: Probe Dependency graph availability
+        id: graph
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/dependency-graph/sbom")
+          if [ "$code" = "200" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Dependency graph is not enabled on this repository (HTTP $code). Dependency review was skipped - enable Dependency graph under Settings -> Advanced Security to activate this check."
+          fi
+      - name: Dependency review
+        if: steps.graph.outputs.enabled == 'true'
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
         with:
           fail-on-severity: high
 
