@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { createCLI } from "@bunli/core"
 import { search } from "./commands/search.js"
 import { detail } from "./commands/detail.js"

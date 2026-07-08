@@ -89,7 +89,7 @@ bun run .agents/skills/jobbank-search/cli/src/cli.ts search \
   --location 2 --location 8
 ```
 
-**Filter codes are documented in the README** at `skills/jobbank-search/cli/README.md`.
+**Filter codes are documented in the README** at `.agents/skills/jobbank-search/cli/README.md`.
 
 ---
 
@@ -176,4 +176,4 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 - RSS feed returns max 100 results per query. For higher counts, `meta.total` shows the true total.
 - The `detail` command fetches a full job page and extracts the JSON-LD structured data block.
 - `location` values are region codes (e.g. `2` = Storkøbenhavn), not city names.
-- All filter codes are documented in `skills/jobbank-search/cli/README.md`.
+- All filter codes are documented in `.agents/skills/jobbank-search/cli/README.md`.

@@ -14,7 +14,7 @@ CLI for [Akademikernes Jobbank](https://jobbank.dk) — Denmark's job portal for
 ## Installation
 
 ```bash
-cd skills/jobbank-search/cli
+cd .agents/skills/jobbank-search/cli
 bun install
 ```
 

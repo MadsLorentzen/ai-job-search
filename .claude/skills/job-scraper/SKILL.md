@@ -33,7 +33,7 @@ Optional arguments:
 ### Step 0: Load State
 
 1. Read `job_scraper/seen_jobs.json` (create if missing - start with `{"seen": {}}`)
-2. Read `job_search_tracker.csv` to extract already-applied companies+roles
+2. Read `job_search_tracker.csv` to extract already-applied companies+roles. If it does not exist, treat the tracker as empty.
 3. Read `search-queries.md` (this directory) for the search strategy
 
 ### Step 1: Search

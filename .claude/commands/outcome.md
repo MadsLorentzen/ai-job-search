@@ -46,6 +46,7 @@ Ask the user what happened, then classify:
 - `rejected` - explicit rejection at any stage
 - `no_response` - no reply; if the user is unsure whether to call it, note how long it has been since the last contact and let them decide - do not impose a cutoff
 - `interview_only` - reached interviews but the process stalled or was abandoned without an explicit rejection
+- `withdrawn` - candidate withdrew from the process
 
 Also collect, without interrogating - one or two open questions are enough:
 - Dates for the stages reached
@@ -65,7 +66,7 @@ Create or update `documents/applications/<company>_<role>/`. All content here is
 ```markdown
 # Outcome: <Company> — <Role>
 
-**Status:** in_progress | hired | offer_declined | rejected | no_response | interview_only
+**Status:** in_progress | hired | offer_declined | rejected | no_response | interview_only | withdrawn
 
 **Date resolved:** YYYY-MM-DD   <- only when resolved; omit while in_progress
 

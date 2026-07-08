@@ -88,8 +88,8 @@ Reference letters from former managers, supervisors, or collaborators.
 
 **What `/setup` extracts:**
 - Referee name, title, and organization
-- Specific quotes and assessments (added to the references section of `01-candidate-profile.md`)
-- Competency language used by referees (adds behavioral signal to `02-behavioral-profile.md`)
+- Specific quotes and assessments (added to the references section of `.claude/skills/job-application-assistant/01-candidate-profile.md`)
+- Competency language used by referees (adds behavioral signal to `.claude/skills/job-application-assistant/02-behavioral-profile.md`)
 
 **Naming:** Use the referee's name, e.g. `reference_ole_frandsen.pdf`.
 
@@ -124,7 +124,7 @@ applications/
 ```markdown
 # Outcome: <Company> — <Role>
 
-**Status:** in_progress | hired | offer_declined | rejected | no_response | interview_only
+**Status:** in_progress | hired | offer_declined | rejected | no_response | interview_only | withdrawn
 
 **Date resolved:** YYYY-MM-DD
 

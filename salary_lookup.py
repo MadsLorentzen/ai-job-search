@@ -204,12 +204,15 @@ def format_entry(entry, metadata):
             count = data.get("count")
             index = data.get("index")
             if count is not None or index is not None:
-                count_str = str(count) if count else "-"
-                if index is not None:
+                count_str = str(count) if count is not None else "-"
+                if isinstance(index, (int, float)):
                     diff = index - baseline
                     sign = "+" if diff >= 0 else ""
                     index_str = f"{index:.1f}"
                     diff_str = f"{sign}{diff:.1f}%"
+                elif index is not None:
+                    index_str = str(index)
+                    diff_str = ""
                 else:
                     index_str = "N/A*"
                     diff_str = ""

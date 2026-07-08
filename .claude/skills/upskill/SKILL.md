@@ -36,9 +36,10 @@ In targeted mode, derive a slug from the job title and company for the report fi
 ### Aggregate mode
 1. Read `job_search_tracker.csv`. Extract all rows. The columns are:
    `date, company, sector, role, role_type, channel, status, contact_person, fit_rating, notes, cv_file, cover_letter_file, source`
-2. For each row, note the `role`, `company`, and `fit_rating`. The `fit_rating` column is a 0–100 score where 100 = perfect fit. You will use it to weight gaps — a lower fit rating means the role exposed more gaps.
-3. Read `.claude/skills/job-application-assistant/01-candidate-profile.md` to get the candidate's current skills and experience.
-4. Check `upskill/` for the most recent aggregate report file (`report-YYYY-MM-DD.md`) — if one exists, note its date and load it for the diff in Step 8.
+2. If `job_search_tracker.csv` is missing or has no tracked jobs, stop and tell the user to run `/outcome` first or use `/upskill <URL>` for targeted mode.
+3. For each row, note the `role`, `company`, and `fit_rating`. The `fit_rating` column is a 0–100 score where 100 = perfect fit. You will use it to weight gaps — a lower fit rating means the role exposed more gaps.
+4. Read `.claude/skills/job-application-assistant/01-candidate-profile.md` to get the candidate's current skills and experience.
+5. Check `upskill/` for the most recent aggregate report file (`report-YYYY-MM-DD.md`) — if one exists, note its date and load it for the diff in Step 8.
 
 ### Targeted mode
 1. Use WebFetch to retrieve the job posting from the URL.
@@ -110,8 +111,8 @@ For every **Critical** and **High** gap (and **Medium** gaps if fewer than 5 tot
 ### For each gap:
 
 1. **Run a WebSearch** to find current, highly-rated study resources. Use queries like:
-   - `"best Kubernetes course 2025 site:reddit.com OR coursera.org OR fast.ai OR missing.csail.mit.edu"`
-   - `"learn [skill] for [domain] 2025 recommendations"`
+   - `"best Kubernetes course <current year> site:reddit.com OR coursera.org OR fast.ai OR missing.csail.mit.edu"`
+   - `"learn [skill] for [domain] <current year> recommendations"`
    Include the current year in the query to avoid stale results.
 
 2. **Pick 2-3 resources** from the search results. Prefer:

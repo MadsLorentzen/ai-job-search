@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { createCLI } from "@bunli/core"
 import { search } from "./commands/search.js"
 import { detail } from "./commands/detail.js"
@@ -6,7 +7,7 @@ import { suggestions } from "./commands/suggestions.js"
 
 const cli = await createCLI({
   name: "jobnet-cli",
-  version: "0.1.0",
+  version: "1.0.0",
   description: "CLI for the Jobnet.dk Danish government job portal API",
 })
 

@@ -49,23 +49,14 @@ def header_matches(header, patterns):
     h = header.lower().strip()
     tokens = set(re.findall(r"[a-zæøåöäü0-9]+", h))
 
-    for p in patterns:
-        if len(p) == 1:
-            if p in tokens:
-                return True
-        elif p in h:
-            return True
-    return False
+    return any(p in tokens for p in patterns)
 
 
 def strip_type_patterns(header, patterns):
     """Remove count/index words from a header to derive a category name."""
     name = header.lower()
     for p in patterns:
-        if len(p) == 1:
-            name = re.sub(rf"\b{re.escape(p)}\b", "", name)
-        else:
-            name = name.replace(p, "")
+        name = re.sub(rf"(?<![a-zæøåöäü0-9]){re.escape(p)}(?![a-zæøåöäü0-9])", "", name)
     return name.strip(" _-")
 
 

@@ -207,12 +207,12 @@ If you prefer editing files directly instead of using `/setup`:
 | File | What to change |
 |------|---------------|
 | `CLAUDE.md` | Your full profile (name, education, experience, skills, goals) |
-| `01-candidate-profile.md` | Structured version of your CV data |
-| `02-behavioral-profile.md` | Your behavioral assessment or self-assessment |
-| `04-job-evaluation.md` | Skill match areas, career goals, motivation filters |
-| `05-cv-templates.md` | Profile statement templates for different role types |
-| `07-interview-prep.md` | Your STAR examples from actual experience |
-| `search-queries.md` | Job search queries for your skills and location |
+| `.claude/skills/job-application-assistant/01-candidate-profile.md` | Structured version of your CV data |
+| `.claude/skills/job-application-assistant/02-behavioral-profile.md` | Your behavioral assessment or self-assessment |
+| `.claude/skills/job-application-assistant/04-job-evaluation.md` | Skill match areas, career goals, motivation filters |
+| `.claude/skills/job-application-assistant/05-cv-templates.md` | Profile statement templates for different role types |
+| `.claude/skills/job-application-assistant/07-interview-prep.md` | Your STAR examples from actual experience |
+| `.claude/skills/job-scraper/search-queries.md` | Job search queries for your skills and location |
 
 ### Updating your search queries
 

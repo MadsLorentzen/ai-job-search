@@ -55,7 +55,7 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
   try {
     const html = await htmlFetch(buildUrl(opts))
     let cards = parseJobCards(html)
-    if (opts.limit && opts.limit > 0) cards = cards.slice(0, opts.limit)
+    if (opts.limit !== undefined && opts.limit >= 0) cards = cards.slice(0, opts.limit)
 
     if (opts.format === "table") {
       process.stdout.write(renderTable(cards) + "\n")

@@ -182,8 +182,8 @@ After all edits are applied, the two files on disk are the final drafts.
 ### 5a. Compile
 
 ```bash
-cd cv && lualatex -interaction=nonstopmode main_<company>.tex
-cd ../cover_letters && xelatex -interaction=nonstopmode cover_<company>_<role>.tex
+(cd cv && lualatex -interaction=nonstopmode -halt-on-error main_<company>.tex)
+(cd cover_letters && xelatex -interaction=nonstopmode -halt-on-error cover_<company>_<role>.tex)
 ```
 
 - CV uses **lualatex** — pdflatex fails on modern MiKTeX with fontawesome5 font-expansion errors. lualatex handles the same sources cleanly.
@@ -277,8 +277,10 @@ Summarize 3-5 key decisions made to tailor the application:
 ### Files Created
 List the files written:
 - `cv/main_<company>.tex`
+- `cv/main_<company>.pdf`
 - `cover_letters/cover_<company>_<role>.tex`
+- `cover_letters/cover_<company>_<role>.pdf`
 
-Tell the user: "Both files are ready for your review. Open them to check the final output before compiling."
+Tell the user: "Both PDFs have been compiled and verified. Open them to review before submitting."
 
 Also mention: once they have actually submitted the application, `/outcome <company>` logs it in the tracker and starts the per-application record that `/setup` later uses to calibrate the fit framework.

@@ -11,7 +11,7 @@ CLI for the [Jobdanmark.dk](https://www.jobdanmark.dk) public job search API.
 ## Installation
 
 ```bash
-cd skills/jobdanmark-search/cli
+cd .agents/skills/jobdanmark-search/cli
 bun install
 ```
 
