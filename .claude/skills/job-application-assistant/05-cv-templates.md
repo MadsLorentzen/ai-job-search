@@ -106,11 +106,11 @@ Write 5-7 lines that function as an "elevator pitch": a concise, compelling intr
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Full-Stack Developer roles:**
+> Full-stack developer who has independently designed and shipped a multi-tenant corporate portal end to end - database, backend, and frontend - using FastAPI, Azure SQL Server, Next.js 15, and React 19. Comfortable owning a project from schema design and row-level security through CI/CD and deployment. Currently completing a Bachelor's in Computer Systems Engineering while working full-time.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For IT Support / Technical Operations roles:**
+> IT Technical Support Specialist providing ITIL-aligned hardware, software, and connectivity support for enterprise operations, alongside hands-on experience automating internal business processes with the Power Platform. Combines day-to-day operational troubleshooting with the ability to build the tools that reduce recurring support load.
 
 ### Core Competencies / Skills Section (Best Practice)
 Reorder and emphasize based on the role. Use bold category labels.

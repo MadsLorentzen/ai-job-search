@@ -4,67 +4,70 @@
 
 ## Search Sites
 
-Primary (Danish job market):
-- **jobindex.dk** - largest Danish job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: Denmark / your city)
-- **karriere.dk** - IDA's job board (engineering/science roles)
-- **jobfinder.dk** - another major Danish job board
-- **akademikernes.dk** - academic union job board
+**Note:** This repo's built-in job-scraper CLI tools (`jobbank-search`, `jobdanmark-search`, `jobindex-search`, `jobnet-search`) are Denmark-specific job portals and are not relevant for a Costa Rica-based search. Only `linkedin-search` applies directly. Until a Costa Rica-specific portal integration is added (see `/add-portal`), rely on LinkedIn and Google `site:` searches against Costa Rican job boards below.
+
+Primary:
+- **linkedin.com/jobs** - LinkedIn job listings (filter: Costa Rica / remote)
+- **elempleo.com** - major Costa Rica/Central America job board
+- **computrabajo.co.cr** - Costa Rica job board
+- **tecoloco.com** - Costa Rica job board
+- **remoteok.com / weworkremotely.com** - remote-first international listings
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for known target companies
 
 ## Query Categories
 
-Queries are grouped by priority. Each query should be combined with your location terms (e.g. "Copenhagen", "Sjælland", "Hovedstaden") where the site supports it.
+Queries are grouped by priority. Each query should be combined with your location terms ("San Jose", "Costa Rica", "Remote") where the site supports it.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: Full-Stack Developer / Software Engineer
 
 These match your strongest and most desired career direction.
 
 ```
-site:jobindex.dk "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:jobindex.dk "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
+site:linkedin.com/jobs "Full-Stack Developer" Costa Rica
+site:linkedin.com/jobs "Software Engineer" Costa Rica OR Remote
+site:computrabajo.co.cr "desarrollador full stack"
+site:elempleo.com "full stack developer" Costa Rica
 ```
 
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
+### Priority 2: Power Platform Developer / Automation
 
-These match your domain expertise.
-
-```
-site:jobindex.dk [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:jobindex.dk [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
-```
-
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
-
-Adjacent roles you could pivot into.
+These match your domain expertise (Power Platform, business process automation).
 
 ```
-site:jobindex.dk "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:jobindex.dk "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
+site:linkedin.com/jobs "Power Platform Developer" Costa Rica OR Remote
+site:linkedin.com/jobs "Power Automate" OR "Power Apps" Costa Rica
+site:computrabajo.co.cr "power apps" OR "power automate"
 ```
 
-### Priority 4: Broader Technical / Consulting
+### Priority 3: IT Support Specialist / Junior Developer
 
-Wider net for general technical roles.
+Adjacent roles you could pivot into or use as a stepping stone.
 
 ```
-site:jobindex.dk [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:jobindex.dk "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:linkedin.com/jobs "IT Support Specialist" Costa Rica
+site:linkedin.com/jobs "Junior Developer" Costa Rica OR Remote
+site:computrabajo.co.cr "soporte tecnico" OR "junior developer"
+```
+
+### Priority 4: Broader Technical / AI Integration
+
+Wider net for general technical roles, including AI/LLM-adjacent postings.
+
+```
+site:linkedin.com/jobs "React developer" OR "Next.js developer" Remote
+site:linkedin.com/jobs "AI" "chatbot" developer Remote
+site:elempleo.com "desarrollador" Costa Rica
 ```
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+When evaluating results, verify the job location fits the constraints below. Define acceptable areas:
+- San Jose, Costa Rica and surrounding metro area
+- Remote roles anywhere in Costa Rica
+- Fully remote international roles (no relocation required)
+- Roles requiring relocation (too far - deal-breaker, exclude)
 
 ## Date Filter
 

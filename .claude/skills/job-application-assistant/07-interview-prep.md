@@ -35,6 +35,33 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
 
+## STAR Candidates (Complete Manually)
+
+### CRG Internal Portal - Multi-Tenant Row-Level Security (Full-Stack Ownership)
+**Source:** CV - CRG Solutions (on-site at Heineken), Full-Stack Developer (Solo)
+**What happened:** Independently designed and built a multi-tenant corporate portal end to end, including engine-level row-level security in Azure SQL across 3 schemas.
+**Why it matters:** Ownership/initiative questions, technical depth questions on security/database design, "biggest project you built alone"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Power Automate Reservation System Turnaround Time (Process Automation Impact)
+**Source:** CV - Business Technologies Automation Intern, Bimbo Global Services
+**What happened:** Automated internal workflows with Power Automate, reducing request and reservation management turnaround time.
+**Why it matters:** "Tell me about a time you improved a process", measurable-impact questions
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Wildlife Tracking System - Scalable GPS Data Platform (Academic Project Under Constraints)
+**Source:** CV - Academic Project (Wildlife Tracking System in National Parks)
+**What happened:** Built a web platform handling large volumes of real-time GPS tracking data with a responsive interface, for conservation use.
+**Why it matters:** "Tell me about a technically challenging project", questions on working independently/academically without a team
+
 ## Common Tough Questions
 
 ### "Why did you leave [previous company]?"

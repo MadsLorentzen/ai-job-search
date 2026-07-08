@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Jesus Mejia Arcila
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Jesus Mejia Arcila, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,68 +10,60 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
-
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Name:** Jesus Mejia Arcila
+- **Location:** San Jose, Costa Rica (open to remote and roles across Costa Rica; not open to relocation)
+- **Languages:** Spanish (Native), English (Professional Working Proficiency, B2)
+- **Status:** Employed full-time (CRG Solutions), concurrently finishing Bachelor's degree
+- **LinkedIn headline:** "Full-Stack Developer | Systems Engineering Student"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **Bachelor's Degree in Computer Systems Engineering** (2023-Present) - Universidad Fidelitas (UFide), San Jose, Costa Rica
+- **High School Diploma & Technical Degree, Service Center Executive** (2019-2021) - Colegio Tecnico Profesional de Pavas
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **IT Technical Support Specialist** (February 2025 - Present) - **CRG Solutions (on-site at Heineken)** (San Jose, Costa Rica)
+  - Provide technical IT support for Heineken operations, resolving hardware, software, and connectivity incidents
+  - Diagnose and escalate issues following ITIL-aligned support procedures
+  - Independently designed and developed the company's internal corporate portal (Next.js, Vercel) covering hardware inventory, software catalog with approval workflows, knowledge base, and Microsoft OAuth authentication
+- **Business Technologies Automation Intern** (March 2025 - September 2025) - **Bimbo Global Services**
+  - Developed and deployed internal applications using Power Apps and Power Pages with Dataverse and SharePoint
+  - Automated internal workflows with Power Automate, reducing request and reservation management turnaround time
+  - Designed end-to-end solutions for internal ticketing, parking/cubicle reservations, and digital inspections across DEV, QA, and PROD environments
+- **Administrative Intern** (October 2021 - December 2021) - **Office of the Attorney General of the Republic**
+  - Managed and digitized the institution's physical and digital document archives
+  - Improved retrieval times and contributed practical improvements to document management workflows
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Python (FastAPI), JavaScript/TypeScript (React 19, Next.js 15), C# (ASP.NET Core), Java (Spring Boot)
+- **Secondary:** Docker, GitHub Actions (CI/CD), Azure SQL Server (T-SQL), MySQL, JWT/Microsoft SSO/Row-Level Security, Groq API/Llama 3
+- **Domain:** Full-stack web development (solo end-to-end delivery), business process automation (Power Platform), multi-tenant SaaS architecture, IT technical support (ITIL-aligned)
+- **Software:** Power Apps, Power Automate, Power Pages, Dataverse, SharePoint, Git/GitHub, Microsoft Office
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+None yet.
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+None yet.
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+None yet.
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+See `.claude/skills/job-application-assistant/02-behavioral-profile.md` (not yet completed - run `/setup --section behavioral` or answer interview-mode questions to fill this in).
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Owning full-stack projects end-to-end with more scale and autonomy
+- Specializing further in applied AI/LLM integration (chatbots, LLM-powered features)
+- Deepening business process automation / Power Platform specialism
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- Full-stack / software engineering roles (Costa Rica and remote)
+- IT automation / Power Platform roles
+- AI-integration-adjacent full-stack roles
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Roles requiring relocation
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

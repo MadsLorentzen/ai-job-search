@@ -16,9 +16,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Full-stack web development (React/Next.js frontend, FastAPI/ASP.NET Core backend), Power Platform business automation (Power Apps, Power Automate, Power Pages, Dataverse, SharePoint), multi-tenant architecture, database design (Azure SQL/T-SQL, MySQL, SQL Server)
+**Moderate match areas:** AI/LLM integration (Groq/Llama 3 chatbots - applied use, not model training), DevOps/CI-CD (Docker, GitHub Actions), IT technical support (ITIL-aligned)
+**Weak match areas:** Machine learning/data science (model development, not just LLM API integration), formal degree not yet completed (in progress), enterprise-scale team leadership
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -30,9 +30,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** Full-stack developer roles (solo end-to-end delivery), IT support/helpdesk roles, business process automation/Power Platform roles
+**Moderate:** Backend/API engineer roles, junior DevOps roles, technical consultant/solutions engineer roles
+**Entry-level:** Senior/lead engineering roles, ML/data science roles, roles requiring a completed degree
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
