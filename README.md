@@ -55,6 +55,19 @@ cd ai-job-search
 
 ### 2. Install job search tools
 
+PowerShell:
+
+```powershell
+$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search")
+foreach ($tool in $tools) {
+  Set-Location ".agents/skills/$tool/cli"
+  bun install
+  Set-Location "..\..\..\.."
+}
+```
+
+Bash / zsh / Git Bash:
+
 ```bash
 cd .agents/skills/jobbank-search/cli && bun install && cd ../../../..
 cd .agents/skills/jobdanmark-search/cli && bun install && cd ../../../..
