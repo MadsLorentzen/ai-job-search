@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { rssFetch, fetchWithUA, writeError, parseRssDescription, extractJobIdFromUrl, BASE_URL } from "../helpers.js"
+import { rssFetch, fetchWithUA, writeError, parseRssDescription, extractJobIdFromUrl, capResults, BASE_URL } from "../helpers.js"
 
 export const search = defineCommand({
   name: "search",
@@ -152,9 +152,7 @@ export const search = defineCommand({
       })
 
       // Apply limit
-      if (flags.limit !== undefined) {
-        results = results.slice(0, flags.limit)
-      }
+      results = capResults(results, flags.limit)
 
       const output = { meta: { total }, results }
 
