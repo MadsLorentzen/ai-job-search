@@ -75,11 +75,13 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
       "url": "...",
       "first_seen": "YYYY-MM-DD",
       "fit": "high/medium/low",
-      "status": "new/skipped/evaluated/ranked/expired"
+      "status": "new/skipped/evaluated/ranked/expired",
+      "deadline": "YYYY-MM-DD" | null
     }
   }
 }
 ```
+Include `deadline` whenever the posting lists an application deadline. Set to `null` if no deadline is found.
 2. Only present jobs NOT already in the seen list or tracker.
 
 ### Step 5: Present Results

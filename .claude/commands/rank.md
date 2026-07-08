@@ -77,8 +77,8 @@ Sort by overall score (descending), urgency as tiebreaker.
 
 Update `job_scraper/seen_jobs.json` in place - these fields are additive to the scraper's schema:
 
-- Ranked jobs: set `"status": "ranked"` and add `"rank_score": <overall>`, `"rank_verdict": "<band>"`, `"rank_date": "YYYY-MM-DD"`
-- Dead or past-deadline jobs: set `"status": "expired"`
+- Ranked jobs: set `"status": "ranked"` and add `"rank_score": <overall>`, `"rank_verdict": "<band>"`, `"rank_date": "YYYY-MM-DD"`, and `"deadline": "<date>"` (from the agent's output; `null` if no deadline was found)
+- Dead or past-deadline jobs: set `"status": "expired"` and `"deadline": "<date>"` (so the expiry is traceable)
 
 Do not modify `job_search_tracker.csv` - that file records applications, and `/rank` never applies. Re-running `/rank` is idempotent: already-`ranked` jobs are skipped unless `--all` re-scores them.
 

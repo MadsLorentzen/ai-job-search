@@ -16,7 +16,7 @@ Follow these steps **exactly in order**. Do not skip steps.
 
 - If `$ARGUMENTS` looks like a URL, use `WebFetch` to retrieve the job posting content.
 - If it is pasted text, use it directly.
-- Extract: **company name**, **role title**, **department** (if mentioned), **location**, and **language** of the posting (Danish or English).
+- Extract: **company name**, **role title**, **department** (if mentioned), **location**, **application deadline** (if listed), and **language** of the posting (Danish or English).
 - Store these for use throughout the workflow.
 
 ---
@@ -41,7 +41,8 @@ Present the evaluation to the user with:
 2. **Experience match** - how work history maps to the role
 3. **Behavioral/culture match** - how behavioral profile fits the role/company culture
 4. **Salary benchmark** - salary index for the company (if available)
-5. **Overall fit score** and recommendation (strong fit / moderate fit / weak fit)
+5. **Application deadline** - if extracted in Step 0, show the date prominently. If within 7 days, add a 🔥 marker with the number of days remaining.
+6. **Overall fit score** and recommendation (strong fit / moderate fit / weak fit)
 
 After presenting the evaluation, ask the user:
 > "Should I proceed with drafting the CV and cover letter for this role?"
