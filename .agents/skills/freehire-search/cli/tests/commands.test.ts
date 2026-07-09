@@ -41,6 +41,7 @@ function job(overrides: Partial<FreehireJob> = {}): FreehireJob {
     cities: ["Berlin"],
     posted_at: "2026-07-06T00:00:00Z",
     created_at: "2026-07-06T15:00:00Z",
+    enrichment: {},
     ...overrides,
   };
 }

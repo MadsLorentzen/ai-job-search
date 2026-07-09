@@ -1,23 +1,12 @@
-// Data source: the freehire.dev public REST API (JSON). Reads are unauthenticated
-// — no API key — so a search/detail skill needs no credentials, the same bar as
-// linkedin-search. The API returns a `{ "data": ..., "meta": {...} }` envelope, so
-// unlike the HTML-scraping portal skills there is no markup to parse: we fetch
-// JSON and reshape it into the portal-skill contract's result fields.
-//
-// Hosted-service dependency: this skill talks to freehire.dev, a personal project
-// maintained on a best-effort basis (no formal SLA). If the API is unreachable the
-// CLI exits non-zero with a clear error rather than hanging, so an outage degrades
-// gracefully instead of breaking the caller. The base URL is swappable via the
-// FREEHIRE_API_URL env var (see baseUrl) for self-hosting.
+// Data source: the freehire.dev public REST API (JSON, `{data, meta}` envelope).
+// Reads are unauthenticated — no API key, the same bar as linkedin-search — and
+// unlike the HTML-scraping portals there is no markup to parse: we fetch JSON and
+// reshape it into the portal-skill contract's result fields. The base URL is
+// swappable via FREEHIRE_API_URL for self-hosting.
 
 export const DEFAULT_BASE_URL = "https://freehire.dev"
 
-/**
- * Resolve the API base URL. Defaults to https://freehire.dev; override with the
- * FREEHIRE_API_URL env var to point at a self-hosted instance (the freehire
- * backend stands up via Docker Compose on the same /api/v1/... paths). Trailing
- * slashes are trimmed so path concatenation stays clean.
- */
+/** API base URL: FREEHIRE_API_URL (for a self-hosted instance) or the default. */
 export function baseUrl(): string {
   const raw = (process.env.FREEHIRE_API_URL ?? "").trim()
   return (raw || DEFAULT_BASE_URL).replace(/\/+$/, "")
@@ -37,13 +26,10 @@ export interface Envelope<T> {
 }
 
 /**
- * GET a JSON envelope from the freehire API with exponential backoff on 429/5xx.
- * Returns `null` on a 404 (caller decides whether that is "no results" or
- * "not found"). A connection failure (API unreachable) fails fast with a clear
- * message — no retry, since a refused connection is not transient server load,
- * and failing fast is what the graceful-degradation contract wants (an outage
- * should degrade this source quickly, never hang the caller). Only 429/5xx —
- * genuine transient server states — are retried.
+ * GET a JSON envelope from the freehire API. Retries 429/5xx (transient server
+ * states) with backoff; returns `null` on a 404. A connection failure fails fast
+ * with a clear message — no retry, so an outage degrades this source quickly
+ * rather than hanging the caller (the graceful-degradation contract).
  */
 export async function apiGet<T>(path: string): Promise<Envelope<T> | null> {
   const url = `${baseUrl()}${path}`
@@ -73,11 +59,15 @@ export async function apiGet<T>(path: string): Promise<Envelope<T> | null> {
       continue
     }
     if (response.status === 404) return null
+
+    // Read the body once, tolerantly: an error response's JSON gives us its
+    // `error` message; a 2xx must parse (a malformed one is surfaced, not swallowed).
+    const body = (await response.json().catch(() => null)) as Envelope<T> | null
     if (!response.ok) {
-      const body = await safeJson(response)
       throw new Error(body?.error || `freehire API request failed: ${response.status} ${response.statusText}`)
     }
-    return (await response.json()) as Envelope<T>
+    if (!body) throw new Error("freehire API returned an unparseable response body")
+    return body
   }
   // Unreachable in practice; the loop returns or throws on the last attempt.
   throw new Error("freehire API request failed after retries")
@@ -87,18 +77,8 @@ function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-async function safeJson(response: Response): Promise<{ error?: string } | null> {
-  try {
-    return (await response.json()) as { error?: string }
-  } catch {
-    return null
-  }
-}
-
 /**
- * A freehire job as served by the API (the fields this skill reads — the wire
- * shape carries more). The dictionary facets (skills/regions/countries/cities)
- * are always present as arrays; work_mode may be absent.
+ * A freehire job — the fields this skill reads (the wire shape carries more).
  */
 export interface FreehireJob {
   public_slug: string
@@ -117,7 +97,9 @@ export interface FreehireJob {
   cities: string[]
   posted_at: string | null
   created_at: string | null
-  enrichment?: {
+  // Always present in the wire shape (an unenriched job serializes it as `{}`);
+  // the individual fields are what may be absent.
+  enrichment: {
     seniority?: string
     category?: string
     employment_type?: string
@@ -128,10 +110,9 @@ export interface FreehireJob {
 }
 
 /**
- * A search result in the portal-skill contract shape. `id` is the freehire
- * public_slug (what `detail <slug>` consumes); `date` is the posting date. The
- * richer facet fields are a superset the contract permits. Missing values are
- * `null`, never omitted.
+ * A search result in the portal-skill contract shape. `id` is the public_slug
+ * (what `detail <slug>` consumes) and `date` is the posting date; missing values
+ * are `null`, never omitted. The extra facet fields are a permitted superset.
  */
 export interface JobResult {
   id: string
@@ -165,21 +146,21 @@ export function toResult(j: FreehireJob): JobResult {
     company: j.company || null,
     company_slug: j.company_slug || null,
     location: j.location || null,
-    date: j.posted_at ?? null,
+    date: j.posted_at,
     url: j.url,
     work_mode: j.work_mode || null,
-    regions: j.regions ?? [],
-    countries: j.countries ?? [],
-    skills: j.skills ?? [],
+    regions: j.regions,
+    countries: j.countries,
+    skills: j.skills,
   }
 }
 
 /** Reshape a freehire job into the detail result (adds cleaned description + enrichment). */
 export function toDetail(j: FreehireJob): JobDetailResult {
-  const e = j.enrichment ?? {}
+  const e = j.enrichment
   return {
     ...toResult(j),
-    cities: j.cities ?? [],
+    cities: j.cities,
     seniority: e.seniority || null,
     category: e.category || null,
     employment_type: e.employment_type || null,
@@ -189,7 +170,7 @@ export function toDetail(j: FreehireJob): JobDetailResult {
 }
 
 /** Human-readable salary line from the enrichment fields, or null when absent. */
-function formatSalary(e: NonNullable<FreehireJob["enrichment"]>): string | null {
+function formatSalary(e: FreehireJob["enrichment"]): string | null {
   if (e.salary_min == null && e.salary_max == null) return null
   const cur = e.salary_currency ? `${e.salary_currency} ` : ""
   if (e.salary_min != null && e.salary_max != null) return `${cur}${e.salary_min}–${e.salary_max}`
@@ -214,9 +195,8 @@ function decodeHtmlEntities(text: string): string {
 }
 
 /**
- * freehire descriptions carry HTML (<ul><li>…). Strip tags into readable text,
- * turning block/line-break tags into newlines and decoding entities, so `detail`
- * output reads as prose rather than markup. Returns null for an empty result.
+ * Strip a freehire description's HTML into readable prose: block/line-break tags
+ * become newlines, entities are decoded, tags removed. Null for empty input.
  */
 export function cleanHtml(html: string | null | undefined): string | null {
   if (!html) return null

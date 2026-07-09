@@ -85,7 +85,7 @@ Key flags:
 - `--format json|table|plain` — default `json`.
 
 Facet filters (values come from freehire's controlled vocabularies; comma-separate for OR within a facet):
-- `--region <codes>` — macro-region, e.g. `global`, `eu`, `us`, `apac`, `latam`, `cis`. `--region eu,us`
+- `--region <codes>` — macro-region, e.g. `global`, `eu`, `us`, `apac`, `latam`, `cis`. `--region eu,us`. Use `none` to match jobs whose region could **not** be resolved (see "Partial data" below).
 - `--country <codes>` — ISO-3166 alpha-2, e.g. `--country DE,GB`
 - `--city <names>` — city name(s), e.g. `--city Berlin`
 - `--seniority <levels>` — `junior`, `middle`, `senior`, `staff`, `principal`, `lead`, …
@@ -143,6 +143,22 @@ Search JSON is `{ "meta": { "count", "page", "total" }, "results": [...] }`; eac
 result carries at least `id` (the freehire slug), `title`, `company`, `location`,
 `date`, and `url` (missing values are `null`). All errors are written to **stderr**
 as `{ "error": "...", "code": "..." }` and the process exits with code `1`.
+
+## Partial data
+
+Facets are derived per-posting and can be **incomplete** — geography especially.
+A job may resolve its `work_mode` (e.g. `remote`) but leave its **region or
+country undetermined** when the source's location text is ambiguous (freehire's
+dictionaries never guess). So:
+
+- A missing region/country means "not resolved", **not** "not applicable" —
+  filtering on `--region eu` silently drops jobs whose region wasn't resolved,
+  even if they are in fact EU. Widen or drop the facet if you need those back.
+- There is a dedicated facet value for the unresolved bucket: `--region none`
+  matches jobs with **no** resolved region — useful to sweep up remote roles that
+  never pinned a geography. It ORs with real regions, e.g. `--region eu,none`.
+- `result.regions` / `countries` / `cities` may be empty arrays for the same
+  reason; treat empty as unknown, not as "none of the above".
 
 ## Notes
 

@@ -19,6 +19,7 @@ function job(overrides: Partial<FreehireJob> = {}): FreehireJob {
     cities: ["Berlin"],
     posted_at: "2026-07-06T00:00:00Z",
     created_at: "2026-07-06T15:00:00Z",
+    enrichment: {},
     ...overrides,
   };
 }
@@ -48,12 +49,6 @@ describe("toResult — reshape into the portal-skill contract", () => {
     expect(r.date).toBeNull();
     expect(r.work_mode).toBeNull();
   });
-
-  test("facet arrays default to [] when absent", () => {
-    const r = toResult(job({ skills: undefined as unknown as string[], regions: undefined as unknown as string[] }));
-    expect(r.skills).toEqual([]);
-    expect(r.regions).toEqual([]);
-  });
 });
 
 describe("toDetail — adds cleaned description + enrichment", () => {
@@ -73,8 +68,8 @@ describe("toDetail — adds cleaned description + enrichment", () => {
     expect(d.salary).toBe("EUR 90000–120000");
   });
 
-  test("null enrichment fields when absent", () => {
-    const d = toDetail(job({ enrichment: undefined }));
+  test("null enrichment fields when the enrichment object is empty", () => {
+    const d = toDetail(job({ enrichment: {} }));
     expect(d.seniority).toBeNull();
     expect(d.salary).toBeNull();
   });

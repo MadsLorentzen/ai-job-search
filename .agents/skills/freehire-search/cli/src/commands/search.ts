@@ -24,53 +24,68 @@ function buildQuery(opts: SearchOpts): URLSearchParams {
   if (opts.query) p.set("q", opts.query)
   p.set("limit", String(opts.limit))
   p.set("offset", String((opts.page - 1) * opts.limit))
-  // Keyword search, matching the freehire web client (semantic index is opt-in).
-  p.set("semantic_ratio", "0")
+  p.set("semantic_ratio", "0") // keyword search; the semantic index is opt-in
   if (opts.jobage > 0 && opts.jobage < 9999) p.set("posted_within_days", String(opts.jobage))
   if (opts.workMode) p.set("work_mode", opts.workMode)
   if (opts.company) p.set("company_slug", opts.company)
 
-  const multi: Array<[string, string[]]> = [
+  // Named facets and the generic --facet escape hatch append the same way; values
+  // are already split into lists, so each becomes one repeated query param.
+  const facets: Array<[string, string[]]> = [
     ["regions", opts.regions],
     ["countries", opts.countries],
     ["cities", opts.cities],
     ["seniority", opts.seniority],
     ["category", opts.category],
     ["skills", opts.skills],
+    ...Object.entries(opts.facets),
   ]
-  for (const [param, values] of multi) {
-    for (const v of values) if (v) p.append(param, v)
-  }
-  for (const [param, values] of Object.entries(opts.facets)) {
-    for (const v of values) if (v) p.append(param, v)
+  for (const [param, values] of facets) {
+    for (const value of values) p.append(param, value)
   }
   return p
 }
 
+/** The date portion (YYYY-MM-DD) of an ISO timestamp, or "—" when absent. */
+function shortDate(date: string | null): string {
+  return date ? date.slice(0, 10) : "—"
+}
+
+// Table columns: header, width, and the cell value. The SLUG column is sized to
+// the longest slug so it is never truncated — a cut slug can't be looked up in
+// `detail`; the fixed-width columns truncate for scanning.
+interface Column {
+  header: string
+  width: number
+  cell: (r: JobResult) => string
+}
+
 function renderTable(rows: JobResult[]): string {
   if (rows.length === 0) return "No results."
-  // The slug is the `detail` key, so it is NEVER truncated (a cut slug can't be
-  // looked up); it is only padded to a shared min width. Other columns are
-  // truncated for scanning. Long slugs make a row ragged — a deliberate trade
-  // for a copy-pasteable id.
-  const slugWidth = Math.max(4, ...rows.map((r) => r.id.length))
-  const line = (id: string, title: string, company: string, loc: string, date: string) =>
-    `${id.padEnd(slugWidth)}  ${title.slice(0, 38).padEnd(38)} ${company.slice(0, 22).padEnd(22)} ${loc.slice(0, 20).padEnd(20)} ${date}`
-  const header = line("SLUG", "TITLE", "COMPANY", "LOCATION", "DATE")
-  const body = rows.map((r) =>
-    line(r.id, r.title || "", r.company || "—", r.location || "—", (r.date || "—").slice(0, 10)),
-  )
+  const columns: Column[] = [
+    { header: "SLUG", width: Math.max(4, ...rows.map((r) => r.id.length)), cell: (r) => r.id },
+    { header: "TITLE", width: 38, cell: (r) => r.title },
+    { header: "COMPANY", width: 22, cell: (r) => r.company ?? "—" },
+    { header: "LOCATION", width: 20, cell: (r) => r.location ?? "—" },
+    { header: "DATE", width: 10, cell: (r) => shortDate(r.date) },
+  ]
+  const row = (cells: string[]) => cells.map((c, i) => c.slice(0, columns[i].width).padEnd(columns[i].width)).join("  ")
+
+  const header = row(columns.map((c) => c.header))
+  const body = rows.map((r) => row(columns.map((c) => c.cell(r))))
   return [header, "-".repeat(header.length), ...body].join("\n")
 }
 
 function renderPlain(rows: JobResult[]): string {
   if (rows.length === 0) return "No results."
-  return rows
-    .map(
-      (r) =>
-        `${r.title}\n  ${r.company || "—"} · ${r.location || "—"} · ${(r.date || "—").slice(0, 10)}\n  slug: ${r.id}\n  ${r.url}`,
-    )
-    .join("\n\n")
+  const block = (r: JobResult) =>
+    [
+      r.title,
+      `  ${r.company ?? "—"} · ${r.location ?? "—"} · ${shortDate(r.date)}`,
+      `  slug: ${r.id}`,
+      `  ${r.url}`,
+    ].join("\n")
+  return rows.map(block).join("\n\n")
 }
 
 export async function runSearch(opts: SearchOpts): Promise<number> {

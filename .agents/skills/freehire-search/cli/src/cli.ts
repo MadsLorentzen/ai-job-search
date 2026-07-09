@@ -48,8 +48,20 @@ function parseFlags(argv: string[]): Flags {
   return flags
 }
 
+type FlagValue = string | boolean | string[] | undefined
+
+/**
+ * A flag's string value. A bare flag (set without a value, i.e. `true`) yields
+ * `whenBare` — e.g. `--remote` alone means work_mode "remote".
+ */
+function stringFlag(raw: FlagValue, whenBare?: string): string | undefined {
+  if (typeof raw === "string") return raw
+  if (raw === true) return whenBare
+  return undefined
+}
+
 /** Split a comma-separated facet value ("eu,us") into a trimmed value list. */
-function commaList(raw: string | boolean | string[] | undefined): string[] {
+function commaList(raw: FlagValue): string[] {
   if (typeof raw !== "string") return []
   return raw
     .split(",")
@@ -125,11 +137,6 @@ async function main(): Promise<number> {
       }
     }
 
-    // --remote <mode> takes the given work_mode; a bare --remote defaults to "remote".
-    let workMode: string | undefined
-    if (typeof flags.remote === "string") workMode = flags.remote
-    else if (flags.remote === true) workMode = "remote"
-
     // Generic --facet key=value list -> param -> values.
     const facets: Record<string, string[]> = {}
     const rawFacets = Array.isArray(flags.facet) ? flags.facet : []
@@ -145,7 +152,7 @@ async function main(): Promise<number> {
     }
 
     const opts: SearchOpts = {
-      query: typeof flags.query === "string" ? flags.query : undefined,
+      query: stringFlag(flags.query),
       jobage: flags.jobage ? parseInt(flags.jobage as string, 10) : 9999,
       page: flags.page ? Math.max(1, parseInt(flags.page as string, 10)) : 1,
       limit: flags.limit ? Math.max(1, parseInt(flags.limit as string, 10)) : 25,
@@ -156,8 +163,9 @@ async function main(): Promise<number> {
       seniority: commaList(flags.seniority),
       category: commaList(flags.category),
       skills: commaList(flags.skill),
-      company: typeof flags.company === "string" ? flags.company : undefined,
-      workMode,
+      company: stringFlag(flags.company),
+      // --remote <mode> takes the given work_mode; a bare --remote means "remote".
+      workMode: stringFlag(flags.remote, "remote"),
       facets,
     }
     return runSearch(opts)

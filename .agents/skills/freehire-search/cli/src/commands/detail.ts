@@ -1,8 +1,26 @@
-import { apiGet, normalizeSlug, toDetail, writeError, type FreehireJob } from "../helpers.js"
+import { apiGet, normalizeSlug, toDetail, writeError, type FreehireJob, type JobDetailResult } from "../helpers.js"
 
 export interface DetailOpts {
   id: string // a freehire public slug or a /jobs/<slug> URL
   format: "json" | "plain"
+}
+
+/** A human-readable rendering of one job: header, present fields, description. */
+function renderPlain(job: JobDetailResult): string {
+  const lines = [job.title, `${job.company ?? "—"} · ${job.location ?? "—"}`]
+
+  const field = (label: string, value: string | null) => {
+    if (value) lines.push(`${label}: ${value}`)
+  }
+  field("Posted", job.date && job.date.slice(0, 10))
+  field("Seniority", job.seniority)
+  field("Category", job.category)
+  field("Employment", job.employment_type)
+  field("Salary", job.salary)
+  field("Skills", job.skills.length ? job.skills.join(", ") : null)
+
+  lines.push("", job.description ?? "(no description)", "", `URL: ${job.url}`, `slug: ${job.id}`)
+  return lines.join("\n")
 }
 
 export async function runDetail(opts: DetailOpts): Promise<number> {
