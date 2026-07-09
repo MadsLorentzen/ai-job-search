@@ -1,9 +1,5 @@
 ---
-name: scrape
-description: >
-  Scrapes Danish job sites for new positions matching your profile. Deduplicates across runs.
-  Triggers on: job scrape, find jobs, search jobs, new jobs, job search, scrape jobs, /scrape
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run .agents/skills/*/cli/src/cli.ts *), WebFetch, WebSearch, Agent, AskUserQuestion
+description: Search job portals for new positions matching your profile. Runs portal CLI tools, deduplicates against seen jobs, and presents new matches with quick fit assessment.
 ---
 
 # Job Scraper
@@ -62,7 +58,7 @@ For each installed portal skill:
 4. Cap results to ~20 per call using the portal's limit flag.
 5. Use `--format json` for machine-readable output.
 
-Run all portal CLI calls in parallel where possible using the Agent tool. Collect all `results` arrays into a single pool for Step 2.
+Run all portal CLI calls in parallel where possible using task tools. Collect all `results` arrays into a single pool for Step 2.
 
 If a CLI tool exits with a non-zero code, log the error message and continue — do not abort the whole search.
 
@@ -150,4 +146,4 @@ If the user decides to apply to any job, add a row to `job_search_tracker.csv`.
 3. **Focus on configured geographic area.** Skip jobs that require relocation or are clearly outside commute range.
 4. **Only open positions.** Skip postings with expired deadlines or those marked as closed.
 5. **Be efficient with WebFetch.** Don't fetch every search result - use titles and snippets to pre-filter before fetching.
-6. **Parallel searches.** Use the Agent tool or parallel WebSearch calls to speed up the search phase.
+6. **Parallel searches.** Use task tools or parallel WebSearch calls to speed up the search phase.

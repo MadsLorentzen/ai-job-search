@@ -1,15 +1,9 @@
 ---
 name: job-application-assistant
-description: >
-  Assists with job applications: evaluating job postings, tailoring CVs, writing cover letters,
-  and preparing for interviews. Triggers on keywords like: job posting, job application, CV,
-  cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling
-allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Edit, Write, AskUserQuestion
+description: Use ONLY when the task involves evaluating a job posting, tailoring a CV, writing a cover letter, preparing for an interview, or assessing job fit. Triggered by: job posting, job application, CV, cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling.
 ---
 
 # Job Application Assistant
-
----
 
 ## Workflow
 
@@ -42,8 +36,6 @@ When the user provides a job posting (URL or text), follow this workflow:
 - Identify role-specific talking points
 - Draft questions the candidate should ask the interviewer
 
----
-
 ## Reference Files
 
 | File | Purpose |
@@ -55,14 +47,3 @@ When the user provides a job posting (URL or text), follow this workflow:
 | `05-cv-templates.md` | LaTeX CV structure and tailoring rules |
 | `06-cover-letter-templates.md` | LaTeX cover letter structure and tailoring rules |
 | `07-interview-prep.md` | STAR examples, tough questions, roleplay guidelines |
-
----
-
-## Quick Commands
-
-The user may also ask for individual steps without the full workflow:
-- "Evaluate this job posting" - Step 1 only
-- "Write a CV for [company]" - Step 2 only
-- "Write a cover letter for [role] at [company]" - Step 3 only
-- "Help me prepare for an interview at [company]" - Step 4 only
-- "What jobs should I look for?" - Career strategy discussion using profile + evaluation framework

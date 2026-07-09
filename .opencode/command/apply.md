@@ -1,3 +1,7 @@
+---
+description: Full drafter-reviewer job application workflow for a job posting URL or text. Evaluates fit, drafts tailored CV and cover letter in LaTeX, critiques with a reviewer agent, revises, compiles PDFs, and runs ATS verification.
+---
+
 # /apply - Drafter-Reviewer Job Application Workflow
 
 You are orchestrating a two-agent job application workflow. The job posting is provided below as `$ARGUMENTS` (either a URL or pasted text).
@@ -24,8 +28,8 @@ Follow these steps **exactly in order**. Do not skip steps.
 ## Step 1: DRAFTER - Evaluate Fit
 
 Read the evaluation framework:
-- `.claude/skills/job-application-assistant/04-job-evaluation.md`
-- `.claude/skills/job-application-assistant/01-candidate-profile.md`
+- `.opencode/skill/job-application-assistant/04-job-evaluation.md`
+- `.opencode/skill/job-application-assistant/01-candidate-profile.md`
 
 Using the framework from `04-job-evaluation.md`, evaluate the job posting against the candidate's profile. If the salary lookup tool is configured, run:
 
@@ -55,9 +59,9 @@ After presenting the evaluation, ask the user:
 You already have `01-candidate-profile.md` and `04-job-evaluation.md` in context from Step 1. **Do not re-read them.**
 
 Read only the reference files you do not yet have:
-- `.claude/skills/job-application-assistant/03-writing-style.md`
-- `.claude/skills/job-application-assistant/05-cv-templates.md`
-- `.claude/skills/job-application-assistant/06-cover-letter-templates.md`
+- `.opencode/skill/job-application-assistant/03-writing-style.md`
+- `.opencode/skill/job-application-assistant/05-cv-templates.md`
+- `.opencode/skill/job-application-assistant/06-cover-letter-templates.md`
 
 Also read the most recent existing CV and cover letter files for concrete structural reference (one of each is enough):
 - Read any existing `cv/main_*.tex` file as a LaTeX template reference
@@ -85,7 +89,7 @@ Write both files to disk. Keep the exact text of both drafts in working memory �
 
 ## Step 3: REVIEWER - Research & Critique
 
-Use the **Agent tool** to spawn a `general-purpose` reviewer agent. The reviewer gets a fresh context, so pass the drafts **inline in the prompt** below (do not make the reviewer Read them). Scope the reviewer's file reads to content-critique essentials only — the reviewer does not need the LaTeX template files (`05`, `06`) to critique content, since those govern structural/LaTeX concerns the drafter already applied.
+Use the **`task` tool** to dispatch the `reviewer` subagent. The reviewer gets a fresh context, so pass the drafts **inline in the task prompt** below (do not make the reviewer Read them). Scope the reviewer's file reads to content-critique essentials only — the reviewer does not need the LaTeX template files (`05`, `06`) to critique content, since those govern structural/LaTeX concerns the drafter already applied.
 
 Replace `<COMPANY>`, `<ROLE>`, `<INSERT_JOB_POSTING_TEXT_HERE>`, `<INSERT_CV_DRAFT_HERE>`, and `<INSERT_COVER_LETTER_DRAFT_HERE>` with actual values before dispatching.
 
@@ -103,10 +107,10 @@ Use WebSearch and WebFetch to research:
 
 ### 2. Read Reference Materials (content-critique only)
 Read these four files — and only these — to ground your critique:
-- `.claude/skills/job-application-assistant/01-candidate-profile.md`
-- `.claude/skills/job-application-assistant/02-behavioral-profile.md` — use this specifically to check whether the cover letter's voice matches the candidate's natural register. A "Collaborator" PI profile, for example, should not be given a combative, solo-hero tone; a "Persuader" profile should not be given over-hedged, apologetic phrasing.
-- `.claude/skills/job-application-assistant/03-writing-style.md`
-- `.claude/skills/job-application-assistant/04-job-evaluation.md`
+- `.opencode/skill/job-application-assistant/01-candidate-profile.md`
+- `.opencode/skill/job-application-assistant/02-behavioral-profile.md` — use this specifically to check whether the cover letter's voice matches the candidate's natural register. A "Collaborator" PI profile, for example, should not be given a combative, solo-hero tone; a "Persuader" profile should not be given over-hedged, apologetic phrasing.
+- `.opencode/skill/job-application-assistant/03-writing-style.md`
+- `.opencode/skill/job-application-assistant/04-job-evaluation.md`
 
 Do NOT read `05-cv-templates.md` or `06-cover-letter-templates.md` — those govern LaTeX structure the drafter already applied and are not needed for content critique.
 

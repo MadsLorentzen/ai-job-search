@@ -1,3 +1,7 @@
+---
+description: Batch-score newly scraped job postings against the fit framework and return a ranked shortlist with urgency markers.
+---
+
 # /rank - Triage Scraped Jobs into a Ranked Shortlist
 
 You are batch-scoring the jobs that `/scrape` has collected, so the user can decide where to spend `/apply` effort. `/scrape` finds and dedupes postings; `/apply` evaluates one at a time in depth. `/rank` is the bridge: it scores every new posting against the fit framework and returns a ranked shortlist.
@@ -26,8 +30,8 @@ Follow these steps **in order**.
 3. Select candidates: entries with status `new` (or all non-applied entries with `--all`), minus the exclusion set, filtered by the focus area if one was given.
 4. If no candidates remain, say so ("Nothing new to rank - run /scrape to find fresh postings") and stop.
 5. Read the scoring framework and profile **once**:
-   - `.claude/skills/job-application-assistant/04-job-evaluation.md`
-   - `.claude/skills/job-application-assistant/01-candidate-profile.md`
+   - `.opencode/skill/job-application-assistant/04-job-evaluation.md`
+   - `.opencode/skill/job-application-assistant/01-candidate-profile.md`
 
 State how many jobs will be ranked before proceeding.
 
@@ -35,13 +39,13 @@ State how many jobs will be ranked before proceeding.
 
 ## Step 2: Batch-Fetch and Score
 
-Dispatch parallel `general-purpose` agents via the **Agent tool**, ~5 jobs per agent (a single agent is fine for ≤5 jobs). Token-efficiency rules, consistent with `/apply`:
+Dispatch batch `task` subtasks via the **task tool**, ~5 jobs per subtask (a single subtask is fine for ≤5 jobs). Token-efficiency rules, consistent with `/apply`:
 
-- Pass each agent everything it needs **inline in the prompt** - the job list (title, company, URL) and a compact scoring rubric extracted from the files you read in Step 1: the strong/moderate/weak skill match areas, direct/adjacent experience domains, behavioral thrive/drain factors, career goals, deal-breakers, and the location constraints. Do **not** make agents re-read the profile files.
-- Agents fetch each posting URL with WebFetch and score **only from actually fetched content**. If a URL is dead, redirects to a listing page, or the posting has expired, the agent marks that job `expired` - it never scores from the title alone and never fabricates posting content.
+- Pass each subtask everything it needs **inline in the prompt** - the job list (title, company, URL) and a compact scoring rubric extracted from the files you read in Step 1: the strong/moderate/weak skill match areas, direct/adjacent experience domains, behavioral thrive/drain factors, career goals, deal-breakers, and the location constraints. Do **not** make subtasks re-read the profile files.
+- Subtasks fetch each posting URL with WebFetch and score **only from actually fetched content**. If a URL is dead, redirects to a listing page, or the posting has expired, the subtask marks that job `expired` - it never scores from the title alone and never fabricates posting content.
 - Scope is triage: posting text vs. rubric. **No company research, no salary lookup, no web searches** - that depth belongs to `/apply`.
 
-Each agent returns a JSON array, one object per job:
+Each subtask returns a JSON array, one object per job:
 
 ```json
 {
@@ -98,7 +102,7 @@ Ranked <N> new postings (<X> shortlisted, <Y> below threshold, <Z> expired/vetoe
 | 1 | 78 | Strong Fit | ... | ... | ... | ... | 🔥 |
 
 ### Why these ranked highest
-**1. <Title> at <Company> (78)** - [2-3 strength bullets and the honest gap, from the agent's findings]
+**1. <Title> at <Company> (78)** - [2-3 strength bullets and the honest gap, from the subtask's findings]
 [repeat for each shortlisted job]
 
 ### Below threshold

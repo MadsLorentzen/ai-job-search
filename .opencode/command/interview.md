@@ -1,3 +1,7 @@
+---
+description: Stage-specific interview preparation with mock interview. Builds prep pack from application archive and offers roleplay.
+---
+
 # /interview - Prepare for an Interview on a Tracked Application
 
 You are preparing the user for a real, scheduled interview on one of their applications. The frameworks for this already exist - `07-interview-prep.md` (STAR examples, tough questions, questions to ask, roleplay protocol) and the Company Research Checklist in `04-job-evaluation.md` - and the `/outcome` archive records which stage the user is at and what earlier stages surfaced. This command wires them together into a stage-specific prep pack and an optional mock interview.
@@ -28,10 +32,10 @@ v1 preps for a **specific application**. Generic no-target practice is out of sc
 2. **Fallbacks** (the application may predate `/outcome`): posting via WebFetch on the tracker row's `source` URL, or ask the user to paste it; CV via `cv/main_<company>.tex` and cover letter via `cover_letters/cover_<company>_*.tex`. State plainly which context is missing rather than guessing - and suggest `/outcome <company>` to build the archive for next time.
 3. **Ask the user what this interview is** (skip anything `outcome.md` already records): stage (phone screen / technical / case / final round), date, format (phone, video, onsite), and who is interviewing (names and titles, if known).
 4. **Read the frameworks once** - do not re-read them in later steps:
-   - `.claude/skills/job-application-assistant/07-interview-prep.md`
-   - `.claude/skills/job-application-assistant/01-candidate-profile.md`
-   - `.claude/skills/job-application-assistant/02-behavioral-profile.md`
-   - `.claude/skills/job-application-assistant/04-job-evaluation.md`
+   - `.opencode/skill/job-application-assistant/07-interview-prep.md`
+   - `.opencode/skill/job-application-assistant/01-candidate-profile.md`
+   - `.opencode/skill/job-application-assistant/02-behavioral-profile.md`
+   - `.opencode/skill/job-application-assistant/04-job-evaluation.md`
 
 ---
 

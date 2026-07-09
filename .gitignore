@@ -39,8 +39,8 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Memory files (Claude Code user-specific)
-.claude/projects/
+# Legacy Claude Code directory (migrated to .opencode/)
+.claude/
 
 # Skills lock (auto-generated)
 skills-lock.json

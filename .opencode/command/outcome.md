@@ -1,3 +1,7 @@
+---
+description: Record application results, archive submitted materials, and update the job search tracker.
+---
+
 # /outcome - Record the Result of an Application
 
 You are recording what happened to a job application: progress updates (interview invitations, stages completed, offers) and final resolutions (hired, rejected, no response). The data lands in two places the framework already reads but nothing systematically writes:

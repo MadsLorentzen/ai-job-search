@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
-"""Lint the repo's skill, command, and settings files.
+"""Lint the repo's skill, command, and configuration files.
 
 Run from anywhere: python tools/lint_skills.py
 
 Checks:
-- Every SKILL.md (.claude/skills/*, .agents/skills/*) has YAML frontmatter that
+- Every SKILL.md (.opencode/skill/*, .agents/skills/*) has YAML frontmatter that
   parses, with non-empty `name` and `description` keys
-- `allowed-tools` entries of the form `Bash(bun run <path> *)` point at files
-  that exist (skill paths resolve relative to the repo root and to .agents/)
-- Every .claude/commands/*.md starts with a `# /<name>` title
-- .claude/settings.json is valid JSON with a permissions.allow list
+- Every .opencode/command/*.md has YAML frontmatter with a non-empty `description`
+- opencode.json is valid JSON with an expected structure
 
 Exit code 0 on success, 1 with a failure list otherwise.
 """
 
 import json
-import re
 import sys
 from pathlib import Path
 
@@ -53,61 +50,61 @@ def check_skill(path: Path) -> None:
         if not data.get(key):
             errors.append(f"{rel(path)}: frontmatter missing required key '{key}'")
 
-    allowed = data.get("allowed-tools", "")
-    if isinstance(allowed, str):
-        for match in re.finditer(r"bun run ([^\s)]+)", allowed):
-            target = match.group(1).rstrip("*")
-            if not target or target.endswith("/"):
-                continue
-            # Targets may contain globs (e.g. .agents/skills/*/cli/src/cli.ts);
-            # require at least one existing file to match.
-            if "*" in target:
-                if not list(ROOT.glob(target)) and not list((ROOT / ".agents").glob(target)):
-                    errors.append(f"{rel(path)}: allowed-tools glob matches no files: {target}")
-            else:
-                candidates = [ROOT / target, ROOT / ".agents" / target]
-                if not any(c.is_file() for c in candidates):
-                    errors.append(f"{rel(path)}: allowed-tools references a missing file: {target}")
-
 
 def check_command(path: Path) -> None:
-    lines = path.read_text(encoding="utf-8").lstrip().splitlines()
-    first = lines[0] if lines else ""
-    if not first.startswith("# /"):
-        errors.append(f"{rel(path)}: command file must start with a '# /<name>' title (found: {first[:50]!r})")
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        errors.append(f"{rel(path)}: missing YAML frontmatter (file must start with ---)")
+        return
+    end = text.find("\n---", 4)
+    if end == -1:
+        errors.append(f"{rel(path)}: unterminated YAML frontmatter")
+        return
+    try:
+        data = yaml.safe_load(text[4:end])
+    except yaml.YAMLError as exc:
+        errors.append(f"{rel(path)}: frontmatter is not valid YAML: {exc}")
+        return
+    if not isinstance(data, dict):
+        errors.append(f"{rel(path)}: frontmatter did not parse to a mapping")
+        return
+    if not data.get("description"):
+        errors.append(f"{rel(path)}: frontmatter missing required key 'description'")
 
 
-def check_settings() -> None:
-    path = ROOT / ".claude" / "settings.json"
+def check_opencode_json() -> None:
+    path = ROOT / "opencode.json"
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        errors.append(f".claude/settings.json: {exc}")
+        errors.append(f"opencode.json: {exc}")
         return
-    if not isinstance(data.get("permissions", {}).get("allow"), list):
-        errors.append(".claude/settings.json: expected permissions.allow to be a list")
+    if not isinstance(data.get("command"), dict):
+        errors.append("opencode.json: expected 'command' to be an object")
+    if not isinstance(data.get("permission"), dict):
+        errors.append("opencode.json: expected 'permission' to be an object")
 
 
 def main() -> int:
-    skills = sorted(ROOT.glob(".claude/skills/*/SKILL.md")) + sorted(ROOT.glob(".agents/skills/*/SKILL.md"))
-    commands = sorted((ROOT / ".claude" / "commands").glob("*.md"))
+    skills = sorted(ROOT.glob(".opencode/skill/*/SKILL.md")) + sorted(ROOT.glob(".agents/skills/*/SKILL.md"))
+    commands = sorted((ROOT / ".opencode" / "command").glob("*.md"))
     if not skills:
-        errors.append("no SKILL.md files found - glob roots are wrong or the tree moved")
+        errors.append("no SKILL.md files found under .opencode/skill/ or .agents/skills/")
     if not commands:
-        errors.append("no command files found under .claude/commands/")
+        errors.append("no command files found under .opencode/command/")
 
     for skill in skills:
         check_skill(skill)
     for command in commands:
         check_command(command)
-    check_settings()
+    check_opencode_json()
 
     if errors:
         print(f"lint_skills: {len(errors)} failure(s)")
         for err in errors:
             print(f"  - {err}")
         return 1
-    print(f"lint_skills: OK ({len(skills)} skills, {len(commands)} commands, settings.json)")
+    print(f"lint_skills: OK ({len(skills)} skills, {len(commands)} commands, opencode.json)")
     return 0
 
 

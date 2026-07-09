@@ -1,3 +1,7 @@
+---
+description: Generates a job-portal search skill for any local market job board. Investigates the portal, scaffolds a CLI skill from the canonical structure, and test-runs a live query before registering.
+---
+
 # /add-portal - Generate a Job-Portal Search Skill for Your Local Market
 
 You are helping the user build a job-portal search skill for a job board in their market. The repo ships worked examples of the pattern (four Danish portals plus the country-agnostic `linkedin-search`), and the README invites users elsewhere to build equivalents — this command turns that invitation into a guided workflow: investigate the portal, scaffold the skill from the canonical structure, and test-run a live query before registering anything.
@@ -118,7 +122,7 @@ Do not proceed to Step 5 until search, detail, and tests all pass.
 
 ## Step 5: Register
 
-1. Ask whether the user wants the new portal added to their `/scrape` search strategy. If yes, add the portal's site to the relevant query categories in `.claude/skills/job-scraper/search-queries.md` (site-specific queries, like the existing `jobindex.dk` entries) so `/scrape` includes it.
+1. Ask whether the user wants the new portal added to their `/scrape` search strategy. If yes, add the portal's site to the relevant query categories in `.opencode/skill/job-scraper/search-queries.md` (site-specific queries, like the existing `jobindex.dk` entries) so `/scrape` includes it.
 2. Remind the user to add the install line for their own records if they maintain a fork README:
    ```bash
    cd .agents/skills/<name>/cli && bun install && cd ../../../..

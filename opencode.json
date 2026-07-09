@@ -1,0 +1,58 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "skills": {
+    "paths": [
+      ".opencode/skill",
+      ".agents/skills"
+    ]
+  },
+  "agent": {
+    "reviewer": {
+      "description": "Reviews application drafts — CV and cover letter — for quality, targeting, accuracy, and consistency. Read-only; never edits files directly.",
+      "mode": "subagent",
+      "permission": { "edit": "deny", "write": "deny", "bash": "deny" },
+      "prompt": "You are a strict reviewer for job application materials. You receive CV and cover letter drafts inline and must provide structured feedback. Research the company via WebSearch and WebFetch. Verify all claims. Return JSON with: { \"edits\": [{ \"file\": \"...\", \"oldString\": \"...\", \"newString\": \"...\" }], \"narrative_suggestions\": [\"...\"], \"company_research\": \"...\", \"ats_keyword_gaps\": [\"...\"], \"verification_notes\": [\"...\"] }. Do NOT write files yourself."
+    },
+    "job-scorer": {
+      "description": "Scores a single job posting against the candidate profile on four dimensions: technical fit, experience match, behavioral/culture match, and career alignment.",
+      "mode": "subagent",
+      "permission": { "edit": "deny", "write": "deny", "bash": "deny" },
+      "prompt": "You are a job scoring agent. You receive a job posting and must evaluate it against the candidate profile. Read 01-candidate-profile.md and 04-job-evaluation.md. Use WebFetch to get the full posting. Return a JSON score object: { \"technical_score\": { \"score\": 0-100, \"reasoning\": \"...\" }, \"experience_score\": { \"score\": 0-100, \"reasoning\": \"...\" }, \"behavioral_score\": { \"score\": 0-100, \"reasoning\": \"...\" }, \"career_score\": { \"score\": 0-100, \"reasoning\": \"...\" }, \"location_pass\": true/false, \"dealbreaker_flags\": [], \"overall_verdict\": \"strong_match|moderate_match|weak_match|dealbreaker\" }."
+    }
+  },
+  "command": {
+    "apply": { "description": "Full drafter-reviewer job application workflow for a job posting URL or text" },
+    "setup": { "description": "Profile onboarding: documents folder, CV import, or interview mode" },
+    "scrape": { "description": "Search job portals for new positions matching your profile" },
+    "rank": { "description": "Batch-score scraped jobs against the fit framework into a ranked shortlist" },
+    "interview": { "description": "Stage-specific interview preparation with mock interview" },
+    "outcome": { "description": "Record application results, archive materials, update tracker" },
+    "expand": { "description": "Enrich profile by scanning documents and online presence for undiscovered competencies" },
+    "upskill": { "description": "Analyze skill gaps against tracked postings and generate a learning plan" },
+    "add-template": { "description": "Register custom LaTeX CV or cover letter templates" },
+    "add-portal": { "description": "Generate a job-portal search skill for any market" },
+    "reset": { "description": "Reset profile data or documents folder with confirmation" }
+  },
+  "permission": {
+    "read": "allow",
+    "write": "allow",
+    "edit": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
+    "question": "allow",
+    "task": "allow",
+    "todowrite": "allow",
+    "bash": {
+      "bun run *": "allow",
+      "python salary_lookup.py *": "allow",
+      "python3 salary_lookup.py *": "allow",
+      "pdftotext *": "allow",
+      "lualatex *": "allow",
+      "xelatex *": "allow",
+      "*": "ask"
+    }
+  }
+}

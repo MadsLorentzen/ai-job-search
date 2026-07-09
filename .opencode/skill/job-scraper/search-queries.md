@@ -11,6 +11,11 @@ Primary (Danish job market):
 - **jobfinder.dk** - another major Danish job board
 - **akademikernes.dk** - academic union job board
 
+Primary (Colombian job market):
+- **computrabajo.com.co** - Computrabajo Colombia (co.computrabajo.com)
+- **elempleo.com/co** - Elempleo Colombia, one of the largest Colombian job boards
+- **linkedin.com/jobs** - LinkedIn job listings (filter: Colombia / your city)
+
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for known target companies
 
@@ -45,6 +50,29 @@ Adjacent roles you could pivot into.
 ```
 site:jobindex.dk "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
 site:jobindex.dk "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
+```
+
+### Colombia: Priority 1 — Ingeniería / TI
+
+```
+site:computrabajo.com.co "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
+site:elempleo.com/co "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
+site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" Colombia
+```
+
+### Colombia: Priority 2 — [YOUR_DOMAIN_KEYWORD]
+
+```
+site:computrabajo.com.co "[YOUR_DOMAIN_KEYWORD]" [YOUR_CITY]
+site:elempleo.com/co "[YOUR_KEY_SKILL]" [YOUR_CITY]
+site:linkedin.com/jobs "[YOUR_KEY_SKILL]" [YOUR_CITY] Colombia
+```
+
+### Colombia: Priority 3 — Adjacent / Broader
+
+```
+site:computrabajo.com.co "[YOUR_ADJACENT_TITLE]" [YOUR_CITY]
+site:elempleo.com/co "[YOUR_ADJACENT_TITLE]" [YOUR_CITY]
 ```
 
 ### Priority 4: Broader Technical / Consulting
