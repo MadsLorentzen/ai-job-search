@@ -1,7 +1,7 @@
 # CI for the framework itself: LaTeX smoke compiles, skill/command lint,
 # CLI typechecks, and (upstream only) placeholder integrity.
 #
-# Fork-friendly by design: forks personalize CLAUDE.md, the skill files, and
+# Fork-friendly by design: forks personalize AGENTS.md, the skill files, and
 # cv/main_example.tex via /setup, so the placeholder-integrity job and the
 # exact page-count assertions run only on the upstream template repo. Compile
 # success and lint correctness are asserted everywhere.
@@ -21,7 +21,7 @@ on:
 
 jobs:
   lint:
-    name: Lint skills, commands, settings
+    name: Lint skills, commands, config
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,8 +57,8 @@ jobs:
             grep -A3 '^!' cover_example.log
             exit 1
           fi
-      - name: Assert exact page counts (upstream template only)
-        if: github.repository == 'MadsLorentzen/ai-job-search'
+      - name: Assert exact page counts
+        if: github.repository == 'FARLEY-PIEDRAHITA-OROZCO/ai-job-search-opencode'
         run: |
           grep -q 'Output written on main_example.pdf (2 pages' cv/main_example.log \
             || { echo '::error::cv/main_example.tex no longer compiles to exactly 2 pages'; exit 1; }
@@ -77,6 +77,8 @@ jobs:
           - jobindex-search
           - jobnet-search
           - linkedin-search
+          - computrabajo-search
+          - elempleo-search
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -86,8 +88,8 @@ jobs:
         working-directory: .agents/skills/${{ matrix.tool }}/cli
 
   placeholder-integrity:
-    name: Placeholder integrity (upstream template only)
-    if: github.repository == 'MadsLorentzen/ai-job-search'
+    name: Placeholder integrity
+    if: github.repository == 'FARLEY-PIEDRAHITA-OROZCO/ai-job-search-opencode'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -100,9 +102,9 @@ jobs:
               fail=1
             fi
           }
-          check CLAUDE.md '\[YOUR_NAME\]'
+          check AGENTS.md '\[YOUR_NAME\]'
           check cv/main_example.tex '\[YOUR_NAME\]'
           check cover_letters/cover_example.tex '\[YOUR NAME\]'
-          check .claude/skills/job-application-assistant/01-candidate-profile.md '<!-- SETUP'
-          check .claude/skills/job-application-assistant/04-job-evaluation.md '\[YOUR_PRIMARY_SKILLS\]'
+          check .opencode/skill/job-application-assistant/01-candidate-profile.md '<!-- SETUP'
+          check .opencode/skill/job-application-assistant/04-job-evaluation.md '\[YOUR_PRIMARY_SKILLS\]'
           exit $fail
