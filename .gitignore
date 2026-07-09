@@ -39,6 +39,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Scratch / analysis files
+migration-analysis.md
+
 # Legacy Claude Code directory (migrated to .opencode/)
 .claude/
 
