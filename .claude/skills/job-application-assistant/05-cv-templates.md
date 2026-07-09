@@ -105,12 +105,18 @@ Write 5-7 lines that function as an "elevator pitch": a concise, compelling intr
 
 **Create 2-3 profile statement templates for your main role types:**
 
-<!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Health-AI / Clinical AI roles (primary direction):**
+> Medical doctor and AI/ML engineer with three years of frontline clinical experience, including at Africa's largest hospital, and an MSc in Bioinformatics (Distinction, UCT) specialising in machine learning. Trained deep learning models on 500,000+ simulated viral sequences and deployed them into a widely-used research tool (RDP5) via ONNX, while practising medicine in a high-burden HIV/TB district setting. Brings a rare dual perspective to building AI products that create real-world impact for clinicians and patients.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For ML / AI Engineering roles:**
+> ML engineer with an MSc in Bioinformatics (Distinction) and a track record of taking deep learning models from research to deployment. Built and trained neural networks (including recurrent architectures) on 500,000+ sequence datasets and shipped them into a widely-used research tool (RDP5) via ONNX with a modular, swappable architecture. Comfortable across the stack: Python/TensorFlow, GPU/SLURM compute, Docker, and self-hosted infrastructure.
+
+**For clinical / medical roles:**
+> Medical doctor (MBChB, UCT, distinction in clinical sciences) with three years of frontline experience across internal medicine, emergency, and a full HPCSA internship at Africa's largest hospital (3,400 beds). Strong in diagnostic reasoning and evidence-based practice in resource-limited, high-acuity settings, with an additional MSc in Bioinformatics that brings a data-driven edge to clinical decision-making.
+
+<!-- SETUP: Refine or add role-specific statements as the job search direction firms up. -->
+<!-- [Used for: none yet - no past applications on file] -->
+
 
 ### Core Competencies / Skills Section (Best Practice)
 Reorder and emphasize based on the role. Use bold category labels.

@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Joshua Cullinan
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Joshua Cullinan, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,68 +10,70 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
+> Full structured profile: `.claude/skills/job-application-assistant/01-candidate-profile.md`. Behavioral detail: `02-behavioral-profile.md`.
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Name:** Dr Joshua Cullinan (full: Joshua Peter Cullinan)
+- **Location:** Johannesburg, Gauteng, South Africa. Open to remote (global), hybrid in Johannesburg/Gauteng, and relocation.
+- **Work authorization:** South African citizen; **EU citizen (Ireland)** and **British passport holder** - full right to work in the EU, Ireland, and the UK with no visa sponsorship.
+- **Languages:** English (native); basic Afrikaans (confirm level).
+- **Status:** Medical Officer (Community Service), Bheki Mlangeni District Hospital (Jan 2026 - present). Finishing the community-service year; targeting a transition into a new role at end of 2026 / into 2027, open to an exceptional opportunity sooner.
+- **LinkedIn headline:** "Medical Doctor | MSc Medicine (Bioinformatics) | AI Driven Health"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **MSc in Medicine - Bioinformatics** (2023-2025) - University of Cape Town - **Distinction, GPA 89.0%**
+  - Thesis: "Utilising Machine Learning Techniques on Simulated Viral Evolution Datasets to Improve Viral Recombinant Identification"
+  - Topics: deep learning (recurrent networks), ~500,000 simulated viral sequences, recombinant identification, ONNX deployment into RDP5
+- **BMedSc (Honours) - Bioinformatics** (2020) - University of Cape Town - **Distinction, first class, GPA 85.9%**
+  - Project: ML to predict cancer cell responses to small-molecule inhibitors (CCLE / GDSC)
+- **MBChB - Bachelor of Medicine and Surgery** (2017-2023) - University of Cape Town - **Distinction in clinical sciences, overall first class honours, GPA 77.49%**
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Internal Medicine Medical Officer (Community Service)** (Jan 2026 - present) - **Bheki Mlangeni District Hospital** (Johannesburg)
+  - Comprehensive management of internal-medicine inpatients: ward rounds, diagnostic workup, treatment planning, MDT coordination
+  - HIV/TB co-infection, diabetes, hypertension, CKD, acute emergencies in a resource-limited district hospital
+  - Additional ED shifts across trauma, surgical, medical, and paediatric presentations
+- **Medical Officer Intern** (Jan 2024 - Dec 2025) - **Chris Hani Baragwanath Academic Hospital** (Johannesburg)
+  - Two-year HPCSA-accredited internship at Africa's largest hospital (3,400 beds)
+  - Rotations across Internal Medicine, Surgery, Paediatrics, O\&G, Psychiatry, Orthopaedics, Anaesthesiology, Family Medicine; extensive trauma/emergency exposure
+- **Tutor** (2019-2020) - **SmartPrep** - physics and chemistry for matric students
+- **Volunteer & Leadership** (2017-2021) - **SHAWCO** - volunteer to Head of Khayelitsha Clinic (2018-2019) to Board of Directors (2020-2021)
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Python, machine learning / deep learning (TensorFlow, scikit-learn), data analysis (Pandas, NumPy)
+- **Secondary:** JavaScript, React, Django, REST APIs, SQL, Bash; ONNX model deployment; LLM integration (Anthropic Claude API, Ollama)
+- **Domain:** clinical medicine (HIV/TB, internal medicine, emergency); bioinformatics, genomics, viral evolution, clinical imaging
+- **Software / Infra:** Git/GitHub, Docker, Linux, AWS EC2, Proxmox/ZFS, SLURM/GPU compute, Jupyter, TensorBoard
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- None on file currently.
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- MSc dissertation (2025): *Utilising Machine Learning Techniques on Simulated Viral Evolution Datasets to Improve Viral Recombinant Identification*, University of Cape Town. (No peer-reviewed journal publications on file - confirm.)
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- MBChB with distinction in the clinical sciences and overall first class honours (UCT, 2023)
+- MSc (Bioinformatics) with distinction (UCT, 2025); BMedSc (Hons) first class (UCT, 2020)
+- Class Medal - Mathematics 1005 (UCT, 2016); UCT Plus Gold (60h elected leadership role)
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- **Self-directed clinician-engineer** - builds and ships end-to-end; taught himself ML, deployment, and systems admin alongside a medical career
+- **Disciplined under load** - MSc with distinction earned during a full hospital internship
+- **Strengths:** research-to-production delivery, judgement calibrated to stakes, bridging clinical and engineering teams, fast learning
+- **Growth areas:** limited commercial/team software-engineering track record; low tolerance for bureaucracy and maintenance-only work
+- **Thrives in:** novel hard problems with autonomy and visible impact; flexible between structured orgs and small autonomous teams
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Novel research and genuinely hard problems, with continuous learning
+- Building and shipping AI/ML systems that reach real users and create clinical/patient impact
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- **Health-AI / clinical AI / digital health:** companies building AI for clinicians and patients (e.g. clinical documentation, diagnostics, medical imaging, clinical decision support)
+- **ML / AI engineering (any domain):** applied ML/AI roles that value research-to-production skill
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Pure clinical shift work with no path into data/AI/technical work
+- Roles with no learning curve or no AI/ML/technical component
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

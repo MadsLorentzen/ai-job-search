@@ -8,32 +8,69 @@ Structure answers as: **Situation** (context), **Task** (your responsibility), *
 
 Keep answers to 1-2 minutes. Be specific. End with what you learned or would do differently.
 
-## Ready-Made STAR Examples
+## STAR Candidates (Complete Manually)
 
-<!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
+These are drawn from your CV, LinkedIn, and academic record. Each is a strong raw candidate for a STAR answer, but the Situation/Task/Action/Result details need your first-hand input before you rely on them in an interview. Flesh out the four lines for the ones most relevant to your target roles.
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### MSc thesis - ML on 500,000+ simulated viral sequences (technical depth, independent delivery)
+**Source:** MSc dissertation, UCT (2023-2025)
+**What happened:** Simulated ~500,000 viral sequences with time-forward evolutionary models and trained multiple ML/AI models to identify recombinants; best was a deep neural network with recurrent pathways.
+**Why it matters:** Answers questions on end-to-end ML projects, handling large datasets, model selection, and self-directed research.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### Deploying a model into RDP5 via ONNX (research-to-production, software design)
+**Source:** MSc project / independent work
+**What happened:** Deployed trained neural networks into RDP5, a widely-used research tool, via ONNX, with a modular architecture allowing models to be swapped without rework.
+**Why it matters:** Answers questions on shipping ML to real users, maintainable design, and thinking beyond the notebook.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### BMedSc Honours - cancer drug-response ML (research, first ML project)
+**Source:** BMedSc (Hons) project, UCT (2020)
+**What happened:** Built ML models to predict cancer cell line responses to small-molecule inhibitors using CCLE and GDSC data.
+**Why it matters:** Answers questions on early initiative, applying ML to biomedical data, and learning a new field.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-<!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
+### Self-hosted AI agent + homelab (initiative, self-taught engineering)
+**Source:** Independent projects
+**What happened:** Built a self-hosted AI agent on the Anthropic Claude API (LLM routing, persistent memory, skill automation) running on a self-managed Proxmox/ZFS/Docker platform with local Ollama inference.
+**Why it matters:** Answers questions on self-directed learning, systems/infra ownership, and hands-on LLM engineering.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Clinical management under pressure - HIV/TB in a resource-limited setting (judgement, resourcefulness)
+**Source:** Bheki Mlangeni District Hospital (2026-present) / Chris Hani Baragwanath internship
+**What happened:** Managed complex internal-medicine and emergency cases (HIV/TB co-infection, acute emergencies) with limited resources in high-acuity settings.
+**Why it matters:** Answers questions on decision-making under pressure, prioritisation, and working within constraints.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### SHAWCO leadership progression (leadership, service, teamwork)
+**Source:** SHAWCO (2017-2021)
+**What happened:** Progressed from weekly volunteer to Head of the Khayelitsha Clinic, then to the SHAWCO Board of Directors.
+**Why it matters:** Answers questions on leadership, taking ownership, and working with teams over time.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
 ## Common Tough Questions
 

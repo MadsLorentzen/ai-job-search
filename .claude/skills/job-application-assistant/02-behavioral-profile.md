@@ -1,50 +1,46 @@
 # Behavioral Profile
 
-<!-- SETUP: This file is populated by running /setup -->
-<!-- You can use results from PI, DISC, Myers-Briggs, StrengthsFinder, or a self-assessment -->
+<!-- No formal assessment (PI/DISC/etc.) provided. This profile is synthesized from the setup interview and inferred from the LinkedIn "About" section. Inferred items are labeled; review before relying on them. -->
 
 ## Overview
-[YOUR_NAME]'s behavioral assessment identifies them as a **[PROFILE_TYPE]** pattern. [1-2 SENTENCE_SUMMARY].
-
-## Core Behavioral Drives
-
-| Drive | Level | Meaning |
-|-------|-------|---------|
-| [DRIVE_1] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_2] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_3] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_4] | [LEVEL] | [DESCRIPTION] |
+Joshua is a high-achieving, intellectually curious clinician-engineer who is energised by hard, novel problems and by building things that reach real users. He pairs the disciplined, evidence-based judgement of a doctor with the self-directed drive of a self-taught engineer (self-hosted AI agent, homelab, an MSc completed with distinction *during* a demanding hospital internship). He calibrates his working style to the stakes: thorough and careful where the cost of error is high, fast and iterative where it is cheap.
 
 ## Strongest Behaviors
-- **[BEHAVIOR_1]:** [DESCRIPTION]
-- **[BEHAVIOR_2]:** [DESCRIPTION]
-- **[BEHAVIOR_3]:** [DESCRIPTION]
+- **Self-directed learning and ownership:** Builds and runs his own infrastructure and projects end-to-end; taught himself ML, deployment, and systems administration alongside a medical career.
+- **Disciplined execution under load:** Earned an MSc with distinction (89%) while working a full HPCSA internship at Africa's largest hospital. Long-form endurance shows up outside work too (1,500 km Amsterdam-to-France bikepacking trip). *[Inferred from CV/LinkedIn]*
+- **Bridging clinical and technical worlds:** Comfortable translating between clinicians and engineers, a rare and durable differentiator.
+- **Judgement calibrated to context:** Deliberate and evidence-based where stakes are high; willing to ship rough first versions where iteration is cheap.
 
 ## How You Work Best
-- [ENVIRONMENT_PREFERENCE_1]
-- [ENVIRONMENT_PREFERENCE_2]
-- [ENVIRONMENT_PREFERENCE_3]
+- On novel research and genuinely hard problems, with room to learn continuously
+- With real-world impact visible, especially clinical or patient-facing outcomes
+- With autonomy and ownership over your scope
+- In cross-functional settings sitting between clinical and engineering teams
+- Flexible on company shape: thrives in a structured, well-mentored organisation *and* in a small autonomous team, as long as ownership and learning are present
 
 ## Growth Areas (frame positively in applications)
-- **[AREA_1]:** [HOW_TO_FRAME_IT_POSITIVELY]
-- **[AREA_2]:** [HOW_TO_FRAME_IT_POSITIVELY]
+- **Limited commercial/industry software-engineering track record:** Deep clinical and research background, less time inside industry SWE teams. Frame as bringing research rigor and a clinician's judgement, and as eager to absorb team engineering practices quickly.
+- **Low tolerance for bureaucracy and repetitive maintenance work:** Frame as a strong bias toward high-impact, high-learning work; be honest that heavily process-bound or maintenance-only roles are a poor fit rather than pretending otherwise.
 
 ## Mapping to Job Posting Language
 
-When a job posting mentions these keywords, it's a **strong behavioral fit**:
-- [KEYWORD_OR_PHRASE_THAT_MATCHES_YOUR_STYLE]
-- [ANOTHER_KEYWORD]
+When a posting uses these, it is a **strong behavioral fit**:
+- "ownership", "autonomy", "end-to-end", "0-to-1", "research", "ambiguous problems"
+- "cross-functional", "clinical", "healthcare impact", "mission-driven"
+- "fast-moving", "learning culture", "take something from prototype to production"
 
-When a job posting mentions these, flag as **potential friction** (not deal-breaker):
-- [KEYWORD_OR_PHRASE_THAT_MIGHT_CLASH]
-- [ANOTHER_KEYWORD]
+When a posting uses these, flag as **potential friction** (not an automatic deal-breaker):
+- "maintenance", "legacy system", "support/on-call for existing systems"
+- "highly process-driven", "matrixed organisation", "strict change control"
+- "shift work", "rota", "back-office", "purely operational"
 
 ## Management Style Preferences
-- [WHAT_MANAGEMENT_STYLE_WORKS_FOR_YOU]
-- [WHAT_DOESN'T_WORK]
+- Works best with managers who give context and autonomy, then get out of the way, while remaining available for mentorship
+- Dislikes micromanagement and approval-heavy hierarchies
+- Values clear goals and honest feedback over prescriptive task lists
 
 ## Using This in Applications
-- **Cover letters:** [HOW_TO_WEAVE_IN_BEHAVIORAL_STRENGTHS]
-- **CV:** [WHAT_TO_EMPHASIZE]
-- **Interviews:** [WHAT_STAR_EXAMPLES_TO_USE]
-- **Don't overstate:** [WHAT_NOT_TO_CLAIM]
+- **Cover letters:** Lead with the clinician-plus-engineer combination and a concrete build-and-ship example (e.g. deploying his model into RDP5). Show initiative and ownership.
+- **CV:** Emphasise self-directed delivery, research-to-production, and the dual domain.
+- **Interviews:** Use the SHAWCO leadership progression and the MSc-during-internship story for discipline/ownership; the RDP5 deployment for research-to-production; clinical decision-making for judgement under pressure.
+- **Don't overstate:** Do not claim extensive commercial/team software-engineering experience, or leadership of large engineering teams. The strength is judgement, learning speed, and the clinical+technical bridge, not years in industry.

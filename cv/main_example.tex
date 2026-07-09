@@ -1,8 +1,7 @@
-%% Example CV - [YOUR_NAME]
-%% Comprehensive overview of all competencies, experience, and achievements.
-%% Use as a master reference when tailoring role-specific CVs.
+%% Example CV - Dr Joshua Cullinan
+%% Comprehensive master reference of all competencies, experience, and achievements.
+%% Use as the source when tailoring role-specific CVs (cv/main_<company>.tex).
 %%
-%% SETUP: Run /setup to populate this with your actual information.
 %% Compile with: lualatex main_example.tex
 %% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
@@ -18,24 +17,25 @@
 \renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
 
 \usepackage[utf8]{inputenc}
+\usepackage{needspace}
 \usepackage{hyperref}
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Joshua Cullinan - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Joshua}{Cullinan}
+\address{Johannesburg, Gauteng, South Africa}{}{}
+\phone[mobile]{+27~74~775~3256}
+\email{joshcull1@gmail.com}
+\extrainfo{\href{https://www.linkedin.com/in/joshcullinan}{LinkedIn}, \href{https://github.com/JoshCullinan}{GitHub}}
 
 \begin{document}
 
@@ -46,7 +46,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{Medical doctor and AI/ML engineer with three years of frontline clinical experience, including at Africa's largest hospital, and an MSc in Bioinformatics (Distinction, UCT) specialising in machine learning. Trained deep learning models on 500,000+ simulated viral sequences and deployed them into a widely-used research tool (RDP5) via ONNX, while practising medicine in a high-burden HIV/TB district setting. Brings a rare dual perspective to building AI products that create real-world impact for clinicians and patients.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +56,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{Machine Learning \& Deep Learning}: Python, TensorFlow, scikit-learn, Pandas, NumPy. Neural networks (incl. recurrent), CNNs, transfer learning; model training, evaluation, and ONNX deployment into research tools.
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Programming \& Web}: Python (primary), JavaScript, HTML/CSS, Bash, SQL. React frontends and Django REST backends; REST API design.
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{LLM \& AI Engineering}: Anthropic Claude API integration, LLM routing, persistent memory, skill automation; local inference via Ollama. Agentic coding with \textbf{Claude Code}.
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Infrastructure \& DevOps}: Git/GitHub, Docker, Linux administration, AWS EC2, VPS and Proxmox/ZFS self-hosting; high-performance compute with SLURM and GPUs.
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Clinical \& Biomedical Domain}: HIV/TB, internal medicine, and emergency care; genomic and proteomic datasets, clinical imaging pipelines, and large-scale biomedical data processing.
 
 \end{itemize}
 
@@ -77,33 +77,47 @@
 \begin{itemize}
 
 % --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{2026--Present}{Internal Medicine Medical Officer (Community Service)}{Bheki Mlangeni District Hospital}{Johannesburg, South Africa}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item Comprehensive clinical management of internal-medicine inpatients: ward rounds, diagnostic workup, treatment planning, and multidisciplinary coordination
+    \item Key areas: HIV/TB co-infection, diabetes, hypertension, chronic kidney disease, and acute medical emergencies in a resource-limited district hospital
+    \item Additional emergency-department shifts across trauma, surgical, medical, and paediatric presentations
 \end{itemize}}}
 
 \vspace{3pt}
 
 % --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{2024--2025}{Medical Officer Intern}{Chris Hani Baragwanath Academic Hospital}{Johannesburg, South Africa}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+    \item Two-year HPCSA-accredited internship at Africa's largest hospital (3,400 beds)
+    \item Rotated across Internal Medicine, Surgery, Paediatrics, Obstetrics \& Gynaecology, Psychiatry, Orthopaedics, Anaesthesiology, and Family Medicine
+    \item Extensive trauma and emergency-medicine experience in a high-acuity tertiary setting
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% --- Earlier Roles ---
+\needspace{5\baselineskip}
+\item{\cventry{2017--2021}{Volunteer \& Leadership}{SHAWCO (Students' Health and Welfare Centres Organisation)}{Cape Town, South Africa}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+    \item Progressed from weekly volunteer to Head of the Khayelitsha Clinic (2018--2019), then Member of the Board of Directors (2020--2021)
+    \item Student-led healthcare serving underprivileged communities across Cape Town
 \end{itemize}}}
 
+\end{itemize}
+
+% ============================================================
+%     SELECTED PROJECTS
+% ============================================================
+
+\section{Selected Projects}
+\vspace{1pt}
+\begin{itemize}
+\item \textbf{RDP5 deep-learning integration}: Trained deep neural networks on 500,000+ simulated viral sequences and deployed them into RDP5 via ONNX, with a modular architecture for seamless model replacement.
+\item \textbf{Self-hosted AI agent}: Anthropic Claude API with LLM routing, persistent memory, and skill automation across multi-platform messaging channels.
+\item \textbf{Proxmox homelab}: Self-hosted virtualisation with ZFS storage, Docker services, reverse proxy, and local LLM inference via Ollama.
 \end{itemize}
 
 % ============================================================
@@ -114,14 +128,23 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
+\needspace{5\baselineskip}
+\item{\cventry{2023--2025}{MSc in Medicine -- Bioinformatics (Distinction, 89.0\%)}{University of Cape Town}{}{}{\vspace{1pt}
+Thesis: ``Utilising Machine Learning Techniques on Simulated Viral Evolution Datasets to Improve Viral Recombinant Identification.'' Simulated $\sim$500,000 viral sequences; best model a deep neural network with recurrent pathways. Supervised by Prof. Darren Martin.
 }}
 
 \vspace{3pt}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
+\needspace{5\baselineskip}
+\item{\cventry{2020}{BMedSc (Honours) -- Bioinformatics (Distinction, first class, 85.9\%)}{University of Cape Town}{}{}{\vspace{1pt}
+ML to predict cancer cell line responses to small-molecule inhibitors using the CCLE and GDSC databases.
+}}
+
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+\item{\cventry{2017--2023}{MBChB -- Bachelor of Medicine and Surgery (distinction in clinical sciences, first class honours, 77.5\%)}{University of Cape Town}{}{}{\vspace{1pt}
+Clinical diagnostic reasoning, evidence-based medicine, emergency assessment and triage.
 }}
 
 \end{itemize}
@@ -133,27 +156,18 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
+\item English (native); Afrikaans (basic).
 \end{itemize}
 
 % ============================================================
-%     PUBLICATIONS (optional)
-% ============================================================
-
-\section{Publications}
-\vspace{1pt}
-\begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
+%     HONORS AND AWARDS
 % ============================================================
 
 \section{Honors and Awards}
 \vspace{1pt}
 \begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item{MBChB awarded with \textbf{distinction in the clinical sciences} and \textbf{overall first class honours} (UCT, 2023).}
+\item{\textbf{Class Medal} -- Mathematics 1005 (UCT, 2016); \textbf{UCT Plus Gold} -- 60 hours in an elected leadership role.}
 \end{itemize}
 
 % ============================================================

@@ -16,9 +16,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Python, machine learning / deep learning (TensorFlow, scikit-learn), data analysis (Pandas/NumPy), bioinformatics and genomics, clinical medicine and biomedical domain knowledge, model training and evaluation
+**Moderate match areas:** ML deployment / MLOps (ONNX), LLM integration (Claude API, Ollama), web development (React, Django, REST), DevOps/infrastructure (Docker, Linux, AWS EC2, Proxmox), HPC (SLURM/GPU), SQL
+**Weak match areas:** large-scale production software engineering, commercial/industry SWE track record, big-team enterprise delivery, PyTorch/JAX (has used TensorFlow), formal product/PM experience, cloud-native/Kubernetes at scale
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -30,9 +30,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** clinical medicine (internal medicine, emergency, HIV/TB), bioinformatics research, ML/DL model development on large datasets, academic research delivery
+**Moderate:** ML model deployment, software/web development, self-managed infrastructure, teaching/mentoring
+**Entry-level:** commercial software engineering, industry/product roles, MLOps in a team setting, consulting/client-facing delivery
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -63,19 +63,22 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Move into health-AI / clinical AI: build ML/AI products that improve clinical decision-making and patient outcomes
+- Grow as an ML/AI engineer who takes models from research to production (also open to strong ML/AI roles in any domain)
+- Leverage the dual clinician + engineer identity as a durable differentiator, ideally in cross-functional teams
+- Land a role to transition into after the community-service year (targeting end of 2026 / into 2027), open to an exceptional opportunity sooner. Right to work in the EU, Ireland, and the UK broadens the search internationally.
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: novel research and hard problems, building and shipping real systems, work with visible clinical/patient impact, autonomous self-directed work
+- Tasks that drain: pure maintenance work, endless meetings and process overhead, repetitive work with no learning, bureaucracy and red tape
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Currently employed through the community-service year (to end of 2026); transitioning deliberately rather than under pressure. Can afford to hold out for a strong-fit role.
+- **Flexibility**: Open to remote (global), hybrid in Johannesburg/Gauteng, and relocation. Right to work in the EU, Ireland, and the UK.
+- **Professional development**: High priority. A role that offers continuous learning and growth into more technical or architectural scope scores well; a role with no learning curve scores poorly.
+
+**Deal-breaker:** Pure clinical shift work with no path into data/AI/technical work. Auto-downgrade such roles.
 
 ### 6. Salary Benchmark (Optional)
 
