@@ -1,7 +1,12 @@
 import unittest
 from types import SimpleNamespace
 
-from tools.convert_salary_excel import detect_column_type, parse_sheet
+from tools.convert_salary_excel import (
+    INDEX_PATTERNS,
+    detect_column_type,
+    header_matches,
+    parse_sheet,
+)
 
 
 class FakeWorksheet:
@@ -43,6 +48,23 @@ class DetectColumnTypeTests(unittest.TestCase):
 
     def test_danish_compound_headers_still_match(self):
         self.assertEqual(detect_column_type("Lønindeks"), "index")
+
+    def test_compound_matching_is_locale_parameterizable(self):
+        # The default (Danish demo) compound set matches its glued headers.
+        self.assertTrue(header_matches("lønindeks", INDEX_PATTERNS))
+        # The mechanism is not hardcoded to Danish: a caller for another locale
+        # supplies its own compound tokens without editing the module. "salaryindex"
+        # is a single token, so it only matches when "salary"/"index" are treated
+        # as compound tokens -- which the Danish default deliberately does not.
+        self.assertFalse(header_matches("salaryindex", INDEX_PATTERNS))
+        self.assertFalse(
+            header_matches("salaryindex", INDEX_PATTERNS, compound_patterns=set())
+        )
+        self.assertTrue(
+            header_matches(
+                "salaryindex", INDEX_PATTERNS, compound_patterns={"salary", "index"}
+            )
+        )
 
     def test_parse_sheet_preserves_category_name_with_letter_n(self):
         ws = FakeWorksheet([
