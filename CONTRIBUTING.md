@@ -35,6 +35,8 @@ Reviews here are empirical. Bug reports are reproduced on master before the fix 
 - Put CLI tests in `.agents/skills/<name>/cli/tests/` (bun test, network-free where possible); Python tool tests in `tests/`.
 - Run what CI runs: `python3 tools/lint_skills.py` (or `python tools/lint_skills.py` if that is your Python 3 executable), `bun run typecheck` in touched CLIs, and the relevant test suites.
 
+**Credit norm:** a change that incorporates your actual code gets a `Co-authored-by` trailer; a change written independently from your observation or report gets a named mention in the commit message and PR. Both happen unprompted.
+
 ## Building for your own market? Do this instead
 
 1. Fork the repo and run `/add-portal` with your local job board - it scaffolds a portal skill matching the shipped contract, and `/scrape` picks it up automatically.
