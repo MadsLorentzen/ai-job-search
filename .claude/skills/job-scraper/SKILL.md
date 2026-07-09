@@ -33,7 +33,7 @@ Optional arguments:
 ### Step 0: Load State
 
 1. Read `job_scraper/seen_jobs.json` (create if missing - start with `{"seen": {}}`)
-2. Read `job_search_tracker.csv` to extract already-applied companies+roles
+2. Read `job_search_tracker.csv` to extract already-applied companies+roles. If it is missing, treat the tracker as empty for deduplication.
 3. Read `search-queries.md` (this directory) for the search strategy
 
 ### Step 1: Search
@@ -64,7 +64,7 @@ For each installed portal skill:
 
 Run all portal CLI calls in parallel where possible using the Agent tool. Collect all `results` arrays into a single pool for Step 2.
 
-If a CLI tool exits with a non-zero code, log the error message and continue — do not abort the whole search.
+If a CLI tool exits with a non-zero code, log the error message and continue — do not abort the whole search. If the error mentions Cloudflare bot protection or automated requests being blocked, do not retry that portal in the same run; go straight to the WebSearch fallback for that portal.
 
 #### 1c. WebSearch fallback
 
@@ -139,7 +139,11 @@ If the run found many new jobs (roughly 8+), also suggest `/rank` - it batch-sco
 
 ### Step 6: Update Tracker (Optional)
 
-If the user decides to apply to any job, add a row to `job_search_tracker.csv`.
+If the user decides to apply to any job, add a row to `job_search_tracker.csv`. If the file is missing, create it first with this header:
+
+```csv
+date,company,sector,role,role_type,channel,status,contact_person,fit_rating,notes,cv_file,cover_letter_file,source
+```
 
 ---
 

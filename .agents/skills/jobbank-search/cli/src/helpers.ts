@@ -88,6 +88,12 @@ export async function rssFetch(params: Record<string, string | string[]>): Promi
   const url = `${BASE_URL}/job/rss?${searchParams.toString()}`
   const response = await fetchWithUA(url)
   if (!response.ok) {
+    const body = await response.clone().text()
+    if (response.status === 403 && /just a moment|cloudflare|cf-chl/i.test(body)) {
+      throw new Error(
+        "Jobbank is blocking automated requests with Cloudflare bot protection. Skip this portal or use the WebSearch fallback."
+      )
+    }
     throw new Error(`Failed to fetch RSS feed: ${response.status} ${response.statusText}`)
   }
   const xml = await response.text()

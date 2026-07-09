@@ -189,7 +189,7 @@ ai-job-search/
 │   └── README_SALARY_TOOL.md          # Salary tool setup instructions
 ├── job_scraper/                       # Scraper state (seen jobs, results)
 ├── upskill/                           # /upskill report output (markdown reports per run)
-├── job_search_tracker.csv             # Application tracking spreadsheet
+├── job_search_tracker.example.csv     # Tracker schema; job_search_tracker.csv is generated locally and gitignored
 └── SETUP.md                           # Detailed setup guide
 ```
 
