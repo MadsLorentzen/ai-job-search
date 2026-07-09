@@ -42,19 +42,19 @@ COMPANY_PATTERNS = {"firma", "company", "virksomhed", "employer", "arbejdsgiver"
 CITY_PATTERNS = {"by", "city", "kommune", "location", "lokation", "sted"}
 COUNT_PATTERNS = {"antal", "count", "number", "n", "employees", "medarbejdere"}
 INDEX_PATTERNS = {"indeks", "index", "idx", "salary", "løn", "median", "average", "gennemsnit"}
-# Locale-specific "compound" tokens: pattern words allowed to match as a substring
-# of a larger header token, for languages that glue words together (e.g. Danish
-# "lønindeks" -> løn + indeks). Languages that write headers as separate words need
-# none. Ships populated for this repo's Danish demonstration data; a different-locale
-# spreadsheet supplies its own set via header_matches(..., compound_patterns=...).
+# "Compound" tokens: pattern words allowed to match as a substring of a larger
+# header token, for languages that glue words together (e.g. Danish "lønindeks"
+# -> løn + indeks). Languages that write headers as separate words need none.
+# Ships populated for this repo's Danish demonstration data; a fork targeting
+# another locale edits this constant.
 COMPOUND_PATTERNS = {"antal", "indeks", "løn", "gennemsnit", "medarbejdere"}
 
 
-def header_matches(header, patterns, compound_patterns=COMPOUND_PATTERNS):
+def header_matches(header, patterns):
     """Return True when a header contains a meaningful pattern match.
 
-    Patterns match whole tokens by default; any pattern also listed in
-    ``compound_patterns`` may additionally match as a substring, to handle
+    Patterns match whole tokens; any pattern also listed in
+    ``COMPOUND_PATTERNS`` may additionally match as a substring, to handle
     languages that form compound words.
     """
     h = header.lower().strip()
@@ -63,7 +63,7 @@ def header_matches(header, patterns, compound_patterns=COMPOUND_PATTERNS):
     for p in patterns:
         if p in tokens:
             return True
-        if p in compound_patterns and p in h:
+        if p in COMPOUND_PATTERNS and p in h:
             return True
     return False
 

@@ -49,22 +49,13 @@ class DetectColumnTypeTests(unittest.TestCase):
     def test_danish_compound_headers_still_match(self):
         self.assertEqual(detect_column_type("Lønindeks"), "index")
 
-    def test_compound_matching_is_locale_parameterizable(self):
-        # The default (Danish demo) compound set matches its glued headers.
+    def test_compound_patterns_match_as_substring_but_others_do_not(self):
+        # A compound token (Danish "løn") matches inside a glued header word.
         self.assertTrue(header_matches("lønindeks", INDEX_PATTERNS))
-        # The mechanism is not hardcoded to Danish: a caller for another locale
-        # supplies its own compound tokens without editing the module. "salaryindex"
-        # is a single token, so it only matches when "salary"/"index" are treated
-        # as compound tokens -- which the Danish default deliberately does not.
+        # A pattern that is not a compound token ("salary") only matches as a
+        # whole token, so it must not match inside an unrelated glued word.
         self.assertFalse(header_matches("salaryindex", INDEX_PATTERNS))
-        self.assertFalse(
-            header_matches("salaryindex", INDEX_PATTERNS, compound_patterns=set())
-        )
-        self.assertTrue(
-            header_matches(
-                "salaryindex", INDEX_PATTERNS, compound_patterns={"salary", "index"}
-            )
-        )
+        self.assertTrue(header_matches("salary index", INDEX_PATTERNS))
 
     def test_parse_sheet_preserves_category_name_with_letter_n(self):
         ws = FakeWorksheet([
