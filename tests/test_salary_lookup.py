@@ -36,6 +36,36 @@ class FormatEntryTests(unittest.TestCase):
 
         self.assertIn("private", rendered)
 
+    def test_format_entry_with_zero_baseline(self):
+        entry = {
+            "company": "Example Corp",
+            "city": "",
+            "categories": {
+                "it": {
+                    "count": None,
+                    "index": 45000.0,
+                },
+            },
+        }
+        rendered = format_entry(entry, {"index_baseline": 0, "index_label": "Salary"})
+        self.assertIn("45000.0", rendered)
+        self.assertNotIn("%", rendered)
+
+    def test_format_entry_with_custom_baseline(self):
+        entry = {
+            "company": "Example Corp",
+            "city": "",
+            "categories": {
+                "it": {
+                    "count": None,
+                    "index": 45000.0,
+                },
+            },
+        }
+        rendered = format_entry(entry, {"index_baseline": 40000, "index_label": "Salary"})
+        self.assertIn("45000.0", rendered)
+        self.assertIn("+12.5%", rendered)
+
 
 class SearchCompanyTests(unittest.TestCase):
     def test_search_company_with_none_city(self):
