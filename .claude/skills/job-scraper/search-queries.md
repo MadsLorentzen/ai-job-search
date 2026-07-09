@@ -1,70 +1,94 @@
 # Search Queries for Job Scraper
 
-<!-- SETUP: Customize these queries based on your skills, target roles, and location -->
-
 ## Search Sites
 
-Primary (Danish job market):
-- **jobindex.dk** - largest Danish job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: Denmark / your city)
-- **karriere.dk** - IDA's job board (engineering/science roles)
-- **jobfinder.dk** - another major Danish job board
-- **akademikernes.dk** - academic union job board
+Primary:
+- **linkedin.com/jobs** - LinkedIn job listings (filter: United Kingdom / remote)
+- **impactpool.org** - UN system, international development, humanitarian, and NGO roles worldwide
+
+Sector-specific (international development / global health):
+- **devex.com** - global development jobs and funding news
+- **unjobs.org** - UN system roles
+- **bond.org.uk** - UK international development network jobs board
+- **reliefweb.int** - humanitarian sector jobs
+
+Mission-driven / startup boards (browse directly, no reliable `site:` search pattern):
+- **otta.com** (now Welcome to the Jungle)
+- **cord.co**
+- **escapethecity.org**
+- **80000hours.org/job-board**
+- **wellfound.com** (formerly AngelList Talent) - startup/scaleup jobs; blocks automated access behind Cloudflare, browse manually only
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for known target companies
 
 ## Query Categories
 
-Queries are grouped by priority. Each query should be combined with your location terms (e.g. "Copenhagen", "Sjælland", "Hovedstaden") where the site supports it.
+Queries are grouped by priority. Combine with location terms ("United Kingdom", "Remote UK", "London") where the site supports it.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: Head of Data / Director-level data leadership
 
-These match your strongest and most desired career direction.
-
-```
-site:jobindex.dk "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:jobindex.dk "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
-```
-
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
+Strongest and most desired career direction - Head of Data or Director-level roles with strategic scope.
 
 ```
-site:jobindex.dk [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:jobindex.dk [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:linkedin.com/jobs "Head of Data" United Kingdom
+site:linkedin.com/jobs "Director of Data" OR "Director of Analytics" United Kingdom
+site:linkedin.com/jobs "Head of Analytics and Insights" United Kingdom
+"Head of Data" OR "Director of Data & Analytics" healthtech UK
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
+### Priority 2: Health & social care / healthtech domain
 
-Adjacent roles you could pivot into.
-
-```
-site:jobindex.dk "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:jobindex.dk "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
-```
-
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
+Matches direct domain expertise in health economics and health/social care analytics.
 
 ```
-site:jobindex.dk [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:jobindex.dk "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:linkedin.com/jobs "Head of Data" healthtech UK
+"Head of Data" OR "Director of Data" domiciliary care OR "health and social care" UK
+"Head of Data" NHS OR "digital health" UK
+```
+
+### Priority 3: Adjacent mission-driven sectors (international development, global health, EdTech, housing)
+
+Adjacent roles matching the operational-tempo-over-sector filter - commercial, operationally paced organisations in mission-driven sectors.
+
+```
+site:impactpool.org "Head of Data" OR "Director"
+site:devex.com data OR analytics director
+site:linkedin.com/jobs "Head of Data" OR "Director of Analytics" EdTech OR PropTech UK
+"Head of Data" housing association OR PropTech UK
+```
+
+### Priority 4: Director of Strategy & Transformation (broader pathway roles)
+
+Wider net for the longer-term Director of Strategy & Transformation → CEO/MD pathway.
+
+```
+site:linkedin.com/jobs "Director of Strategy" transformation UK
+site:linkedin.com/jobs "Director of Strategy and Transformation" mission-driven OR B-Corp UK
+```
+
+### Target Companies (illustrative, not exhaustive)
+
+Check career pages directly and via Google `site:` search for company-specific openings:
+- Healthtech / care platforms: Birdie, Perci Health
+- Mission-driven consumer / EdTech: Twinkl
+- International development: WaterAid UK
+- Housing / PropTech: Bromford Housing Group, Plentific
+
+```
+site:birdie.care careers
+site:jobs.lever.co OR site:jobs.ashbyhq.com OR site:apply.workable.com "Head of Data"
 ```
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+Candidate is Sheffield-based, targeting remote-friendly roles given a planned ~6-month period abroad from around late 2026. Commute tolerance scales with required office frequency and the office's distance from Sheffield:
+- Fully remote - ideal
+- Sheffield office, up to 5 days/week - acceptable
+- Leeds or similar-distance city, up to 3 days/week - acceptable
+- Manchester or similar-distance city, up to 2 days/week - acceptable
+- London or similar-distance city, up to 1 day/week - acceptable
+- Any role requiring more in-person time than the above for its distance, full relocation outside the UK, or with no remote flexibility at all - too far / deal-breaker
 
 ## Date Filter
 
