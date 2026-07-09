@@ -4,7 +4,7 @@ Step-by-step instructions for getting the AI Job Search framework running.
 
 ## 1. Prerequisites
 
-### Claude Code
+### Claude Code or Codex
 
 Install Claude Code (Anthropic's CLI for Claude):
 
@@ -13,6 +13,8 @@ npm install -g @anthropic-ai/claude-code
 ```
 
 You'll need an Anthropic API key or a Claude Pro/Team subscription. See the [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for details.
+
+Or use Codex. This repo includes command-named Codex skills under `.agents/skills/`, while keeping the Claude workflow intact.
 
 ### Python
 
@@ -139,7 +141,7 @@ done
 
 For `linkedin-search` the install is optional: it has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls TypeScript dev types.
 
-If you're outside Denmark, you can generate an equivalent search skill for your local job board with `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
+If you're outside Denmark, you can generate an equivalent search skill for your local job board with `/add-portal` in Claude Code or `$add-portal` in Codex. It scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
 
 ## 4. Run the setup interview
 
@@ -163,6 +165,20 @@ Claude will offer three paths:
 
 All three paths produce the same result: fully populated profile files.
 
+With Codex, start Codex in the repository instead:
+
+```bash
+codex
+```
+
+Then ask:
+
+```text
+$setup
+```
+
+The Codex setup skill points Codex at the same `.claude/commands/setup.md` workflow. In Codex surfaces where skills appear in the slash menu, `/setup` may also be selectable; `$setup` is the reliable invocation.
+
 ### What gets populated
 
 | File | Content |
@@ -184,6 +200,12 @@ You can update specific sections later:
 /setup --section skills
 /setup --section experience
 /setup --section search
+```
+
+With Codex, use the same arguments with `$setup`:
+
+```text
+$setup --section search
 ```
 
 The `--section search` option is especially useful as your priorities evolve. It re-runs the search configuration interview and suggests role types you may not have considered based on your full profile.
@@ -222,6 +244,20 @@ Claude will:
 4. Have a reviewer agent critique the drafts
 5. Revise and present the final output
 
+With Codex, ask:
+
+```text
+$apply https://jobindex.dk/job/1234567
+```
+
+For job search, ask:
+
+```text
+$scrape
+```
+
+Other Claude commands map to the same Codex skill names: `$rank`, `$interview`, `$outcome`, `$expand`, `$upskill`, `$reset`, `$add-template`, and `$add-portal`.
+
 ## 7. Compile your documents
 
 After `/apply` creates the LaTeX files:
@@ -238,7 +274,7 @@ Set-Location cv; lualatex main_<company>.tex; Set-Location ..
 Set-Location cover_letters; xelatex cover_<company>_<role>.tex; Set-Location ..
 ```
 
-These commands apply to the stock templates (moderncv CV, `cover.cls` cover letter). If you'd rather use your own LaTeX template, run `/add-template` — it captures the template's compile engine, fonts, style rules, and page limit, test-compiles it, and wires it into `/apply`. See the "LaTeX templates" section in the README.
+These commands apply to the stock templates (moderncv CV, `cover.cls` cover letter). If you'd rather use your own LaTeX template, run `/add-template` in Claude Code or `$add-template` in Codex. It captures the template's compile engine, fonts, style rules, and page limit, test-compiles it, and wires it into `/apply`. See the "LaTeX templates" section in the README.
 
 ## Troubleshooting
 

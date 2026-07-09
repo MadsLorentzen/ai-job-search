@@ -1,6 +1,6 @@
 # Documents Folder
 
-This folder holds your actual career documents. The `/setup` command reads everything here and uses it to populate the candidate skill files under `.claude/skills/job-application-assistant/`. It is safe to re-run `/setup` as you add new documents — it merges intelligently and will never overwrite existing content without asking you first.
+This folder holds your actual career documents. The `/setup` command reads everything here and uses it to populate the candidate skill files under `.claude/skills/job-application-assistant/`. With Codex, ask `$setup`; it uses the same source folder and workflow. It is safe to re-run setup as you add new documents — it merges intelligently and will never overwrite existing content without asking you first.
 
 ---
 

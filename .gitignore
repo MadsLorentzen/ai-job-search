@@ -39,6 +39,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Codex local project instructions
+AGENTS.md
+
 # Memory files (Claude Code user-specific)
 .claude/projects/
 

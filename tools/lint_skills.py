@@ -14,15 +14,10 @@ Checks:
 Exit code 0 on success, 1 with a failure list otherwise.
 """
 
-import json
 import re
+import json
 import sys
 from pathlib import Path
-
-try:
-    import yaml
-except ImportError:
-    sys.exit("lint_skills.py requires PyYAML: pip install pyyaml")
 
 ROOT = Path(__file__).resolve().parent.parent
 errors: list[str] = []
@@ -30,6 +25,25 @@ errors: list[str] = []
 
 def rel(path: Path) -> str:
     return str(path.relative_to(ROOT))
+
+
+def parse_frontmatter(text: str, path: Path) -> dict[str, str]:
+    data: dict[str, str] = {}
+    current_key: str | None = None
+    for raw_line in text.splitlines():
+        line = raw_line.rstrip()
+        if not line:
+            continue
+        if line.startswith((" ", "\t")) and current_key:
+            data[current_key] = f"{data[current_key]}\n{line.strip()}"
+            continue
+        if ":" not in line:
+            errors.append(f"{rel(path)}: frontmatter line is not key: value syntax: {line[:50]!r}")
+            continue
+        key, value = line.split(":", 1)
+        current_key = key.strip()
+        data[current_key] = value.strip().strip("'\"")
+    return data
 
 
 def check_skill(path: Path) -> None:
@@ -41,14 +55,7 @@ def check_skill(path: Path) -> None:
     if end == -1:
         errors.append(f"{rel(path)}: unterminated YAML frontmatter")
         return
-    try:
-        data = yaml.safe_load(text[4:end])
-    except yaml.YAMLError as exc:
-        errors.append(f"{rel(path)}: frontmatter is not valid YAML: {exc}")
-        return
-    if not isinstance(data, dict):
-        errors.append(f"{rel(path)}: frontmatter did not parse to a mapping")
-        return
+    data = parse_frontmatter(text[4:end], path)
     for key in ("name", "description"):
         if not data.get(key):
             errors.append(f"{rel(path)}: frontmatter missing required key '{key}'")
