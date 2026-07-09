@@ -16,28 +16,33 @@ interface Flags {
   [k: string]: string | boolean | string[]
 }
 
-// Facet flags that may repeat a value with commas (e.g. --region eu,us). The
-// generic --facet is handled separately (key=value).
+// Short-flag aliases.
 const ALIAS: Record<string, string> = { q: "query", n: "limit" }
 
 function parseFlags(argv: string[]): Flags {
   const flags: Flags = { _: [] }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
-    if (a.startsWith("-")) {
-      const key = ALIAS[a.replace(/^-+/, "")] ?? a.replace(/^-+/, "")
-      const next = argv[i + 1]
-      const value = next === undefined || next.startsWith("-") ? true : (i++, next)
-      // --facet repeats; collect into an array. Everything else is last-wins.
-      if (key === "facet") {
-        const acc = Array.isArray(flags.facet) ? flags.facet : []
-        if (typeof value === "string") acc.push(value)
-        flags.facet = acc
-      } else {
-        flags[key] = value
-      }
-    } else {
+    if (!a.startsWith("-")) {
       ;(flags._ as string[]).push(a)
+      continue
+    }
+    const name = a.replace(/^-+/, "")
+    const key = ALIAS[name] ?? name
+    const next = argv[i + 1]
+    // A flag with no following value (or another flag next) is a boolean.
+    let value: string | boolean = true
+    if (next !== undefined && !next.startsWith("-")) {
+      value = next
+      i++
+    }
+    // --facet repeats; collect into an array. Everything else is last-wins.
+    if (key === "facet") {
+      const acc = Array.isArray(flags.facet) ? flags.facet : []
+      if (typeof value === "string") acc.push(value)
+      flags.facet = acc
+    } else {
+      flags[key] = value
     }
   }
   return flags
@@ -120,7 +125,10 @@ async function main(): Promise<number> {
       }
     }
 
-    const remote = typeof flags.remote === "string" ? flags.remote : flags.remote === true ? "remote" : undefined
+    // --remote <mode> takes the given work_mode; a bare --remote defaults to "remote".
+    let workMode: string | undefined
+    if (typeof flags.remote === "string") workMode = flags.remote
+    else if (flags.remote === true) workMode = "remote"
 
     // Generic --facet key=value list -> param -> values.
     const facets: Record<string, string[]> = {}
@@ -149,7 +157,7 @@ async function main(): Promise<number> {
       category: commaList(flags.category),
       skills: commaList(flags.skill),
       company: typeof flags.company === "string" ? flags.company : undefined,
-      workMode: remote,
+      workMode,
       facets,
     }
     return runSearch(opts)
