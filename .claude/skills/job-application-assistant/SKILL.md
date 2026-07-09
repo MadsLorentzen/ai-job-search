@@ -36,7 +36,12 @@ When the user provides a job posting (URL or text), follow this workflow:
 - Create `cover_letters/cover_<company>_<role>.tex`
 - Ensure the letter connects specific experience to the role requirements
 
-### Step 4: Interview Preparation
+### Step 4: Verify Documents
+- After creating or updating any CV or cover letter, run the full verification checklist in `08-verification-checklist.md`
+- Compiling both documents and visually inspecting the PDF output is **MANDATORY - never skip it**
+- Report the results to the user as a pass/fail checklist before presenting the documents
+
+### Step 5: Interview Preparation
 - Follow the framework in `07-interview-prep.md`
 - Prepare STAR-format answers for likely questions
 - Identify role-specific talking points
@@ -55,6 +60,7 @@ When the user provides a job posting (URL or text), follow this workflow:
 | `05-cv-templates.md` | LaTeX CV structure and tailoring rules |
 | `06-cover-letter-templates.md` | LaTeX cover letter structure and tailoring rules |
 | `07-interview-prep.md` | STAR examples, tough questions, roleplay guidelines |
+| `08-verification-checklist.md` | CV/cover-letter verification: factual accuracy, targeting, compiled-PDF inspection, ATS/keywords |
 
 ---
 
