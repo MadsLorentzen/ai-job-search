@@ -24,88 +24,46 @@ python3 --version
 
 On Windows, `py --version` is often the most reliable check. If your system exposes Python as `python` instead of `python3`, use `python` in the commands below.
 
-### Bun (for job search tools)
+### Docker (for project-local tools)
 
-The job portal CLIs (four Danish portals plus the country-agnostic `linkedin-search` and `freehire-search` tools) are written in TypeScript and run with Bun.
+This fork keeps the heavy tooling out of your home directory and system package
+manager. LaTeX and Bun run through `compose.yml`:
 
-- macOS/Linux:
+- `latex` service: `texlive/texlive:latest`, provides `lualatex` and `xelatex`
+- `bun` service: `oven/bun:1.3.14`, runs the portal-search CLIs
+
+Install Docker Desktop or another Docker engine with Compose support, then check
+from the repository root:
 
 ```bash
-curl -fsSL https://bun.sh/install | bash
+tools/check_dependencies.sh
 ```
 
-- Windows PowerShell:
+### Bun (for job search tools)
 
-```powershell
-powershell -ExecutionPolicy Bypass -c "irm https://bun.sh/install.ps1 | iex"
+The job portal CLIs are written in TypeScript and run with Bun, but you do not
+need Bun installed on the host. Use the Compose wrapper:
+
+```bash
+tools/run_portal_cli.sh linkedin-search search -q "Engineering Manager" -l "Berlin, Germany" --format table
 ```
-
-If you prefer a package manager, `winget install Oven-sh.Bun` also works on Windows.
 
 ### LaTeX (for compiling CVs and cover letters)
 
-Install a LaTeX distribution to compile the generated `.tex` files to PDF:
-
-- **Windows:** [MiKTeX](https://miktex.org/download)
-- **macOS:** [MacTeX](https://tug.org/mactex/)
-- **Linux:** `sudo apt install texlive-full` or `sudo dnf install texlive-scheme-full`
-
-The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors). The cover letter compiles with `xelatex` because `cover.cls` requires `fontspec` for its custom Lato/Raleway fonts.
-
-#### Minimal TeX install: TinyTeX/BasicTeX
-
-Full TeX distributions work out of the box, but minimal distributions need a few extra packages before the stock templates compile.
-
-On macOS, a user-level TinyTeX install avoids a system-wide installer and does not require `sudo`:
-
-```bash
-curl -fsSL https://yihui.org/tinytex/install-bin-unix.sh -o /tmp/tinytex-install-bin-unix.sh
-sh /tmp/tinytex-install-bin-unix.sh /tmp --no-path
-export PATH="$HOME/Library/TinyTeX/bin/universal-darwin:$PATH"
-```
-
-Then install the template dependencies:
-
-```bash
-tlmgr install \
-  moderncv fontawesome5 fontawesome6 academicons import luatexbase pgf \
-  titlesec textpos xltxtra xunicode cite realscripts
-```
-
-For BasicTeX/MacTeX, make sure the TeX binary directory is on `PATH` first (for example via `/Library/TeX/texbin`), then run the same `tlmgr install ...` command.
+The CV compiles with `lualatex` and the cover letter compiles with `xelatex`,
+both inside the `latex` Compose service. No host TeX install is required.
 
 Quick smoke tests after setup:
 
 ```bash
-cd cv && lualatex -interaction=nonstopmode -halt-on-error main_example.tex && cd ..
-
-SMOKE_DIR="$(mktemp -d /tmp/ai-job-cover-smoke.XXXXXX)"
-cp -R cover_letters/cover.cls cover_letters/OpenFonts "$SMOKE_DIR/"
-cat >"$SMOKE_DIR/cover_smoke.tex" <<'EOF'
-\documentclass[]{cover}
-\begin{document}
-\namesection{Test}{Candidate}{test@example.com}
-\companyname{Example Company}
-\companyaddress{123 Hiring Street\\Example City}
-\currentdate{\today}
-\lettercontent{Dear Hiring Manager,}
-\lettercontent{This smoke test verifies that xelatex can load cover.cls and the bundled fonts.}
-\closing{Sincerely,}
-\signature{Test Candidate}
-\end{document}
-EOF
-(cd "$SMOKE_DIR" && xelatex -interaction=nonstopmode -halt-on-error cover_smoke.tex)
+tools/compile_examples.sh
 ```
 
 ### Optional: pdftotext (for the ATS check)
 
-`/apply` runs an ATS parseability check on the compiled CV: it extracts the PDF's text layer and verifies contact details, reading order, and keyword coverage the way an applicant-tracking system sees them. This uses `pdftotext` from [poppler](https://poppler.freedesktop.org/), which is not part of TeX distributions:
-
-- **macOS:** `brew install poppler`
-- **Debian/Ubuntu:** `sudo apt install poppler-utils`
-- **Windows:** `choco install poppler`
-
-If `pdftotext` is missing, `/apply` skips the mechanical check with a warning and falls back to a visual keyword review — everything else works normally.
+`/apply` runs an ATS parseability check on the compiled CV when `pdftotext` is
+available in the active toolchain. If it is unavailable, `/apply` skips the
+mechanical check with a warning and falls back to a visual keyword review.
 
 ## 2. Fork and clone
 
@@ -116,28 +74,16 @@ cd ai-job-search
 
 Or manually: fork on GitHub, then clone your fork.
 
-## 3. Install job search CLI dependencies
-Run these from the repository root.
+## 3. Check the project-local toolchain
 
-- PowerShell:
+Run this from the repository root:
 
-```powershell
-$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
-foreach ($tool in $tools) {
-  Set-Location ".agents/skills/$tool/cli"
-  bun install
-  Set-Location "..\..\..\.."
-}
-```
-
-- Bash / zsh / Git Bash:
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search; do
-  cd .agents/skills/$tool/cli && bun install && cd ../../../..
-done
+tools/check_dependencies.sh
 ```
 
-For `linkedin-search` and `freehire-search` the install is optional: both have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
+The first `docker compose run` will pull the container images. This is expected
+and keeps Bun/LaTeX out of the host system.
 
 If you're outside Denmark, you can generate an equivalent search skill for your local job board with `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
 
@@ -227,15 +173,8 @@ Claude will:
 After `/apply` creates the LaTeX files:
 
 ```bash
-# Bash / zsh / Git Bash
-cd cv && lualatex main_<company>.tex && cd ..
-cd cover_letters && xelatex cover_<company>_<role>.tex && cd ..
-```
-
-```powershell
-# PowerShell
-Set-Location cv; lualatex main_<company>.tex; Set-Location ..
-Set-Location cover_letters; xelatex cover_<company>_<role>.tex; Set-Location ..
+docker compose run --rm latex 'cd cv && lualatex -interaction=nonstopmode main_<company>.tex'
+docker compose run --rm latex 'cd cover_letters && xelatex -interaction=nonstopmode cover_<company>_<role>.tex'
 ```
 
 These commands apply to the stock templates (moderncv CV, `cover.cls` cover letter). If you'd rather use your own LaTeX template, run `/add-template` — it captures the template's compile engine, fonts, style rules, and page limit, test-compiles it, and wires it into `/apply`. See the "LaTeX templates" section in the README.
@@ -246,12 +185,13 @@ These commands apply to the stock templates (moderncv CV, `cover.cls` cover lett
 This is expected if you haven't set up salary benchmarking. The `/apply` workflow skips this step automatically.
 
 ### Job search CLI tools not working
-Make sure Bun is installed and you ran `bun install` in each CLI directory. The tools require network access to fetch job listings.
+Make sure Docker is running and use `tools/run_portal_cli.sh <portal-skill> ...`.
+The tools require network access to fetch job listings.
 
 ### LaTeX compilation errors
 - CV: uses `lualatex` (pdflatex often fails on modern MiKTeX with `fontawesome5` font-expansion errors; lualatex handles the same sources cleanly)
 - Cover letter: uses `xelatex` (for custom fonts in `OpenFonts/fonts/`)
-- Make sure your LaTeX distribution includes the `moderncv` package
+- Run through `docker compose run --rm latex ...` so the TeX environment is consistent.
 
 ### Fonts not found in cover letter
 The cover letter template expects fonts in `cover_letters/OpenFonts/fonts/`. Make sure this directory exists and contains the Lato and Raleway font files.

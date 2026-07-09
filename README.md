@@ -49,9 +49,13 @@ The framework encodes career guidance best practices, including structured evalu
 
 - [Claude Code](https://claude.com/claude-code) (CLI) or Codex with project `AGENTS.md` support
 - Python 3.10+
-- [Bun](https://bun.sh) (for job search CLI tools)
-- LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/), [MacTeX](https://tug.org/mactex/), [TinyTeX](https://yihui.org/tinytex/), or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`. If using a minimal TeX install such as TinyTeX or BasicTeX, install the extra packages listed in [SETUP.md](SETUP.md#minimal-tex-install-tinytexbasictex).
-- Optional: `pdftotext` from [poppler](https://poppler.freedesktop.org/) (macOS: `brew install poppler`, Debian/Ubuntu: `apt install poppler-utils`, Windows: `choco install poppler`) — used by `/apply`'s ATS parseability check on the compiled CV. If missing, the check degrades gracefully to a visual keyword review.
+- Docker with Compose support. This fork runs Bun and LaTeX through `compose.yml`, so you do not need to install Bun, TeX Live, MacTeX, TinyTeX, MiKTeX, or Poppler on the host.
+
+Check your local machine from the repo root:
+
+```bash
+tools/check_dependencies.sh
+```
 
 ## Quick start
 
@@ -62,28 +66,14 @@ gh repo fork MadsLorentzen/ai-job-search --clone
 cd ai-job-search
 ```
 
-### 2. Install job search tools
-
-PowerShell:
-
-```powershell
-$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
-foreach ($tool in $tools) {
-  Set-Location ".agents/skills/$tool/cli"
-  bun install
-  Set-Location "..\..\..\.."
-}
-```
-
-Bash / zsh / Git Bash:
+### 2. Check project-local tools
 
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search; do
-  cd .agents/skills/$tool/cli && bun install && cd ../../../..
-done
+tools/check_dependencies.sh
 ```
 
-For `linkedin-search` and `freehire-search` the install is optional: both have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
+The first tool run pulls Docker images for LaTeX and Bun. Nothing is installed
+into your home directory or system package manager.
 
 ### 3. Set up your profile
 

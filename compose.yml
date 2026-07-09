@@ -1,0 +1,14 @@
+services:
+  latex:
+    image: texlive/texlive:latest
+    working_dir: /work
+    volumes:
+      - .:/work
+    entrypoint: ["bash", "-lc"]
+
+  bun:
+    image: oven/bun:1.3.14
+    working_dir: /work
+    volumes:
+      - .:/work
+    entrypoint: ["bash", "-lc"]
