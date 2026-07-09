@@ -160,7 +160,7 @@ def search_company(data, query, city=None):
     for entry in companies:
         if city:
             city_lower = city.lower()
-            entry_city = entry.get("city", "").lower()
+            entry_city = (entry.get("city") or "").lower()
             if city_lower not in entry_city and anglicize(city_lower) not in anglicize(entry_city):
                 continue
 

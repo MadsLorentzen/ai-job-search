@@ -1,6 +1,6 @@
 import unittest
 
-from salary_lookup import format_entry
+from salary_lookup import format_entry, search_company
 
 
 class FormatEntryTests(unittest.TestCase):
@@ -35,6 +35,20 @@ class FormatEntryTests(unittest.TestCase):
         rendered = format_entry(entry, {"index_baseline": 100, "index_label": "Index"})
 
         self.assertIn("private", rendered)
+
+
+class SearchCompanyTests(unittest.TestCase):
+    def test_search_company_with_none_city(self):
+        data = {
+            "companies": [
+                {
+                    "company": "Acme",
+                    "city": None,
+                }
+            ]
+        }
+        results = search_company(data, "Acme", city="Aarhus")
+        self.assertEqual(results, [])
 
 
 if __name__ == "__main__":
