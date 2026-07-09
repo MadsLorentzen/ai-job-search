@@ -76,6 +76,9 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
   }
 }
 ```
+
+`/rank` extends this schema additively: ranked entries also carry `rank_score` (0–100 overall score), `rank_verdict` (fit band, e.g. "strong fit"), and `rank_date` (ISO date of ranking). The `status` field is set to `"ranked"`. Do not drop these fields when re-writing entries.
+
 2. Only present jobs NOT already in the seen list or tracker.
 
 ### Step 5: Present Results
