@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/MadsLorentzen/ai-job-search/actions/workflows/ci.yml/badge.svg)](https://github.com/MadsLorentzen/ai-job-search/actions/workflows/ci.yml)
 
-An AI-powered job application framework built on [Claude Code](https://claude.com/claude-code). Fork it, fill in your profile, and let Claude evaluate job postings, tailor your CV, write cover letters, and prepare you for interviews.
+An AI-powered job application framework built on [Claude Code](https://claude.com/claude-code), with a Codex compatibility layer in this fork. Fork it, fill in your profile, and let an AI coding agent evaluate job postings, tailor your CV, write cover letters, and prepare you for interviews.
 
 > Note: This is an independent open-source project and is not affiliated with, endorsed by, sponsored by, or maintained by Anthropic. Anthropic and Claude Code are referenced only to describe the toolchain this workflow uses.
 
@@ -24,6 +24,8 @@ An AI-powered job application framework built on [Claude Code](https://claude.co
 ## What this is
 
 A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Danish market (Jobindex, Jobnet, Akademikernes Jobbank, etc.), but the pattern is designed to be swapped for your local job boards.
+
+This fork also includes `AGENTS.md` so Codex can use the same workflow without needing the Claude slash-command runtime. The `.claude/` files remain the canonical workflow specs for Claude Code; Codex reads them through the mapping in `AGENTS.md`.
 
 ```
 /setup          /scrape              /apply <url>
@@ -45,7 +47,7 @@ The framework encodes career guidance best practices, including structured evalu
 
 ## Prerequisites
 
-- [Claude Code](https://claude.com/claude-code) (CLI)
+- [Claude Code](https://claude.com/claude-code) (CLI) or Codex with project `AGENTS.md` support
 - Python 3.10+
 - [Bun](https://bun.sh) (for job search CLI tools)
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/), [MacTeX](https://tug.org/mactex/), [TinyTeX](https://yihui.org/tinytex/), or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`. If using a minimal TeX install such as TinyTeX or BasicTeX, install the extra packages listed in [SETUP.md](SETUP.md#minimal-tex-install-tinytexbasictex).
@@ -85,26 +87,50 @@ For `linkedin-search` and `freehire-search` the install is optional: both have z
 
 ### 3. Set up your profile
 
+Claude Code:
+
 ```bash
 claude
 # Then inside Claude Code:
 /setup
 ```
 
+Codex:
+
+```text
+Set up my profile using the repository setup workflow.
+```
+
 `/setup` offers three paths: read your `documents/` folder if you have one populated (CV PDF, LinkedIn export, diplomas, reference letters, past applications), import a single CV pasted in chat, or walk through an interview. It auto-detects what you have and asks. Documents-folder mode is idempotent and safe to re-run as you add more material; see `documents/README.md` for the layout.
 
 ### 4. Search for jobs
 
+Claude Code:
+
 ```bash
 /scrape
+```
+
+Codex:
+
+```text
+Search for new jobs using the repository scraper workflow.
 ```
 
 This searches multiple job portals for positions matching your profile, deduplicates results, and presents them sorted by fit. Pick a match to run `/apply` on it directly — or, when a scrape returns more jobs than you want to eyeball, run `/rank` to batch-score them all against the fit framework and get a ranked shortlist first.
 
 ### 5. Apply to a job
 
+Claude Code:
+
 ```bash
 /apply https://jobindex.dk/job/1234567
+```
+
+Codex:
+
+```text
+Evaluate and apply to this job: https://jobindex.dk/job/1234567
 ```
 
 If the URL can't be fetched (some job portals block automated access), you can paste the job description directly instead:
@@ -133,6 +159,7 @@ This runs the full workflow: evaluate fit, draft CV + cover letter, review with 
 
 ```
 ai-job-search/
+├── AGENTS.md                           # Codex entry point and Claude-to-Codex workflow mapping
 ├── CLAUDE.md                          # Main candidate profile + workflow rules
 ├── .claude/
 │   ├── commands/
