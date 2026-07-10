@@ -166,7 +166,7 @@ bun run src/cli.ts search --text "sygeplejerske" --zip 8000 --limit 10
 
 ## `detail` — Full job posting detail
 
-**Method**: Fetch HTML from `https://jobdanmark.dk/job/{slug}`, extract `<script type="application/ld+json">` block.
+**Method**: Fetch HTML from `https://jobdanmark.dk/job/{slug}`. The CLI extracts a `<script type="application/ld+json">` JobPosting block when present, and falls back to parsing the rendered job page HTML when Jobdanmark omits JSON-LD.
 
 ```bash
 bun run src/cli.ts detail <slug> [--format json|plain]
@@ -202,11 +202,12 @@ bun run src/cli.ts detail it-chef-soeges-til-rah --format plain
     "postalCode": "6950",
     "addressCountry": "DK"
   },
-  "description": "<p>Full HTML description...</p>"
+  "description": "<p>Full HTML description...</p>",
+  "applyUrl": "https://example.com/apply"
 }
 ```
 
-> **Note**: The `hiringOrganization.logo` and `validThrough` fields may be `null` if not present in the JSON-LD. `jobLocation` fields may be `null` if the location data is absent.
+> **Note**: The `hiringOrganization.logo`, `validThrough`, and `applyUrl` fields may be `null` if not present in the structured data or rendered page. `jobLocation` fields may be `null` if the location data is absent.
 
 ---
 
@@ -440,7 +441,7 @@ All errors are written to **stderr** in JSON format and exit with code `1`:
 { "error": "Job not found", "code": "NOT_FOUND" }
 { "error": "API request failed: 400 Bad Request", "code": "API_ERROR" }
 { "error": "--query is required", "code": "MISSING_REQUIRED" }
-{ "error": "Failed to parse JSON-LD from job page", "code": "PARSE_ERROR" }
+{ "error": "Failed to parse job page HTML", "code": "PARSE_ERROR" }
 ```
 
 ---
