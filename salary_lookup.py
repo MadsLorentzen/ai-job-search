@@ -160,7 +160,7 @@ def search_company(data, query, city=None):
     for entry in companies:
         if city:
             city_lower = city.lower()
-            entry_city = entry.get("city", "").lower()
+            entry_city = (entry.get("city") or "").lower()
             if city_lower not in entry_city and anglicize(city_lower) not in anglicize(entry_city):
                 continue
 
@@ -206,10 +206,13 @@ def format_entry(entry, metadata):
             if count is not None or index is not None:
                 count_str = str(count) if count is not None else "-"
                 if isinstance(index, (int, float)):
-                    diff = index - baseline
-                    sign = "+" if diff >= 0 else ""
                     index_str = f"{index:.1f}"
-                    diff_str = f"{sign}{diff:.1f}%"
+                    if baseline == 0:
+                        diff_str = ""
+                    else:
+                        diff_pct = ((index - baseline) / baseline) * 100
+                        sign = "+" if diff_pct >= 0 else ""
+                        diff_str = f"{sign}{diff_pct:.1f}%"
                 elif index is not None:
                     index_str = str(index)
                     diff_str = ""

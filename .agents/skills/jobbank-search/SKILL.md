@@ -24,7 +24,7 @@ allowed-tools: Bash(bun run .agents/skills/jobbank-search/cli/src/cli.ts *)
 
 # Jobbank Search Skill
 
-Search live Danish job listings from [Akademikernes Jobbank](https://jobbank.dk) — Denmark's primary job portal for highly educated candidates. No authentication needed. Uses the RSS feed for search (up to 100 results) and JSON-LD parsing for detailed job information.
+Search live Danish job listings from [Akademikernes Jobbank](https://jobbank.dk) — Denmark's primary job portal for highly educated candidates. Uses the RSS feed for search (up to 100 results) and JSON-LD parsing for detailed job information. Jobbank may block automated requests with Cloudflare bot protection; if that happens, report the portal as unavailable and use WebSearch fallback instead of retrying.
 
 ## When to use this skill
 
@@ -172,7 +172,7 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 
 ## Notes
 
-- Data is from the public jobbank.dk RSS feed and HTML pages — no credentials required.
+- Data is from the public jobbank.dk RSS feed and HTML pages. Jobbank may still block automated CLI requests with Cloudflare bot protection; treat that as a portal availability failure and fall back to WebSearch.
 - RSS feed returns max 100 results per query. For higher counts, `meta.total` shows the true total.
 - The `detail` command fetches a full job page and extracts the JSON-LD structured data block.
 - `location` values are region codes (e.g. `2` = Storkøbenhavn), not city names.

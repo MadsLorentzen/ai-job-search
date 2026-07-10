@@ -1,7 +1,12 @@
 import unittest
 from types import SimpleNamespace
 
-from tools.convert_salary_excel import detect_column_type, parse_sheet
+from tools.convert_salary_excel import (
+    INDEX_PATTERNS,
+    detect_column_type,
+    header_matches,
+    parse_sheet,
+)
 
 
 class FakeWorksheet:
@@ -43,6 +48,14 @@ class DetectColumnTypeTests(unittest.TestCase):
 
     def test_danish_compound_headers_still_match(self):
         self.assertEqual(detect_column_type("Lønindeks"), "index")
+
+    def test_compound_patterns_match_as_substring_but_others_do_not(self):
+        # A compound token (Danish "løn") matches inside a glued header word.
+        self.assertTrue(header_matches("lønindeks", INDEX_PATTERNS))
+        # A pattern that is not a compound token ("salary") only matches as a
+        # whole token, so it must not match inside an unrelated glued word.
+        self.assertFalse(header_matches("salaryindex", INDEX_PATTERNS))
+        self.assertTrue(header_matches("salary index", INDEX_PATTERNS))
 
     def test_parse_sheet_preserves_category_name_with_letter_n(self):
         ws = FakeWorksheet([

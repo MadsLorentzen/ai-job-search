@@ -66,7 +66,7 @@ bun run .agents/skills/jobdanmark-search/cli/src/cli.ts detail <slug> [--format 
 ```
 
 `slug` is the URL path segment returned as `slug` in `search` results (e.g. `it-chef-soeges-til-rah`).
-Returns full structured job data from the job page's JSON-LD, including title, organization, location, employment type, deadline, and full HTML description.
+Returns full structured job data from the job page. The CLI prefers Schema.org JSON-LD when present and falls back to parsing the rendered HTML when Jobdanmark omits JSON-LD.
 
 ### List categories with live counts
 
@@ -222,7 +222,7 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 
 - All data is from the public Jobdanmark.dk API — no credentials required.
 - Pagination is 1-indexed (`--page 1` is the first page). 30 items per page, server-enforced.
-- The `detail` command fetches the HTML job page and parses the embedded JSON-LD (schema.org/JobPosting). It does not use a separate JSON API.
+- The `detail` command fetches the HTML job page and parses embedded JSON-LD when available, with a rendered-HTML fallback for pages that omit structured data. It does not use a separate JSON API.
 - `slug` in search results is extracted from the API's relative `url` field (the path after `/job/`).
 - `applicationDeadline` in search results can be `null` (no deadline set).
 - Job type values for filters: `fuldtid`, `deltid`, `fleksjob`, `elev`, `studiejob`, `praktik`.

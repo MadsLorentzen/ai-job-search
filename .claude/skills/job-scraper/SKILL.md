@@ -1,8 +1,10 @@
 ---
 name: scrape
 description: >
-  Scrapes Danish job sites for new positions matching your profile. Deduplicates across runs.
-  Triggers on: job scrape, find jobs, search jobs, new jobs, job search, scrape jobs, /scrape
+  Finds new job postings matching your profile via installed portal-search CLIs
+  (LinkedIn, local job boards, and any skills added with /add-portal). Deduplicates
+  across runs. Triggers on: job scrape, find jobs, search jobs, new jobs, job search,
+  scrape jobs, /scrape
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run .agents/skills/*/cli/src/cli.ts *), WebFetch, WebSearch, Agent, AskUserQuestion
 ---
 
@@ -12,7 +14,10 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run 
 
 ## How It Works
 
-This skill searches multiple Danish job sites using targeted queries based on your profile, deduplicates against previously seen jobs and the application tracker, and presents new matches with a quick fit assessment.
+This skill searches job portals using the **installed portal-search CLIs** in
+`.agents/skills/` (plus WebSearch as a fallback), using queries from your profile.
+It deduplicates against previously seen jobs and the application tracker, and
+presents new matches with a quick fit assessment.
 
 ## Invocation
 
@@ -62,7 +67,7 @@ For each installed portal skill:
 4. Cap results to ~20 per call using the portal's limit flag.
 5. Use `--format json` for machine-readable output.
 
-Run all portal CLI calls in parallel where possible using the Agent tool. Collect all `results` arrays into a single pool for Step 2.
+Run all portal CLI calls in parallel where possible using the Agent tool. Collect all `results` arrays into a single pool for Step 2, keeping each result tagged with its source portal skill (for Step 2 `detail` lookups).
 
 If a CLI tool exits with a non-zero code, log the error message and continue — do not abort the whole search.
 
@@ -78,8 +83,16 @@ Use the site-specific query strings from `search-queries.md` directly as WebSear
 ### Step 2: Fetch & Parse
 
 For each promising result from Step 1:
-- Use `WebFetch` to retrieve the job posting page
-- Extract: **job title**, **company**, **location**, **posting date** (or "recent"), **URL**, **key requirements** (brief), **application deadline** (if listed)
+
+**From CLI results:** Search output already includes title, company, location, date,
+and URL. For jobs worth a deeper look, fetch full detail with that portal's `detail`
+command (see its SKILL.md — do not guess flags) to extract **key requirements**,
+**application deadline**, and a brief description snippet.
+
+**From WebSearch results:** Use `WebFetch` on the posting URL and extract the same
+fields manually.
+
+For every candidate:
 - Skip if the URL or company+title combo already exists in `seen_jobs.json`
 - Skip if the company+role already appears in `job_search_tracker.csv`
 
@@ -108,6 +121,9 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
   }
 }
 ```
+
+`/rank` extends this schema additively: ranked entries also carry `rank_score` (0–100 overall score), `rank_verdict` (fit band, e.g. "strong fit"), and `rank_date` (ISO date of ranking). The `status` field is set to `"ranked"`. Do not drop these fields when re-writing entries.
+
 2. Only present jobs NOT already in the seen list or tracker.
 
 ### Step 5: Present Results
@@ -145,9 +161,9 @@ If the user decides to apply to any job, add a row to `job_search_tracker.csv`.
 
 ## Important Rules
 
-1. **Never fabricate job postings.** Only present jobs found via actual WebSearch/WebFetch results.
+1. **Never fabricate job postings.** Only present jobs from actual CLI search/detail output or WebSearch/WebFetch results.
 2. **Respect deduplication.** Always check seen_jobs.json AND job_search_tracker.csv before presenting.
 3. **Focus on configured geographic area.** Skip jobs that require relocation or are clearly outside commute range.
 4. **Only open positions.** Skip postings with expired deadlines or those marked as closed.
-5. **Be efficient with WebFetch.** Don't fetch every search result - use titles and snippets to pre-filter before fetching.
-6. **Parallel searches.** Use the Agent tool or parallel WebSearch calls to speed up the search phase.
+5. **Be efficient with detail fetches.** Don't run `detail` or WebFetch on every search hit — pre-filter by title/snippet, then fetch only promising matches.
+6. **Parallel searches.** Run portal CLI searches in parallel; use WebSearch only for gaps the CLIs don't cover.
