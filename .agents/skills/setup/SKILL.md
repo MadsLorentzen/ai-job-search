@@ -1,3 +1,8 @@
+---
+name: setup
+description: Runs the onboarding setup for the AI Job Search framework to collect candidate profile information.
+---
+
 # /setup - Profile Onboarding
 
 You are running the onboarding setup for the AI Job Search framework. Your goal is to collect the user's professional information and populate all profile files so the `/apply` workflow works out of the box.
@@ -78,13 +83,13 @@ If every subfolder is empty, stop and tell the user to populate the folder. Poin
 
 Read these in parallel before extracting anything. You must know what is already there to make the merge intelligent.
 
-- `.claude/skills/job-application-assistant/01-candidate-profile.md`
-- `.claude/skills/job-application-assistant/02-behavioral-profile.md`
-- `.claude/skills/job-application-assistant/03-writing-style.md`
-- `.claude/skills/job-application-assistant/04-job-evaluation.md`
-- `.claude/skills/job-application-assistant/05-cv-templates.md`
-- `.claude/skills/job-application-assistant/06-cover-letter-templates.md`
-- `.claude/skills/job-application-assistant/07-interview-prep.md`
+- `.agents/skills/job-application-assistant/01-candidate-profile.md`
+- `.agents/skills/job-application-assistant/02-behavioral-profile.md`
+- `.agents/skills/job-application-assistant/03-writing-style.md`
+- `.agents/skills/job-application-assistant/04-job-evaluation.md`
+- `.agents/skills/job-application-assistant/05-cv-templates.md`
+- `.agents/skills/job-application-assistant/06-cover-letter-templates.md`
+- `.agents/skills/job-application-assistant/07-interview-prep.md`
 
 Hold this content in context throughout Path A. Do not re-read.
 
@@ -354,7 +359,7 @@ Create STAR examples from their actual experience (at least 3-4 examples). Path 
 ### 7. Update `cv/main_example.tex`
 Replace placeholder personal data with their actual name, contact info, and add their education and most recent experience entries.
 
-### 8. Generate `.claude/skills/job-scraper/search-queries.md`
+### 8. Generate `.agents/skills/job-scraper/search-queries.md`
 Replace all placeholder tokens in the search queries file with the user's actual information from Section 9 (or the equivalent follow-up questions in Path A's Step A7):
 - Replace `[YOUR_PRIMARY_ROLE_TYPE]`, `[YOUR_PRIMARY_JOB_TITLE]`, etc. with actual role titles
 - Replace `[YOUR_KEY_SKILL]`, `[YOUR_DOMAIN_KEYWORD_1]`, etc. with actual skills and domain terms
@@ -365,42 +370,3 @@ Replace all placeholder tokens in the search queries file with the user's actual
   - Priority 2: Their domain expertise
   - Priority 3: Adjacent roles they could pivot into
   - Priority 4: Broader roles (wider net)
-
----
-
-## Step 4: Confirm & Next Steps
-
-Present a summary:
-
-> **Setup complete!** Here's what was generated:
->
-> - `CLAUDE.md` - Your full candidate profile
-> - `.claude/skills/job-application-assistant/01-candidate-profile.md` - Structured profile
-> - `.claude/skills/job-application-assistant/02-behavioral-profile.md` - Behavioral assessment
-> - `.claude/skills/job-application-assistant/04-job-evaluation.md` - Personalized evaluation framework
-> - `.claude/skills/job-application-assistant/05-cv-templates.md` - CV templates with your profile statements
-> - `.claude/skills/job-application-assistant/07-interview-prep.md` - STAR examples from your experience
-> - `cv/main_example.tex` - Your LaTeX CV template
-> - `.claude/skills/job-scraper/search-queries.md` - Job search queries for `/scrape`
->
-> **Try it out:**
-> - Run `/scrape` to search for matching jobs right now
-> - Run `/apply` with a job posting URL to see the full application workflow
-> - Run `/setup --section search` later to update your search queries as your priorities evolve
-
-If Path A left any STAR stubs in `07-interview-prep.md`, also note:
-
-> Path A flagged [N] STAR candidate stubs in `07-interview-prep.md` that need your situation/task/action/result details before you use them in interviews.
-
----
-
-## Design Principles
-
-- Three onboarding paths converge on the same skill files. Step 0 picks the right path based on what's in `documents/`. Steps 3 and 4 are shared.
-- Path A is read-before-write and idempotent. Re-running it as documents are added does not duplicate or overwrite existing content; conflicts are surfaced for explicit resolution.
-- Path A labels inferred behavioral or style additions so the user can review them critically before relying on them.
-- Each section in Path C is a natural conversation, not a form. The user can skip optional sections.
-- Synthesize answers into structured formats (the user does not need to know markdown or LaTeX).
-- Can be re-run with `--section <name>` to update specific sections (e.g., `/setup --section search` to reconfigure job search queries without re-doing the full profile).
-- Section 9 (search) in Path C, and the equivalent follow-up questions in Path A, proactively suggest role types the user may not have considered.
-- At the end, suggest running `/scrape` and `/apply` with a test job posting.

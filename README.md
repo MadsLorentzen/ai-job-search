@@ -16,7 +16,7 @@ An AI-powered job application framework built on [Claude Code](https://claude.co
 
 ## What this is
 
-A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Danish market (Jobindex, Jobnet, Akademikernes Jobbank, etc.), but the pattern is designed to be swapped for your local job boards.
+A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills can be built for the Polish market (Pracuj.pl, JustJoin.it, NoFluffJobs, LinkedIn, etc.), and the pattern is designed to be swapped for any local job boards using the `/add-portal` command.
 
 ```
 /setup          /scrape              /apply <url>
@@ -56,14 +56,12 @@ cd ai-job-search
 ### 2. Install job search tools
 
 ```bash
-cd .agents/skills/jobbank-search/cli && bun install && cd ../../../..
-cd .agents/skills/jobdanmark-search/cli && bun install && cd ../../../..
-cd .agents/skills/jobindex-search/cli && bun install && cd ../../../..
-cd .agents/skills/jobnet-search/cli && bun install && cd ../../../..
 cd .agents/skills/linkedin-search/cli && bun install && cd ../../../..
 ```
 
 For `linkedin-search` the install is optional: it has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls TypeScript dev types.
+
+You can also add Polish job portals using `/add-portal` (e.g., Pracuj.pl, JustJoin.it).
 
 ### 3. Set up your profile
 
@@ -237,7 +235,7 @@ If you prefer doing it by hand, the manual route still works: update the guidanc
 
 ### Job search tools
 
-The four Danish CLI tools in `.agents/skills/` (Jobbank, Jobdanmark, Jobindex, Jobnet) demonstrate the pattern for building a job-portal integration for a specific market. If you're in a different country, run:
+You can build integrations for Polish job portals (like Pracuj.pl or JustJoin.it) using the framework. To generate a new portal integration, run:
 
 ```
 /add-portal
@@ -290,3 +288,6 @@ To get the most from this, invest time during `/setup` in describing not just yo
 ## License
 
 MIT
+
+
+> **Uwaga (Polska wersja):** Ten fork frameworka jest zoptymalizowany pod polski rynek. Zalecamy dopisanie w swoim `CLAUDE.md` zasady: *"Zawsze komunikuj się ze mną po polsku, ale kod i komentarze pisz po angielsku."*

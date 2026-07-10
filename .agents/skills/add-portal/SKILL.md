@@ -1,3 +1,8 @@
+---
+name: add-portal
+description: Generate a job-portal search skill for your local market.
+---
+
 # /add-portal - Generate a Job-Portal Search Skill for Your Local Market
 
 You are helping the user build a job-portal search skill for a job board in their market. The repo ships worked examples of the pattern (like the country-agnostic `linkedin-search`), and the README invites users to build equivalents for the Polish market — this command turns that invitation into a guided workflow: investigate the portal, scaffold the skill from the canonical structure, and test-run a live query before registering anything.
@@ -31,7 +36,7 @@ Ask the user (skip anything already answered by `$ARGUMENTS`):
 
 ## Step 2: Investigate the Portal
 
-Do reconnaissance before writing any code. Use WebFetch (or `curl` via Bash) on the portal:
+Do reconnaissance before writing any code. Use WebFetch (or `curl` via terminal commands) on the portal:
 
 1. **Find the search URL pattern.** Load the portal's search page, run a search in the URL bar mentally or via fetch, and identify: the search endpoint, the query parameter, and any parameters for location, posting age, and pagination. Prefer a JSON API if one backs the site (check for `/api/` XHR endpoints in the page source); otherwise plan to parse the HTML results page.
 2. **Fetch one search-results response** for the test query and identify the per-result fields: **id, title, company, location, posting date, and URL**. For HTML, note the class names / attributes that anchor each field. For JSON, note the field paths.
@@ -66,7 +71,7 @@ Create `.agents/skills/<name>/` with:
     │       ├── search.ts
     │       └── detail.ts
     └── tests/
-        └── helpers.ts    # runCLI + parseJSON test utilities
+        └── helpers.ts    # runCLI + parseJSON test utilities (copy from jobindex-search)
 ```
 
 ### The portal-skill contract (every generated skill MUST honor this)
@@ -74,7 +79,7 @@ Create `.agents/skills/<name>/` with:
 These conventions are what make portal skills interchangeable for `/scrape` and for users reading any skill's docs:
 
 - **Commands:** `search` and `detail <id|url>`.
-- **Search flags:** `--query`/`-q`, `--jobage <days>` (posting age; map to the portal's parameter, note in SKILL.md if unsupported), `--page <n>` (1-indexed), `--limit <n>` (client-side cap), `--format json|table|plain` (default `json`). Add `--location`/`-l` if the portal supports location as a parameter; if it only supports location inside the keyword query, document that in SKILL.md.
+- **Search flags:** `--query`/`-q`, `--jobage <days>` (posting age; map to the portal's parameter, note in SKILL.md if unsupported), `--page <n>` (1-indexed), `--limit <n>` (client-side cap), `--format json|table|plain` (default `json`). Add `--location`/`-l` if the portal supports location as a parameter; if it only supports location inside the keyword query, document that in SKILL.md the way `jobindex-search` does ("include the city in `--query`").
 - **JSON output shape:** `{ "meta": { "count": ..., "page": ... }, "results": [...] }` where each result has at least `id`, `title`, `company`, `location`, `date`, `url` (missing values are `null`, never omitted).
 - **Errors:** written to **stderr** as `{ "error": "...", "code": "..." }`, exit code `1`. Never write errors to stdout.
 - **Fetching:** browser User-Agent, exponential backoff with jitter on 429/5xx (max ~6 retries), `""`/`null` on 404 rather than a crash.
@@ -87,7 +92,7 @@ These conventions are what make portal skills interchangeable for `/scrape` and 
 - **`SKILL.md` body:** what the skill searches, the personal-use warning if Step 2 found terms restrictions, command reference with flags, 4-6 usage examples using the user's market (real cities, realistic roles), output-format table, and a Notes section recording portal quirks found in Step 2.
 - **`url-reference.md`:** the endpoints, parameters table, and response-structure notes from Step 2 - this is the file a future maintainer needs when the portal changes its markup.
 - **`package.json`:** name `<portal>-cli`, `"type": "module"`, scripts `start`, `test` (`bun test --timeout 30000`), and `typecheck` (`tsc --noEmit`); dev-only dependencies in the zero-dependency default.
-- **`tests/`:** copy `runCLI`/`parseJSON` from `linkedin-search/cli/tests/helpers.ts` (if available), then add a small live smoke-test file: `search` with the test query returns exit code 0 and ≥1 result with non-null `id`/`title`/`url`; a bogus flag or missing required arg exits 1 with a JSON error on stderr.
+- **`tests/`:** copy `runCLI`/`parseJSON` from `jobindex-search/cli/tests/helpers.ts`, then add a small live smoke-test file: `search` with the test query returns exit code 0 and >=1 result with non-null `id`/`title`/`url`; a bogus flag or missing required arg exits 1 with a JSON error on stderr.
 
 ---
 
@@ -118,7 +123,7 @@ Do not proceed to Step 5 until search, detail, and tests all pass.
 
 ## Step 5: Register
 
-1. Ask whether the user wants the new portal added to their `/scrape` search strategy. If yes, add the portal's site to the relevant query categories in `.claude/skills/job-scraper/search-queries.md` (site-specific queries, like the existing `pracuj.pl` entries) so `/scrape` includes it.
+1. Ask whether the user wants the new portal added to their `/scrape` search strategy. If yes, add the portal's site to the relevant query categories in `.agents/skills/job-scraper/search-queries.md` (site-specific queries, like the existing `jobindex.dk` entries) so `/scrape` includes it.
 2. Remind the user to add the install line for their own records if they maintain a fork README:
    ```bash
    cd .agents/skills/<name>/cli && bun install && cd ../../../..

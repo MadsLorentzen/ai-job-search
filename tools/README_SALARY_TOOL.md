@@ -29,16 +29,16 @@ The tool expects `salary_data.json` with this structure:
   },
   "companies": [
     {
-      "company": "Novo Nordisk A/S",
-      "city": "Bagsværd",
+      "company": "CD Projekt",
+      "city": "Warszawa",
       "categories": {
         "all_employees": { "count": 500, "index": 108.5 },
         "engineering": { "count": 120, "index": 112.3 }
       }
     },
     {
-      "company": "Ørsted A/S",
-      "city": "Fredericia",
+      "company": "Allegro",
+      "city": "Poznań",
       "categories": {
         "all_employees": { "count": 200, "index": 105.2 }
       }
@@ -88,16 +88,16 @@ Start with an empty template and add companies as you research them:
   "metadata": {
     "source": "Personal research",
     "index_baseline": 0,
-    "index_label": "Monthly salary (DKK)",
+    "index_label": "Monthly salary (PLN)",
     "baseline_description": "Approximate monthly salary before tax"
   },
   "companies": [
     {
       "company": "Example Corp",
-      "city": "Copenhagen",
+      "city": "Kraków",
       "categories": {
-        "entry_level": { "index": 42000 },
-        "senior": { "index": 55000 }
+        "entry_level": { "index": 12000 },
+        "senior": { "index": 25000 }
       }
     }
   ]
@@ -107,9 +107,9 @@ Start with an empty template and add companies as you research them:
 ## Usage
 
 ```bash
-python salary_lookup.py "Novo Nordisk"
-python salary_lookup.py "Ørsted" --city "Fredericia"
-python salary_lookup.py "COWI" --json
+python salary_lookup.py "Allegro"
+python salary_lookup.py "CD Projekt" --city "Warszawa"
+python salary_lookup.py "Bosch" --json
 python salary_lookup.py --list-all
 ```
 
@@ -117,4 +117,4 @@ python salary_lookup.py --list-all
 
 - The data file (`salary_data.json`) is **excluded from git** (see `.gitignore`). Your salary data may be proprietary or confidential.
 - If the data file is missing, `salary_lookup.py` exits with a helpful error message and the `/apply` workflow skips the salary benchmark step.
-- The fuzzy matcher handles Danish company name variations: legal suffixes, Nordic characters, anglicized spellings, and partial matches.
+- The fuzzy matcher handles Polish company name variations: legal suffixes (Sp. z o.o., S.A.), Polish characters, anglicized spellings, and partial matches.

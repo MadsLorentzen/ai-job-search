@@ -26,7 +26,7 @@ On Windows, `py --version` is often the most reliable check if `python` is not o
 
 ### Bun (for job search tools)
 
-The job portal CLIs (four Danish portals plus the country-agnostic LinkedIn tool) are written in TypeScript and run with Bun.
+The job portal CLIs (like the country-agnostic LinkedIn tool or newly added Polish portals) are written in TypeScript and run with Bun.
 
 - macOS/Linux:
 
@@ -77,7 +77,7 @@ Run these from the repository root.
 - PowerShell:
 
 ```powershell
-$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search")
+$tools = @("linkedin-search")
 foreach ($tool in $tools) {
   Set-Location ".agents/skills/$tool/cli"
   bun install
@@ -87,14 +87,14 @@ foreach ($tool in $tools) {
 
 - Bash / zsh / Git Bash:
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search; do
+for tool in linkedin-search; do
   cd .agents/skills/$tool/cli && bun install && cd ../../../..
 done
 ```
 
 For `linkedin-search` the install is optional: it has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls TypeScript dev types.
 
-If you're outside Denmark, you can generate an equivalent search skill for your local job board with `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
+You can generate an equivalent search skill for your local job board (e.g. Pracuj.pl, JustJoin.it) with `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
 
 ## 4. Run the setup interview
 
@@ -161,7 +161,7 @@ This creates `salary_data.json` which the `/apply` workflow uses for salary benc
 Find a job posting you're interested in, then:
 
 ```
-/apply https://jobindex.dk/job/1234567
+/apply https://www.pracuj.pl/praca/1234567
 ```
 
 Or paste the job description directly:

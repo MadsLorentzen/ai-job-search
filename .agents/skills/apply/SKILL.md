@@ -1,3 +1,8 @@
+---
+name: apply
+description: Runs the Drafter-Reviewer Job Application Workflow for a job posting.
+---
+
 # /apply - Drafter-Reviewer Job Application Workflow
 
 You are orchestrating a two-agent job application workflow. The job posting is provided below as `$ARGUMENTS` (either a URL or pasted text).
@@ -24,8 +29,8 @@ Follow these steps **exactly in order**. Do not skip steps.
 ## Step 1: DRAFTER - Evaluate Fit
 
 Read the evaluation framework:
-- `.claude/skills/job-application-assistant/04-job-evaluation.md`
-- `.claude/skills/job-application-assistant/01-candidate-profile.md`
+- `.agents/skills/job-application-assistant/04-job-evaluation.md`
+- `.agents/skills/job-application-assistant/01-candidate-profile.md`
 
 Using the framework from `04-job-evaluation.md`, evaluate the job posting against the candidate's profile. If the salary lookup tool is configured, run:
 
@@ -55,9 +60,9 @@ After presenting the evaluation, ask the user:
 You already have `01-candidate-profile.md` and `04-job-evaluation.md` in context from Step 1. **Do not re-read them.**
 
 Read only the reference files you do not yet have:
-- `.claude/skills/job-application-assistant/03-writing-style.md`
-- `.claude/skills/job-application-assistant/05-cv-templates.md`
-- `.claude/skills/job-application-assistant/06-cover-letter-templates.md`
+- `.agents/skills/job-application-assistant/03-writing-style.md`
+- `.agents/skills/job-application-assistant/05-cv-templates.md`
+- `.agents/skills/job-application-assistant/06-cover-letter-templates.md`
 
 Also read the most recent existing CV and cover letter files for concrete structural reference (one of each is enough):
 - Read any existing `cv/main_*.tex` file as a LaTeX template reference
@@ -77,7 +82,7 @@ Also read the most recent existing CV and cover letter files for concrete struct
 - Tailor the opening paragraph to the specific role and company
 - Address to a named person if available in the posting, otherwise "Dear Hiring Manager" (or equivalent in posting language)
 - Keep to approximately one page
-- Any mention of agentic coding or AI tooling must reference **Claude Code** by name
+- Any mention of agentic coding or AI tooling must reference **Claude Code** (or the corresponding AI tool used) by name
 
 Write both files to disk. Keep the exact text of both drafts in working memory — you will pass them inline to the reviewer in Step 3 and revise them in Step 4 without re-reading.
 
@@ -85,7 +90,7 @@ Write both files to disk. Keep the exact text of both drafts in working memory �
 
 ## Step 3: REVIEWER - Research & Critique
 
-Use the **Agent tool** to spawn a `general-purpose` reviewer agent. The reviewer gets a fresh context, so pass the drafts **inline in the prompt** below (do not make the reviewer Read them). Scope the reviewer's file reads to content-critique essentials only — the reviewer does not need the LaTeX template files (`05`, `06`) to critique content, since those govern structural/LaTeX concerns the drafter already applied.
+Use the **self** or **research** subagent tool to spawn a reviewer. The reviewer gets a fresh context, so pass the drafts **inline in the prompt** below (do not make the reviewer Read them). Scope the reviewer's file reads to content-critique essentials only — the reviewer does not need the LaTeX template files (`05`, `06`) to critique content, since those govern structural/LaTeX concerns the drafter already applied.
 
 Replace `<COMPANY>`, `<ROLE>`, `<INSERT_JOB_POSTING_TEXT_HERE>`, `<INSERT_CV_DRAFT_HERE>`, and `<INSERT_COVER_LETTER_DRAFT_HERE>` with actual values before dispatching.
 
@@ -103,10 +108,10 @@ Use WebSearch and WebFetch to research:
 
 ### 2. Read Reference Materials (content-critique only)
 Read these four files — and only these — to ground your critique:
-- `.claude/skills/job-application-assistant/01-candidate-profile.md`
-- `.claude/skills/job-application-assistant/02-behavioral-profile.md` — use this specifically to check whether the cover letter's voice matches the candidate's natural register. A "Collaborator" PI profile, for example, should not be given a combative, solo-hero tone; a "Persuader" profile should not be given over-hedged, apologetic phrasing.
-- `.claude/skills/job-application-assistant/03-writing-style.md`
-- `.claude/skills/job-application-assistant/04-job-evaluation.md`
+- `.agents/skills/job-application-assistant/01-candidate-profile.md`
+- `.agents/skills/job-application-assistant/02-behavioral-profile.md` — use this specifically to check whether the cover letter's voice matches the candidate's natural register. A "Collaborator" PI profile, for example, should not be given a combative, solo-hero tone; a "Persuader" profile should not be given over-hedged, apologetic phrasing.
+- `.agents/skills/job-application-assistant/03-writing-style.md`
+- `.agents/skills/job-application-assistant/04-job-evaluation.md`
 
 Do NOT read `05-cv-templates.md` or `06-cover-letter-templates.md` — those govern LaTeX structure the drafter already applied and are not needed for content critique.
 
@@ -148,13 +153,13 @@ Prose suggestions grouped by category. Produce each category even if your findin
 - **Company/department-specific angles** — connections between experience and the company's strategic priorities, based on your research
 - **Action-oriented reframing** — identify passive, generic, or low-energy statements and suggest action-oriented rewrites. Use this category especially for structural weakness that doesn't fit a single-sentence swap (e.g., "the whole opening paragraph reads as passive — restructure around your single strongest match to the posting").
 - **Tone and style issues** — check against `03-writing-style.md` AND `02-behavioral-profile.md`. Flag any issues with tone, formality, or voice (cliches, hedging, over-humility, inconsistent register), and specifically flag any mismatch between the letter's voice and the candidate's natural register as described in the behavioral profile.
+```
 
 **CRITICAL RULE:** All suggestions must be grounded in actual profile data. Do NOT suggest fabricating skills, experience, or achievements. If a requirement is a gap, say so honestly and suggest how to frame adjacent experience instead.
 
 Do **not** run a verification checklist — the drafter will do that in the final step. Focus on content critique.
 
 Return Part A and Part B together as a single structured message.
-```
 
 ---
 
@@ -162,13 +167,13 @@ Return Part A and Part B together as a single structured message.
 
 Once the reviewer agent returns its feedback:
 
-1. **Apply Part A (structured edits) directly with the Edit tool.** Do NOT re-read the draft files — you already have them in context from Step 2, and the reviewer's `old_string` values were quoted from that same text. For each edit in the JSON array, call `Edit` with the given `file`, `old_string`, and `new_string`. Skip any whose rationale would require fabricating content.
+1. **Apply Part A (structured edits) directly.** Do NOT re-read the draft files — you already have them in context from Step 2, and the reviewer's `old_string` values were quoted from that same text. For each edit in the JSON array, call a replace tool with the given `file`, `old_string`, and `new_string`. Skip any whose rationale would require fabricating content.
 2. **Apply Part B (narrative suggestions)** using judgment. These need interpretation, not mechanical replacement. Walk through every Part B category the reviewer returned and address it:
    - **Missed keywords/requirements:** add the keyword or capability where it fits naturally in the CV or cover letter. Prefer the experience bullets (concrete evidence) over the profile statement (abstract claim).
    - **Company/department-specific angles:** weave the reviewer's research into the cover letter opening or motivation paragraph. Verify every company claim via WebFetch/WebSearch before including it — do not trust reviewer research at face value.
    - **Action-oriented reframing:** rewrite passive or generic phrasing (CV profile statement, cover letter opening, bullet leads). Structural weakness that the reviewer flagged without a clean JSON edit lives here.
    - **Tone and style issues:** apply the writing-style-guide fixes (no em-dashes, no cliches, no apologetic hedging, consistent first-person active voice).
-   Use Edit for targeted changes; only re-read a file if an edit fails because the surrounding text has shifted.
+   Use targeted edits; only re-read a file if an edit fails because the surrounding text has shifted.
 3. Do NOT incorporate any suggestion that would fabricate skills or experience. If a posting requirement is a genuine gap, acknowledge it honestly and frame adjacent experience instead.
 
 After all edits are applied, the two files on disk are the final drafts.
@@ -193,7 +198,7 @@ If either compile fails, fix the error and re-compile until clean.
 
 ### 5b. Inspect layout
 
-Read both PDFs via the Read tool and verify:
+Read both PDFs via the view file tool and verify:
 
 **CV (`cv/main_<company>.pdf`):**
 - [ ] Exactly 2 pages (not 1, not 3)
@@ -234,7 +239,7 @@ Read the `.txt` file.
 
 **2. Parseability checks** on the extracted text:
 
-- [ ] **Text extracted at all**, with no garbage runs: no `(cid:NNN)` markers, no `�` replacement characters, no stretches of missing text that are visible in the PDF
+- [ ] **Text extracted at all**, with no garbage runs: no `(cid:NNN)` markers, no `` replacement characters, no stretches of missing text that are visible in the PDF
 - [ ] **Email and phone survive as literal text.** Icon fonts extract as glyph names (the stock template's contact line extracts as `MOBILE-ALT [+XX ...] • Envelope [your.email@...]`) — that noise is harmless, but the actual address and digits must be present. A contact detail carried only by an icon or a hyperlink target (like the `LinkedIn` link text) is invisible to an ATS; the email must be printed as text.
 - [ ] **Reading order matches the visual order** — section headings appear in the same sequence as on the page, and lines from different sections are not interleaved. The stock banking template is single-column and safe; custom templates registered via `/add-template` with sidebars or multi-column layouts are where this breaks.
 - [ ] **Dates recognizable** — each role and degree has its years present in the extraction.
