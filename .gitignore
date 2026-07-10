@@ -19,7 +19,7 @@ venv/
 *.fdb_latexmk
 
 # Personal data (never commit these)
-.local/
+my/
 salary_data.json
 job_scraper/seen_jobs.json
 job_scraper/*.md

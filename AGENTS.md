@@ -7,10 +7,10 @@ below as the project-local entry point.
 ## Priority
 
 - Follow this `AGENTS.md` first for Codex behavior.
-- If `.local/profile/` exists, treat it as the canonical private candidate
+- If `my/profile/` exists, treat it as the canonical private candidate
   profile and personalization layer. It is intentionally ignored by git.
 - Treat `CLAUDE.md` as the public/template high-level workflow guide when no
-  `.local/profile/CLAUDE.md` override exists.
+  `my/profile/CLAUDE.md` override exists.
 - Treat `.claude/commands/*.md` and `.claude/skills/*` as reusable workflow
   specifications, even though their names and tool references are Claude-specific.
 - Do not delete or rewrite `.claude/` just to make the repo Codex-friendly; the
@@ -34,17 +34,17 @@ When a Claude instruction names a Claude Code tool, use the Codex equivalent:
 
 For job postings, applications, CVs, cover letters, and interview prep:
 
-1. Read `.local/profile/CLAUDE.md` if present; otherwise read `CLAUDE.md`.
+1. Read `my/profile/CLAUDE.md` if present; otherwise read `CLAUDE.md`.
 2. Read `.claude/skills/job-application-assistant/SKILL.md`.
 3. For each referenced profile/personalization file, prefer the private
-   `.local/profile/...` version if present; otherwise use the tracked template:
-   - profile facts: `.local/profile/job-application-assistant/01-candidate-profile.md` or `.claude/skills/job-application-assistant/01-candidate-profile.md`
-   - behavior/culture fit: `.local/profile/job-application-assistant/02-behavioral-profile.md` or `.claude/skills/job-application-assistant/02-behavioral-profile.md`
+   `my/profile/...` version if present; otherwise use the tracked template:
+   - profile facts: `my/profile/job-application-assistant/01-candidate-profile.md` or `.claude/skills/job-application-assistant/01-candidate-profile.md`
+   - behavior/culture fit: `my/profile/job-application-assistant/02-behavioral-profile.md` or `.claude/skills/job-application-assistant/02-behavioral-profile.md`
    - writing rules: `.claude/skills/job-application-assistant/03-writing-style.md`
-   - fit scoring: `.local/profile/job-application-assistant/04-job-evaluation.md` or `.claude/skills/job-application-assistant/04-job-evaluation.md`
-   - CV rules: `.local/profile/job-application-assistant/05-cv-templates.md` or `.claude/skills/job-application-assistant/05-cv-templates.md`
+   - fit scoring: `my/profile/job-application-assistant/04-job-evaluation.md` or `.claude/skills/job-application-assistant/04-job-evaluation.md`
+   - CV rules: `my/profile/job-application-assistant/05-cv-templates.md` or `.claude/skills/job-application-assistant/05-cv-templates.md`
    - cover letter rules: `.claude/skills/job-application-assistant/06-cover-letter-templates.md`
-   - interview prep: `.local/profile/job-application-assistant/07-interview-prep.md` or `.claude/skills/job-application-assistant/07-interview-prep.md`
+   - interview prep: `my/profile/job-application-assistant/07-interview-prep.md` or `.claude/skills/job-application-assistant/07-interview-prep.md`
 4. Always evaluate fit before drafting application materials unless the user
    explicitly asks for only a narrow artifact.
 5. Never fabricate candidate experience, employer facts, salary data, job
@@ -81,7 +81,7 @@ that portal's `SKILL.md` and use its documented flags. Prefer the CLI output ove
 free-form web search when the portal skill exists. Keep searches low-volume and
 respect each skill's personal-use or terms-of-service notes.
 
-For search strategy, prefer `.local/profile/job-scraper/search-queries.md` if it
+For search strategy, prefer `my/profile/job-scraper/search-queries.md` if it
 exists; otherwise use `.claude/skills/job-scraper/search-queries.md`.
 
 ## Repository Hygiene
