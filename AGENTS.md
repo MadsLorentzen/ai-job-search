@@ -11,6 +11,8 @@ below as the project-local entry point.
   profile and personalization layer. It is intentionally ignored by git.
 - Treat `CLAUDE.md` as the public/template high-level workflow guide when no
   `my/profile/CLAUDE.md` override exists.
+- Treat `codex/commands/*.md` as Codex-facing workflow entry points. These are
+  project command specs, not a native Codex slash-command runtime.
 - Treat `.claude/commands/*.md` and `.claude/skills/*` as reusable workflow
   specifications, even though their names and tool references are Claude-specific.
 - Do not delete or rewrite `.claude/` just to make the repo Codex-friendly; the
@@ -54,25 +56,29 @@ For job postings, applications, CVs, cover letters, and interview prep:
 7. Compile and inspect LaTeX outputs as required by `CLAUDE.md` before presenting
    CV or cover-letter results.
 
-## Claude Slash Command Equivalents
+## Codex Command Equivalents
 
 Codex does not receive Claude slash commands automatically. If the user invokes one
-or asks for the same outcome in natural language, read the matching file and follow
-it as a procedure:
+or asks for the same outcome in natural language, prefer the matching
+`codex/commands/*.md` wrapper. Each wrapper points to the detailed Claude workflow
+spec or skill to execute under Codex tool translation.
 
-| User intent | Claude spec to read |
+| User intent | Codex wrapper to read |
 | --- | --- |
-| Set up or refresh profile | `.claude/commands/setup.md` |
-| Search/scrape jobs | `.claude/skills/job-scraper/SKILL.md` |
-| Apply to a posting | `.claude/commands/apply.md` |
-| Rank scraped jobs | `.claude/commands/rank.md` |
-| Interview preparation | `.claude/commands/interview.md` |
-| Record application outcome | `.claude/commands/outcome.md` |
-| Expand profile from public/source materials | `.claude/commands/expand.md` |
-| Build an upskilling plan | `.claude/skills/upskill/SKILL.md` |
-| Add a LaTeX template | `.claude/commands/add-template.md` |
-| Add a job portal skill | `.claude/commands/add-portal.md` |
-| Reset profile/documents | `.claude/commands/reset.md` |
+| Set up or refresh profile | `codex/commands/setup.md` |
+| Search/scrape jobs | `codex/commands/search.md` |
+| Apply to a posting | `codex/commands/apply.md` |
+| Rank scraped jobs | `codex/commands/rank.md` |
+| Interview preparation | `codex/commands/interview.md` |
+| Record application outcome | `codex/commands/outcome.md` |
+| Expand profile from public/source materials | `codex/commands/expand.md` |
+| Build an upskilling plan | `codex/commands/upskill.md` |
+| Add a LaTeX template | `codex/commands/add-template.md` |
+| Add a job portal skill | `codex/commands/add-portal.md` |
+| Reset profile/documents | `codex/commands/reset.md` |
+
+If a Codex wrapper is missing or stale, fall back to the corresponding
+`.claude/commands/*.md` or `.claude/skills/*` file directly.
 
 ## Job Search Portal Skills
 
