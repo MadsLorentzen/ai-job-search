@@ -1,6 +1,25 @@
 import unittest
 
-from salary_lookup import format_entry, search_company
+from salary_lookup import format_entry, match_score, search_company
+
+
+class MatchScoreTests(unittest.TestCase):
+    def test_exact_match_scores_100(self):
+        self.assertEqual(match_score("Acme", "Acme"), 100)
+
+    def test_substring_match_scores_highly(self):
+        score = match_score("Acme Consulting Services", "Acme Consulting")
+
+        self.assertGreaterEqual(score, 80)
+
+    def test_short_query_without_word_overlap_scores_zero(self):
+        self.assertEqual(match_score("AI", "Fairview"), 0)
+
+    def test_anglicized_variant_matches(self):
+        self.assertGreater(match_score("Moller", "M\u00f8ller"), 0)
+
+    def test_names_without_overlap_score_zero(self):
+        self.assertEqual(match_score("Acme", "Globex"), 0)
 
 
 class FormatEntryTests(unittest.TestCase):
@@ -68,6 +87,15 @@ class FormatEntryTests(unittest.TestCase):
 
 
 class SearchCompanyTests(unittest.TestCase):
+    def test_city_filter_includes_only_matching_city(self):
+        copenhagen_entry = {"company": "Acme", "city": "Copenhagen"}
+        aarhus_entry = {"company": "Acme", "city": "Aarhus"}
+        data = {"companies": [copenhagen_entry, aarhus_entry]}
+
+        results = search_company(data, "Acme", city="Copenhagen")
+
+        self.assertEqual(results, [copenhagen_entry])
+
     def test_search_company_with_none_city(self):
         data = {
             "companies": [
