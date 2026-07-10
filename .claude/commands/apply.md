@@ -281,4 +281,7 @@ List the files written:
 
 Tell the user: "Both files are ready for your review. Open them to check the final output before compiling."
 
-Also mention: once they have actually submitted the application, `/outcome <company>` logs it in the tracker and starts the per-application record that `/setup` later uses to calibrate the fit framework.
+### Next Steps
+Tell the user:
+- **Submitted?** Run `/outcome <company>` to log it in the tracker and start the per-application record that `/setup` later uses to calibrate the fit framework.
+- **Interview scheduled?** Run `/interview <company>` for a stage-specific prep pack built from this posting and the documents they submitted.
