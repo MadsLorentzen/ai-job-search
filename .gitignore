@@ -19,11 +19,15 @@ venv/
 *.fdb_latexmk
 
 # Personal data (never commit these)
+.env
+.env.*
 salary_data.json
 job_scraper/seen_jobs.json
 job_scraper/*.md
 *_BehavioralReport.pdf
 linkedin_Profile.pdf
+operations_analyst_jobs.csv
+
 
 # Personal photos and signatures
 *.jpg

@@ -4,7 +4,7 @@ Step-by-step instructions for getting the AI Job Search framework running.
 
 ## 1. Prerequisites
 
-### Claude Code
+### Claude Code (Default Option)
 
 Install Claude Code (Anthropic's CLI for Claude):
 
@@ -13,6 +13,10 @@ npm install -g @anthropic-ai/claude-code
 ```
 
 You'll need an Anthropic API key or a Claude Pro/Team subscription. See the [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for details.
+
+### Gemini & Google Antigravity SDK (Alternative Option)
+
+If you prefer to run the job search agent and evaluation programmatically via Python using Gemini models, you can set up the Google Antigravity SDK. Refer to the [GEMINI.md](GEMINI.md) guide for prerequisites and environment setup.
 
 ### Python
 
@@ -143,6 +147,8 @@ If you're outside Denmark, you can generate an equivalent search skill for your 
 
 ## 4. Run the setup interview
 
+### Using Claude Code (Default)
+
 Start Claude Code in the repository:
 
 ```bash
@@ -153,6 +159,14 @@ Then run the onboarding:
 
 ```
 /setup
+```
+
+### Using Gemini (Alternative)
+
+For Gemini and Google Antigravity SDK users, you can run the interactive setup and search script. See the [GEMINI.md](GEMINI.md) guide for details and run the script:
+
+```bash
+python3 gemini_search.py
 ```
 
 Claude will offer three paths:
