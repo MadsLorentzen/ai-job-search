@@ -153,6 +153,9 @@ This runs the full workflow: evaluate fit, draft CV + cover letter, review with 
 ```
 ai-job-search/
 ├── CLAUDE.md                          # Main candidate profile + workflow rules
+├── GEMINI.md                          # Gemini & Google Antigravity SDK addon guide
+├── gemini_search.py                   # Script to run Gemini search & interview agents
+├── search-queries.md                  # Sourced target search queries
 ├── .claude/
 │   ├── commands/
 │   │   ├── apply.md                   # /apply workflow (drafter-reviewer)
