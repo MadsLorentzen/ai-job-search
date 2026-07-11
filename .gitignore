@@ -64,6 +64,9 @@ documents/applications/**
 # Personal job search tracking
 job_search_tracker.csv
 
+# Generated reports (personal output from /html-report)
+reports/
+
 # Upskill reports (personal output)
 upskill/*.md
 
