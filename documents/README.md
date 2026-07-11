@@ -179,3 +179,13 @@ The command is designed to be re-run as your document collection grows. Each run
 - After adding reference letters
 - After recording outcomes for completed applications
 - After updating your master CV
+
+---
+
+## Example Source Profiles
+
+The `examples/` folder can contain public-safe example source profiles that show how candidates may describe different technical backgrounds.
+
+Available examples:
+
+- [Quant and Trading Systems Profile Example](examples/quant-trading-systems-profile.md)
