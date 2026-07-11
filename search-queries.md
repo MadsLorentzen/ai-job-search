@@ -1,30 +1,29 @@
 # Job Search Queries
 
-These search queries are configured for scraping platforms (LinkedIn, Jobindex, etc.) based on Babatunde's profile and target roles in the UK.
+These search queries are configured for scraping platforms (LinkedIn, Jobindex, etc.) based on your profile and target roles.
 
 ## Target Roles
 
-1. **Revenue Operations (RevOps) Specialist / Manager**
-2. **GTM Operations Manager / Lead**
-3. **HubSpot Administrator / CRM Manager**
-4. **Operations Manager (Fintech / SaaS)**
+1. **[Target Role 1, e.g. Revenue Operations (RevOps) Specialist / Manager]**
+2. **[Target Role 2, e.g. GTM Operations Manager / Lead]**
+3. **[Target Role 3, e.g. HubSpot Administrator / CRM Manager]**
+4. **[Target Role 4, e.g. Operations Manager (Fintech / SaaS)]**
 
 ## Platform Queries
 
 ### LinkedIn Search
-- **Keywords:** `"Revenue Operations" OR "RevOps" OR "GTM Operations"`
-  - **Location:** `London, United Kingdom` (or `United Kingdom` for remote)
-- **Keywords:** `"HubSpot Administrator" OR "HubSpot Specialist" OR "Salesforce Administrator"`
-  - **Location:** `United Kingdom`
-- **Keywords:** `"Operations Manager" AND ("Fintech" OR "Payments" OR "SaaS")`
-  - **Location:** `London, United Kingdom`
+- **Keywords:** `"[Target Role 1]" OR "[Target Role 2]"`
+  - **Location:** `[YOUR_CITY, e.g. London, United Kingdom]` (or `[YOUR_COUNTRY]` for remote)
+- **Keywords:** `"[Target Role 3]"`
+  - **Location:** `[YOUR_COUNTRY]`
+- **Keywords:** `"[Target Role 4]"`
+  - **Location:** `[YOUR_CITY, e.g. London, United Kingdom]`
 
 ### Jobindex Search (Danish Market / Europe Remote)
-- **Keywords:** `Revenue Operations`
-- **Keywords:** `HubSpot`
-- **Keywords:** `GTM Operations`
+- **Keywords:** `[Target Role 1]`
+- **Keywords:** `[Target Role 3]`
 
 ### Freehire Tech Search
-- **Query:** `Revenue Operations`
-- **Query:** `HubSpot`
-- **Query:** `Operations`
+- **Query:** `[Target Role 1]`
+- **Query:** `[Target Role 3]`
+
