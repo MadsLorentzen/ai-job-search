@@ -18,7 +18,7 @@
 - CI must stay green: `python -m unittest discover` and `python tools/lint_skills.py` pass after every task
 - Work happens on the existing `brand/mascot-pip` branch (spec is already committed there)
 - Source-of-truth files on this machine:
-  - Master GIF: `C:\Users\Bruger\Desktop\mascot_candidates\courier_flight_loop_v8_tie.gif` (v8 = no per-frame scaling + boundary-classified hole transparency; v5-v7 are superseded)
+  - Master GIF: `C:\Users\Bruger\Desktop\mascot_candidates\courier_flight_loop_v10_tie.gif` (v10 = final: no per-frame scaling, boundary-classified holes, line-fitted envelope-border clipping; v5-v9 superseded)
   - ChatGPT tie sheet: `C:\Users\Bruger\Downloads\ChatGPT Image 12. jul. 2026, 06.30.48.png`
   - Gemini sheet: `C:\Users\Bruger\Downloads\Gemini_Generated_Image_azwqj6azwqj6azwq (1).png`
   - Retired flat sprites: `C:\Users\Bruger\Desktop\mascot_candidates\{A_standing_courier,B_flying_delivery,C_envelope_hugger}.png`
@@ -30,7 +30,7 @@
 
 **Files:**
 - Modify: `.gitignore` (append one block at end)
-- Create: `assets/mascot/pip_flight_loop.gif` (copy of courier_flight_loop_v8_tie.gif)
+- Create: `assets/mascot/pip_flight_loop.gif` (copy of courier_flight_loop_v10_tie.gif)
 - Create: `assets/mascot/sources/chatgpt_tie_sheet.png`
 - Create: `assets/mascot/sources/gemini_sheet.png`
 - Create: `assets/mascot/reference/{A_standing_courier,B_flying_delivery,C_envelope_hugger}.png`
@@ -60,7 +60,7 @@ Expected: prints a line ending in `.superpowers/` — exit code 0
 ```bash
 cd "C:/Users/Bruger/Desktop/github_local/ai-job-search"
 mkdir -p assets/mascot/sources assets/mascot/reference
-cp "C:/Users/Bruger/Desktop/mascot_candidates/courier_flight_loop_v8_tie.gif" assets/mascot/pip_flight_loop.gif
+cp "C:/Users/Bruger/Desktop/mascot_candidates/courier_flight_loop_v10_tie.gif" assets/mascot/pip_flight_loop.gif
 cp "C:/Users/Bruger/Downloads/ChatGPT Image 12. jul. 2026, 06.30.48.png" assets/mascot/sources/chatgpt_tie_sheet.png
 cp "C:/Users/Bruger/Downloads/Gemini_Generated_Image_azwqj6azwqj6azwq (1).png" assets/mascot/sources/gemini_sheet.png
 cp "C:/Users/Bruger/Desktop/mascot_candidates/A_standing_courier.png" assets/mascot/reference/
@@ -202,8 +202,32 @@ for d_ in seq:
             continue
         teal = (ridx == 0).sum() / len(ridx)                # light teal only
         envelope = np.isin(ridx, [3, 5]).sum() / len(ridx)  # gray, red
-        if teal >= 0.08 or envelope >= 0.70:
-            continue  # chest or envelope face: real content
+        if teal >= 0.08:
+            continue  # chest: real content
+        if envelope >= 0.70:
+            # envelope face - but when the envelope tucks under the body, the
+            # face white and the body-envelope gap merge into one component.
+            # Clip anything above the envelope's top border. The border is
+            # line-fitted from unoccluded columns because feet/tie hide it in
+            # the middle (first-gray there is a fold line, much lower).
+            gray_mask = idx == 3
+            glab, gn = ndimage.label(gray_mask)
+            if gn:
+                gsizes = ndimage.sum(gray_mask, glab, range(1, gn + 1))
+                env_gray = glab == (int(np.argmax(gsizes)) + 1)
+                cols = np.where(env_gray.any(axis=0))[0]
+                tops = env_gray.argmax(axis=0)[cols].astype(float)
+                med = np.median(tops)
+                good = np.abs(tops - med) <= 20
+                if good.sum() >= 10:
+                    a, b = np.polyfit(cols[good], tops[good], 1)
+                else:
+                    a, b = 0.0, med
+                ys2, xs2 = np.where(comp)
+                above = ys2 < a * xs2 + b - 1
+                if above.any():
+                    idx[ys2[above], xs2[above]] = TRANSPARENT
+            continue
         idx[comp] = TRANSPARENT
     p = Image.fromarray(idx, mode="P")
     palette = PAL.astype(np.uint8).flatten().tolist() + [255, 0, 255]
