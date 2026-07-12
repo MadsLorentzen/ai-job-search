@@ -22,7 +22,7 @@
   - ChatGPT tie sheet: `C:\Users\Bruger\Downloads\ChatGPT Image 12. jul. 2026, 06.30.48.png`
   - Gemini sheet: `C:\Users\Bruger\Downloads\Gemini_Generated_Image_azwqj6azwqj6azwq (1).png`
   - Retired flat sprites: `C:\Users\Bruger\Desktop\mascot_candidates\{A_standing_courier,B_flying_delivery,C_envelope_hugger}.png`
-  - Assembly script: full v8 pipeline code reproduced in Task 1 Step 4
+  - Assembly script: full v10 pipeline code reproduced in Task 1 Step 4
 
 ---
 
@@ -70,7 +70,7 @@ cp "C:/Users/Bruger/Desktop/mascot_candidates/C_envelope_hugger.png" assets/masc
 
 - [ ] **Step 4: Create `assets/mascot/assemble_flight_loop.py`**
 
-Full script (the session's v8 pipeline with repo-relative paths):
+Full script (the session's v10 pipeline with repo-relative paths):
 
 ```python
 """Regenerate pip_flight_loop.gif from sources/chatgpt_tie_sheet.png.
