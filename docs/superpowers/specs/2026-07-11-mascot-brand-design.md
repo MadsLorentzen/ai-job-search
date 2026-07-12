@@ -42,7 +42,7 @@ mark stays pure and brand attachment comes from the surfaces around it
 
 ## 2. The animated mark
 
-`courier_flight_loop_v5_tie.gif` - the moving brand mark.
+`assets/mascot/pip_flight_loop.gif` - the moving brand mark.
 
 - 6 frames, 110 ms/frame, infinite loop
 - Measured flap cycle: wing high, mid, flat, swept-down, low, rising - ordered
@@ -55,16 +55,17 @@ mark stays pure and brand attachment comes from the surfaces around it
   whites stay opaque)
 - 560 px square master, displayed at 200 px; approximately 30 KB
 
-Provenance: v3 frames generated with Gemini from a locked prompt (palette,
-choreography, loop constraints); tie-edition frames generated with ChatGPT from
-the same design; both sliced, palette-snapped, artifact-cleaned, re-anchored,
-and assembled locally. Assembly scripts retained for regeneration; the
-superseded tie-less v3 GIF is kept alongside the source sheets in
-`assets/mascot/`.
+Provenance: an initial tie-less loop was generated with Gemini from a locked
+prompt (palette, choreography, loop constraints); the final tie-edition frames
+were generated with ChatGPT from the same design, then sliced, palette-snapped,
+beak-anchored, and assembled locally, with two targeted art repairs (one stray
+outlined blob removed and the exposed underside outline repainted). The full
+pipeline lives in `assets/mascot/assemble_flight_loop.py` and reproduces the
+shipped GIF exactly from `assets/mascot/sources/chatgpt_tie_sheet.png`.
 
 ## 3. Brand surfaces
 
-1. **README header** - v3 GIF replaces `claude_animation.gif`, same 200 px
+1. **README header** - the flight-loop GIF replaces `claude_animation.gif`, same 200 px
    centered slot. Alt text: "Pip, the courier bird".
 2. **GitHub social preview card** - 1280x640 PNG uploaded in repo settings:
    Pip + `ai-job-search` wordmark + tagline "job search that runs on your
