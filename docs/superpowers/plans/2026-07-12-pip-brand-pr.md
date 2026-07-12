@@ -18,11 +18,11 @@
 - CI must stay green: `python -m unittest discover` and `python tools/lint_skills.py` pass after every task
 - Work happens on the existing `brand/mascot-pip` branch (spec is already committed there)
 - Source-of-truth files on this machine:
-  - Master GIF: `C:\Users\Bruger\Desktop\mascot_candidates\courier_flight_loop_v10_tie.gif` (v10 = final: no per-frame scaling, boundary-classified holes, line-fitted envelope-border clipping; v5-v9 superseded)
+  - Master GIF: `C:\Users\Bruger\Desktop\mascot_candidates\courier_flight_loop_v16_tie.gif` (v16 = final: v10 + targeted removal of one outlined teal blob in the wing-down frame; v5-v15 superseded)
   - ChatGPT tie sheet: `C:\Users\Bruger\Downloads\ChatGPT Image 12. jul. 2026, 06.30.48.png`
   - Gemini sheet: `C:\Users\Bruger\Downloads\Gemini_Generated_Image_azwqj6azwqj6azwq (1).png`
   - Retired flat sprites: `C:\Users\Bruger\Desktop\mascot_candidates\{A_standing_courier,B_flying_delivery,C_envelope_hugger}.png`
-  - Assembly script: full v10 pipeline code reproduced in Task 1 Step 4
+  - Assembly script: full v16 pipeline code reproduced in Task 1 Step 4
 
 ---
 
@@ -30,7 +30,7 @@
 
 **Files:**
 - Modify: `.gitignore` (append one block at end)
-- Create: `assets/mascot/pip_flight_loop.gif` (copy of courier_flight_loop_v10_tie.gif)
+- Create: `assets/mascot/pip_flight_loop.gif` (copy of courier_flight_loop_v16_tie.gif)
 - Create: `assets/mascot/sources/chatgpt_tie_sheet.png`
 - Create: `assets/mascot/sources/gemini_sheet.png`
 - Create: `assets/mascot/reference/{A_standing_courier,B_flying_delivery,C_envelope_hugger}.png`
@@ -60,7 +60,7 @@ Expected: prints a line ending in `.superpowers/` — exit code 0
 ```bash
 cd "C:/Users/Bruger/Desktop/github_local/ai-job-search"
 mkdir -p assets/mascot/sources assets/mascot/reference
-cp "C:/Users/Bruger/Desktop/mascot_candidates/courier_flight_loop_v10_tie.gif" assets/mascot/pip_flight_loop.gif
+cp "C:/Users/Bruger/Desktop/mascot_candidates/courier_flight_loop_v16_tie.gif" assets/mascot/pip_flight_loop.gif
 cp "C:/Users/Bruger/Downloads/ChatGPT Image 12. jul. 2026, 06.30.48.png" assets/mascot/sources/chatgpt_tie_sheet.png
 cp "C:/Users/Bruger/Downloads/Gemini_Generated_Image_azwqj6azwqj6azwq (1).png" assets/mascot/sources/gemini_sheet.png
 cp "C:/Users/Bruger/Desktop/mascot_candidates/A_standing_courier.png" assets/mascot/reference/
@@ -70,7 +70,7 @@ cp "C:/Users/Bruger/Desktop/mascot_candidates/C_envelope_hugger.png" assets/masc
 
 - [ ] **Step 4: Create `assets/mascot/assemble_flight_loop.py`**
 
-Full script (the session's v10 pipeline with repo-relative paths):
+Full script (the session's v16 pipeline with repo-relative paths):
 
 ```python
 """Regenerate pip_flight_loop.gif from sources/chatgpt_tie_sheet.png.
@@ -229,6 +229,44 @@ for d_ in seq:
                     idx[ys2[above], xs2[above]] = TRANSPARENT
             continue
         idx[comp] = TRANSPARENT
+    # targeted art cleanup: the source sheet has one large outlined teal blob
+    # (a vestigial appendage) drawn into the body-envelope gap of one frame.
+    # Only fragments >=100px qualify - smaller teal fragments are legitimate
+    # pixel-art texture, and generic cleanup rules damage the tie and feet.
+    bird_mask = np.isin(idx, [0, 1])
+    blab, bn = ndimage.label(bird_mask)
+    if bn > 1:
+        bsizes = ndimage.sum(bird_mask, blab, range(1, bn + 1))
+        bmain = int(np.argmax(bsizes)) + 1
+        gray_mask = idx == 3
+        glab, gn = ndimage.label(gray_mask)
+        a_fit, b_fit = 0.0, 10 ** 6
+        if gn:
+            gsizes = ndimage.sum(gray_mask, glab, range(1, gn + 1))
+            env_gray = glab == (int(np.argmax(gsizes)) + 1)
+            cols = np.where(env_gray.any(axis=0))[0]
+            tops = env_gray.argmax(axis=0)[cols].astype(float)
+            med = np.median(tops)
+            good = np.abs(tops - med) <= 20
+            if good.sum() >= 10:
+                a_fit, b_fit = np.polyfit(cols[good], tops[good], 1)
+            else:
+                a_fit, b_fit = 0.0, med
+        for bk in range(1, bn + 1):
+            if bk == bmain or not (100 <= bsizes[bk - 1] < 600):
+                continue
+            ys3, xs3 = np.where(blab == bk)
+            cy, cx = ys3.mean(), xs3.mean()
+            border_here = a_fit * cx + b_fit
+            if not (border_here - 55 <= cy < border_here):
+                continue
+            fmask = blab == bk
+            ring = ndimage.binary_dilation(fmask, iterations=2) & ~fmask
+            if not ring.any() or (idx[ring] == 6).mean() < 0.40:
+                continue
+            shell = ndimage.binary_dilation(fmask, iterations=3) & (idx == 6)
+            idx[fmask] = TRANSPARENT
+            idx[shell] = TRANSPARENT
     p = Image.fromarray(idx, mode="P")
     palette = PAL.astype(np.uint8).flatten().tolist() + [255, 0, 255]
     p.putpalette(palette + [0] * (768 - len(palette)))
