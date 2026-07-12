@@ -17,8 +17,11 @@ your machine - it searches job portals and delivers applications while you live
 your life. Pip is the agent, not the job seeker.
 
 Canonical style: the outlined redesign (dark outline, happy closed eye,
-expressive wing), which supersedes the original flat-style sprites. The three
-original flat PNGs are retired as candidates but kept as palette reference.
+expressive wing), which supersedes the original flat-style sprites. Pip wears a
+**small dark tie** (same `#22333b` as the outline - the palette stays at 7
+colors): the agent is dressed for the interviews it books you, and the tie
+sways with the wing beats. The three original flat PNGs are retired as
+candidates but kept as palette reference.
 
 **Locked palette (exactly 7 colors):**
 
@@ -39,20 +42,25 @@ mark stays pure and brand attachment comes from the surfaces around it
 
 ## 2. The animated mark
 
-`courier_flight_loop_v3.gif` - the moving brand mark.
+`courier_flight_loop_v5_tie.gif` - the moving brand mark.
 
 - 6 frames, 110 ms/frame, infinite loop
-- Measured flap cycle: wing high, mid, flat, swept-down, flat, high
-- Beak-anchored: head fixed across frames; only wing, body bob, and envelope
-  sway move
+- Measured flap cycle: wing high, mid, flat, swept-down, low, rising - ordered
+  by per-frame wing-centroid measurement
+- Beak-anchored: head fixed across frames; wing, body bob, envelope sway, and
+  tie swing carry the motion
 - Every pixel snapped to the 7-color palette (no cross-frame color drift)
+- Per-frame scale normalized using the beak as a ruler (clamped 0.8-1.25)
 - True transparent background (edge-connected flood fill; belly and envelope
   whites stay opaque)
 - 560 px square master, displayed at 200 px; approximately 30 KB
 
-Provenance: frames generated with Gemini from a locked prompt (palette,
-choreography, loop constraints), then sliced, palette-snapped, artifact-cleaned,
-re-anchored, and assembled locally. Assembly script retained for regeneration.
+Provenance: v3 frames generated with Gemini from a locked prompt (palette,
+choreography, loop constraints); tie-edition frames generated with ChatGPT from
+the same design; both sliced, palette-snapped, artifact-cleaned, re-anchored,
+and assembled locally. Assembly scripts retained for regeneration; the
+superseded tie-less v3 GIF is kept alongside the source sheets in
+`assets/mascot/`.
 
 ## 3. Brand surfaces
 
