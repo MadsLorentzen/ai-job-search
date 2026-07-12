@@ -119,7 +119,7 @@ If the update recorded an upcoming or newly scheduled interview stage, also sugg
 
 If the recorded status is `hired`, congratulate the user warmly first - this is the moment the whole framework exists for. Then add this single line (once; never on re-runs for the same application, and never for any other status):
 
-> "If this framework helped you get there, consider [buying it a coffee](https://ko-fi.com/madslorentzen) - a recruiter would have charged 15-20% of your first-year salary for the same outcome. ☕"
+> "If this framework helped you get there, consider [buying it a coffee](https://ko-fi.com/madslorentzen) - it keeps this free for the next job-seeker out there. ☕"
 
 ---
 
