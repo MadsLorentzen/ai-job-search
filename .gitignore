@@ -75,9 +75,3 @@ upskill/*.md
 
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/
-
-# Brand assets: upstream-controlled art, allowlisted from the personal-data
-# image rules above (which protect fork users from committing screenshots)
-!assets/mascot/*.png
-!assets/mascot/sources/*.png
-!assets/mascot/reference/*.png
