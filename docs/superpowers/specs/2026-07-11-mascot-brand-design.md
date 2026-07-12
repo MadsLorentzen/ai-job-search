@@ -50,7 +50,8 @@ mark stays pure and brand attachment comes from the surfaces around it
 - Beak-anchored: head fixed across frames; wing, body bob, envelope sway, and
   tie swing carry the motion
 - Every pixel snapped to the 7-color palette (no cross-frame color drift)
-- Per-frame scale normalized using the beak as a ruler (clamped 0.8-1.25)
+- No per-frame rescaling (the source birds are size-consistent; rescaling by
+  noisy measurements caused a visible zoom pulse in an early build)
 - True transparent background (edge-connected flood fill; belly and envelope
   whites stay opaque)
 - 560 px square master, displayed at 200 px; approximately 30 KB
