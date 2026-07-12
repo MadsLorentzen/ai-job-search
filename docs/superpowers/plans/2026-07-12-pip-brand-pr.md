@@ -18,11 +18,11 @@
 - CI must stay green: `python -m unittest discover` and `python tools/lint_skills.py` pass after every task
 - Work happens on the existing `brand/mascot-pip` branch (spec is already committed there)
 - Source-of-truth files on this machine:
-  - Master GIF: `C:\Users\Bruger\Desktop\mascot_candidates\courier_flight_loop_v17_tie.gif` (v17 = final: v8 white handling + targeted removal of one outlined teal blob; no envelope border clipping; v5-v16 superseded)
+  - Master GIF: `C:\Users\Bruger\Desktop\mascot_candidates\courier_flight_loop_v19_tie.gif` (v19 = FINAL, user-approved: v8 white handling + blob removal with protected shell + thin outline repaint; v5-v18 and v20-v21 superseded)
   - ChatGPT tie sheet: `C:\Users\Bruger\Downloads\ChatGPT Image 12. jul. 2026, 06.30.48.png`
   - Gemini sheet: `C:\Users\Bruger\Downloads\Gemini_Generated_Image_azwqj6azwqj6azwq (1).png`
   - Retired flat sprites: `C:\Users\Bruger\Desktop\mascot_candidates\{A_standing_courier,B_flying_delivery,C_envelope_hugger}.png`
-  - Assembly script: full v17 pipeline code reproduced in Task 1 Step 4
+  - Assembly script: full v19 pipeline code reproduced in Task 1 Step 4
 
 ---
 
@@ -30,7 +30,7 @@
 
 **Files:**
 - Modify: `.gitignore` (append one block at end)
-- Create: `assets/mascot/pip_flight_loop.gif` (copy of courier_flight_loop_v17_tie.gif)
+- Create: `assets/mascot/pip_flight_loop.gif` (copy of courier_flight_loop_v19_tie.gif)
 - Create: `assets/mascot/sources/chatgpt_tie_sheet.png`
 - Create: `assets/mascot/sources/gemini_sheet.png`
 - Create: `assets/mascot/reference/{A_standing_courier,B_flying_delivery,C_envelope_hugger}.png`
@@ -60,7 +60,7 @@ Expected: prints a line ending in `.superpowers/` — exit code 0
 ```bash
 cd "C:/Users/Bruger/Desktop/github_local/ai-job-search"
 mkdir -p assets/mascot/sources assets/mascot/reference
-cp "C:/Users/Bruger/Desktop/mascot_candidates/courier_flight_loop_v17_tie.gif" assets/mascot/pip_flight_loop.gif
+cp "C:/Users/Bruger/Desktop/mascot_candidates/courier_flight_loop_v19_tie.gif" assets/mascot/pip_flight_loop.gif
 cp "C:/Users/Bruger/Downloads/ChatGPT Image 12. jul. 2026, 06.30.48.png" assets/mascot/sources/chatgpt_tie_sheet.png
 cp "C:/Users/Bruger/Downloads/Gemini_Generated_Image_azwqj6azwqj6azwq (1).png" assets/mascot/sources/gemini_sheet.png
 cp "C:/Users/Bruger/Desktop/mascot_candidates/A_standing_courier.png" assets/mascot/reference/
@@ -70,7 +70,7 @@ cp "C:/Users/Bruger/Desktop/mascot_candidates/C_envelope_hugger.png" assets/masc
 
 - [ ] **Step 4: Create `assets/mascot/assemble_flight_loop.py`**
 
-Full script (the session's v17 pipeline with repo-relative paths):
+Full script (the session's v19 pipeline with repo-relative paths):
 
 ```python
 """Regenerate pip_flight_loop.gif from sources/chatgpt_tie_sheet.png.
@@ -245,9 +245,24 @@ for d_ in seq:
             ring = ndimage.binary_dilation(fmask, iterations=2) & ~fmask
             if not ring.any() or (idx[ring] == 6).mean() < 0.40:
                 continue
-            shell = ndimage.binary_dilation(fmask, iterations=3) & (idx == 6)
+            # erase the blob's own outline ring, but protect outline pixels
+            # that belong to the body, chest, tie, or feet (anything near the
+            # main structures) - an unprotected shell bit the body outline
+            protected = ndimage.binary_dilation(
+                (blab == bmain) | (idx == 4) | (idx == 2), iterations=2)
+            shell = ndimage.binary_dilation(fmask, iterations=3) & (idx == 6) & ~protected
+            erased = fmask | shell
             idx[fmask] = TRANSPARENT
             idx[shell] = TRANSPARENT
+            # repair: the blob's boundary doubled as the local body outline, so
+            # erasing it exposes bare chest white to the background. Repaint the
+            # exposed content edge (white/teal within the wound area, near the
+            # new transparency) as outline so the bird's underside stays closed.
+            near_wound = ndimage.binary_dilation(erased, iterations=6)
+            transp = idx == TRANSPARENT
+            near_gap = ndimage.binary_dilation(transp, iterations=6)
+            repaint = near_wound & near_gap & np.isin(idx, [0, 1, 4])
+            idx[repaint] = 6
     p = Image.fromarray(idx, mode="P")
     palette = PAL.astype(np.uint8).flatten().tolist() + [255, 0, 255]
     p.putpalette(palette + [0] * (768 - len(palette)))
