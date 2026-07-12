@@ -22,7 +22,7 @@
   - ChatGPT tie sheet: `C:\Users\Bruger\Downloads\ChatGPT Image 12. jul. 2026, 06.30.48.png`
   - Gemini sheet: `C:\Users\Bruger\Downloads\Gemini_Generated_Image_azwqj6azwqj6azwq (1).png`
   - Retired flat sprites: `C:\Users\Bruger\Desktop\mascot_candidates\{A_standing_courier,B_flying_delivery,C_envelope_hugger}.png`
-  - Assembly script: session scratchpad `assemble_gif_v5.py` (full code reproduced in Task 1)
+  - Assembly script: full v8 pipeline code reproduced in Task 1 Step 4
 
 ---
 
@@ -30,7 +30,7 @@
 
 **Files:**
 - Modify: `.gitignore` (append one block at end)
-- Create: `assets/mascot/pip_flight_loop.gif` (copy of courier_flight_loop_v5_tie.gif)
+- Create: `assets/mascot/pip_flight_loop.gif` (copy of courier_flight_loop_v8_tie.gif)
 - Create: `assets/mascot/sources/chatgpt_tie_sheet.png`
 - Create: `assets/mascot/sources/gemini_sheet.png`
 - Create: `assets/mascot/reference/{A_standing_courier,B_flying_delivery,C_envelope_hugger}.png`
@@ -70,13 +70,13 @@ cp "C:/Users/Bruger/Desktop/mascot_candidates/C_envelope_hugger.png" assets/masc
 
 - [ ] **Step 4: Create `assets/mascot/assemble_flight_loop.py`**
 
-Full script (this is the session's v5 pipeline with repo-relative paths):
+Full script (the session's v8 pipeline with repo-relative paths):
 
 ```python
 """Regenerate pip_flight_loop.gif from sources/chatgpt_tie_sheet.png.
 
 Pipeline: 2D-cluster the sheet into 6 birds, snap every pixel to the 7-color
-brand palette, normalize scale via beak area, order frames by wing centroid,
+brand palette, order frames by wing centroid (no per-frame rescaling),
 anchor on the beak, flood-fill edge-connected background to transparent.
 Requires: pillow, numpy, scipy (maintainer tooling; not needed by CI).
 """
