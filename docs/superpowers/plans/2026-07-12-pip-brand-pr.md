@@ -18,7 +18,7 @@
 - CI must stay green: `python -m unittest discover` and `python tools/lint_skills.py` pass after every task
 - Work happens on the existing `brand/mascot-pip` branch (spec is already committed there)
 - Source-of-truth files on this machine:
-  - Master GIF: `C:\Users\Bruger\Desktop\mascot_candidates\courier_flight_loop_v5_tie.gif`
+  - Master GIF: `C:\Users\Bruger\Desktop\mascot_candidates\courier_flight_loop_v7_tie.gif` (v7 = no per-frame scaling + enclosed-hole transparency; v5/v6 are superseded)
   - ChatGPT tie sheet: `C:\Users\Bruger\Downloads\ChatGPT Image 12. jul. 2026, 06.30.48.png`
   - Gemini sheet: `C:\Users\Bruger\Downloads\Gemini_Generated_Image_azwqj6azwqj6azwq (1).png`
   - Retired flat sprites: `C:\Users\Bruger\Desktop\mascot_candidates\{A_standing_courier,B_flying_delivery,C_envelope_hugger}.png`
@@ -60,7 +60,7 @@ Expected: prints a line ending in `.superpowers/` — exit code 0
 ```bash
 cd "C:/Users/Bruger/Desktop/github_local/ai-job-search"
 mkdir -p assets/mascot/sources assets/mascot/reference
-cp "C:/Users/Bruger/Desktop/mascot_candidates/courier_flight_loop_v5_tie.gif" assets/mascot/pip_flight_loop.gif
+cp "C:/Users/Bruger/Desktop/mascot_candidates/courier_flight_loop_v7_tie.gif" assets/mascot/pip_flight_loop.gif
 cp "C:/Users/Bruger/Downloads/ChatGPT Image 12. jul. 2026, 06.30.48.png" assets/mascot/sources/chatgpt_tie_sheet.png
 cp "C:/Users/Bruger/Downloads/Gemini_Generated_Image_azwqj6azwqj6azwq (1).png" assets/mascot/sources/gemini_sheet.png
 cp "C:/Users/Bruger/Desktop/mascot_candidates/A_standing_courier.png" assets/mascot/reference/
@@ -146,10 +146,11 @@ for i, c in enumerate(cells):
     wing_c = float(np.where(dteal)[0].mean()) if dteal.sum() else by
     infos.append(dict(i=i, beak=(bx, by), area=len(best[0]), wing_c=wing_c))
 
-med = float(np.median([d["area"] for d in infos]))
 for d_ in infos:
-    d_["scale"] = min(1.25, max(0.8, (med / d_["area"]) ** 0.5))
-    d_["wing_rel"] = (d_["wing_c"] - d_["beak"][1]) * d_["scale"]
+    # birds in the sheet are size-consistent (within 5%); rescaling by noisy
+    # beak measurements caused a visible zoom pulse in an earlier build
+    d_["scale"] = 1.0
+    d_["wing_rel"] = d_["wing_c"] - d_["beak"][1]
 
 order_sorted = sorted(infos, key=lambda d: d["wing_rel"])
 seq = [order_sorted[0], order_sorted[2], order_sorted[4], order_sorted[5], order_sorted[3], order_sorted[1]]
@@ -186,6 +187,22 @@ for d_ in seq:
     border = set(wlab[0, :]) | set(wlab[-1, :]) | set(wlab[:, 0]) | set(wlab[:, -1])
     border.discard(0)
     idx[np.isin(wlab, list(border))] = TRANSPARENT
+    # enclosed white pockets: classify by boundary composition. Belly (bounded
+    # by bird colors) and envelope face (bounded by gray/red) stay opaque;
+    # mixed-boundary pockets (between legs, body-envelope gap) are background.
+    for wl in range(1, wn + 1):
+        if wl in border:
+            continue
+        comp = wlab == wl
+        ring = ndimage.binary_dilation(comp, iterations=2) & ~comp & nonwhite
+        ridx = idx[ring]
+        if len(ridx) == 0:
+            continue
+        bird = np.isin(ridx, [0, 1, 6]).sum() / len(ridx)   # teal, dteal, outline
+        envelope = np.isin(ridx, [3, 5]).sum() / len(ridx)  # gray, red
+        if bird >= 0.85 or envelope >= 0.60:
+            continue  # belly or envelope face: real content
+        idx[comp] = TRANSPARENT
     p = Image.fromarray(idx, mode="P")
     palette = PAL.astype(np.uint8).flatten().tolist() + [255, 0, 255]
     p.putpalette(palette + [0] * (768 - len(palette)))
