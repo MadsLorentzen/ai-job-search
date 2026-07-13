@@ -69,7 +69,7 @@ Then install the template dependencies:
 ```bash
 tlmgr install \
   moderncv fontawesome5 fontawesome6 academicons import luatexbase pgf \
-  titlesec textpos xltxtra xunicode cite realscripts
+  titlesec textpos xltxtra xunicode cite realscripts needspace
 ```
 
 For BasicTeX/MacTeX, make sure the TeX binary directory is on `PATH` first (for example via `/Library/TeX/texbin`), then run the same `tlmgr install ...` command.
