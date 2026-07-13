@@ -33,7 +33,7 @@ Reviews here are empirical. Bug reports are reproduced on master before the fix 
 
 - State the failing case and how to reproduce it.
 - Put CLI tests in `.agents/skills/<name>/cli/tests/` (bun test, network-free where possible); Python tool tests in `tests/`.
-- Run what CI runs: `python3 tools/lint_skills.py` (or `python tools/lint_skills.py` if that is your Python 3 executable), `bun run typecheck` in touched CLIs, and the relevant test suites.
+- Run what CI runs: `python3 tools/lint_skills.py`, `python3 tools/check_framework_version.py`, `bun run typecheck` in touched CLIs, and the relevant test suites.
 
 **Credit norm:** a change that incorporates your actual code gets a `Co-authored-by` trailer; a change written independently from your observation or report gets a named mention in the commit message and PR. Both happen unprompted.
 
@@ -41,6 +41,7 @@ Reviews here are empirical. Bug reports are reproduced on master before the fix 
 
 1. Fork the repo and run `/add-portal` with your local job board - it scaffolds a portal skill matching the shipped contract, and `/scrape` picks it up automatically.
 2. Announce your fork in the pinned [Community forks & adaptations](https://github.com/MadsLorentzen/ai-job-search/discussions/78) discussion so others can find it.
+3. Run the framework update checker (`python3 tools/check_upstream_updates.py`) in your fork to check if upstream has updated any framework files and compare them with your personalized variants.
 
 Market-specific skills are genuinely valuable - they just live in forks, where their maintainers can test them and their users can find them.
 

@@ -1,3 +1,7 @@
+---
+framework_version: 1.0.0
+---
+
 # Job Evaluation Framework
 
 <!-- SETUP: Skill match areas and career goals are personalized by running /setup -->

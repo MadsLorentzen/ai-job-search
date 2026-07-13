@@ -1,3 +1,7 @@
+---
+framework_version: 1.0.0
+---
+
 # CV Templates and Tailoring Guide
 
 <!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
