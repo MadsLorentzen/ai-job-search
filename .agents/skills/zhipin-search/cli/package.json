@@ -1,0 +1,21 @@
+{
+  "name": "zhipin-cli",
+  "version": "1.0.0",
+  "description": "CLI for searching jobs on BOSS直聘 (zhipin.com), mainland China's largest tech/security job board, via an authenticated ego-browser session (no public API; login-gated SPA). Personal use only — requires ego-browser + a logged-in Chrome session.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "zhipin-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 60000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "latest",
+    "@types/node": "^20.0.0"
+  }
+}
