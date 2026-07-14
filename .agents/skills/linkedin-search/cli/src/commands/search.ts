@@ -18,7 +18,7 @@ export interface SearchOpts {
   format: "json" | "table" | "plain"
 }
 
-function buildUrl(opts: SearchOpts): string {
+export function buildUrl(opts: SearchOpts): string {
   const params = new URLSearchParams()
   if (opts.query) params.set("keywords", opts.query)
   if (opts.location) params.set("location", opts.location)

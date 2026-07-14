@@ -175,7 +175,14 @@ export function parseJobDetail(html: string, id: string): JobDetail {
     const withBreaks = desc[1]
       .replace(/<\s*br\s*\/?>/gi, "\n")
       .replace(/<\/(p|li|ul|ol|div|h\d)>/gi, "\n")
-    description = decodeHtmlEntities(stripTags(withBreaks)).replace(/\n{3,}/g, "\n\n").trim() || null
+    // Strip the remaining tags but keep the newlines we just inserted. The shared
+    // stripTags() collapses *all* whitespace (\s+), which would flatten those
+    // breaks back into one line, so do a newline-preserving strip here instead.
+    const text = withBreaks
+      .replace(/<[^>]+>/g, " ")
+      .replace(/[^\S\n]+/g, " ")
+      .replace(/ *\n */g, "\n")
+    description = decodeHtmlEntities(text).replace(/\n{3,}/g, "\n\n").trim() || null
   }
 
   // Job-criteria items: subheader label -> text value.
