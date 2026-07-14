@@ -113,6 +113,7 @@ python3 salary_lookup.py "Novo Nordisk"
 python3 salary_lookup.py "Ørsted" --city "Fredericia"
 python3 salary_lookup.py "COWI" --json
 python3 salary_lookup.py --list-all
+python3 salary_lookup.py --validate      # pre-flight check your salary_data.json
 ```
 
 ## Important notes
@@ -120,3 +121,4 @@ python3 salary_lookup.py --list-all
 - The data file (`salary_data.json`) is **excluded from git** (see `.gitignore`). Your salary data may be proprietary or confidential.
 - If the data file is missing, `salary_lookup.py` exits with a helpful error message and the `/apply` workflow skips the salary benchmark step.
 - The fuzzy matcher handles Danish company name variations: legal suffixes, Nordic characters, anglicized spellings, and partial matches.
+- `--validate` checks your data file for malformed category values and duplicate company names and prints a report, without performing a lookup.

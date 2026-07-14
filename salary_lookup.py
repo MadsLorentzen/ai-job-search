@@ -51,39 +51,94 @@ def fail_data_error(message):
     sys.exit(1)
 
 
-def validate_data(data):
-    """Validate the salary data shape before lookups use it."""
+def collect_validation_issues(data):
+    """Return (errors, warnings) for the salary data shape.
+
+    errors   -> hard problems that make lookups crash or emit wrong output
+                (these cause validate_data() to exit(1)).
+    warnings -> usability concerns that still work (e.g. duplicate company
+                names); --validate reports them but exits 0.
+    """
+    errors = []
+    warnings = []
+
     if not isinstance(data, dict):
-        fail_data_error("top-level JSON value must be an object")
+        errors.append("top-level JSON value must be an object")
+        return errors, warnings
 
     metadata = data.get("metadata", {})
     if metadata is not None and not isinstance(metadata, dict):
-        fail_data_error("'metadata' must be an object when provided")
+        errors.append("'metadata' must be an object when provided")
 
     companies = data.get("companies")
     if not isinstance(companies, list):
-        fail_data_error("'companies' must be a list")
+        errors.append("'companies' must be a list")
+        return errors, warnings
 
+    seen_companies = {}
     for index, entry in enumerate(companies, start=1):
         if not isinstance(entry, dict):
-            fail_data_error(f"companies[{index}] must be an object")
+            errors.append(f"companies[{index}] must be an object")
+            continue
 
         company = entry.get("company")
         if not isinstance(company, str) or not company.strip():
-            fail_data_error(f"companies[{index}].company must be a non-empty string")
+            errors.append(f"companies[{index}].company must be a non-empty string")
+        else:
+            key = company.lower()
+            if key in seen_companies:
+                warnings.append(
+                    f"Duplicate company name '{company}' "
+                    f"(companies[{seen_companies[key]}] and companies[{index}])"
+                )
+            else:
+                seen_companies[key] = index
 
         city = entry.get("city")
         if city is not None and not isinstance(city, str):
-            fail_data_error(f"companies[{index}].city must be a string when provided")
+            errors.append(f"companies[{index}].city must be a string when provided")
 
         categories = entry.get("categories", {})
         if categories is not None and not isinstance(categories, dict):
-            fail_data_error(f"companies[{index}].categories must be an object when provided")
+            errors.append(f"companies[{index}].categories must be an object when provided")
+        elif categories:
+            for cat_label, cat_data in categories.items():
+                if not isinstance(cat_data, dict):
+                    errors.append(
+                        f"companies[{index}].categories.{cat_label} must be an object "
+                        f"with 'count' and/or 'index' (got {type(cat_data).__name__})"
+                    )
+                    continue
+                count = cat_data.get("count")
+                if count is not None and not isinstance(count, (int, float)):
+                    errors.append(
+                        f"companies[{index}].categories.{cat_label}.count must be a "
+                        f"number (got {type(count).__name__})"
+                    )
+                index_val = cat_data.get("index")
+                if index_val is not None and not isinstance(index_val, (int, float, str)):
+                    errors.append(
+                        f"companies[{index}].categories.{cat_label}.index must be a "
+                        f"number or string (got {type(index_val).__name__})"
+                    )
 
+    return errors, warnings
+
+
+def validate_data(data):
+    """Validate the salary data shape before lookups use it.
+
+    Preserves historical behavior: exits(1) on the first hard error with the
+    same user-facing message, and returns data unchanged when valid.
+    """
+    errors, _ = collect_validation_issues(data)
+    if errors:
+        fail_data_error(errors[0])
     return data
 
 
-def load_data():
+def read_raw_data():
+    """Load and JSON-parse salary_data.json; exit with a helpful message if missing/invalid."""
     if not DATA_FILE.exists():
         print("Error: salary_data.json not found.", file=sys.stderr)
         print("", file=sys.stderr)
@@ -98,7 +153,12 @@ def load_data():
             data = json.load(f)
     except json.JSONDecodeError as exc:
         fail_data_error(f"invalid JSON at line {exc.lineno}, column {exc.colno}: {exc.msg}")
-    return validate_data(data)
+    return data
+
+
+def load_data():
+    """Load, parse, and validate salary_data.json for lookups."""
+    return validate_data(read_raw_data())
 
 
 def normalize(s):
@@ -292,13 +352,44 @@ def format_entry(entry, metadata):
     return "\n".join(lines)
 
 
+def print_validation_report(errors, warnings):
+    """Print an actionable validation report. Returns the process exit code."""
+    if not errors and not warnings:
+        print("OK - no issues found.")
+        return 0
+    print(f"Found {len(errors) + len(warnings)} issue(s):")
+    if errors:
+        print("  Errors:")
+        for i, msg in enumerate(errors, start=1):
+            print(f"    [{i}] {msg}")
+    if warnings:
+        print("  Warnings:")
+        for i, msg in enumerate(warnings, start=1):
+            print(f"    [{i}] {msg}")
+    if errors:
+        print("")
+        print("Fix the errors above, then re-run. See tools/README_SALARY_TOOL.md "
+              "for the expected format.")
+        return 1
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Salary Benchmark Lookup")
     parser.add_argument("company", nargs="?", help="Company name to search for")
     parser.add_argument("--city", help="Filter by city name")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     parser.add_argument("--list-all", action="store_true", help="List all companies")
+    parser.add_argument("--validate", action="store_true",
+                        help="Validate salary_data.json and print a report, then exit")
     args = parser.parse_args()
+
+    if args.validate:
+        data = read_raw_data()
+        errors, warnings = collect_validation_issues(data)
+        print(f"Validating {DATA_FILE.name} ...")
+        print("")
+        sys.exit(print_validation_report(errors, warnings))
 
     data = load_data()
     metadata = data.get("metadata", {})

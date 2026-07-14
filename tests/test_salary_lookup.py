@@ -3,8 +3,9 @@
 import io
 import tempfile
 import unittest
-from contextlib import redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 import salary_lookup
 from salary_lookup import (
@@ -15,6 +16,7 @@ from salary_lookup import (
     match_score,
     search_company,
     validate_data,
+    collect_validation_issues,
 )
 
 
@@ -239,6 +241,88 @@ class ValidateDataTests(unittest.TestCase):
             {"companies": [{"company": "Example Corp", "categories": []}]},
             "companies[1].categories must be an object when provided",
         )
+
+
+class ValidateDataShapeTests(ValidateDataTests):
+    """Category-shape and duplicate-name checks (reuses assert_invalid_data)."""
+
+    def test_malformed_category_value_rejected(self):
+        data = {"companies": [{"company": "Acme", "categories": {"eng": "not_a_dict"}}]}
+        self.assert_invalid_data(data, "must be an object with 'count' and/or 'index'")
+
+    def test_non_numeric_count_rejected(self):
+        data = {
+            "companies": [
+                {"company": "Acme", "categories": {"eng": {"count": "many"}}}
+            ]
+        }
+        self.assert_invalid_data(data, "count must be a number")
+
+    def test_duplicate_company_name_is_warning(self):
+        data = {
+            "companies": [
+                {"company": "Acme"},
+                {"company": "Other Corp"},
+                {"company": "Acme"},
+            ]
+        }
+        errors, warnings = collect_validation_issues(data)
+        self.assertEqual(errors, [])
+        self.assertEqual(len(warnings), 1)
+        self.assertIn("Duplicate company name 'Acme'", warnings[0])
+
+    def test_valid_categories_have_no_issues(self):
+        data = {
+            "companies": [
+                {"company": "Acme", "categories": {"eng": {"count": 5, "index": 108.5}}}
+            ]
+        }
+        errors, warnings = collect_validation_issues(data)
+        self.assertEqual(errors, [])
+        self.assertEqual(warnings, [])
+
+
+class ValidateFlagTests(unittest.TestCase):
+    """End-to-end checks for the --validate pre-flight flow."""
+
+    def _run_validate(self, payload):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_file = Path(tmpdir) / "salary_data.json"
+            data_file.write_text(payload, encoding="utf-8")
+            original_data_file = salary_lookup.DATA_FILE
+            salary_lookup.DATA_FILE = data_file
+            argv_patch = mock.patch("sys.argv", ["salary_lookup.py", "--validate"])
+            argv_patch.start()
+            try:
+                stdout = io.StringIO()
+                with self.assertRaises(SystemExit) as raised:
+                    with redirect_stdout(stdout):
+                        salary_lookup.main()
+                return raised.exception.code, stdout.getvalue()
+            finally:
+                argv_patch.stop()
+                salary_lookup.DATA_FILE = original_data_file
+
+    def test_validate_flag_exits_1_on_errors(self):
+        code, out = self._run_validate(
+            '{"companies": [{"company": "Acme", "categories": {"eng": "not_a_dict"}}]}'
+        )
+        self.assertEqual(code, 1)
+        self.assertIn("must be an object with 'count' and/or 'index'", out)
+
+    def test_validate_flag_exits_0_on_clean(self):
+        code, out = self._run_validate(
+            '{"companies": [{"company": "Acme", "categories": {"eng": {"count": 5}}}]}'
+        )
+        self.assertEqual(code, 0)
+        self.assertIn("OK", out)
+
+    def test_validate_flag_exits_0_on_duplicates_only(self):
+        code, out = self._run_validate(
+            '{"companies": [{"company": "Acme"}, {"company": "Acme"}]}'
+        )
+        self.assertEqual(code, 0)
+        self.assertIn("Duplicate company name", out)
 
 
 class UtilityTests(unittest.TestCase):
