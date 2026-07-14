@@ -35,6 +35,49 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
 
+## STAR Candidates (Complete Manually)
+<!-- Extracted from documents/cv - fill in Situation/Task/Action/Result details before using in interviews -->
+
+### Multi-tenant, multi-vertical SaaS platform architecture (Graziano Ricami)
+**Source:** CV - GenAI/Backend Developer, Graziano Ricami (Oct 2025-Present)
+**What happened:** Designed and built a multi-tenant SaaS platform spanning two verticals (embroidery, knitwear) with data isolation across clients on shared infrastructure.
+**Why it matters:** Answers questions about system architecture, scalability, and multi-tenant design decisions.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Agentic RAG system with Google ADK and MCP toolbox
+**Source:** CV - GenAI Developer, Multimodal RAG & MCP, Graziano Ricami (Aug-Oct 2025)
+**What happened:** Built a natural-language search system over an embroidery archive using an agentic RAG pipeline, MCP toolbox for secure DB access, and multimodal (text+image) retrieval via Jina v4.
+**Why it matters:** Answers questions about RAG design, agent tool orchestration, and secure/controlled data access patterns.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Multi-agent orchestrator for intelligent customer care (Telco NDA client)
+**Source:** CV - AI Engineer, Agentic AI Systems (May-Jul 2025)
+**What happened:** Designed a multi-agent orchestrator that routed customer requests to the right tool based on intent, backed by a RAG pipeline and MCP-based SQL access, reducing manual handling of repetitive requests.
+**Why it matters:** Answers questions about intent routing, agent design, and measurable reduction in manual effort.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Multimodal visual search module (Jina v4)
+**Source:** CV - GenAI Developer, Multimodal RAG & MCP, Graziano Ricami
+**What happened:** Built a text-to-image and image-to-image retrieval module enabling visual search over a large archive.
+**Why it matters:** Answers questions about multimodal AI, embedding-based retrieval, and handling non-text data.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
 ## Common Tough Questions
 
 ### "Why did you leave [previous company]?"

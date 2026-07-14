@@ -1,10 +1,10 @@
-# Job Application Assistant for [YOUR_NAME]
+# Job Application Assistant for Simone Alberucci
 
 <!-- SETUP: This file is populated by running /setup -->
 <!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Simone Alberucci, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -16,65 +16,65 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 <!-- This section is auto-populated by /setup. You can also fill it in manually. -->
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Name:** Simone Alberucci
+- **Location:** Sanremo, Italy (Remote-first; open to on-site presence a few days per month, not full relocation)
+- **Languages:** Italian (native), English (B2, professional working proficiency), French (basic)
+- **Status:** Employed (GenAI/Backend Developer at Graziano Ricami), open to new opportunities
+- **LinkedIn headline:** "AI Engineer | GenAI Developer | Agentic AI Specialist"
 
 ### Education
 <!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **Master in AI Development, Agentic AI Specialization** (2025) - Profession AI
+- **Master in AI Engineering** (2024) - Profession AI
+- **Percorso AI - Agentic AI, LangChain & LangGraph** (2024) - DataMaster
 
 ### Professional Experience
 <!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **GenAI / Backend Developer** (Oct 2025 - Present) - **Graziano Ricami** (Sanremo, Italy)
+  - Designed and built a multi-tenant, multi-vertical SaaS platform (embroidery, knitwear) with a Python (FastAPI) backend on Google Cloud
+  - Integrated Google ADK agents and generative features (semantic/visual search, image generation/editing, automated tagging) into the product
+  - Managed multi-tenancy and data isolation across clients on shared infrastructure
+- **GenAI Developer, Multimodal RAG & MCP** (Aug 2025 - Oct 2025) - **Graziano Ricami** (Sanremo, Italy)
+  - Built an agentic RAG system (Google ADK + MCP toolbox) for natural-language search over an archive
+  - Built a multimodal (text-to-image, image-to-image) search module with Jina v4
+- **AI Engineer, Agentic AI Systems** (May 2025 - Jul 2025) - **Telco client under NDA** (Sanremo, Italy)
+  - Designed a multi-agent orchestrator (Google ADK) for intelligent customer care, routing by intent
+  - Integrated MCP-based SQL access, reducing manual handling of repetitive requests
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Agentic AI, Multi-Agent Systems, RAG (incl. multimodal), MCP, Python (FastAPI, Flask)
+- **Secondary:** PyTorch, Scikit-learn, Pandas, Keycloak
+- **Domain:** Generative AI product development (prototype to production), multi-tenant SaaS architecture
+- **Software:** Google ADK, LangChain, LangGraph, Gemini (2.5 Flash, Flash-Lite), Gemini Embeddings, Qdrant, Jina v4, Google Cloud (Vertex AI), Label Studio, OpenAI API
 
 ### Certifications
 <!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+None yet beyond the Education entries above.
 
 ### Publications
 <!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+None yet.
 
 ### Awards
 <!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+None yet.
 
 ### Behavioral Profile
 <!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+[NOT YET COLLECTED] <!-- ask user: no formal assessment on file; offer to synthesize from a few quick questions (thrives-in environment, energy drains, decision-making style, communication style) -->
 
 ### What Excites You
 <!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Building agents and agent ecosystems that autonomize roles/work
 
 ### Target Sectors
 <!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+[NOT YET COLLECTED] <!-- ask user: no target sectors/companies identified yet -->
 
 ### Deal-breakers
 <!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Full-time on-site roles with no remote option <!-- inferred from remote-first preference, confirm wording -->
+- Target compensation: ~200-250 EUR/day equivalent
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

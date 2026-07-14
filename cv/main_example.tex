@@ -1,4 +1,4 @@
-%% Example CV - [YOUR_NAME]
+%% Example CV - Simone Alberucci
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
@@ -24,18 +24,20 @@
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Simone Alberucci - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
+\usepackage{needspace}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Simone}{Alberucci}
+\address{Sanremo, Liguria, Italy}{}{}
+\phone[mobile]{+39 379 100 3477}
+\email{simonealberucci@gmail.com}
+\extrainfo{\href{https://linkedin.com/in/simone-alberucci}{LinkedIn}}
+% GitHub not provided yet - add \href{...}{GitHub} to \extrainfo once known
 
 \begin{document}
 
@@ -46,7 +48,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{AI Engineer and GenAI Developer with hands-on experience building agentic systems, RAG pipelines, and multi-tenant SaaS applications on cloud-native infrastructure. Takes LLM solutions from prototype to production using Python (FastAPI), Google ADK, Gemini models, and multimodal retrieval. Focused on reliability, scalability, and end-to-end integration.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +58,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{Agentic AI \& Multi-Agent Systems}: Google ADK, LangChain, LangGraph -- orchestrating multi-agent workflows for customer care and semantic search
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Retrieval-Augmented Generation}: Multimodal RAG pipelines (text + image) with Qdrant, Gemini Embeddings, Jina v4
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Backend \& API Development}: Python (FastAPI, Flask) services powering production GenAI features
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Model Context Protocol (MCP)}: Secure, policy-compliant tool and data access for LLM agents
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Cloud-Native GenAI Deployment}: Google Cloud (Vertex AI), multi-tenant SaaS architecture, Gemini model integration
 
 \end{itemize}
 
@@ -77,31 +79,34 @@
 \begin{itemize}
 
 % --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{Oct 2025--Present}{GenAI / Backend Developer}{Graziano Ricami}{Sanremo, Italy}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item Designed and built a multi-tenant, multi-vertical SaaS platform (embroidery and knitwear) with a Python (FastAPI) backend deployed on Google Cloud
+    \item Integrated Google ADK agents and generative capabilities into the product, with Label Studio as the source of truth for data
+    \item Built semantic text and visual search over the archive using Gemini Embeddings and the Qdrant vector database
+    \item Built an automated tagging pipeline applying per-tenant taxonomy, based on Gemini Flash-Lite, with a quality evaluation component
 \end{itemize}}}
 
 \vspace{3pt}
 
 % --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{Aug 2025--Oct 2025}{GenAI Developer, Multimodal RAG \& MCP}{Graziano Ricami}{Sanremo, Italy}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+    \item Developed an agentic RAG system with Google ADK and an MCP toolbox for natural-language search over an archive
+    \item Designed secure, controlled queries against a Google Cloud database via Model Context Protocol, compliant with client policies
+    \item Built a multimodal search module (text-to-image and image-to-image) with Jina v4
 \end{itemize}}}
 
 \vspace{3pt}
 
 % --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{May 2025--Jul 2025}{AI Engineer, Agentic AI Systems}{Telco client under NDA}{Sanremo, Italy}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+    \item Designed a multi-agent orchestrator (Google ADK) for intelligent customer care, routing requests by intent
+    \item Integrated MCP-based SQL access as an alternative data source, reducing manual intervention on repetitive requests
 \end{itemize}}}
 
 \end{itemize}
@@ -114,15 +119,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
+\item{\cventry{2025}{Master in AI Development -- Agentic AI Specialization}{Profession AI}{Italy}{}{}}
 
 \vspace{3pt}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
-}}
+\item{\cventry{2024}{Master in AI Engineering}{Profession AI}{Italy}{}{}}
+
+\vspace{3pt}
+
+\item{\cventry{2024}{Percorso AI -- Agentic AI, LangChain \& LangGraph}{DataMaster}{Italy}{}{}}
 
 \end{itemize}
 
@@ -133,7 +138,7 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
+\item Italian (native), English (B2, professional working proficiency), French (basic).
 \end{itemize}
 
 % ============================================================
@@ -143,7 +148,7 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Publications}
 \vspace{1pt}
 \begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
+\item No publications yet.
 \end{itemize}
 
 % ============================================================
@@ -153,7 +158,7 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Honors and Awards}
 \vspace{1pt}
 \begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item{No awards yet.}
 \end{itemize}
 
 % ============================================================

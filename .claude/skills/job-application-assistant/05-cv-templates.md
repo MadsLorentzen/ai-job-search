@@ -106,11 +106,11 @@ Write 5-7 lines that function as an "elevator pitch": a concise, compelling intr
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For GenAI / Agentic AI Engineer roles:**
+> AI Engineer and GenAI Developer with hands-on experience building agentic systems, RAG pipelines, and multi-tenant SaaS applications on cloud-native infrastructure. Takes LLM solutions from prototype to production using Python (FastAPI), Google ADK, Gemini models, and multimodal retrieval. Focused on reliability, scalability, and end-to-end integration.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For Platform Engineering / AI Consulting roles:**
+> Backend and platform engineer with production experience shipping multi-tenant, cloud-native SaaS systems and integrating LLM-based agents into existing infrastructure. Skilled in designing secure, policy-compliant data access (Model Context Protocol) and orchestrating multi-agent workflows end-to-end. Brings a builder's focus on reliability, data isolation, and scalable API design.
 
 ### Core Competencies / Skills Section (Best Practice)
 Reorder and emphasize based on the role. Use bold category labels.
