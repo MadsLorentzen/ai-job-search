@@ -91,7 +91,7 @@ def parse_sheet(ws, sheet_label=None):
     header_row = None
     for row_idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=False), start=1):
         for cell in row:
-            if cell.value and str(cell.value).strip().lower() in COMPANY_PATTERNS:
+            if cell.value and header_matches(str(cell.value), COMPANY_PATTERNS):
                 header_row = row_idx
                 break
         if header_row:
@@ -111,7 +111,7 @@ def parse_sheet(ws, sheet_label=None):
     city_col = None
     for i, h in enumerate(headers):
         h_lower = h.lower()
-        if h_lower in COMPANY_PATTERNS:
+        if header_matches(h, COMPANY_PATTERNS):
             company_col = i
         elif h_lower in CITY_PATTERNS:
             city_col = i
