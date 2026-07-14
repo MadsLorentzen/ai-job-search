@@ -83,9 +83,9 @@ PowerShell:
 ```powershell
 $tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
 foreach ($tool in $tools) {
-  Set-Location ".agents/skills/$tool/cli"
+  Push-Location ".agents/skills/$tool/cli"
   bun install
-  Set-Location "..\..\..\.."
+  Pop-Location
 }
 ```
 
@@ -93,7 +93,7 @@ Bash / zsh / Git Bash:
 
 ```bash
 for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search; do
-  cd .agents/skills/$tool/cli && bun install && cd ../../../..
+  (cd .agents/skills/$tool/cli && bun install)
 done
 ```
 
