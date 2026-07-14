@@ -13,7 +13,6 @@ import {
 export interface SearchOpts {
   query?: string
   location: string
-  page: number
   limit?: number
   format: "json" | "table" | "plain"
 }
@@ -81,10 +80,23 @@ const DOM_SCRIPT = `(() => {
   })
 })()`
 
-export function buildBrowserScript(searchUrl: string): string {
+const COUNT_CARDS_SCRIPT = `document.querySelectorAll('li.job-card-box').length`
+
+export function buildBrowserScript(searchUrl: string, target: number): string {
   return [
     `await gotoAndWait(${JSON.stringify(searchUrl)}, { timeout: 25, settle: 2 })`,
     `await wait(1)`,
+    `let count = await js(${JSON.stringify(COUNT_CARDS_SCRIPT)})`,
+    `let noGrowthStreak = 0`,
+    `let steps = 0`,
+    `while (count < ${target} && noGrowthStreak < ${NO_GROWTH_STOP_THRESHOLD} && steps < ${MAX_SCROLL_STEPS}) {`,
+    `  await scrollBy(${SCROLL_STEP_PX})`,
+    `  await wait(${SCROLL_WAIT_SECONDS})`,
+    `  const newCount = await js(${JSON.stringify(COUNT_CARDS_SCRIPT)})`,
+    `  noGrowthStreak = newCount > count ? 0 : noGrowthStreak + 1`,
+    `  count = newCount`,
+    `  steps++`,
+    `}`,
     `const results = await js(${JSON.stringify(DOM_SCRIPT)})`,
     `cliLog(JSON.stringify(results))`,
   ].join("\n")
@@ -148,7 +160,8 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
   }
   try {
     const url = buildSearchUrl(opts.query || "", cityCode)
-    const stdout = await runEgoBrowser(buildBrowserScript(url))
+    const target = opts.limit ?? DEFAULT_TARGET_RESULTS
+    const stdout = await runEgoBrowser(buildBrowserScript(url, target))
     const raw = lastJson<RawCard[]>(stdout)
     const cards = shapeResults(raw, opts.limit)
 
@@ -165,7 +178,7 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
       )
     } else {
       process.stdout.write(
-        JSON.stringify({ meta: { count: cards.length, page: opts.page }, results: cards }, null, 2) + "\n",
+        JSON.stringify({ meta: { count: cards.length }, results: cards }, null, 2) + "\n",
       )
     }
     return 0

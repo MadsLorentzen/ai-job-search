@@ -10,6 +10,7 @@ import {
 import {
   shapeResults,
   shouldStopScrolling,
+  buildBrowserScript,
   NO_GROWTH_STOP_THRESHOLD,
   MAX_SCROLL_STEPS,
   type RawCard,
@@ -197,6 +198,21 @@ describe("shouldStopScrolling", () => {
     expect(
       shouldStopScrolling({ count: 15, target: 45, noGrowthStreak: 1, steps: 2 }),
     ).toBe(false);
+  });
+});
+
+describe("buildBrowserScript", () => {
+  test("embeds the scroll target and step parameters in the generated script", () => {
+    const script = buildBrowserScript(
+      "https://www.zhipin.com/web/geek/job?query=FDE&city=101020100",
+      45,
+    );
+    expect(script).toContain("scrollBy(1400)");
+    expect(script).toContain("wait(1.2)");
+    expect(script).toContain("count < 45");
+    expect(script).toContain(`steps < ${MAX_SCROLL_STEPS}`);
+    expect(script).toContain(`noGrowthStreak < ${NO_GROWTH_STOP_THRESHOLD}`);
+    expect(script).toContain("cliLog(JSON.stringify(results))");
   });
 });
 
