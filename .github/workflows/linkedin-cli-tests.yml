@@ -1,0 +1,33 @@
+name: linkedin-search CLI tests
+
+# Runs the offline test net over the linkedin-search CLI's pure functions
+# (AIV-986). Deterministic, network-free — protects the fragile parsing /
+# URL-building logic that is the primary source for /job-scraper (AIV-984).
+
+on:
+  push:
+    paths:
+      - ".agents/skills/linkedin-search/cli/**"
+      - ".github/workflows/linkedin-cli-tests.yml"
+  pull_request:
+    paths:
+      - ".agents/skills/linkedin-search/cli/**"
+      - ".github/workflows/linkedin-cli-tests.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .agents/skills/linkedin-search/cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dev dependencies
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        run: bun run typecheck
+      - name: Test
+        run: bun test

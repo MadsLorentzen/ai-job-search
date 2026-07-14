@@ -82,6 +82,9 @@ None yet.
 - `.claude/skills/` - AI skill definitions for the application workflow
 - `.agents/skills/` - Job search CLI tools
 
+## Testing
+- The `linkedin-search` CLI (`.agents/skills/linkedin-search/cli/`) — the primary source for `/job-scraper` — has an offline test net over its fragile parsing / URL-building logic. **Run `bun run test` in that directory after any change to the CLI's parsing or search-URL code.** Tests are deterministic and network-free (they run on saved HTML fixtures in `test/__fixtures__/`); CI runs them automatically on changes under the CLI path. Regenerate fixtures only when LinkedIn's markup changes (see `test/__fixtures__/README.md`).
+
 ## Workflow for New Job Applications
 1. User provides a job posting (URL or text)
 2. **Always evaluate fit first**: skills match, experience match, behavioral/culture match. Present this assessment to the user before proceeding.
