@@ -48,6 +48,10 @@ INDEX_PATTERNS = {"indeks", "index", "idx", "salary", "løn", "median", "average
 # Ships populated for this repo's Danish demonstration data; a fork targeting
 # another locale edits this constant.
 COMPOUND_PATTERNS = {"antal", "indeks", "løn", "gennemsnit", "medarbejdere"}
+# Identifier columns (employee id, Danish "personnummer", etc.) are never salary
+# data. They are dropped at classification so they are not mistaken for a salary
+# category. Matched as whole tokens only, like other pattern sets.
+ID_PATTERNS = {"id", "personnummer"}
 
 
 def header_matches(header, patterns):
@@ -120,10 +124,12 @@ def parse_sheet(ws, sheet_label=None):
         print(f"Warning: Could not find company column in sheet '{ws.title}'.", file=sys.stderr)
         return []
 
-    # Identify data columns (everything that's not company/city)
+    # Identify data columns (everything that's not company/city or an identifier)
     data_cols = []
     for i, h in enumerate(headers):
         if i == company_col or i == city_col or not h:
+            continue
+        if header_matches(h, ID_PATTERNS):
             continue
         data_cols.append((i, h))
 
@@ -205,6 +211,10 @@ def parse_sheet(ws, sheet_label=None):
                         index_val = float(row[cat["index_col"]])
                     except (ValueError, TypeError):
                         pass
+                # A count/index pair that is entirely empty for this row carries
+                # no salary information, so skip it rather than emit nulls.
+                if count_val is None and index_val is None:
+                    continue
                 entry["categories"][cat_name] = {"count": count_val, "index": index_val}
             elif "value_col" in cat:
                 if cat["value_col"] < len(row) and row[cat["value_col"]] is not None:
@@ -212,7 +222,9 @@ def parse_sheet(ws, sheet_label=None):
                     try:
                         val = float(val)
                     except (ValueError, TypeError):
-                        val = str(val)
+                        # Non-numeric standalone value (e.g. a free-text "Notes"
+                        # column) is not salary data; skip it for this row.
+                        continue
                     entry["categories"][cat_name] = {"index": val}
 
         companies.append(entry)
