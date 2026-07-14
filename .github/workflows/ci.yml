@@ -3,13 +3,15 @@
 #
 # Fork-friendly by design: forks personalize CLAUDE.md, the skill files, and
 # cv/main_example.tex via /setup, so the placeholder-integrity job and the
-# exact page-count assertions run only on the upstream template repo. Compile
-# success and lint correctness are asserted everywhere.
+# exact page-count/content assertions run only on the upstream template repo.
+# Compile success, lint correctness, and an extractable PDF text layer are
+# asserted everywhere.
 #
 # Deliberately NOT here: live smoke tests of the job-portal CLIs. They hit
 # real portals (network-flaky, and the linkedin-search skill is personal-use
 # only per its own ToS warning - CI-automated requests would violate that).
-# CLIs get typechecked instead; live testing stays a local, on-demand step.
+# CI runs typechecks and the checked-in fixture/mock test suites only; live
+# portal testing stays a local, on-demand step.
 #
 # Security posture: this template ships pre-approved Claude Code permissions
 # and CLI code that every fork user executes, so the security-guards job
@@ -45,7 +47,9 @@ jobs:
           python-version: "3.12"
       - run: pip install pyyaml
       - run: python tools/lint_skills.py
-      - run: python tools/check_framework_version.py
+      - name: Framework version guard (upstream template only)
+        if: github.repository == 'MadsLorentzen/ai-job-search'
+        run: python tools/check_framework_version.py
 
   security-guards:
     name: Security guards (permissions, gitignore, manifests)
@@ -104,10 +108,16 @@ jobs:
     container: texlive/texlive:latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Install PDF inspection tools
+        run: |
+          if ! command -v pdfinfo >/dev/null || ! command -v pdftotext >/dev/null; then
+            apt-get update
+            apt-get install -y --no-install-recommends poppler-utils
+          fi
       - name: Compile CV example (lualatex)
         run: |
           cd cv
-          lualatex -interaction=nonstopmode main_example.tex
+          lualatex -interaction=nonstopmode -halt-on-error main_example.tex
           test -f main_example.pdf
           if grep -q '^!' main_example.log; then
             echo '::error::lualatex reported errors compiling cv/main_example.tex'
@@ -117,23 +127,31 @@ jobs:
       - name: Compile cover letter example (xelatex)
         run: |
           cd cover_letters
-          xelatex -interaction=nonstopmode cover_example.tex
+          xelatex -interaction=nonstopmode -halt-on-error cover_example.tex
           test -f cover_example.pdf
           if grep -q '^!' cover_example.log; then
             echo '::error::xelatex reported errors compiling cover_letters/cover_example.tex'
             grep -A3 '^!' cover_example.log
             exit 1
           fi
-      - name: Assert exact page counts (upstream template only)
+      - name: Verify extractable PDF text
+        run: |
+          python3 tools/verify_pdf.py cv/main_example.pdf --min-chars 100
+          python3 tools/verify_pdf.py cover_letters/cover_example.pdf --min-chars 100
+      - name: Assert stock PDF structure (upstream template only)
         if: github.repository == 'MadsLorentzen/ai-job-search'
         run: |
-          grep -q 'Output written on main_example.pdf (2 pages' cv/main_example.log \
-            || { echo '::error::cv/main_example.tex no longer compiles to exactly 2 pages'; exit 1; }
-          grep -q 'Output written on cover_example.pdf (1 page' cover_letters/cover_example.log \
-            || { echo '::error::cover_letters/cover_example.tex no longer compiles to exactly 1 page'; exit 1; }
+          python3 tools/verify_pdf.py cv/main_example.pdf \
+            --pages 2 \
+            --contains '[your.email@example.com]' \
+            --contains 'Professional Experience'
+          python3 tools/verify_pdf.py cover_letters/cover_example.pdf \
+            --pages 1 \
+            --contains 'your.email@example.com' \
+            --contains 'Dear [Hiring Manager / Team]'
 
-  cli-typecheck:
-    name: Typecheck ${{ matrix.tool }}
+  cli-checks:
+    name: CLI checks ${{ matrix.tool }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -151,6 +169,14 @@ jobs:
       - run: bun install
         working-directory: .agents/skills/${{ matrix.tool }}/cli
       - run: bun run typecheck
+        working-directory: .agents/skills/${{ matrix.tool }}/cli
+      - name: Run fixture/mock tests when present
+        run: |
+          if find tests -type f -name '*.test.ts' | grep -q .; then
+            bun test
+          else
+            echo "No Bun tests found for ${{ matrix.tool }}; skipping"
+          fi
         working-directory: .agents/skills/${{ matrix.tool }}/cli
 
   placeholder-integrity:

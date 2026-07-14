@@ -133,15 +133,15 @@ def main() -> int:
         print()
 
     if updates_available:
-        print("📢 Upstream updates available for framework methodology files:")
+        print("[UPDATE] Upstream updates available for framework methodology files:")
         for up in updates_available:
-            print(f"  • {up['filename']}: local {up['local']} < upstream {up['upstream']}")
+            print(f"  - {up['filename']}: local {up['local']} < upstream {up['upstream']}")
             print(f"    Diff command: git diff {ref} -- {up['path']}")
             print()
         print("Review these changes to see if they fit your personalized fork!")
         return 0
     else:
-        print("✅ All framework files are up to date with upstream!")
+        print("[OK] All framework files are up to date with upstream!")
         return 0
 
 if __name__ == "__main__":
