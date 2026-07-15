@@ -10,7 +10,7 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Primary (German market - arbeitsagentur.de is covered by the `arbeitsagentur-search` CLI):
+Primary (German market - arbeitsagentur.de and arbeitnow.com are covered by the `arbeitsagentur-search` and `arbeitnow-search` CLIs):
 - **stepstone.de** - Germany's largest private general job board (WebSearch fallback, blocks direct scraping)
 - **de.indeed.com** - job aggregator for Germany (WebSearch fallback, blocks direct scraping)
 - **linkedin.com/jobs** - LinkedIn job listings (filter: Deutschland / [YOUR_CITY]); also covered by `linkedin-search` CLI
