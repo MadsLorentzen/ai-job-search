@@ -10,8 +10,6 @@ description: >
   find a job, job search, search for jobs, job openings, vacancies, hiring,
   positions open, remote jobs, "are there any X jobs in <place>", look up this
   job posting.
-context: fork
-allowed-tools: Bash(bun run .agents/skills/linkedin-search/cli/src/cli.ts *)
 ---
 
 # LinkedIn Search Skill
@@ -42,7 +40,7 @@ Run it on your own responsibility.
 ### Search job listings
 
 ```bash
-bun run .agents/skills/linkedin-search/cli/src/cli.ts search --location "<place>" [flags]
+bun run .claude/skills/job-scraper/scripts/linkedin-search/src/cli.ts search --location "<place>" [flags]
 ```
 
 Key flags:
@@ -57,7 +55,7 @@ Key flags:
 ### Fetch full job detail
 
 ```bash
-bun run .agents/skills/linkedin-search/cli/src/cli.ts detail <id|url> [--format json|plain]
+bun run .claude/skills/job-scraper/scripts/linkedin-search/src/cli.ts detail <id|url> [--format json|plain]
 ```
 
 `id` is the job ID from `search` results (e.g. `4426311357`). You may also pass a full
@@ -68,16 +66,16 @@ seniority, employment type, job function, industries, and apply link.
 
 ```bash
 # Data engineer roles in Bengaluru, last 30 days
-bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "data engineer" -l "Bengaluru, Karnataka, India" --jobage 30 --format table
+bun run .claude/skills/job-scraper/scripts/linkedin-search/src/cli.ts search -q "data engineer" -l "Bengaluru, Karnataka, India" --jobage 30 --format table
 
 # Product manager roles in Berlin, remote
-bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "product manager" -l "Berlin, Germany" --remote remote --format table
+bun run .claude/skills/job-scraper/scripts/linkedin-search/src/cli.ts search -q "product manager" -l "Berlin, Germany" --remote remote --format table
 
 # Any role, fully remote
-bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "paralegal" -l "Remote" --format table
+bun run .claude/skills/job-scraper/scripts/linkedin-search/src/cli.ts search -q "paralegal" -l "Remote" --format table
 
 # Full details for a specific job
-bun run .agents/skills/linkedin-search/cli/src/cli.ts detail 4426311357 --format plain
+bun run .claude/skills/job-scraper/scripts/linkedin-search/src/cli.ts detail 4426311357 --format plain
 ```
 
 ## Output formats

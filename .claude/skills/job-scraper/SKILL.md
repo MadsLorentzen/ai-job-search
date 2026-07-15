@@ -5,7 +5,7 @@ description: >
   (LinkedIn, local job boards, and any skills added with /add-portal). Deduplicates
   across runs. Triggers on: job scrape, find jobs, search jobs, new jobs, job search,
   scrape jobs, /scrape
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run .agents/skills/*/cli/src/cli.ts *), WebFetch, WebSearch, Agent, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run .claude/skills/job-scraper/scripts/*/src/cli.ts *), WebFetch, WebSearch, Agent, AskUserQuestion
 ---
 
 # Job Scraper
@@ -14,10 +14,11 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run 
 
 ## How It Works
 
-This skill searches job portals using the **installed portal-search CLIs** in
-`.agents/skills/` (plus WebSearch as a fallback), using queries from your profile.
-It deduplicates against previously seen jobs and the application tracker, and
-presents new matches with a quick fit assessment.
+This skill searches job portals using its **bundled portal-search CLIs** — each
+portal's CLI lives under this skill's `scripts/<portal>/` directory and is documented
+in `reference/portals/<portal>.md` (plus WebSearch as a fallback), using queries from
+your profile. It deduplicates against previously seen jobs and the application tracker,
+and presents new matches with a quick fit assessment.
 
 ## Invocation
 
@@ -57,12 +58,12 @@ If this fails (bun not installed), skip to **1c (WebSearch fallback)** for all p
 
 #### 1b. Run CLI tools (primary — run these in parallel where possible)
 
-Discover all installed portal CLI skills by reading every `SKILL.md` found under `.agents/skills/*/SKILL.md`. Each file documents that portal's exact CLI flags and usage examples. **Use each portal's own documented interface — do not guess flags.** This approach automatically includes any new portals added via `/add-portal` without requiring changes to this file.
+Discover all bundled portals by reading every doc under `reference/portals/*.md` (this skill's own directory). Each file documents that portal's exact CLI flags and usage examples, and its CLI entrypoint lives at `scripts/<portal>/src/cli.ts`. **Use each portal's own documented interface — do not guess flags.** This approach automatically includes any new portals added via `/add-portal` without requiring changes to this file.
 
-For each installed portal skill:
+For each bundled portal:
 
-1. Read its `SKILL.md` to find the correct `bun run …` invocation and supported flags.
-2. Translate the query terms from `search-queries.md` into that portal's flag format (e.g. `--key`, `--search-string`, `--query`, filter codes — whatever the portal's SKILL.md specifies).
+1. Read its `reference/portals/<portal>.md` doc to find the correct `bun run …` invocation and supported flags.
+2. Translate the query terms from `search-queries.md` into that portal's flag format (e.g. `--key`, `--search-string`, `--query`, filter codes — whatever the portal's `reference/portals/<portal>.md` doc specifies).
 3. Scope to the last 14 days using the portal's supported recency flag (`--jobage`, `--since <YYYY-MM-DD>`, `--order PublicationDate`, etc. — as documented per portal).
 4. Cap results to ~20 per call using the portal's limit flag.
 5. Use `--format json` for machine-readable output.
@@ -74,7 +75,7 @@ If a CLI tool exits with a non-zero code, log the error message and continue —
 #### 1c. WebSearch fallback
 
 Use `WebSearch` for:
-- Portals listed in `search-queries.md` that do **not** have a corresponding directory under `.agents/skills/`
+- Portals listed in `search-queries.md` that do **not** have a corresponding doc under `reference/portals/`
 - Any portal whose CLI fails at runtime
 - When bun is unavailable (Step 1a failed)
 
@@ -86,7 +87,7 @@ For each promising result from Step 1:
 
 **From CLI results:** Search output already includes title, company, location, date,
 and URL. For jobs worth a deeper look, fetch full detail with that portal's `detail`
-command (see its SKILL.md — do not guess flags) to extract **key requirements**,
+command (see its `reference/portals/<portal>.md` doc — do not guess flags) to extract **key requirements**,
 **application deadline**, and a brief description snippet.
 
 **From WebSearch results:** Use `WebFetch` on the posting URL and extract the same

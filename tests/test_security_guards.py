@@ -43,7 +43,7 @@ class GuardRepoFixture(unittest.TestCase):
         self.gitignore = self.root / ".gitignore"
         self.write_gitignore(security_guards.REQUIRED_IGNORE_RULES)
 
-        self.manifest = self.root / ".agents" / "skills" / "example-search" / "cli" / "package.json"
+        self.manifest = self.root / ".claude" / "skills" / "job-scraper" / "scripts" / "example-search" / "package.json"
         self.manifest.parent.mkdir(parents=True)
         self.write_manifest({"name": "example-cli", "scripts": {"start": "bun run src/cli.ts"}})
 

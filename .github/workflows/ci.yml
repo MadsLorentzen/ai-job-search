@@ -167,9 +167,9 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
       - run: bun install
-        working-directory: .agents/skills/${{ matrix.tool }}/cli
+        working-directory: .claude/skills/job-scraper/scripts/${{ matrix.tool }}
       - run: bun run typecheck
-        working-directory: .agents/skills/${{ matrix.tool }}/cli
+        working-directory: .claude/skills/job-scraper/scripts/${{ matrix.tool }}
       - name: Run fixture/mock tests when present
         run: |
           if find tests -type f -name '*.test.ts' | grep -q .; then
@@ -177,7 +177,7 @@ jobs:
           else
             echo "No Bun tests found for ${{ matrix.tool }}; skipping"
           fi
-        working-directory: .agents/skills/${{ matrix.tool }}/cli
+        working-directory: .claude/skills/job-scraper/scripts/${{ matrix.tool }}
 
   placeholder-integrity:
     name: Placeholder integrity (upstream template only)

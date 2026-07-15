@@ -67,11 +67,10 @@ job_search_tracker.csv
 # Upskill reports (personal output)
 upskill/*.md
 
-# Agent skills: track the source, ignore only deps and logs.
-# (A blanket `.agents/` ignore silently drops the job-search CLI skills from the repo.)
-.agents/**/node_modules/
-.agents/**/*.log
-.agents/usage/
+# Portal CLIs (bundled under the job-scraper skill): track the source, ignore only deps and logs.
+.claude/skills/job-scraper/scripts/**/node_modules/
+.claude/skills/job-scraper/scripts/**/*.log
+.claude/skills/job-scraper/scripts/**/usage/
 
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/

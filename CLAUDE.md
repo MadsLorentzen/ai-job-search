@@ -80,7 +80,7 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 - `cv/` - LaTeX CV variants (moderncv template, banking style)
 - `cover_letters/` - LaTeX cover letters (custom cover.cls template)
 - `.claude/skills/` - AI skill definitions for the application workflow
-- `.agents/skills/` - Job search CLI tools
+- `.claude/skills/job-scraper/scripts/` - Job portal search CLIs (bundled into the scraper skill)
 
 ## Workflow for New Job Applications
 1. User provides a job posting (URL or text)

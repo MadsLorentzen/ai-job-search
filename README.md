@@ -83,7 +83,7 @@ PowerShell:
 ```powershell
 $tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
 foreach ($tool in $tools) {
-  Push-Location ".agents/skills/$tool/cli"
+  Push-Location ".claude/skills/job-scraper/scripts/$tool"
   bun install
   Pop-Location
 }
@@ -93,7 +93,7 @@ Bash / zsh / Git Bash:
 
 ```bash
 for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search; do
-  (cd .agents/skills/$tool/cli && bun install)
+  (cd .claude/skills/job-scraper/scripts/$tool && bun install)
 done
 ```
 
@@ -172,15 +172,11 @@ ai-job-search/
 │   │   │   ├── 06-cover-letter-templates.md # LaTeX cover letter templates
 │   │   │   └── 07-interview-prep.md   # STAR examples + interview framework
 │   │   ├── job-scraper/               # Job search orchestration
+│   │   │   ├── reference/portals/     # Portal docs: jobbank, jobdanmark, jobindex, jobnet (DK),
+│   │   │   │                          #   linkedin (country-agnostic), freehire (multi-market)
+│   │   │   └── scripts/               # The portal CLIs, one directory per portal
 │   │   └── upskill/                   # /upskill skill gap analysis and learning plan
 │   └── settings.json                  # Claude Code permissions (shared, scoped)
-├── .agents/skills/                    # Job portal CLI tools
-│   ├── jobbank-search/                # Akademikernes Jobbank (Denmark)
-│   ├── jobdanmark-search/             # Jobdanmark.dk (Denmark)
-│   ├── jobindex-search/               # Jobindex.dk (Denmark)
-│   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
-│   ├── linkedin-search/               # LinkedIn public job listings (country-agnostic)
-│   └── freehire-search/               # freehire.dev tech job aggregator (multi-market, REST API)
 ├── cv/
 │   └── main_example.tex               # moderncv LaTeX template
 ├── cover_letters/
@@ -278,7 +274,7 @@ If you prefer doing it by hand, the manual route still works: update the guidanc
 
 ### Job search tools
 
-The four Danish CLI tools in `.agents/skills/` (Jobbank, Jobdanmark, Jobindex, Jobnet) demonstrate the pattern for building a job-portal integration for a specific market. If you're in a different country, run:
+The four Danish CLI tools bundled under `.claude/skills/job-scraper/scripts/` (Jobbank, Jobdanmark, Jobindex, Jobnet) demonstrate the pattern for building a job-portal integration for a specific market. If you're in a different country, run:
 
 ```
 /add-portal
@@ -290,8 +286,8 @@ Maintaining a fork adapted to your market or language? Add it to the [Community 
 
 For **country-agnostic** starting points outside Denmark, the repo ships two portal skills alongside the Danish demos:
 
-- **`linkedin-search`** — built on LinkedIn's public, unauthenticated `jobs-guest` endpoints. Field-agnostic, **zero runtime dependencies** (runs with just `bun`), and takes the search location as an explicit flag, so it works for any market out of the box (`-l "Berlin, Germany"`, `-l "Mumbai, Maharashtra, India"`, `-l "Remote"`, …). Intended for **personal use only** — automated access is against LinkedIn's Terms of Service, so keep volume low. See `.agents/skills/linkedin-search/SKILL.md`.
-- **`freehire-search`** — queries the [freehire.dev](https://freehire.dev) aggregator's public REST API (JSON, no API key). Tech-focused (software, data, engineering, DevOps, remote), multi-market via facet flags (`--region`, `--country`, `--remote`), and **zero runtime dependencies**. Unlike the HTML-scraping Danish portals, results come back structured (skills, seniority, category). The backend is MIT-licensed and [self-hostable](https://github.com/strelov1/freehire) — point `FREEHIRE_API_URL` at your own instance if you prefer. See `.agents/skills/freehire-search/SKILL.md`.
+- **`linkedin-search`** — built on LinkedIn's public, unauthenticated `jobs-guest` endpoints. Field-agnostic, **zero runtime dependencies** (runs with just `bun`), and takes the search location as an explicit flag, so it works for any market out of the box (`-l "Berlin, Germany"`, `-l "Mumbai, Maharashtra, India"`, `-l "Remote"`, …). Intended for **personal use only** — automated access is against LinkedIn's Terms of Service, so keep volume low. See `.claude/skills/job-scraper/reference/portals/linkedin-search.md`.
+- **`freehire-search`** — queries the [freehire.dev](https://freehire.dev) aggregator's public REST API (JSON, no API key). Tech-focused (software, data, engineering, DevOps, remote), multi-market via facet flags (`--region`, `--country`, `--remote`), and **zero runtime dependencies**. Unlike the HTML-scraping Danish portals, results come back structured (skills, seniority, category). The backend is MIT-licensed and [self-hostable](https://github.com/strelov1/freehire) — point `FREEHIRE_API_URL` at your own instance if you prefer. See `.claude/skills/job-scraper/reference/portals/freehire-search.md`.
 
 ### Salary benchmarking
 

@@ -11,7 +11,7 @@ CLI for the [Jobnet.dk](https://jobnet.dk) Danish government job portal API.
 ## Installation
 
 ```bash
-cd skills/jobnet-search/cli
+cd .claude/skills/job-scraper/scripts/jobnet-search
 bun install
 ```
 

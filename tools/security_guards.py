@@ -16,9 +16,9 @@ Checks:
 2. .gitignore — the personal-data ignore rules must all still be present.
    Catches weakening that would make future users silently commit their
    tracker, profile exports, or application archives.
-3. .agents/**/package.json — no npm/bun lifecycle scripts (preinstall,
-   install, postinstall, prepare, prepack) and no trustedDependencies.
-   Catches code execution smuggled into `bun install`.
+3. .claude/skills/job-scraper/scripts/**/package.json — no npm/bun lifecycle
+   scripts (preinstall, install, postinstall, prepare, prepack) and no
+   trustedDependencies. Catches code execution smuggled into `bun install`.
 
 Stdlib only. Exit 0 on success, 1 with a failure list otherwise.
 """
@@ -109,10 +109,10 @@ def check_gitignore() -> None:
 
 def check_package_manifests() -> None:
     manifests = [
-        p for p in ROOT.glob(".agents/**/package.json") if "node_modules" not in p.parts
+        p for p in ROOT.glob(".claude/skills/job-scraper/scripts/**/package.json") if "node_modules" not in p.parts
     ]
     if not manifests:
-        errors.append(".agents: no package.json files found - glob roots are wrong or the tree moved")
+        errors.append(".claude/skills/job-scraper/scripts: no package.json files found - glob roots are wrong or the tree moved")
     for manifest in manifests:
         relpath = manifest.relative_to(ROOT)
         try:

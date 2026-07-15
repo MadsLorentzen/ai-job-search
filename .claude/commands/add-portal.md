@@ -12,7 +12,7 @@ Follow these steps **in order**.
 
 ## Step 0: Parse Arguments
 
-- If `$ARGUMENTS` contains `--list`: use Glob with `.agents/skills/*/SKILL.md`, print a table of installed portal skills (name, market from the description, data source from `url-reference.md`), and stop.
+- If `$ARGUMENTS` contains `--list`: use Glob with `.claude/skills/job-scraper/reference/portals/*.md`, print a table of installed portals (name, market from the description, data source from the sibling `<name>.url-reference.md`), and stop.
 - If `$ARGUMENTS` contains a URL: treat it as the portal URL and carry it into Step 1.
 - Otherwise: start the interview at Step 1.
 
@@ -23,7 +23,7 @@ Follow these steps **in order**.
 Ask the user (skip anything already answered by `$ARGUMENTS`):
 
 1. **Portal URL** - the job board's public site (e.g. `https://www.seek.com.au`, `https://www.stepstone.de`).
-2. **Skill name** - kebab-case, suffixed `-search` (e.g. `seek-search`, `stepstone-search`). Must not collide with an existing folder in `.agents/skills/`.
+2. **Portal name** - kebab-case, suffixed `-search` (e.g. `seek-search`, `stepstone-search`). Must not collide with an existing portal in `.claude/skills/job-scraper/reference/portals/`.
 3. **Market and language** - which country/region the portal covers and what language its postings use. This drives the trigger phrases in `SKILL.md` (include local-language terms like the Danish skills do: "ledige stillinger", "jobsøgning").
 4. **A realistic test query** - a job title or skill the user would actually search for, used for the live test in Step 4.
 
@@ -47,26 +47,27 @@ Record everything you found - endpoints, parameters, field anchors, quirks - you
 
 ## Step 3: Scaffold the Skill
 
-**Canonical reference:** read `.agents/skills/linkedin-search/` before generating - it is the zero-dependency worked example of this exact structure. Copy its architecture, not its LinkedIn-specific parsing.
+**Canonical reference:** read `.claude/skills/job-scraper/reference/portals/linkedin-search.md` and `.claude/skills/job-scraper/scripts/linkedin-search/` before generating - together they are the zero-dependency worked example of this exact structure. Copy its architecture, not its LinkedIn-specific parsing.
 
-Create `.agents/skills/<name>/` with:
+A portal is two pieces bundled inside the `job-scraper` skill - a reference doc and a CLI:
 
 ```
-<name>/
-├── SKILL.md              # Skill definition with trigger phrases
-├── url-reference.md      # Endpoint documentation from Step 2
-└── cli/
+.claude/skills/job-scraper/
+├── reference/portals/
+│   ├── <name>.md                 # Portal doc with trigger phrases (formerly the portal SKILL.md)
+│   └── <name>.url-reference.md    # Endpoint documentation from Step 2
+└── scripts/<name>/
     ├── package.json
     ├── tsconfig.json
     ├── README.md
     ├── src/
-    │   ├── cli.ts        # Arg parsing, help text, command dispatch
-    │   ├── helpers.ts    # Fetch with backoff, parsers, error writer
+    │   ├── cli.ts                 # Arg parsing, help text, command dispatch
+    │   ├── helpers.ts             # Fetch with backoff, parsers, error writer
     │   └── commands/
     │       ├── search.ts
     │       └── detail.ts
     └── tests/
-        └── helpers.ts    # runCLI + parseJSON test utilities (copy from jobindex-search)
+        └── helpers.ts             # runCLI + parseJSON test utilities (copy from scripts/jobindex-search)
 ```
 
 ### The portal-skill contract (every generated skill MUST honor this)
@@ -78,16 +79,16 @@ These conventions are what make portal skills interchangeable for `/scrape` and 
 - **JSON output shape:** `{ "meta": { "count": ..., "page": ... }, "results": [...] }` where each result has at least `id`, `title`, `company`, `location`, `date`, `url` (missing values are `null`, never omitted).
 - **Errors:** written to **stderr** as `{ "error": "...", "code": "..." }`, exit code `1`. Never write errors to stdout.
 - **Fetching:** browser User-Agent, exponential backoff with jitter on 429/5xx (max ~6 retries), `""`/`null` on 404 rather than a crash.
-- **HTML parsing:** split the response into per-result chunks and parse each independently, so one malformed card cannot break the rest (see `parseJobCards` in `linkedin-search/cli/src/helpers.ts`).
+- **HTML parsing:** split the response into per-result chunks and parse each independently, so one malformed card cannot break the rest (see `parseJobCards` in `scripts/linkedin-search/src/helpers.ts`).
 - **Dependencies:** default to **zero runtime dependencies** (plain `bun` + `fetch` + regex parsing) like `linkedin-search` - `bun install` should only pull dev types. Only add a parsing library if the portal's markup genuinely defeats chunked regex parsing, and say so in the README.
 
 ### File specifics
 
-- **`SKILL.md` frontmatter:** `name`, `version: 1.0.0`, a `description` written for skill triggering - it must name the portal, the market, and include trigger phrases in English **and** the market's language; `context: fork`; `allowed-tools: Bash(bun run skills/<name>/cli/src/cli.ts *)`.
-- **`SKILL.md` body:** what the skill searches, the personal-use warning if Step 2 found terms restrictions, command reference with flags, 4-6 usage examples using the user's market (real cities, realistic roles), output-format table, and a Notes section recording portal quirks found in Step 2.
-- **`url-reference.md`:** the endpoints, parameters table, and response-structure notes from Step 2 - this is the file a future maintainer needs when the portal changes its markup.
+- **`<name>.md` frontmatter:** `name`, `version: 1.0.0`, and a `description` that names the portal, the market, and (for readers) trigger phrases in English **and** the market's language. No `allowed-tools` is needed — the portal doc is reference material, not a skill, and `/scrape`'s own `allowed-tools` already permits `bun run .claude/skills/job-scraper/scripts/*/src/cli.ts *`.
+- **`<name>.md` body:** what the portal searches, the personal-use warning if Step 2 found terms restrictions, command reference with flags, 4-6 usage examples using the user's market (real cities, realistic roles), output-format table, and a Notes section recording portal quirks found in Step 2.
+- **`<name>.url-reference.md`:** the endpoints, parameters table, and response-structure notes from Step 2 - this is the file a future maintainer needs when the portal changes its markup.
 - **`package.json`:** name `<portal>-cli`, `"type": "module"`, scripts `start`, `test` (`bun test --timeout 30000`), and `typecheck` (`tsc --noEmit`); dev-only dependencies in the zero-dependency default.
-- **`tests/`:** copy `runCLI`/`parseJSON` from `jobindex-search/cli/tests/helpers.ts`, then add a small live smoke-test file: `search` with the test query returns exit code 0 and ≥1 result with non-null `id`/`title`/`url`; a bogus flag or missing required arg exits 1 with a JSON error on stderr.
+- **`tests/`:** copy `runCLI`/`parseJSON` from `scripts/jobindex-search/tests/helpers.ts`, then add a small live smoke-test file: `search` with the test query returns exit code 0 and ≥1 result with non-null `id`/`title`/`url`; a bogus flag or missing required arg exits 1 with a JSON error on stderr.
 
 ---
 
@@ -97,7 +98,7 @@ Never register a portal skill that has not returned real results. Markup assumpt
 
 1. Install dev types and typecheck:
    ```bash
-   cd .agents/skills/<name>/cli && bun install && bun run typecheck
+   cd .claude/skills/job-scraper/scripts/<name> && bun install && bun run typecheck
    ```
 2. Run the live search with the user's test query:
    ```bash
@@ -119,11 +120,11 @@ Do not proceed to Step 5 until search, detail, and tests all pass.
 ## Step 5: Register
 
 1. Ask whether the user wants the new portal added to their `/scrape` search strategy. If yes:
-   - The portal CLI itself is already picked up automatically by `/scrape` (it discovers `.agents/skills/*/SKILL.md`) — no further wiring is needed for CLI search/detail.
+   - The portal CLI itself is already picked up automatically by `/scrape` (it discovers `reference/portals/*.md` and runs the sibling `scripts/<name>/`) — no further wiring is needed for CLI search/detail.
    - Optionally add WebSearch/`site:` placeholder queries for that board in `.claude/skills/job-scraper/search-queries.md` (use the `[YOUR_JOB_BOARD]` style placeholders already there) so the fallback path still covers the board if the CLI is unavailable.
 2. Remind the user to add the install line for their own records if they maintain a fork README:
    ```bash
-   cd .agents/skills/<name>/cli && bun install && cd ../../../..
+   cd .claude/skills/job-scraper/scripts/<name> && bun install && cd -
    ```
    (Skip if the skill is zero-dependency and they don't care about typecheck types.)
 3. Note that the skill auto-triggers from its `SKILL.md` description - no other wiring is needed.
@@ -136,11 +137,11 @@ Present a summary:
 
 > **Portal skill `<name>` generated and verified.**
 >
-> - Files: `.agents/skills/<name>/` (SKILL.md, url-reference.md, CLI with tests)
+> - Files: `.claude/skills/job-scraper/reference/portals/<name>.md` (+ `<name>.url-reference.md`) and `.claude/skills/job-scraper/scripts/<name>/` (CLI with tests)
 > - Live test: `search "<test query>"` returned <N> results; `detail` verified on one posting
 > - Data source: <endpoint summary>; <personal-use warning noted, if applicable>
 >
-> Try it: `bun run .agents/skills/<name>/cli/src/cli.ts search -q "<test query>" --format table`
+> Try it: `bun run .claude/skills/job-scraper/scripts/<name>/src/cli.ts search -q "<test query>" --format table`
 >
 > Per upstream policy, market-specific skills like this live in your fork rather than being PR'd upstream. If the portal changes its markup later, `url-reference.md` records the parsing anchors to update.
 

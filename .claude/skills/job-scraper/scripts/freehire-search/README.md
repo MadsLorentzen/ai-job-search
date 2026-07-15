@@ -17,7 +17,7 @@ CLI for searching the [freehire.dev](https://freehire.dev) job aggregator across
 ## Installation
 
 ```bash
-cd .agents/skills/freehire-search/cli
+cd .claude/skills/job-scraper/scripts/freehire-search
 bun install   # optional — only installs TypeScript dev types
 ```
 

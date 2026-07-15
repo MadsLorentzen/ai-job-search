@@ -32,7 +32,7 @@ A new command therefore faces a high bar. The test that admitted the existing on
 Reviews here are empirical. Bug reports are reproduced on master before the fix is considered; "all tests green" is checked against whether the tests can distinguish master from the fix. PRs whose premise doesn't reproduce get declined even when the code is fine - it has happened ([#35]'s converter fix, [#52]'s first version). You can make this fast:
 
 - State the failing case and how to reproduce it.
-- Put CLI tests in `.agents/skills/<name>/cli/tests/` (bun test, network-free where possible); Python tool tests in `tests/`.
+- Put CLI tests in `.claude/skills/job-scraper/scripts/<name>/tests/` (bun test, network-free where possible); Python tool tests in `tests/`.
 - Run what CI runs: `python3 tools/lint_skills.py`, `python3 tools/check_framework_version.py`, `bun run typecheck` in touched CLIs, and the relevant test suites.
 
 **Credit norm:** a change that incorporates your actual code gets a `Co-authored-by` trailer; a change written independently from your observation or report gets a named mention in the commit message and PR. Both happen unprompted.

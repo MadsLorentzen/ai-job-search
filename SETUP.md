@@ -124,16 +124,16 @@ Run these from the repository root.
 ```powershell
 $tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
 foreach ($tool in $tools) {
-  Set-Location ".agents/skills/$tool/cli"
+  Set-Location ".claude/skills/job-scraper/scripts/$tool"
   bun install
-  Set-Location "..\..\..\.."
+  Set-Location "..\..\..\..\.."
 }
 ```
 
 - Bash / zsh / Git Bash:
 ```bash
 for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search; do
-  cd .agents/skills/$tool/cli && bun install && cd ../../../..
+  cd .claude/skills/job-scraper/scripts/$tool && bun install && cd ../../../../..
 done
 ```
 
