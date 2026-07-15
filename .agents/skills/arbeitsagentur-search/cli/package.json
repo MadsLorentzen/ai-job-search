@@ -1,0 +1,20 @@
+{
+  "name": "arbeitsagentur-cli",
+  "version": "1.0.0",
+  "description": "CLI for the official Bundesagentur für Arbeit Jobsuche API (German government job portal) — no registration, zero runtime dependencies.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "arbeitsagentur-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 30000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "latest"
+  }
+}

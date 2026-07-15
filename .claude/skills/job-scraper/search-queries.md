@@ -10,11 +10,12 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
+Primary (German market - arbeitsagentur.de is covered by the `arbeitsagentur-search` CLI):
+- **stepstone.de** - Germany's largest private general job board (WebSearch fallback, blocks direct scraping)
+- **de.indeed.com** - job aggregator for Germany (WebSearch fallback, blocks direct scraping)
+- **linkedin.com/jobs** - LinkedIn job listings (filter: Deutschland / [YOUR_CITY]); also covered by `linkedin-search` CLI
+- **xing.com/jobs** - DACH-focused professional network job board (optional)
 - **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for known target companies
@@ -28,9 +29,9 @@ Queries are grouped by priority. Each query should be combined with your locatio
 These match your strongest and most desired career direction.
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
+site:stepstone.de OR site:de.indeed.com "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
+site:stepstone.de OR site:de.indeed.com "[YOUR_KEY_SKILL]" [YOUR_CITY]
+site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" Deutschland
 ```
 
 ### Priority 2: [YOUR_DOMAIN_EXPERTISE]
@@ -38,9 +39,9 @@ site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
 These match your domain expertise.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:stepstone.de OR site:de.indeed.com [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
+site:stepstone.de OR site:de.indeed.com [YOUR_DOMAIN_KEYWORD_2] Deutschland
+site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] Deutschland
 ```
 
 ### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
@@ -48,8 +49,8 @@ site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
 Adjacent roles you could pivot into.
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
+site:stepstone.de OR site:de.indeed.com "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
+site:stepstone.de OR site:de.indeed.com "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
 ```
 
 ### Priority 4: Broader Technical / Consulting
@@ -57,9 +58,9 @@ site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
 Wider net for general technical roles.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
+site:stepstone.de OR site:de.indeed.com [YOUR_KEY_SKILL] developer [YOUR_CITY]
 site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:stepstone.de OR site:de.indeed.com "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
 ```
 
 ## Location Filter
