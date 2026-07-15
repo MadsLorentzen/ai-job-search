@@ -45,6 +45,20 @@ Reviews here are empirical. Bug reports are reproduced on master before the fix 
 
 Market-specific skills are genuinely valuable - they just live in forks, where their maintainers can test them and their users can find them.
 
+## Porting to another AI runtime? Forks too
+
+Claude Code is the reference runtime: it is what the maintainer runs daily and what every methodology change is verified on. A parallel command tree for another runtime (Codex, Antigravity, Gemini CLI, ...) would ship untested on every change - CI cannot run those harnesses - and each accepted runtime makes the next one harder to refuse. It is the same arithmetic that keeps market-specific portals in forks.
+
+What upstream maintains for other runtimes instead:
+
+- The portal search skills in `.agents/skills/` use the portable Agent Skills format (`SKILL.md` per portal) and are auto-discovered by Codex and Antigravity today.
+- The root `AGENTS.md` points any agent at the canonical workflow specs and the profile entry point.
+- Framework instruction files carry `framework_version` markers, so a runtime fork can track methodology changes precisely (`python3 tools/check_upstream_updates.py`).
+
+Announce your runtime fork in the pinned [Community forks & adaptations](https://github.com/MadsLorentzen/ai-job-search/discussions/78) discussion and it gets listed alongside the market adaptations. The proven shape is a thin pointer: reference the specs here instead of copying them, so upstream improvements reach your fork on rebase.
+
+This is a decision, not a dogma: if cross-runtime standards mature to the point where these specs run unmodified elsewhere, or the community's center of gravity moves to runtime forks, the trade-off gets re-evaluated. Background: the architecture thread in [Community forks & adaptations](https://github.com/MadsLorentzen/ai-job-search/discussions/78).
+
 ## Practical notes
 
 - **Portal-skill contract**: `search`/`detail` commands, `--format json|table|plain`, stderr JSON errors with exit 1, backoff on 429/5xx, zero runtime dependencies by default. See `/add-portal`'s spec and `linkedin-search` as the reference implementation.
