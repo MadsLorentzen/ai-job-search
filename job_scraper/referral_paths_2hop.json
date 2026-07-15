@@ -2,7 +2,7 @@
  "_about": "2-hop referral paths: AJ -> trusted strong-connection BROKER -> the broker's 1st-degree connection (2nd-degree to AJ) who currently works at a target company. Ask the broker for a warm intro to the person listed.",
  "_method": "LinkedIn people search with connectionOf=<broker memberId> + keyword OR-group of target companies, filtered to 2nd-degree results whose current role is at the target. Verified current-employment by headline/Current line; excluded 'Ex-' and false-positive name collisions (e.g., 'Mercury Global Partners' != Mercury fintech).",
  "_batch_scope": "Batch 1 (frontier labs + fintech): Jesse Zhang, Biju Ashokan, Kayvon Bina, Chantel Benson, Ben Woytowich, David Guilfoyle. Batch 2 (frontier labs, broker coverage): Vinay Patankar, Cameron McKay, Alec Howard, Yousef Ali, Seth Stephens-Davidowitz, Alex Ortiz, Caren Kelleher. Tom King intentionally skipped (network overlaps AJ's). NOT yet covered: startup targets (Suno, Oscilar, HappyRobot, etc.) and the Cursor/Harvey/Replit/Notion group for some batch-1 brokers.",
- "last_run": "2026-07-07",
+ "last_run": "2026-07-15",
  "paths_by_broker": {
   "Jesse Zhang": {
    "broker_linkedin": "https://www.linkedin.com/in/jessemzhang/",
@@ -13,21 +13,21 @@
      "role": "Product @ OpenAI",
      "company": "OpenAI",
      "linkedin": "https://www.linkedin.com/in/teriyu/",
-     "note": "Product \u2014 highly relevant to AJ's growth-PM target"
+     "note": "Product — highly relevant to AJ's growth-PM target"
     },
     {
      "name": "Giancarlo 'GC' Lionetti",
      "role": "Chief Commercial Officer @ OpenAI",
      "company": "OpenAI",
      "linkedin": null,
-     "note": "CCO \u2014 senior GTM exec; profile slug not captured, find via name"
+     "note": "CCO — senior GTM exec; profile slug not captured, find via name"
     },
     {
      "name": "Andrew Hillis",
      "role": "Codex @ OpenAI",
      "company": "OpenAI",
      "linkedin": "https://www.linkedin.com/in/andrewhillis/",
-     "note": "Codex team \u2014 growth-adjacent"
+     "note": "Codex team — growth-adjacent"
     },
     {
      "name": "Nate Munger",
@@ -97,7 +97,7 @@
      "role": "GTM @ OpenAI",
      "company": "OpenAI",
      "linkedin": "https://www.linkedin.com/in/sheilachinichian/",
-     "note": "GTM \u2014 relevant to growth roles"
+     "note": "GTM — relevant to growth roles"
     },
     {
      "name": "Alyssa Pereira",
@@ -110,7 +110,7 @@
      "role": "GTM @ Anthropic",
      "company": "Anthropic",
      "linkedin": "https://www.linkedin.com/in/katkillion/",
-     "note": "GTM \u2014 relevant to growth roles"
+     "note": "GTM — relevant to growth roles"
     },
     {
      "name": "Ryan Ball",
@@ -137,11 +137,11 @@
      "linkedin": "https://www.linkedin.com/in/j-mac/"
     },
     {
-     "name": "Mari Cant\u00fa",
+     "name": "Mari Cantú",
      "role": "Technical Recruiter, Hardware Eng & Product @ Samsara",
      "company": "Samsara",
      "linkedin": "https://www.linkedin.com/in/maricantu/",
-     "note": "Recruiter \u2014 direct referral route"
+     "note": "Recruiter — direct referral route"
     },
     {
      "name": "Angie Bush",
@@ -179,7 +179,7 @@
      "role": "Full-stack developer (OpenAI mention)",
      "company": "OpenAI",
      "linkedin": "https://www.linkedin.com/in/mpope/",
-     "note": "Verify current OpenAI employment \u2014 headline ambiguous"
+     "note": "Verify current OpenAI employment — headline ambiguous"
     }
    ]
   },
@@ -272,7 +272,7 @@
      "linkedin": "https://www.linkedin.com/in/vladpetkovic/"
     }
    ],
-   "note": "Chantel is herself a Director of PM AT Adobe \u2014 a DIRECT path for the Adobe Firefly Growth PM role, plus the Adobe connections below."
+   "note": "Chantel is herself a Director of PM AT Adobe — a DIRECT path for the Adobe Firefly Growth PM role, plus the Adobe connections below."
   },
   "Yousef Ali": {
    "broker_linkedin": "https://www.linkedin.com/in/yousef-ali-29155b19/",
@@ -477,14 +477,14 @@
   ],
   "Samsara": [
    {
-    "person": "Mari Cant\u00fa (Technical Recruiter)",
+    "person": "Mari Cantú (Technical Recruiter)",
     "via": "Alex Ortiz"
    }
   ],
   "Adobe": [
    {
     "person": "Chantel Benson herself (Director of PM)",
-    "via": "Chantel Benson (direct \u2014 she works at Adobe)"
+    "via": "Chantel Benson (direct — she works at Adobe)"
    },
    {
     "person": "Eric Snowden (SVP Design)",
@@ -524,27 +524,41 @@
    }
   ],
   "Rippling": {
-   "role_context": "Head of Automated Growth (NYC hybrid) \u2014 LinkedIn 4429156672",
+   "role_context": "Head of Automated Growth (NYC hybrid) — LinkedIn 4429156672",
    "coach_dashboard_tier3": "1 connection (Upward PM dashboard, 2026-07-07)",
    "two_hop_brokers": [],
    "note": "Only new mid/large company from 2026-07-07 pass. Coach-dashboard shows 1 connection; request via Upward PM. Full 2-hop broker sweep not run (single company; LinkedIn kept light).",
    "found": "2026-07-07"
+  },
+  "Snap Inc.": {
+   "role_context": "Head of User Growth Strategy & Operations (NYC on-site) — LinkedIn 4422640417 (also SF listing 4422641382)",
+   "coach_dashboard_tier3": "3 connections (Upward PM dashboard, 2026-07-15)",
+   "two_hop_brokers": [],
+   "note": "New mid/large find from 2026-07-15 pass. Coach dashboard shows 3 connections — request via Upward PM (highest-yield path). Full 2-hop broker sweep not run (LinkedIn kept light per task).",
+   "found": "2026-07-15"
+  },
+  "Moloco": {
+   "role_context": "Senior Growth Director - Moloco Ads (NYC on-site) — LinkedIn 4367640179",
+   "coach_dashboard_tier3": "2 connections (Upward PM dashboard, 2026-07-15)",
+   "two_hop_brokers": [],
+   "note": "New mid/large find from 2026-07-15 pass. Coach dashboard shows 2 connections — request via Upward PM. Role is ads/sales-adjacent growth leadership; medium fit. 2-hop broker sweep not run.",
+   "found": "2026-07-15"
   }
  },
- "_batch3_startups_finding": "Ran top brokers (Jesse Zhang, Alex Ortiz, Biju Ashokan) against the browser_finds + lead startups (Suno, Oscilar, HappyRobot, Legora, TrueBuilt, Taste Labs, Pallet, Gradial, StackAI, Legion Health, Salient, 11x, ClassDojo, Rula, Arcadia, Playbook, Cashera, etc.). Result: essentially NO 2-hop paths \u2014 these companies are too small/early (<~50 employees) for brokers' networks to overlap. The only hit was Samsara (a large public company), via Alex Ortiz. Takeaway: 2-hop referral pathing pays off at mid/large companies; for the small startups, direct founder outreach (or AJ's own 1st-degree) is the better play.",
- "_batch4_new_finds_finding": "Ran top brokers (Alex, Jesse, Chantel, Kayvon, Cameron) vs the strongest NEW finds. ADOBE is strongly covered (Chantel Benson is a Director of PM there = direct path for the Firefly Growth PM role, plus 6 more Adobe people via Chantel/Alex). Mercury's new Head of Growth Marketing reuses the existing path (Nick Dellis via Kayvon). NO 2-hop paths found for the other new targets \u2014 consumer cos (Poshmark, Hinge, Maven Clinic, Justworks, Commure, Unite Us, Genius Sports, The Farmer's Dog) and small AI startups (Abacum, Inworld, Listen Labs, Lemurian, LYNA): brokers' networks don't reach them. Direct application / founder outreach is the better play there.",
+ "_batch3_startups_finding": "Ran top brokers (Jesse Zhang, Alex Ortiz, Biju Ashokan) against the browser_finds + lead startups (Suno, Oscilar, HappyRobot, Legora, TrueBuilt, Taste Labs, Pallet, Gradial, StackAI, Legion Health, Salient, 11x, ClassDojo, Rula, Arcadia, Playbook, Cashera, etc.). Result: essentially NO 2-hop paths — these companies are too small/early (<~50 employees) for brokers' networks to overlap. The only hit was Samsara (a large public company), via Alex Ortiz. Takeaway: 2-hop referral pathing pays off at mid/large companies; for the small startups, direct founder outreach (or AJ's own 1st-degree) is the better play.",
+ "_batch4_new_finds_finding": "Ran top brokers (Alex, Jesse, Chantel, Kayvon, Cameron) vs the strongest NEW finds. ADOBE is strongly covered (Chantel Benson is a Director of PM there = direct path for the Firefly Growth PM role, plus 6 more Adobe people via Chantel/Alex). Mercury's new Head of Growth Marketing reuses the existing path (Nick Dellis via Kayvon). NO 2-hop paths found for the other new targets — consumer cos (Poshmark, Hinge, Maven Clinic, Justworks, Commure, Unite Us, Genius Sports, The Farmer's Dog) and small AI startups (Abacum, Inworld, Listen Labs, Lemurian, LYNA): brokers' networks don't reach them. Direct application / founder outreach is the better play there.",
  "_triaged_undocumented_check": {
   "_about": "Referral check for triaged-status roles not previously documented (incl. the ngrok Head of Growth role AJ flagged). 2-hop run across Alex Ortiz, Jesse Zhang, Kayvon Bina, Cameron McKay; tier3 = Upward coach dashboard counts.",
   "last_run": "2026-06-23 11:30",
   "ngrok": {
    "role": "Head of Growth (high fit, triaged)",
    "two_hop": "none found (no broker connections at ngrok)",
-   "coach_dashboard": "1 referrer in Upward network \u2014 log in to get the name; this is the viable referral path",
+   "coach_dashboard": "1 referrer in Upward network — log in to get the name; this is the viable referral path",
    "recommendation": "Use the coach-dashboard referrer; otherwise apply direct / recruiter."
   },
   "two_hop_found": {
-   "Vercel": "Talha Tariq, CTO (Security) \u2014 via Alex Ortiz",
-   "Wealthfront": "Janie Gu, Product \u2014 via Jesse Zhang"
+   "Vercel": "Talha Tariq, CTO (Security) — via Alex Ortiz",
+   "Wealthfront": "Janie Gu, Product — via Jesse Zhang"
   },
   "two_hop_none": [
    "ngrok",
@@ -578,5 +592,6 @@
   },
   "note": "Best undocumented coach-dashboard paths: Instacart (4), Gusto (2), Spotify (2), then ngrok/Customer.io/Attentive/Affirm/Life360 (1 each). Combine with 2-hop for Vercel & Wealthfront. Martech cluster (Customer.io, Attentive, Gusto) has only dashboard paths, no broker paths."
  },
- "_batch5_2026-07-07_finding": "12/53 candidates were dupes (strong roles already tracked). 7 new cards added; only Rippling qualified as mid/large for referral search \u2014 1 coach-dashboard connection. Other new cards are tiny startups or recruiter-obscured (no reliable paths)."
+ "_batch5_2026-07-07_finding": "12/53 candidates were dupes (strong roles already tracked). 7 new cards added; only Rippling qualified as mid/large for referral search — 1 coach-dashboard connection. Other new cards are tiny startups or recruiter-obscured (no reliable paths).",
+ "_batch6_2026-07-15_finding": "25 new cards (14 dupes of tracked roles). 10 added to 'new', 15 skipped. Only Snap Inc. (3 coach connections) and Moloco (2) qualified as mid/large for referral search; Icreon not in coach network. Remaining new cards are tiny startups (Confido, Ceno, Moda, Liva AI, GC AI, Sidewalk) or recruiter-obscured — no reliable 2-hop paths. LinkedIn kept light (one page per query)."
 }

@@ -34,7 +34,8 @@
         }
       ],
       "follow_up_due": "2026-06-25",
-      "fallback_plan": "If Alex doesn't respond by 2026-06-25: also Auren Hoffman (connector) and Chantel Benson 2-hop -> Shad Ahmed. Tier 3 coach dashboard has 3 in-network at Anthropic."
+      "fallback_plan": "If Alex doesn't respond by 2026-06-25: also Auren Hoffman (connector) and Chantel Benson 2-hop -> Shad Ahmed. Tier 3 coach dashboard has 3 in-network at Anthropic.",
+      "notes": "Skipped 2026-07-15: listing no longer active (liveness check, was in referral_pending). NOTE: was on personal-referral hold."
     },
     "https://jobs.ashbyhq.com/notion/576401b9-66e7-4407-a9e2-8aafaa590082": {
       "outreach": [],
@@ -123,7 +124,8 @@
           "note": "Active conversation with OpenAI recruiter from prior process. Waiting on their response; not pushing alternate paths until that resolves.",
           "outcome": "pending"
         }
-      ]
+      ],
+      "notes": "Skipped 2026-07-15: listing no longer active (liveness check, was in referral_pending). NOTE: was on personal-referral hold."
     },
     "https://jobs.ashbyhq.com/openai/73e59b84-2e87-4637-8c4a-d271784afb30": {
       "outreach": [
@@ -409,7 +411,8 @@
         "cover_letter": "cover_letters/cover_harvey_gtm_growth.tex",
         "cover_letter_pdf": "cover_letters/cover_harvey_gtm_growth.pdf",
         "notes": "Built 2026-06-22 (batch 2) via parallel drafter agents on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. HELD: SF on-site (AJ NYC deal-breaker) + RevOps/systems-analyst role (weak fit). Materials built if AJ wants it."
-      }
+      },
+      "notes": "Skipped 2026-07-15: listing no longer active (liveness check, was in triaged)."
     },
     "https://jobs.ashbyhq.com/ramp/453fc2eb-3eba-42a1-8dd1-36689875b583": {
       "materials": {
@@ -527,7 +530,8 @@
         "cover_letter": "cover_letters/cover_spotify_crm_martech.tex",
         "cover_letter_pdf": "cover_letters/cover_spotify_crm_martech.pdf",
         "notes": "Built 2026-06-23 (batch 3, expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. NYC. Among AJ strongest (CRM/martech/lifecycle leadership). FLAG: Lever form, cowork may NOT auto-submit (like the other Spotify role). Tools named Salesforce/mParticle vs his Iterable/Segment/Amplitude."
-      }
+      },
+      "notes": "Skipped 2026-07-15: listing no longer active (liveness check, was in triaged)."
     },
     "https://jobs.ashbyhq.com/elevenlabs/19d9a7a0-10d9-41d8-b515-a61f1d85f186": {
       "materials": {
@@ -743,7 +747,8 @@
         "cover_letter": "cover_letters/cover_pallet_growth.tex",
         "cover_letter_pdf": "cover_letters/cover_pallet_growth.pdf",
         "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. HELD: real JD is SDR/BDR sales-team leadership (Salesforce/Outreach/Apollo), AJ has no SDR-mgmt experience. Materials built if AJ wants it."
-      }
+      },
+      "notes": "Skipped 2026-07-15: listing no longer active (liveness check, was in triaged)."
     },
     "https://jobs.ashbyhq.com/misfitsandmachines/d67330a5-a44a-44ec-afc8-a12e6d906cbe": {
       "materials": {
@@ -885,9 +890,15 @@
           "channel": "interview",
           "outcome": "advanced",
           "note": "Moved forward from cold auto-apply (first cold-apply advance). Awaiting scheduling / next-round details."
+        },
+        {
+          "date": "2026-07-07",
+          "channel": "interview",
+          "outcome": "completed_screen",
+          "note": "Recruiter screen done. Comp: role is $180-190k vs AJ stated $250k+ (flagged flexible, prioritizing impact/longevity fit). Asked about pet/dog experience -- AJ answered \"I like building 0-1 in new markets, apply rapid learning outside my passion/experience.\" Felt upbeat overall but the no-dog-experience bit near the end read as a negative turning point. Decision expected tonight or tomorrow."
         }
       ],
-      "notes": "Advanced from cold apply 2026-07-02. Strategic Initiatives & Platform Growth Lead."
+      "notes": "Advanced from cold apply 2026-07-02. Strategic Initiatives & Platform Growth Lead. | Comp gap ($180-190k vs $250k+) and mission/passion fit (no dog/pet experience) are the two risks. AJ: not top choice, backup if nothing better."
     },
     "https://www.linkedin.com/jobs/view/4432465051/": {
       "materials": {
@@ -1003,7 +1014,8 @@
         "cover_letter": "cover_letters/cover_faire_lifecycle.tex",
         "cover_letter_pdf": "cover_letters/cover_faire_lifecycle.pdf",
         "notes": "Built 2026-06-24 (tonight sweep, expanded universe). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. NYC hybrid 3 days. Near-textbook: JD names Iterable. Lifecycle = AJ exact depth. Over-qualified (senior-IC)."
-      }
+      },
+      "notes": "Skipped 2026-07-15: listing no longer active (liveness check, was in ready_to_apply)."
     },
     "https://boards.greenhouse.io/faire/jobs/8572160002?gh_jid=8572160002": {
       "materials": {
@@ -1021,7 +1033,8 @@
         "cover_letter": "cover_letters/cover_life360_pm.tex",
         "cover_letter_pdf": "cover_letters/cover_life360_pm.pdf",
         "notes": "Built 2026-06-24 (tonight sweep, expanded universe). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. Remote USA. Consumer engagement/retention + AI-native. ~98M MAU. Strong. Principal-IC vs VP."
-      }
+      },
+      "notes": "Skipped 2026-07-15: listing no longer active (liveness check, was in ready_to_apply)."
     },
     "https://job-boards.greenhouse.io/life360/jobs/8592974002": {
       "materials": {
@@ -1067,7 +1080,8 @@
         "cover_letter": "cover_letters/cover_mistral.tex",
         "cover_letter_pdf": "cover_letters/cover_mistral.pdf",
         "notes": "Built 2026-06-24 (AI-PM sweep). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. NYC. ADJACENT: partnerships PM not core; FanBridge->Stensul partnership is the proof. Lever (cowork may referral-route)."
-      }
+      },
+      "notes": "Skipped 2026-07-15: listing no longer active (liveness check, was in ready_to_apply)."
     },
     "https://jobs.ashbyhq.com/openai/fc38c6bf-5330-435c-99b6-1bcf1f5829a8": {
       "referral_request": {
@@ -1200,7 +1214,7 @@
       "notes": "Clean AI-PM (Senior), US remote. NOTE: AJ holding on Instacart broadly."
     },
     "https://adobe.wd5.myworkdayjobs.com/job/Remote-California/Product-Manager--Activation_R169976": {
-      "notes": "Skipped 2026-06-30: posting no longer active."
+      "notes": "Skipped 2026-06-30: posting no longer active. | Skipped 2026-07-15: listing no longer active (liveness check, was in triaged)."
     },
     "https://jobs.ashbyhq.com/decagon/9109be1c-b6e3-430f-a964-887253ef891a": {
       "notes": "AI agents PM, but SF onsite."
@@ -1278,6 +1292,41 @@
     },
     "https://jobs.ashbyhq.com/notion/2dd301f6-42da-40a2-a064-0f6fcfbdca77": {
       "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
+    },
+    "https://jobs.ashbyhq.com/perplexity/2be717cb-ad3e-4052-a464-79b107a70406": {
+      "notes": "Perplexity GTM demand-gen lead for enterprise/business products. SF or NYC (geo OK). AI-native tooling emphasis (build own tools, automate, treat campaigns as experiments) -- plays to AJ engineer-PM/experimentation edge, though it is a demand-gen/marketing seat vs pure growth/PM. Frontier-AI target company. Added to Interview 2026-07-13. | HM round: Raman Malik (VP Product Growth, future manager). Positioning: AI-fluent + technical + forward-thinking, NOT a playbook operator. | HM identity confirmed: Raman Malik (VP Product Growth), LinkedIn: https://www.linkedin.com/in/ramanrmalik/",
+      "events": [
+        {
+          "date": "2026-07-13",
+          "channel": "interview",
+          "outcome": "scheduled",
+          "note": "Interview in progress (added by AJ)."
+        },
+        {
+          "date": "2026-07-13",
+          "channel": "interview",
+          "outcome": "advanced",
+          "note": "PASSED recruiter screen (Kanita Fuller). Advancing to 30-min call with Raman Malik, VP of Product Growth = the hiring manager / future manager. KEY INTEL: role has been slow to fill because prior candidates were too attached to playbooks. Ramin wants someone more AI-fluent, more technical, more forward-thinking. AJ should lead into that gap: engineer-PM, builds agentic tooling (Warmode/Matic on Claude Code), anti-playbook first-principles operator."
+        }
+      ],
+      "materials": {
+        "interview_dossier": "documents/applications/perplexity-demand-generation-lead/interview-dossier.md"
+      }
+    },
+    "https://capitalone.wd12.myworkdayjobs.com/job/McLean-VA/Senior-Product-Manager--Growth---Capital-One-Shopping--Remote-Eligible-_R246326-1": {
+      "notes": "Sr PM Growth, Capital One Shopping (Remote-Eligible). Clean growth-PM + remote. Consumer shopping/commerce surface. Added 2026-07-15."
+    },
+    "https://jobs.ashbyhq.com/suno/ea10a217-1e03-4620-b5bd-e43b67dadbb2": {
+      "notes": "Suno PM, NYC, AI-core consumer. NOTE: AJ has existing warm/personal path to Suno -- route via that. Added 2026-07-15."
+    },
+    "https://jobs.ashbyhq.com/baseten/342a4c0e-7da3-490e-927f-dffb51f847b2": {
+      "notes": "Baseten PM Enterprise (SF also NY). AI infra/inference. NY option = geo OK. Added 2026-07-15."
+    },
+    "https://jobs.ashbyhq.com/harvey/d1669780-6956-4e5b-bc84-590267c565ea": {
+      "notes": "Harvey Staff PM, Vault (NY). AI legal. NOTE: AJ already has Harvey referral path (Founding Product Growth Lead). Added 2026-07-15."
+    },
+    "https://jobs.ashbyhq.com/notion/3129e7bd-f717-47d3-9fdd-c4df026bbf20": {
+      "notes": "Notion Startup Market Lead AMER (SF also NY). AI-work platform, startup GTM. NY option. Added 2026-07-15."
     }
   }
 }
