@@ -10,6 +10,12 @@ import sys
 import unittest
 from pathlib import Path
 
+try:
+    import yaml  # noqa: F401 - only probing availability for the lint integration test
+    _HAVE_YAML = True
+except ImportError:
+    _HAVE_YAML = False
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 COMMAND_FILE = REPO_ROOT / ".claude" / "commands" / "html-report.md"
 LINT_SCRIPT = REPO_ROOT / "tools" / "lint_skills.py"
@@ -48,6 +54,10 @@ class HtmlReportGitignoreTests(unittest.TestCase):
         )
 
 
+@unittest.skipUnless(
+    _HAVE_YAML,
+    "PyYAML not installed (the CI Python-test job omits it; the lint job runs lint_skills.py directly)",
+)
 class HtmlReportLintIntegrationTests(unittest.TestCase):
     """lint_skills.py must pass after the command is added."""
 
