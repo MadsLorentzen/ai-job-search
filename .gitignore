@@ -21,6 +21,7 @@ venv/
 # Personal data (never commit these)
 salary_data.json
 job_scraper/seen_jobs.json
+job_scraper/notion_sync.json
 job_scraper/*.md
 *_BehavioralReport.pdf
 linkedin_Profile.pdf
