@@ -45,6 +45,8 @@ Reviews here are empirical. Bug reports are reproduced on master before the fix 
 
 Market-specific skills are genuinely valuable - they just live in forks, where their maintainers can test them and their users can find them.
 
+One practical warning: when you open a PR from a fork, GitHub targets this upstream repo by default, not your own - three personalized-fork PRs landed here by accident in a single week ([#155], [#162], [#165]). Check the "base repository" dropdown before publishing.
+
 ## Porting to another AI runtime? Forks too
 
 Claude Code is the reference runtime: it is what the maintainer runs daily and what every methodology change is verified on. A parallel command tree for another runtime (Codex, Antigravity, Gemini CLI, ...) would ship untested on every change - CI cannot run those harnesses - and each accepted runtime makes the next one harder to refuse. It is the same arithmetic that keeps market-specific portals in forks.
@@ -93,3 +95,6 @@ Questions and proposals are welcome in [Discussions](https://github.com/MadsLore
 [#73]: https://github.com/MadsLorentzen/ai-job-search/issues/73
 [#75]: https://github.com/MadsLorentzen/ai-job-search/issues/75
 [#76]: https://github.com/MadsLorentzen/ai-job-search/issues/76
+[#155]: https://github.com/MadsLorentzen/ai-job-search/pull/155
+[#162]: https://github.com/MadsLorentzen/ai-job-search/pull/162
+[#165]: https://github.com/MadsLorentzen/ai-job-search/pull/165
