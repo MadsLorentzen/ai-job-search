@@ -10,11 +10,12 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Primary (India job boards):
+- **linkedin.com/jobs** - LinkedIn job listings (India / Delhi NCR / Remote); also covered by `linkedin-search` CLI
+- **naukri.com** - India's largest job board; covered by `naukri-search` CLI
+- **instahyre.com** - Tech-focused India job board; covered by `instahyre-search` CLI
+- **wellfound.com** - Startup jobs globally; covered by `wellfound-search` CLI
+- **freehire.dev** - Tech job aggregator (covered by `freehire-search` CLI)
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for known target companies
@@ -23,53 +24,57 @@ Secondary (company career pages via Google):
 
 Queries are grouped by priority. Each query should be combined with your location terms (e.g. your city, region, or metro area) where the site supports it.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: AI/ML Engineer & Full-Stack SDE with AI
 
-These match your strongest and most desired career direction.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
-```
-
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
+These match Harsh's strongest and most desired career direction.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:naukri.com "AI engineer" "Noida" OR "Delhi" OR "Ghaziabad" OR "remote"
+site:naukri.com "machine learning engineer" "Noida" OR "Delhi" OR "remote"
+site:linkedin.com/jobs "AI engineer" "Delhi NCR" OR "Noida" OR "remote India"
+site:linkedin.com/jobs "full stack developer" "AI" "Noida" OR "Delhi" OR "remote"
+site:instahyre.com "AI engineer" "Delhi NCR"
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
+### Priority 2: SaaS Product Engineering (Full-Stack)
 
-Adjacent roles you could pivot into.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
-```
-
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
+These match Harsh's SaaS and full-stack product experience.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:naukri.com "software development engineer" "React" OR "Node.js" OR "Laravel" "Noida" OR "Delhi"
+site:naukri.com "full stack developer" "SaaS" "Noida" OR "Delhi" OR "remote"
+site:linkedin.com/jobs "software engineer" "React.js" "Node.js" "Delhi NCR" OR "remote India"
+site:wellfound.com "full stack engineer" "AI" India
+```
+
+### Priority 3: LLM / Generative AI / Computer Vision
+
+Emerging roles matching Harsh's LLM and CV experience.
+
+```
+site:naukri.com "LLM" OR "generative AI" engineer "Noida" OR "Delhi" OR "remote"
+site:naukri.com "computer vision" engineer "Noida" OR "Delhi" OR "remote"
+site:linkedin.com/jobs "prompt engineer" OR "LLM engineer" India remote
+site:linkedin.com/jobs "computer vision" "Python" "Noida" OR "Delhi" OR "remote India"
+```
+
+### Priority 4: Backend / Node.js / Laravel SDE
+
+Wider net for strong backend roles.
+
+```
+site:naukri.com "Node.js developer" "Noida" OR "Delhi" OR "remote"
+site:naukri.com "Laravel developer" "Noida" OR "Delhi" OR "remote"
+site:linkedin.com/jobs "backend engineer" "Node.js" "Delhi NCR" OR "remote India"
 ```
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+When evaluating results, verify the job location is within reasonable commute distance:
+- Noida, Ghaziabad, Delhi, Greater Noida — all acceptable
+- Remote (India) — acceptable
+- Gurugram / Faridabad — borderline (~60-90 min commute), flag for user
+- Outside India (on-site relocation required) — FAIL (deal-breaker unless explicitly remote)
 
 ## Date Filter
 

@@ -20,9 +20,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** React.js, Node.js, Laravel/PHP, Python, FastAPI, MongoDB, MySQL, Computer Vision (YOLOv8), LLM prompt engineering, SaaS architecture, JWT auth, REST APIs
+**Moderate match areas:** Docker, AWS, PostgreSQL, n8n automation, system design
+**Weak match areas:** Mobile development, Kubernetes, advanced MLOps, data science/analytics
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -34,9 +34,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** Full-stack SaaS development, AI/ML model integration, construction tech, LMS platforms, document intelligence systems
+**Moderate:** Enterprise software (SAP ecosystem), data engineering, DevOps
+**Entry-level:** Team leadership, open-source, research
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -67,19 +67,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Grow into a Senior SDE or AI/ML Engineer role at a product-focused company
+- Work on AI-first SaaS products with real-world impact
+- Build expertise in LLM applications, agentic systems, and scalable AI pipelines
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: Building AI-powered features, integrating ML models into products, full-stack ownership, solving novel technical problems
+- Tasks that drain: Pure maintenance work, no AI/ML involvement, bureaucratic environments
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Currently employed, not desperate — can be selective
+- **Flexibility**: Open to hybrid or remote; prefer Delhi NCR (Noida/Ghaziabad/Delhi)
+- **Professional development**: Wants to deepen AI/ML expertise and move toward senior engineering roles
 
 ### 6. Salary Benchmark (Optional)
 

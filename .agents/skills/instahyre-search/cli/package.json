@@ -1,0 +1,6 @@
+{
+  "name": "instahyre-search-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/cli.js"
+}

@@ -8,47 +8,50 @@ framework_version: 1.0.0
 <!-- You can use results from PI, DISC, Myers-Briggs, StrengthsFinder, or a self-assessment -->
 
 ## Overview
-[YOUR_NAME]'s behavioral assessment identifies them as a **[PROFILE_TYPE]** pattern. [1-2 SENTENCE_SUMMARY].
+Harsh Tyagi's behavioral profile identifies him as a **Builder/Craftsman** pattern — someone who takes ownership of technical problems end-to-end, enjoys shipping real products, and is energized by integrating new technologies (especially AI/ML) into practical systems.
 
 ## Core Behavioral Drives
 
 | Drive | Level | Meaning |
 |-------|-------|---------|
-| [DRIVE_1] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_2] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_3] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_4] | [LEVEL] | [DESCRIPTION] |
+| Technical ownership | High | Prefers owning features/systems fully, not just implementing tickets |
+| Innovation drive | High | Drawn to new tech (LLMs, CV models), wants to apply cutting-edge tools |
+| Collaboration | Moderate | Works well in teams but also independently productive |
+| Process discipline | Moderate | Follows structure (SaaS patterns, auth, RBAC) but adapts pragmatically |
 
 ## Strongest Behaviors
-- **[BEHAVIOR_1]:** [DESCRIPTION]
-- **[BEHAVIOR_2]:** [DESCRIPTION]
-- **[BEHAVIOR_3]:** [DESCRIPTION]
+- **End-to-end thinking:** Builds from model training to user-facing dashboard, not just one layer
+- **AI integration:** Bridges the gap between ML research and production software
+- **Pragmatic problem-solving:** Finds working solutions quickly (e.g., manual scale override for missing drawing data)
 
 ## How You Work Best
-- [ENVIRONMENT_PREFERENCE_1]
-- [ENVIRONMENT_PREFERENCE_2]
-- [ENVIRONMENT_PREFERENCE_3]
+- Product-focused teams where engineers have ownership over features
+- Environments that value AI/ML innovation and modern tech stacks
+- Roles with clear technical challenges, not just maintenance
+- Hybrid or remote-friendly setups
 
 ## Growth Areas (frame positively in applications)
-- **[AREA_1]:** [HOW_TO_FRAME_IT_POSITIVELY]
-- **[AREA_2]:** [HOW_TO_FRAME_IT_POSITIVELY]
+- **Team leadership:** Currently individual contributor; frame as "eager to mentor juniors and grow into tech lead"
+- **Open-source/community:** Limited public contributions; frame as "focused on production impact, now expanding to community"
 
 ## Mapping to Job Posting Language
 
 When a job posting mentions these keywords, it's a **strong behavioral fit**:
-- [KEYWORD_OR_PHRASE_THAT_MATCHES_YOUR_STYLE]
-- [ANOTHER_KEYWORD]
+- "full-stack", "end-to-end ownership", "AI integration", "SaaS", "product engineering"
+- "LLM", "computer vision", "ML pipelines", "automation"
+- "startup", "fast-paced", "ownership culture"
 
 When a job posting mentions these, flag as **potential friction** (not deal-breaker):
-- [KEYWORD_OR_PHRASE_THAT_MIGHT_CLASH]
-- [ANOTHER_KEYWORD]
+- "pure maintenance", "legacy system migration only"
+- "no AI/ML involvement"
+- "highly process-heavy / waterfall"
 
 ## Management Style Preferences
-- [WHAT_MANAGEMENT_STYLE_WORKS_FOR_YOU]
-- [WHAT_DOESN'T_WORK]
+- Works best with managers who give technical autonomy and trust engineers to own their work
+- Doesn't thrive under micromanagement or purely ticket-driven environments
 
 ## Using This in Applications
-- **Cover letters:** [HOW_TO_WEAVE_IN_BEHAVIORAL_STRENGTHS]
-- **CV:** [WHAT_TO_EMPHASIZE]
-- **Interviews:** [WHAT_STAR_EXAMPLES_TO_USE]
-- **Don't overstate:** [WHAT_NOT_TO_CLAIM]
+- **Cover letters:** Emphasize end-to-end ownership, AI integration experience, and passion for building real products
+- **CV:** Lead with AI/ML + SaaS impact; quantify where possible (multi-tenant, RBAC, production deployment)
+- **Interviews:** Use STAR examples from AI Takeoff Platform and LMS SaaS projects
+- **Don't overstate:** Don't claim deep MLOps/infrastructure expertise; focus on model integration and application-layer AI

@@ -14,44 +14,47 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 ## Ready-Made STAR Examples
 
-<!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
+### 1. AI Takeoff & Estimation Platform (Computer Vision + Full-Stack SaaS)
+**S:** Construction companies were manually measuring quantities from PDF/CAD drawings — slow, error-prone, and expensive.
+**T:** Build an end-to-end AI-powered SaaS platform to automate this process at Redian Software.
+**A:** Trained custom YOLOv8/v11-seg models on domain-specific datasets (rooms, windows, floor plans). Built FastAPI inference services, integrated with React.js + Node.js frontend, implemented scale detection with manual override logic for drawings with missing scale info. Added full SaaS features: RBAC, subscription workflows, real-time estimation.
+**R:** Production-grade platform deployed and used by construction clients; reduced manual estimation effort significantly.
+**Use for:** "Tell me about a complex project you built", "How have you applied AI/ML in production?"
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 2. LMS SaaS – Multi-Tenant Architecture (Backend Engineering + SaaS Design)
+**S:** Client needed a scalable Learning Management System that could serve multiple organizations with strict data isolation.
+**T:** Architect and build a multi-tenant LMS from scratch using Laravel.
+**A:** Implemented org-based data isolation, RBAC, subscription plan management, dynamic resource restrictions. Built automated email workflows with Laravel Scheduler + Queue Workers. Integrated JWT auth, payment gateway, AI features, certificate generation, multi-language support.
+**R:** Production SaaS serving multiple organizations; zero data leakage between tenants; automated workflows reduced manual ops.
+**Use for:** "Describe a system you designed from scratch", "How do you handle multi-tenancy?", "Tell me about a backend challenge"
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 3. AI Tender Management System (LLM Prompt Engineering)
+**S:** Companies were manually reviewing hundreds of tender documents to assess winning probability — time-consuming and inconsistent.
+**T:** Build an LLM-driven pipeline to automate tender analysis and prediction.
+**A:** Designed prompt-engineered workflows to extract key parameters (budget, timelines, eligibility, requirements) from tender documents. Built real-time analysis tracking and automated report generation in PDF/Excel/Word via React.js + Node.js services.
+**R:** Clients could process tenders in minutes instead of hours; automated report generation eliminated manual formatting work.
+**Use for:** "How have you used LLMs in production?", "Tell me about prompt engineering experience"
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
-
-<!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
+### 4. Switching from Intern to Full-Time SDE (Growth + Adaptability)
+**S:** After 6 months as an intern at MaiVin (SAP/SQL focus), joined Redian as a full-time SDE in a completely different stack (Laravel, React, AI/ML).
+**T:** Ramp up quickly on a new stack and contribute to production systems from day one.
+**A:** Self-studied Laravel and React.js patterns, studied existing codebase, asked targeted questions, shipped first features within weeks. Applied transferable skills (SQL, backend logic, API design) while learning new frameworks.
+**R:** Successfully transitioned and now leading AI-driven feature development within 6 months of joining.
+**Use for:** "Tell me about a time you had to learn something quickly", "How do you handle new tech stacks?"
 
 ## Common Tough Questions
 
 ### "Why did you leave [previous company]?"
-> [PREPARE YOUR ANSWER - be honest, forward-looking, no negativity about former employer]
+> My internship at MaiVin was a fixed-term contract. I joined Redian Software for a full-time SDE role with a stronger focus on product engineering and AI/ML, which aligns with my long-term goals.
 
 ### "You don't have [specific skill/experience]."
-> [PREPARE YOUR ANSWER - acknowledge the gap, bridge to adjacent experience, show willingness to learn]
+> I haven't used [X] directly, but I've worked with [adjacent technology] in production. I pick up new tools quickly — for example, I ramped up on Laravel and React.js when I joined Redian and was shipping features within weeks.
 
 ### "Where do you see yourself in 5 years?"
-> [PREPARE YOUR ANSWER - show ambition aligned with the role's growth path]
+> I want to grow into a Senior Engineer or Tech Lead role at a product-focused company, specializing in AI-integrated systems. I'm particularly interested in LLM applications and agentic AI pipelines.
 
 ### "What's your biggest weakness?"
-> [PREPARE YOUR ANSWER - genuine weakness with concrete mitigation strategy]
+> I sometimes go deep on technical problems before stepping back to check if there's a simpler solution. I've been working on this by timebox-ing exploration phases and discussing approach with teammates earlier.
 
 ### "Why this company specifically?"
 > Customize per company. Must reference: specific projects, company values, market position, or team structure. Never give a generic answer.

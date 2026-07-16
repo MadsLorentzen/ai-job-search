@@ -1,4 +1,4 @@
-# Job Application Assistant for [YOUR_NAME]
+# Job Application Assistant for Harsh Tyagi
 
 <!-- SETUP: This file is populated by running /setup -->
 <!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
@@ -16,65 +16,77 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 <!-- This section is auto-populated by /setup. You can also fill it in manually. -->
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Name:** Harsh Tyagi
+- **Location:** Ghaziabad / Noida, Uttar Pradesh, India
+- **Phone:** +91 9650541334
+- **Email:** tyagiharshit2539@gmail.com
+- **LinkedIn:** linkedin.com/harshtyagi25
+- **GitHub:** github.com/Harshit2539
+- **Languages:** English, Hindi
+- **Status:** Employed (Software Development Engineer at Redian Software Global Pvt. Ltd., open to opportunities)
+- **LinkedIn headline:** "Software Development Engineer | React.js · Node.js · Laravel · AI/ML · Computer Vision"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **B.Tech in Computer Science (AI & ML)** (Aug 2021 – Jun 2025) - R.D. Engineering College (RDEC), Ghaziabad, UP
+  - CGPA: 8.05 / 10.00
+- **Senior Secondary (Class XII) – PCM** (Aug 2021) - Mount Carmel School, Muradnagar, Ghaziabad
+  - CGPA: 7.50 / 10.00
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Software Development Engineer** (Jan 2025 – Present) - **Redian Software Global Pvt. Ltd.** (Noida Sector 63, UP)
+  - Designed and maintained scalable web apps using PHP/Laravel (routing, middleware, auth, DB schemas)
+  - Built AI-driven construction tech platforms: automated quantity take-off system + AI tender prediction SaaS
+  - Trained custom AI/ML models (YOLOv8/v11-seg) for image-based domain datasets (room windows, floor plans)
+  - Applied LLM prompt engineering and n8n workflow automation for AI-powered modules
+  - Full-stack: PHP (Laravel), React.js, Node.js, Express.js, MongoDB, SQL, Python, Computer Vision, Bootstrap, Tailwind CSS
+
+- **Software Engineer Intern** (Jul 2024 – Dec 2024) - **MaiVin Consulting Services Pvt. Ltd.** (Greater Noida, UP)
+  - SQL and SAP HANA SQL for enterprise data querying and analysis
+  - Crystal Reports for business/analytical reporting supporting SAP Business One implementations
+  - Foundational Java development exposure
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Languages:** C, Java, Python, JavaScript (ES6+), PHP
+- **Web/Backend:** React.js, Node.js, Express.js, PHP (Laravel), FastAPI, REST APIs, HTML5, CSS3, Bootstrap, Tailwind CSS
+- **Databases:** MongoDB, MySQL, PostgreSQL
+- **AI/ML:** Applied ML, Neural Networks, Computer Vision (YOLOv8, v11-seg), Image Annotation, Dataset Curation, Custom Model Training, Model Fine-tuning, LLM Prompt Engineering, n8n Workflow Automation
+- **Security/Backend:** JWT Auth, Encryption/Decryption, API Design, DB Normalization
+- **Data/BI:** SAP Business One, Crystal Reports
+- **DevOps/Tools:** Git, GitHub, Docker, AWS
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- AWS Cloud Practitioner – Foundations
+- Google Cloud Computing Foundations
+- Meta (Coursera) – Version Control
+- HackerRank – Java (4★)
+- Applied Machine Learning & Computer Vision (Project-Based)
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- None
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- None listed
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- **Builder mindset** – Enjoys taking projects from concept to production, not just maintaining existing systems
+- **Technical breadth** – Comfortable across full stack (frontend, backend, AI/ML, DevOps)
+- **Strengths:** End-to-end SaaS development, AI integration, problem-solving across layers
+- **Growth areas:** System design at scale, team leadership, open-source contributions
+- **Thrives in:** Product-focused teams, roles with ownership, environments that value AI/ML innovation
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Building AI-powered products that solve real-world problems (construction tech, document intelligence, LMS)
+- Integrating cutting-edge ML/CV models into production SaaS platforms
+- Full-stack ownership from model training to user-facing dashboard
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- AI/ML Product Companies: startups and scale-ups building AI-first products
+- SaaS Platforms: multi-tenant B2B SaaS (EdTech, ConstructionTech, HRTech, LegalTech)
+- Full-Stack / Backend Engineering roles with AI integration component
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Roles with zero AI/ML or modern tech stack involvement
+- Purely maintenance/legacy-only work with no product development
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

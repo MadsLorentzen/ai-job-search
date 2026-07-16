@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
 bun.lock
+package-lock.json
+.agents/**/package-lock.json
 
 # Python
 __pycache__/
