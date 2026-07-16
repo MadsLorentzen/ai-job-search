@@ -89,7 +89,7 @@ def detect_column_type(header):
     return None
 
 
-def parse_sheet(ws, sheet_label=None):
+def parse_sheet(ws):
     """Parse a single worksheet into a list of company entries and detected categories."""
     # Find header row
     header_row = None
@@ -273,7 +273,7 @@ def main():
     for sheet_name in wb.sheetnames:
         print(f"  Parsing sheet: {sheet_name}")
         ws = wb[sheet_name]
-        companies = parse_sheet(ws, sheet_label=sheet_name)
+        companies = parse_sheet(ws)
         all_companies.extend(companies)
 
     wb.close()
