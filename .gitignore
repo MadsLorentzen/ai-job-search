@@ -66,6 +66,9 @@ documents/postings/**
 # Personal job search tracking
 job_search_tracker.csv
 
+# Gmail sync state (message IDs, subjects - personal data)
+gmail_sync/
+
 # Generated reports (personal output from /html-report)
 reports/
 
