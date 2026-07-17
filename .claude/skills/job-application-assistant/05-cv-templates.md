@@ -1,5 +1,5 @@
 ---
-framework_version: 1.0.0
+framework_version: 1.0.1
 ---
 
 # CV Templates and Tailoring Guide
@@ -10,17 +10,17 @@ framework_version: 1.0.0
 
 All CVs use the moderncv LaTeX package with the "banking" style and "blue" color scheme.
 
-**Output file:** `cv/main_<company>.tex`
+**Output file:** `cv/main_<company>_<role>.tex`
 **Compile with:** **lualatex** on MiKTeX/TeX Live. pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors; lualatex handles the same sources cleanly.
 **Master reference:** `cv/main_example.tex` (comprehensive CV with all competencies, experience, and achievements - use as source when building targeted CVs)
 
 ### Compile command
 
 ```bash
-cd cv && lualatex -interaction=nonstopmode main_<company>.tex
+cd cv && lualatex -interaction=nonstopmode main_<company>_<role>.tex
 ```
 
-Expected output: `Output written on main_<company>.pdf (2 pages, ...)`. Any page count other than 2 is a failure that must be fixed before presenting to the user.
+Expected output: `Output written on main_<company>_<role>.pdf (2 pages, ...)`. Any page count other than 2 is a failure that must be fixed before presenting to the user.
 
 ## Document Structure
 
@@ -154,7 +154,7 @@ If there is a gap in your employment history:
 
 After writing the CV and before presenting to the user, always compile and visually inspect the PDF. Iterate until the layout is clean. Workflow:
 
-1. Run `lualatex -interaction=nonstopmode main_<company>.tex`
+1. Run `lualatex -interaction=nonstopmode main_<company>_<role>.tex`
 2. Check the output page count: must be exactly 2
 3. Read the PDF via the Read tool and visually inspect both pages
 4. Check for **orphaned entries**: a `\cventry` title line must never sit alone at the bottom of page 1 with its bullets on page 2
@@ -183,7 +183,7 @@ Restore the highest-relevance item that was previously cut — a CV that ends mi
 Most employers run CVs through an ATS before a human sees them, and the ATS reads the PDF's embedded **text layer**, not the rendered page. A CV can pass visual inspection and still extract as garbage. After the layout passes the compile-and-inspect loop, verify the text layer:
 
 ```bash
-cd cv && pdftotext -layout main_<company>.pdf main_<company>.txt
+cd cv && pdftotext -layout main_<company>_<role>.pdf main_<company>_<role>.txt
 ```
 
 `pdftotext` comes from [poppler](https://poppler.freedesktop.org/), not the TeX distribution - it is an **optional** dependency. If it is not installed, skip the mechanical check with a warning and rely on the visual PDF read for keyword coverage.

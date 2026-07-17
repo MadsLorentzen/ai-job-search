@@ -5,7 +5,7 @@ description: >
   and preparing for interviews. Triggers on keywords like: job posting, job application, CV,
   cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling
 allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Edit, Write, AskUserQuestion
-framework_version: 1.0.0
+framework_version: 1.0.1
 ---
 
 # Job Application Assistant
@@ -28,7 +28,7 @@ When the user provides a job posting (URL or text), follow this workflow:
 ### Step 2: Tailor CV
 - Read the most relevant existing CV variant from `cv/` as a starting point
 - Follow the guidelines in `05-cv-templates.md`
-- Create `cv/main_<company>.tex` with tailored content
+- Create `cv/main_<company>_<role>.tex` with tailored content
 - Adjust: profile statement, skills section, experience bullet emphasis, section order
 
 ### Step 3: Write Cover Letter

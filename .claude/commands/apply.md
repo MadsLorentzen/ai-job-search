@@ -63,7 +63,7 @@ Also read the most recent existing CV and cover letter files for concrete struct
 - Read any existing `cv/main_*.tex` file as a LaTeX template reference
 - Read any existing `cover_letters/cover_*.tex` or `cover_letters/Cover_*.tex` file as a template reference
 
-### CV (`cv/main_<company>.tex`)
+### CV (`cv/main_<company>_<role>.tex`)
 - Always in **English**
 - Follow the moderncv/banking format from `05-cv-templates.md`
 - Tailor the profile statement and experience bullets to the specific role
@@ -113,7 +113,7 @@ Do NOT read `05-cv-templates.md` or `06-cover-letter-templates.md` — those gov
 ### 3. Drafts to Review
 Both drafts are provided inline below. Do NOT use the Read tool on the draft files — use these exact texts.
 
-<CV_DRAFT file="cv/main_<COMPANY>.tex">
+<CV_DRAFT file="cv/main_<COMPANY>_<ROLE>.tex">
 <INSERT_CV_DRAFT_HERE>
 </CV_DRAFT>
 
@@ -134,7 +134,7 @@ Return your feedback in **two parts**:
 A JSON array of concrete edits the drafter can apply directly without re-reading the files. Each edit is an object:
 ```json
 {
-  "file": "cv/main_<COMPANY>.tex" | "cover_letters/cover_<COMPANY>_<ROLE>.tex",
+  "file": "cv/main_<COMPANY>_<ROLE>.tex" | "cover_letters/cover_<COMPANY>_<ROLE>.tex",
   "old_string": "<exact text currently in the draft>",
   "new_string": "<replacement text>",
   "reason": "<one-line rationale: keyword match / company angle / reframing / style>"
@@ -182,7 +182,7 @@ After all edits are applied, the two files on disk are the final drafts.
 ### 5a. Compile
 
 ```bash
-cd cv && lualatex -interaction=nonstopmode main_<company>.tex
+cd cv && lualatex -interaction=nonstopmode main_<company>_<role>.tex
 cd ../cover_letters && xelatex -interaction=nonstopmode cover_<company>_<role>.tex
 ```
 
@@ -195,7 +195,7 @@ If either compile fails, fix the error and re-compile until clean.
 
 Read both PDFs via the Read tool and verify:
 
-**CV (`cv/main_<company>.pdf`):**
+**CV (`cv/main_<company>_<role>.pdf`):**
 - [ ] Exactly 2 pages (not 1, not 3)
 - [ ] No orphaned `\cventry` titles — a job/education title line must never sit alone at the bottom of page 1 with its bullets on page 2. This is the most common failure.
 - [ ] Section headings are not isolated at the top of page 2 with only 1-2 lines below
@@ -227,7 +227,7 @@ An ATS parser reads the PDF's embedded **text layer**, not the rendered page —
 **1. Extract the text layer:**
 
 ```bash
-cd cv && pdftotext -layout main_<company>.pdf main_<company>.txt
+cd cv && pdftotext -layout main_<company>_<role>.pdf main_<company>_<role>.txt
 ```
 
 Read the `.txt` file.
@@ -276,7 +276,7 @@ Summarize 3-5 key decisions made to tailor the application:
 
 ### Files Created
 List the files written:
-- `cv/main_<company>.tex`
+- `cv/main_<company>_<role>.tex`
 - `cover_letters/cover_<company>_<role>.tex`
 
 Tell the user: "Both files are ready for your review. Open them to check the final output before compiling."

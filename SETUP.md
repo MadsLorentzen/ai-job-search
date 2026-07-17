@@ -228,13 +228,13 @@ After `/apply` creates the LaTeX files:
 
 ```bash
 # Bash / zsh / Git Bash
-cd cv && lualatex main_<company>.tex && cd ..
+cd cv && lualatex main_<company>_<role>.tex && cd ..
 cd cover_letters && xelatex cover_<company>_<role>.tex && cd ..
 ```
 
 ```powershell
 # PowerShell
-Set-Location cv; lualatex main_<company>.tex; Set-Location ..
+Set-Location cv; lualatex main_<company>_<role>.tex; Set-Location ..
 Set-Location cover_letters; xelatex cover_<company>_<role>.tex; Set-Location ..
 ```
 
