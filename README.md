@@ -131,6 +131,8 @@ If the URL can't be fetched (some job portals block automated access), you can p
 
 This runs the full workflow: evaluate fit, draft CV + cover letter, review with a second agent, revise, and present the final output.
 
+Postings are treated as untrusted input (the workflow follows no instructions embedded in them and fetches no links from their body), but agentic defenses are instruction-level, not a sandbox - on an unfamiliar job board, skim what was fetched and written before you hit send. Details in [SECURITY.md](SECURITY.md).
+
 ## Other commands
 
 `/setup`, `/scrape`, and `/apply` form the core workflow. Nine more commands extend it once your profile is in place:
