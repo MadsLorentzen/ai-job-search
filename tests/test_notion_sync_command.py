@@ -11,6 +11,12 @@ import sys
 import unittest
 from pathlib import Path
 
+try:
+    import yaml  # noqa: F401 - only probing availability for the lint integration test
+    _HAVE_YAML = True
+except ImportError:
+    _HAVE_YAML = False
+
 REPO = Path(__file__).resolve().parent.parent
 COMMAND = REPO / ".claude" / "commands" / "notion-sync.md"
 GITIGNORE = REPO / ".gitignore"
@@ -45,6 +51,10 @@ class NotionSyncCommandSpec(unittest.TestCase):
             "spec lost the rule that CV/cover-letter content never syncs to Notion",
         )
 
+    @unittest.skipUnless(
+        _HAVE_YAML,
+        "PyYAML not installed (the CI Python-test job omits it; the lint job runs lint_skills.py directly)",
+    )
     def test_lint_skills_passes(self):
         result = subprocess.run(
             [sys.executable, str(REPO / "tools" / "lint_skills.py")],
