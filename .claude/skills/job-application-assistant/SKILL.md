@@ -55,7 +55,7 @@ When the user provides a job posting (URL or text), follow this workflow:
 | `04-job-evaluation.md` | Scoring framework for job fit |
 | `05-cv-templates.md` | LaTeX CV structure and tailoring rules |
 | `06-cover-letter-templates.md` | LaTeX cover letter structure and tailoring rules |
-| `07-interview-prep.md` | STAR examples, tough questions, roleplay guidelines |
+| `07-interview-prep.md` | STAR examples, product deep-dive case study, tough questions, roleplay guidelines |
 
 ---
 

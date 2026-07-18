@@ -8,68 +8,75 @@
 
 The `site:` query templates in this file are the **WebSearch fallback** — for portals without a CLI, company career pages, or when a CLI fails.
 
+**Taiwan portals not yet scaffolded:** 104, Cake (CakeResume), and Yourator have no shipped CLI. They run via the `site:` fallback below; scaffold dedicated skills with `/add-portal` when you want first-class scraping.
+
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Primary (your market's job boards):
+- **104.com.tw** - Taiwan's largest general job board (scaffold with `/add-portal`)
+- **cake.me** - Cake (CakeResume) - tech / startup roles in Taiwan and remote
+- **yourator.co** - Yourator - startup / tech job board in Taiwan
+- **linkedin.com/jobs** - LinkedIn job listings (filter: Taiwan / Remote); also covered by `linkedin-search` CLI
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for known target companies
 
 ## Query Categories
 
-Queries are grouped by priority. Each query should be combined with your location terms (e.g. your city, region, or metro area) where the site supports it.
+Queries are grouped by priority. Emphasis is on **remote / hybrid** roles (location-flexible), with Greater Taipei acceptable for on-site.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: Product Management (PM / Senior PM / AI PM)
 
 These match your strongest and most desired career direction.
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
+site:104.com.tw "Product Manager" AI remote
+site:cake.me "Product Manager" AI
+site:yourator.co "產品經理" AI
+site:linkedin.com/jobs "Senior Product Manager" (Taiwan OR Remote)
+site:linkedin.com/jobs "AI Product Manager" remote
 ```
 
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
+### Priority 2: AI / ML Product & Industrial AI (domain)
 
 These match your domain expertise.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:104.com.tw ("AI 產品" OR "MLOps" OR "no-code AI") remote
+site:cake.me ("ML Product Manager" OR "AI platform") 
+site:linkedin.com/jobs ("machine learning product" OR "industrial AI") (Taiwan OR Remote)
+site:linkedin.com/jobs "MLOps product" remote
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
+### Priority 3: Head of Product / Director & Technical PM / Solutions
 
-Adjacent roles you could pivot into.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
-```
-
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
+Adjacent roles (leadership up, or technical/solutions sideways).
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:linkedin.com/jobs ("Head of Product" OR "Director of Product") (Taiwan OR Remote)
+site:cake.me ("Head of Product" OR "產品總監")
+site:104.com.tw "Technical Product Manager" remote
+site:linkedin.com/jobs "Solutions Consultant" AI remote
+```
+
+### Priority 4: Broader Product / Data Product
+
+Wider net for general product and data-product roles.
+
+```
+site:104.com.tw ("data product" OR "product-led growth") remote
+site:linkedin.com/jobs "product manager" (SaaS OR platform) remote
+site:cake.me "product manager" data
 ```
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+Preferred mode is **remote / hybrid** (location-flexible). For on-site roles, verify the location is within reasonable commute distance from Taipei:
+- Remote / hybrid (anywhere): preferred
+- Taipei City: ideal for on-site
+- New Taipei City (Greater Taipei): acceptable
+- Taoyuan / Hsinchu: borderline (long commute; prefer hybrid)
+- Outside northern Taiwan with no remote option: too far (unless relocation is offered)
 
 ## Date Filter
 

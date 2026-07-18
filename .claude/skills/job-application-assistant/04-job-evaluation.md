@@ -20,9 +20,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Product management (0-to-1 strategy, roadmap, product-led growth), industrial/manufacturing AI product, no-code AI / MLOps platforms, cross-functional and stakeholder leadership, data analysis
+**Moderate match areas:** Hands-on ML / data science, Python / R, LLM / GenAI, go-to-market, design-thinking facilitation, healthcare/social-affairs data interoperability (HL7 FHIR)
+**Weak match areas:** Deep production software engineering at scale, formal CS credentials, large-scale distributed systems, consumer/non-industrial product domains
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -34,9 +34,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** B2B / industrial AI product management (manufacturing, petrochemical, steel, semiconductor), no-code AI platform, data-driven consulting
+**Moderate:** AI/ML Product Manager, Technical PM / Solutions, healthcare and government data interoperability, data-analytics roles
+**Entry-level:** Pure engineering / IC developer roles, consumer-app PM, non-technical marketing
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -51,9 +51,9 @@ Does the role and company culture match the behavioral profile?
 **Red flags to research:** Department disorganization, work dominated by maintenance over development, poor chemistry with leadership, culture mismatches. Check reviews, media coverage, LinkedIn connections, and network contacts for insider perspective.
 
 ### 4. Location & Logistics (Pass/Fail + Notes)
-- Within commute range: PASS
-- Remote with occasional office: PASS
-- Requires relocation: FAIL (deal-breaker)
+- Remote or hybrid (location-flexible): PASS — this is the preferred mode
+- Within Greater Taipei commute range (Taipei / New Taipei): PASS
+- On-site only, outside Greater Taipei, with no remote option: FAIL unless relocation is offered and worthwhile
 - Frequent international travel: FLAG (discuss with user)
 
 ### 5. Career Alignment & Motivation (0-100)
@@ -67,19 +67,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Grow into senior / head-of-product leadership building AI products in ambiguous, 0-to-1 environments
+- Work on AI/ML products with real industrial or societal impact
+- High-autonomy, cross-functional roles; remote or hybrid
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: 0-to-1 product creation, ambiguous problem-solving, turning ML into product, product strategy, cross-functional leadership
+- Tasks that drain: pure maintenance / keep-the-lights-on work, rigid bureaucratic process, IC coding with no product ownership
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Currently employed (Director of Product, Chimes AI); moving selectively, not out of urgency
+- **Flexibility**: Values remote / hybrid flexibility and autonomy over location
+- **Professional development**: Wants growth toward broader product leadership and AI product strategy
 
 ### 6. Salary Benchmark (Optional)
 

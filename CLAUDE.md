@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Cheng-En Li
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Cheng-En Li, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,68 +10,71 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
-
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Name:** Cheng-En Li
+- **Location:** Taipei, Taiwan (open to remote / hybrid, location-flexible)
+- **Languages:** Mandarin (native), English (intermediate / conversational)
+- **Status:** Employed (Director of Product, Chimes AI), open to work
+- **LinkedIn headline:** "Director of Product | No-code AI Platform | 0-to-1 Product & Team Building | Data-Driven PM | Turning ML into Scaled Industrial Impact"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **B.A. in Materials Science and Engineering** (2007-2011) - National Tsing Hua University, Hsinchu, Taiwan
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Director of Product** (2023 - Present) - **Chimes AI** (Taipei, Taiwan)
+  - Lead a 7-person cross-functional team, reporting to the CEO; own strategy and roadmap for three core product lines
+  - Grew customers 20+ to 80+ accounts and company revenue >3x; won the first flagship client contract exceeding NT$10M
+  - Drove deployment across 50+ factories and 2,500+ AI models, contributing ~40,000 tons/yr CO2 reduction
+  - Leading a Ministry of Health and Welfare social-affairs data-standardization initiative (13 systems) and authoring an HL7 FHIR Base Implementation Guide
+- **Product Manager** (2021 - 2022) - **Chimes AI** (Taipei, Taiwan)
+  - Built the Tukey no-code AI platform, shifting delivery from point-to-point projects (5 eng / 3 yr / 40 projects) to platform deployment (15 eng / 3 mo / 400+ models)
+  - Deployed equipment anomaly detection at a Formosa Plastics Group plant at 90% diagnostic accuracy
+- **Data Analyst** (2017 - 2021) - **DSP** (Taipei, Taiwan)
+  - Built a cross-agency domestic-violence risk-prediction model, reducing recidivism by 30%
+  - Hosted 20+ design-thinking data workshops; 70%+ of participants converted to paying clients
+- **Magazine Editor** (2013 - 2017) - **Yuan-Liou Publishing** (Taipei, Taiwan)
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Product management (0-to-1 strategy, roadmap, product-led growth), no-code AI / MLOps platform product, cross-functional and stakeholder leadership
+- **Secondary:** Python, R / R Shiny, SQL, Machine Learning, LLM / GenAI, Data Analysis, Data Visualization, Statistics
+- **Domain:** Industrial / manufacturing AI (petrochemical, steel, semiconductor, automotive), data-driven consulting, HL7 FHIR / social-affairs data interoperability, AI-first product design (MCP)
+- **Software:** Figma, Whimsical, Notion, WordPress, Git, Docker, Jenkins
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- **Generative AI with Large Language Models** - Coursera - completed Sep 2023
+- **edX SU22: Introduction to Analytics Modeling** - edX - completed Jul 2022
+- **edX SP22: Data Analytics for Business** - edX - completed Apr 2022
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- 〈AI 社工可行嗎?運用社會安全資料驅動社福變革管理〉- 2020 Social Welfare Forum (https://bit.ly/3n9DFiT)
+- Medium essays on product-led growth, Stripe, and Apache Spark / Databricks (https://hello-lichengen.medium.com/)
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- First Prize - 經濟部工業局 "110 年度輔導創新資料服務構想商業化" competition (2021)
+- 40th Golden Tripod Award, Children & Youth Category - *Science Monthly* / Yuan-Liou Publishing
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- **Ambiguity-to-structure** - Turns ambiguous problems into requirements and solution plans
+- **End-to-end ownership** - Builds ML products from concept to commercialization
+- **Cross-disciplinary integrator** - Bridges chemical engineering, editorial, and data science to deliver AI products
+- **Strengths:** 0-to-1 product strategy, stakeholder communication, platformization (one-off delivery to scalable products)
+- **Growth areas:** Deep production software engineering; formal CS credentials
+- **Thrives in:** Ambiguous, 0-to-1 environments with fluid process and creative problem-solving
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Building AI/ML products from 0 to 1 and turning machine learning into scaled, maintained impact
+- Ambiguous problems with real industrial or societal stakes; cross-functional product leadership
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+<!-- Edit these as your targets sharpen -->
+- Industrial / manufacturing AI (petrochemical, steel, semiconductor, automotive): industrial-AI and MLOps vendors
+- AI/ML product companies & no-code / MLOps platforms: LLM / GenAI product startups, MLOps platform vendors
+- Healthcare / govtech data platforms: health-data interoperability (HL7 FHIR) vendors
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+<!-- Reasonable defaults inferred from your constraints; edit as needed -->
+- On-site-only role far from Greater Taipei with no remote / hybrid option (unless relocation is offered and worthwhile)
+- Pure maintenance work with no product ownership, or a rigid, low-autonomy environment
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

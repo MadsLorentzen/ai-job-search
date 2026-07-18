@@ -1,0 +1,96 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Medium Length Professional CV
+% LaTeX Template
+% Version 3.0 (December 17, 2022)
+%
+% Downloaded from: https://www.latextemplates.com/template/medium-length-professional-cv
+%
+% Author: Vel (vel@latextemplates.com)
+% Original author: Trey Hunner (http://www.treyhunner.com/)
+%
+% License:
+% CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+%
+% Registered into this repo's /add-template framework with [PLACEHOLDER]
+% tokens in place of the original example content.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[
+	%a4paper, % Uncomment for A4 paper size (default is US letter)
+	11pt,
+]{resume}
+
+\usepackage{ebgaramond} % EB Garamond font
+
+%------------------------------------------------
+
+\name{[YOUR_NAME]}
+
+% Up to 3 \address calls. Each \\ inside one becomes a diamond separator,
+% not a real line break - keep each call to logically one "line".
+\address{[YOUR_CITY], [YOUR_COUNTRY]}
+
+\address{[YOUR_PHONE] \\ [YOUR_EMAIL]}
+
+\address{[YOUR_LINKEDIN_URL]}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	EDUCATION SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{rSection}{Education}
+
+	\textbf{[Institution Name]} \hfill \textit{[Month Year]} \\
+	[Degree] in [Field] \\
+	[Optional: minor, honors, GPA, thesis topic]
+
+\end{rSection}
+
+%----------------------------------------------------------------------------------------
+%	WORK EXPERIENCE SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{rSection}{Experience}
+
+	\begin{rSubsection}{[Employer Name]}{[YYYY -- Present]}{[Job Title]}{[City, Country]}
+		\item [Achievement or responsibility - be specific, use numbers where possible.]
+		\item [Achievement or responsibility.]
+		\item [Achievement or responsibility.]
+	\end{rSubsection}
+
+%------------------------------------------------
+
+	\begin{rSubsection}{[Earlier Employer Name]}{[YYYY -- YYYY]}{[Job Title]}{[City, Country]}
+		\item [Achievement or responsibility.]
+		\item [Achievement or responsibility.]
+	\end{rSubsection}
+
+\end{rSection}
+
+%----------------------------------------------------------------------------------------
+%	SKILLS SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{rSection}{Skills}
+
+	\begin{tabular}{@{} >{\bfseries}l @{\hspace{6ex}} l @{}}
+		[Skill category 1] & [Specific skills, tools, frameworks.] \\
+		[Skill category 2] & [Specific skills, tools, frameworks.] \\
+		[Skill category 3] & [Specific skills, tools, frameworks.]
+	\end{tabular}
+
+\end{rSection}
+
+%----------------------------------------------------------------------------------------
+%	EXAMPLE SECTION
+%----------------------------------------------------------------------------------------
+
+%\begin{rSection}{Section Name}
+	%Section content...
+%\end{rSection}
+
+\end{document}

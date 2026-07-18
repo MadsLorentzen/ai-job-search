@@ -1,8 +1,7 @@
-%% Example CV - [YOUR_NAME]
+%% Example CV - Cheng-En Li
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
 %% Compile with: lualatex main_example.tex
 %% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
@@ -24,18 +23,17 @@
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Cheng-En Li - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.80]{geometry}
-\usepackage{import}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Cheng-En}{Li}
+\address{Taipei, Taiwan}{}{}
+\phone[mobile]{0928-516-521}
+\email{hello.lichengen@gmail.com}
+\extrainfo{\href{https://www.linkedin.com/in/cheng-en-li/}{LinkedIn}, \href{https://github.com/nondayo}{GitHub}, \href{https://hello-lichengen.medium.com/}{Blog}}
 
 \begin{document}
 
@@ -46,7 +44,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{Product leader with 9 years of data-driven experience: 3 years as Director of Product, 2 as Product Manager, and 4 in data-analytics consulting. I build products in ambiguous, 0-to-1 environments. I led a no-code AI/MLOps platform (Tukey) from concept to commercialization, now adopted by leading petrochemical, steel, semiconductor, and automotive manufacturers, growing the customer base from 20+ to 80+ accounts and company revenue more than 3x. I pair product strategy and cross-functional leadership with a hands-on background in ML and data analysis.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +54,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{Product Management}: 0-to-1 product strategy, roadmap ownership, product-led growth, go-to-market, SCRUM/Agile, product-lifecycle governance.
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{AI / ML Product}: no-code AI and MLOps platforms, model lifecycle and drift management, MCP tool interfaces, industrial AI (anomaly detection, quality prediction, energy optimization).
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Leadership}: cross-functional team leadership (PM, engineering, AI/ML, design), stakeholder management across technical and business audiences, reporting to C-level.
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Data \& Analytics}: Python, R / R Shiny, SQL, statistics, data visualization; end-to-end analytics from data inventory to stakeholder-facing dashboards.
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Domain}: manufacturing / petrochemical / steel / semiconductor AI, data-driven consulting, HL7 FHIR / social-affairs data interoperability.
 
 \end{itemize}
 
@@ -76,32 +74,42 @@
 \vspace{3pt}
 \begin{itemize}
 
-% --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% --- Director of Product ---
+\item{\cventry{2023--Present}{Director of Product}{Chimes AI}{Taipei, Taiwan}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item Lead a 7-person cross-functional team (1 PM, 3 Engineers, 2 AI/ML Engineers, 1 Designer), reporting to the CEO; own strategy and roadmap for three core product lines.
+    \item Launched a new product line by commercializing and standardizing AI algorithms/services, expanding into new verticals and winning the first flagship client contract exceeding NT\$10M.
+    \item Grew customers from 20+ to 80+ accounts; drove company annual revenue growth of more than 3x during tenure.
+    \item Drove deployment across 50+ factories and 2,500+ AI models, contributing \textasciitilde40,000 tons of annual CO2 reduction; e.g. CPC Taoyuan Refinery (+25\% equipment utilization) and China Steel Chemical (-32\% per-batch energy).
+    \item Leading a Ministry of Health and Welfare social-affairs data-standardization initiative (13 systems) and authoring a Taiwan HL7 FHIR Base Implementation Guide.
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% --- Product Manager ---
+\item{\cventry{2021--2022}{Product Manager}{Chimes AI}{Taipei, Taiwan}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+    \item Built the Tukey no-code AI platform, shifting customer data-science delivery from a point-to-point model (5 engineers / 3 years / 40 projects) to platform-based deployment (15 engineers / 3 months / 400+ models).
+    \item Deployed an equipment anomaly detection module at a Formosa Plastics Group plant at 90\% diagnostic accuracy, validating human-AI collaboration.
+    \item Initiated SCRUM and issue-tracking practices; drove company annual revenue growth of nearly 4x during tenure.
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% --- Data Analyst ---
+\item{\cventry{2017--2021}{Data Analyst}{DSP}{Taipei, Taiwan}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+    \item Integrated case histories across 11 cross-agency departments to build a domestic-violence risk-prediction model and dashboard, reducing recidivism by 30\%.
+    \item Built a customized dyeing algorithm for a textile client, improving new-formulation success rate by 5\%.
+    \item Hosted 20+ design-thinking data workshops across petrochemical, automotive, banking, and government sectors; 70\%+ of participants became paying clients.
+\end{itemize}}}
+
+\vspace{3pt}
+
+% --- Magazine Editor ---
+\item{\cventry{2013--2017}{Magazine Editor}{Yuan-Liou Publishing}{Taipei, Taiwan}{}{\vspace{1pt}
+\begin{itemize}
+    \item Planned each issue's themes, article types, and special features; reviewed and edited submissions for style and quality.
 \end{itemize}}}
 
 \end{itemize}
@@ -114,15 +122,7 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
-
-\vspace{3pt}
-
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
-}}
+\item{\cventry{2007--2011}{B.A. in Materials Science and Engineering}{National Tsing Hua University}{Hsinchu, Taiwan}{}{}}
 
 \end{itemize}
 
@@ -133,27 +133,29 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
+\item Mandarin (native), English (intermediate / conversational).
 \end{itemize}
 
 % ============================================================
-%     PUBLICATIONS (optional)
+%     PUBLICATIONS
 % ============================================================
 
 \section{Publications}
 \vspace{1pt}
 \begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
+\item ``Is AI Social Work Feasible? Using Social Safety Data to Drive Social Welfare Transformation Management'' -- 2020 Social Welfare Forum. \href{https://bit.ly/3n9DFiT}{link}
+\item Product essays on product-led growth, Stripe, and Apache Spark / Databricks. \href{https://hello-lichengen.medium.com/}{Medium}
 \end{itemize}
 
 % ============================================================
-%     HONORS AND AWARDS (optional)
+%     HONORS AND AWARDS
 % ============================================================
 
 \section{Honors and Awards}
 \vspace{1pt}
 \begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item{\textbf{First Prize} -- ``2021 Innovative Data Service Concept Commercialization Program,'' Industrial Development Bureau, Ministry of Economic Affairs (2021).}
+\item{\textbf{40th Golden Tripod Award} -- Children \& Youth Category, \textit{Science Monthly} / Yuan-Liou Publishing.}
 \end{itemize}
 
 % ============================================================

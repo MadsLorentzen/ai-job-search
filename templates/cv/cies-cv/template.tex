@@ -1,0 +1,124 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cies Resume/CV
+% LaTeX Template
+% Version 1.1 (20/7/14)
+%
+% Downloaded from: https://www.latextemplates.com/template/cies-cv
+%
+% Original author:
+% Cies Breijs (cies@kde.nl)
+% https://github.com/cies/resume with extensive modifications by:
+% Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+% Registered into this repo's /add-template framework with [PLACEHOLDER]
+% tokens in place of the original example content.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[10pt,a4paper]{article}
+
+\include{structure} % Packages and layout macros
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	NAME AND CONTACT INFORMATION
+%----------------------------------------------------------------------------------------
+
+\maintitle{[YOUR_NAME]}{[YOUR_TITLE_OR_SUBTITLE]}
+
+\noindent\href{mailto:[YOUR_EMAIL]}{[YOUR_EMAIL]}\bull
+[YOUR_PHONE]\bull
+\href{[YOUR_LINKEDIN_URL]}{LinkedIn}\\
+[YOUR_CITY], [YOUR_COUNTRY]
+
+\spacedhrule{0.9em}{-0.4em}
+
+%----------------------------------------------------------------------------------------
+%	SUMMARY SECTION
+%----------------------------------------------------------------------------------------
+
+\roottitle{Summary}
+
+\vspace{-1.3em}
+
+\begin{multicols}{2}
+\noindent [2-4 sentence professional summary tailored to the target role: years of experience, domain, and the single biggest differentiator.]
+
+[Optional second paragraph: notable achievements, scope of impact, or career trajectory that doesn't fit neatly into a bullet below.]
+\end{multicols}
+
+\spacedhrule{0.5em}{-0.4em}
+
+%----------------------------------------------------------------------------------------
+%	EXPERIENCE SECTION
+%----------------------------------------------------------------------------------------
+
+\roottitle{Experience}
+
+\headedsection
+{[Employer Name]}
+{\textsc{[City, Country]}} {
+
+\headedsubsection
+{[Job Title]}
+{[Mon 'YY -- Mon 'YY / present]}
+{\bodytext{[Achievement or responsibility - be specific, use numbers where possible.]}}
+
+\headedsubsection
+{[Earlier Job Title at Same Employer]}
+{[Mon 'YY -- Mon 'YY]}
+{\bodytext{[Achievement or responsibility.]}}
+}
+
+%------------------------------------------------
+
+\headedsection
+{[Earlier Employer Name]}
+{\textsc{[City, Country]}} {
+
+\headedsubsection
+{[Job Title]}
+{[Mon 'YY -- Mon 'YY]}
+{\bodytext{[Achievement or responsibility.]}}
+}
+
+\spacedhrule{-0.2em}{-0.4em}
+
+%----------------------------------------------------------------------------------------
+%	EDUCATION SECTION
+%----------------------------------------------------------------------------------------
+
+\roottitle{Education}
+
+\headedsection
+{[Institution Name]}
+{\textsc{[City, Country]}} {
+
+\headedsubsection
+{[Degree] in [Field]}
+{[YYYY -- YYYY]}
+{\bodytext{[Optional: thesis title, focus areas, honors.]}}
+}
+
+\spacedhrule{0.5em}{-0.4em}
+
+%----------------------------------------------------------------------------------------
+%	SKILLS SECTION
+%----------------------------------------------------------------------------------------
+
+\roottitle{Skills}
+
+\inlineheadsection
+{[Skill category, e.g. Technical specialties:]}
+{[Specific skills, frameworks, tools. Be concrete.]}
+
+%------------------------------------------------
+
+\inlineheadsection
+{Languages:}
+{[Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).}
+
+\end{document}
