@@ -19,6 +19,8 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 - **Name:** [YOUR_NAME]
 - **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
 - **Languages:** [YOUR_LANGUAGES]
+- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+
 - **Status:** [YOUR_EMPLOYMENT_STATUS]
 - **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
 

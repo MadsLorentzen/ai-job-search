@@ -65,7 +65,7 @@ Also read the most recent existing CV and cover letter files for concrete struct
 - Read any existing `cover_letters/cover_*.tex` or `cover_letters/Cover_*.tex` file as a template reference
 
 ### CV (`cv/main_<company>_<role>.tex`)
-- Always in **English**
+- In the **CV language from the profile** (the `CV language:` line in CLAUDE.md's Identity section). When the profile does not set one, default to **English**. Never switch language per posting - the CV language is a profile-level choice, so all CVs stay consistent and reusable
 - Follow the moderncv/banking format from `05-cv-templates.md`
 - Tailor the profile statement and experience bullets to the specific role
 - Reframe skills and achievements to match job requirements
@@ -245,7 +245,7 @@ Read the `.txt` file.
 
 Failures here are template-level problems: fix them in the `.tex` (e.g. print the email as text rather than icon-only), then re-run 5a–5c and re-extract. If a custom template's layout fundamentally scrambles extraction order, tell the user prominently — they may be trading ATS compatibility for looks.
 
-**3. Keyword coverage.** Reuse the required/preferred keyword list you extracted in Step 1 — do not re-derive it. Match each keyword against the extracted text, **in the posting's language** (a Danish posting's keywords are matched in Danish even though the CV is in English — where the CV legitimately covers the concept in English, count it as synonym-only and note the language difference). Report a table:
+**3. Keyword coverage.** Reuse the required/preferred keyword list you extracted in Step 1 — do not re-derive it. Match each keyword against the extracted text, **in the posting's language** (when the posting's language differs from the CV language — e.g. a Danish posting against an English CV — a concept the CV legitimately covers in its own language counts as synonym-only; note the language difference). Report a table:
 
 | Keyword | Priority | Status | Note |
 |---------|----------|--------|------|
