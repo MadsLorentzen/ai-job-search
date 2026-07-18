@@ -1,5 +1,5 @@
 ---
-framework_version: 1.0.0
+framework_version: 1.0.1
 ---
 
 # Cover Letter Templates and Tailoring Guide
@@ -88,15 +88,16 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 
 \lettercontent{[Opening paragraph - role, connection to background, 2-3 sentences]}
 
-\lettercontent{[Body paragraph - most relevant experience, then bullet list]
+\lettercontent{[Body paragraph - most relevant experience, introducing the bullet list]}
 
+{\raggedright\fontspec[Path = OpenFonts/fonts/raleway/]{Raleway-Medium}\fontsize{11pt}{13pt}\selectfont
 \begin{itemize}
     \item [Concrete achievement/skill 1]
     \item [Concrete achievement/skill 2]
     \item [Concrete achievement/skill 3]
-\end{itemize}
+\end{itemize}\par}
 
-[Connection to company - why this role, why this company specifically]}
+\lettercontent{[Connection to company - why this role, why this company specifically]}
 
 \lettercontent{[Personal fit paragraph - behavioral strengths, team contribution, 2-3 sentences]}
 

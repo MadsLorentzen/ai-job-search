@@ -1,5 +1,5 @@
 ---
-framework_version: 1.1.0
+framework_version: 1.1.1
 ---
 
 # CV Templates and Tailoring Guide
@@ -170,6 +170,8 @@ Add `\needspace{5\baselineskip}` immediately before the problematic `\cventry`:
 \item{\cventry{YEAR--YEAR}{Role Title}{Organization}{Location}{}{...}}
 ```
 Include `\usepackage{needspace}` in the preamble.
+
+**Caveat - use `\needspace` before entries, never before `\section` headings.** A section-level `\needspace` pushes the entire section (heading plus content) to the next page whenever the request does not fit, stranding empty space above and typically *adding* a page instead of saving one. Apply it only to the individual `\cventry` that actually orphans, and only after a compile shows the orphan.
 
 **Problem: one trailing section spills to page 3 (e.g., References alone on page 3)**
 Add `\enlargethispage{2-3\baselineskip}` before a late section (e.g., before `\section{Honors and Awards}`) to stretch page 2 by a few lines. This is the standard LaTeX rescue for near-miss overflows.
