@@ -1,0 +1,76 @@
+% Copyright (c) 2012 Cies Breijs
+%
+% The MIT License
+%
+% Permission is hereby granted, free of charge, to any person obtaining a copy
+% of this software and associated documentation files (the "Software"), to deal
+% in the Software without restriction, including without limitation the rights
+% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+% copies of the Software, and to permit persons to whom the Software is
+% furnished to do so, subject to the following conditions:
+%
+% The above copyright notice and this permission notice shall be included in
+% all copies or substantial portions of the Software.
+%
+% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+% SOFTWARE.
+
+%%% LOAD AND SETUP PACKAGES
+
+\usepackage[margin=0.75in]{geometry} % Adjusts the margins
+
+\usepackage{multicol} % Required for multiple columns of text
+
+\usepackage{mdwlist} % Required to fine tune lists with a inline headings and indented content
+
+\usepackage{relsize} % Required for the \textscale command for custom small caps text
+
+\usepackage{hyperref} % Required for customizing links
+\usepackage{xcolor} % Required for specifying custom colors
+\definecolor{dark-blue}{rgb}{0.15,0.15,0.4} % Defines the dark blue color used for links
+\hypersetup{colorlinks,linkcolor={dark-blue},citecolor={dark-blue},urlcolor={dark-blue}} % Assigns the dark blue color to all links in the template
+
+\usepackage{tgpagella} % Use the TeX Gyre Pagella font throughout the document
+\usepackage[T1]{fontenc}
+\usepackage{microtype} % Slightly tweaks character and word spacings for better typography
+
+\pagestyle{empty} % Stop page numbering
+
+%----------------------------------------------------------------------------------------
+%	DEFINE STRUCTURAL COMMANDS
+%----------------------------------------------------------------------------------------
+
+\newenvironment{indentsection} % Defines the indentsection environment which indents text in sections titles
+{\begin{list}{}{\setlength{\leftmargin}{\newparindent}\setlength{\parsep}{0pt}\setlength{\parskip}{0pt}\setlength{\itemsep}{0pt}\setlength{\topsep}{0pt}}}{\end{list}}
+
+\newcommand*\maintitle[2]{\noindent{\LARGE \textbf{#1}}\ \ \ \emph{#2}\vspace{0.3em}} % Main title (name) with date of birth or subtitle
+
+\newcommand*\roottitle[1]{\subsection*{#1}\vspace{-0.3em}\nopagebreak[4]} % Top level sections in the template
+
+\newcommand{\headedsection}[3]{\nopagebreak[4]\begin{indentsection}\item[]\textscale{1.1}{#1}\hfill#2#3\end{indentsection}\nopagebreak[4]} % Section title used for a new employer
+
+\newcommand{\headedsubsection}[3]{\nopagebreak[4]\begin{indentsection}\item[]\textbf{#1}\hfill\emph{#2}#3\end{indentsection}\nopagebreak[4]} % Section title used for a new position
+
+\newcommand{\bodytext}[1]{\nopagebreak[4]\begin{indentsection}\item[]#1\end{indentsection}\pagebreak[2]} % Body text (indented)
+
+\newcommand{\inlineheadsection}[2]{\begin{basedescript}{\setlength{\leftmargin}{\doubleparindent}}\item[\hspace{\newparindent}\textbf{#1}]#2\end{basedescript}\vspace{-1.7em}} % Section title where body text starts immediately after the title
+
+\newcommand*\acr[1]{\textscale{.85}{#1}} % Custom acronyms command
+
+\newcommand*\bull{\ \ \raisebox{-0.365em}[-1em][-1em]{\textscale{4}{$\cdot$}} \ } % Custom bullet point for separating content
+
+\newlength{\newparindent} % It seems not to work when simply using \parindent...
+\addtolength{\newparindent}{\parindent}
+
+\newlength{\doubleparindent} % A double \parindent...
+\addtolength{\doubleparindent}{\parindent}
+
+\newcommand{\breakvspace}[1]{\pagebreak[2]\vspace{#1}\pagebreak[2]} % A custom vspace command with custom before and after spacing lengths
+\newcommand{\nobreakvspace}[1]{\nopagebreak[4]\vspace{#1}\nopagebreak[4]} % A custom vspace command with custom before and after spacing lengths that do not break the page
+
+\newcommand{\spacedhrule}[2]{\breakvspace{#1}\hrule\nobreakvspace{#2}} % Defines a horizontal line with some vertical space before and after it

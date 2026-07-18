@@ -4,6 +4,19 @@ framework_version: 1.0.0
 
 # CV Templates and Tailoring Guide
 
+<!-- BEGIN ACTIVE-TEMPLATE (managed by /add-template - do not edit by hand) -->
+> **Active template override: `medium-length-professional-cv`**
+>
+> A custom template is active. Where this block conflicts with the stock guidance below, this block wins. Structural advice below (tailoring, page-budget, cutting rules) still applies.
+>
+> - **Template skeleton:** `templates/cv/medium-length-professional-cv/template.tex` — use this as the structural reference instead of the stock template
+> - **Manifest:** `templates/cv/medium-length-professional-cv/TEMPLATE.md` — read this for style rules and known pitfalls before drafting
+> - **Compile with:** `pdflatex` (not `lualatex` as named in the stock guidance below)
+> - **Fonts:** EB Garamond (system font via the `ebgaramond` package — standard in TeX Live, no bundled files needed)
+> - **Page limit:** exactly 2 page(s)
+> - **Output file:** unchanged (`cv/main_<company>.tex`); copy `templates/cv/medium-length-professional-cv/resume.cls` into the same directory
+<!-- END ACTIVE-TEMPLATE -->
+
 <!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
 
 ## Template: LaTeX moderncv (Banking Style)
@@ -110,11 +123,14 @@ Write 5-7 lines that function as an "elevator pitch": a concise, compelling intr
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Product Manager / Product Leadership (AI) roles:**
+> Product leader with 9 years of data-driven experience: 3 years as Director of Product, 2 as Product Manager, and 4 in data-analytics consulting. I build products in ambiguous, 0-to-1 environments. I led a no-code AI/MLOps platform (Tukey) from concept to commercialization, now adopted by leading petrochemical, steel, semiconductor, and automotive manufacturers, growing the customer base from 20+ to 80+ accounts and company revenue more than 3x. I pair product strategy and cross-functional leadership with a hands-on background in ML and data analysis.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For AI / ML Product Manager roles:**
+> AI/ML product manager who turns machine learning into shipped, maintained products. I built a no-code AI platform that let non-technical factory staff create and operate ML models, cutting industrial AI deployment from a 3-year custom-project cycle to 3 months across 50+ factories and 2,500+ models. Comfortable across the model lifecycle, MLOps, and MCP tool interfaces, with a data-analysis and statistics foundation.
+
+**For Technical PM / Solutions roles:**
+> Technical product manager bridging engineering, AI/ML, and business stakeholders. I define strategy and roadmaps, run delivery with SCRUM, and have deployed anomaly-detection, quality-prediction, and energy-optimization solutions into live petrochemical, steel, and semiconductor plants with measurable ROI (e.g. +25% equipment utilization, -32% batch energy). Hands-on with Python/R, data pipelines, and dashboards.
 
 ### Core Competencies / Skills Section (Best Practice)
 Reorder and emphasize based on the role. Use bold category labels.
