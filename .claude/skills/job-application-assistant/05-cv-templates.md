@@ -1,5 +1,5 @@
 ---
-framework_version: 1.1.1
+framework_version: 1.2.0
 ---
 
 # CV Templates and Tailoring Guide
@@ -107,6 +107,8 @@ This is the most important section to customize. It appears right after `\makecv
 
 Write 5-7 lines that function as an "elevator pitch": a concise, compelling introduction explaining why you're qualified for *this specific role*. Focus on what the employer gains from hiring you.
 
+When the role sits outside your home domain, **lead with the domain-transfer argument** - the one or two sentences connecting your background to their problem (e.g. wave physics to radar signal processing) belong in the profile statement's opening, not buried in the cover letter. It is the strongest card a domain-changer holds; play it first.
+
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
@@ -122,6 +124,8 @@ Statements labeled *[Used for: <company>_<role>]* were extracted from archived a
 Reorder and emphasize based on the role. Use bold category labels.
 
 List **5-7 key competencies** in bullet format, tailored to the specific job. For each competency, briefly explain how it adds value to the position.
+
+Use the posting's own core term in the matching bullet's bold label when it truthfully applies - ATS and skim-reading hiring managers match literally, and "MLOps" in a heading outperforms a paraphrase like "ML Deployment".
 
 ### Education
 - Always include your highest degrees
@@ -143,6 +147,9 @@ If there is a gap in your employment history:
 - Include Google Scholar link if applicable
 - Select 3-4 most relevant publications (not always all of them)
 - For non-academic roles, keep brief
+
+### Evidence Links
+Wherever the CV names a verifiable artifact - a public project, a hackathon entry, a publication - carry its link (`\href`) so a reader can verify the claim in one click. A CV whose strongest claims are checkable reads as more credible everywhere else too.
 
 ### Honors and Awards
 - Keep format brief, one line each
