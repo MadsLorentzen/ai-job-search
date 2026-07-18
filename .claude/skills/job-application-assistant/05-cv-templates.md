@@ -1,5 +1,5 @@
 ---
-framework_version: 1.0.1
+framework_version: 1.1.0
 ---
 
 # CV Templates and Tailoring Guide
@@ -115,6 +115,8 @@ Write 5-7 lines that function as an "elevator pitch": a concise, compelling intr
 
 **For [YOUR_SECONDARY_ROLE_TYPE] roles:**
 > [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+
+Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 
 ### Core Competencies / Skills Section (Best Practice)
 Reorder and emphasize based on the role. Use bold category labels.
