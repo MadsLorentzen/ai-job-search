@@ -58,7 +58,7 @@
         }
       ],
       "follow_up_due": "2026-06-25",
-      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths \u2014 Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
+      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths — Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
     },
     "https://jobs.ashbyhq.com/perplexity/dd9c7675-1369-4320-afdb-c8caef22ce3a": {
       "outreach": [
@@ -72,7 +72,7 @@
         }
       ],
       "follow_up_due": "2026-06-25",
-      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths \u2014 Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
+      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths — Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
     },
     "https://jobs.ashbyhq.com/perplexity/5ec96ca1-319a-4b85-99ce-e06629099cf9": {
       "outreach": [
@@ -86,7 +86,7 @@
         }
       ],
       "follow_up_due": "2026-06-25",
-      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths \u2014 Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
+      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths — Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
     },
     "https://jobs.ashbyhq.com/cursor/123af173-6f9b-4089-9d96-d0c028b9e841": {
       "outreach": [
@@ -108,7 +108,7 @@
           "channel": "linkedin_dm",
           "to": "Alex Ortiz",
           "via_broker": null,
-          "note": "Asked Alex Ortiz about Cursor connect (Jordan MacDonald, 2-hop). Re: PM Agent Harness role \u2014 direct match for AJs Warmode work.",
+          "note": "Asked Alex Ortiz about Cursor connect (Jordan MacDonald, 2-hop). Re: PM Agent Harness role — direct match for AJs Warmode work.",
           "outcome": "pending"
         }
       ],
@@ -175,7 +175,7 @@
         "cv_pdf": "cv/main_chime.pdf",
         "cover_letter": "cover_letters/cover_chime_growth_pmm.tex",
         "cover_letter_pdf": "cover_letters/cover_chime_growth_pmm.pdf",
-        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. SF, 4 days/week in office \u2014 conflicts with AJ NYC on-site deal-breaker. Materials built; held in triage for human review, NOT auto-apply."
+        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. SF, 4 days/week in office — conflicts with AJ NYC on-site deal-breaker. Materials built; held in triage for human review, NOT auto-apply."
       }
     },
     "https://jobs.ashbyhq.com/plaid/0661cdab-9bc9-4614-8d2f-8f38ba4f0ec3": {
@@ -203,7 +203,8 @@
         "cv_pdf": "cv/main_substack.pdf",
         "cover_letter": "cover_letters/cover_substack_pm_growth.tex",
         "cover_letter_pdf": "cover_letters/cover_substack_pm_growth.pdf",
-        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. Very strong creator-economy fit. SQL named as required, not a documented AJ skill; positioned Amplitude/analytics fluency instead."
+        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. Very strong creator-economy fit. SQL named as required, not a documented AJ skill; positioned Amplitude/analytics fluency instead.",
+        "recruiter_screen_prep": "documents/applications/substack-product-manager-growth/recruiter-screen-prep.md"
       },
       "outreach": [
         {
@@ -214,7 +215,17 @@
           "outcome": "submitted"
         }
       ],
-      "follow_up_due": "2026-07-06"
+      "follow_up_due": "2026-07-06",
+      "notes": "Cold apply CONVERTED -> recruiter screen. Substack = creator subscription platform (near-identical to AJ Beacons background). Role: PM, Growth (NEW role, product-first), owns ORGANIC acquisition flywheel: SEO, ASO, sign-up/onboarding/first-run, D1/D7 retention, funnel instrumentation. Reports to Head of Growth; works with Activation + Growth Marketing. GEO FLAG: listed San Francisco (HQ) only -- AJ is NYC; clarify remote/NYC early (potential deal-breaker). FIT: onboarding/activation/experimentation/subscription funnel = AJ core (Beacons). GAP: SEO/ASO as named disciplines not in AJ profile -- be honest, lean on adjacent organic-growth + fast learning + engineer-PM.",
+      "events": [
+        {
+          "date": "2026-07-21",
+          "time": "14:30 ET",
+          "channel": "interview",
+          "outcome": "scheduled",
+          "note": "Recruiter screen with Russell Lifson (Substack). Booked Tue 2:30 PM ET. Priority: clarify remote/NYC vs SF-only early; land the Beacons creator-subscription fit; handle SEO/ASO gap honestly."
+        }
+      ]
     },
     "https://jobs.ashbyhq.com/cohere/5cf3bd63-cf1d-441a-9db5-2032ca8449b8": {
       "materials": {
@@ -1230,14 +1241,14 @@
         "channel": "Personal connection -- AJ's friend Gio works at Robinhood. Ask Gio directly for the referral.",
         "message": "Listing: https://boards.greenhouse.io/robinhood/jobs/7821803?t=gh_src=&gh_jid=7821803\n\nWhy AJ's a good fit (for Gio to relay):\nCortex is exactly the work I'd want -- a consumer-facing agentic AI that reasons, plans, and acts on a customer's behalf. I'm an engineer-turned-PM who builds agentic tooling every day (my own Warmode and Matic, on Claude Code), I shipped 0-to-1 AI at scale (Beacons' AI email, fastest ESP to 50M sends), and I come from consumer fintech (drove 5.7x revenue at DailyPay). AI + fintech + agentic is my exact intersection, and I can go deep with the eng team."
       },
-      "notes": "TOP Robinhood fit. Consumer-facing agentic AI. NYC office available. Route via Gio."
+      "notes": "TOP Robinhood fit. Consumer-facing agentic AI. NYC office available. Route via Gio. | Skipped 2026-07-19: posting closed (404). Was AJ top Robinhood/Gio pick -- redirect the Gio ask to Banking (still live)."
     },
     "https://boards.greenhouse.io/robinhood/jobs/7587151?t=gh_src=&gh_jid=7587151": {
       "referral_request": {
         "channel": "Personal connection -- AJ's friend Gio works at Robinhood. Ask Gio directly for the referral.",
         "message": "Listing: https://boards.greenhouse.io/robinhood/jobs/7587151?t=gh_src=&gh_jid=7587151\n\nWhy AJ's a good fit (for Gio to relay):\nRobinhood's banking/Money product is squarely my background -- I drove 5.7x revenue at DailyPay (employee-pay fintech) taking products from concept to hyperscale, and I'm an engineer-PM who ships alongside the team. Consumer fintech 0-to-1 and growth is what I do."
       },
-      "notes": "Strong Robinhood fit. Consumer banking 0-to-1. NYC office (hybrid ~3 days). Route via Gio."
+      "notes": "Strong Robinhood fit. Consumer banking 0-to-1. NYC office (hybrid ~3 days). Route via Gio. | 2026-07-19: Cortex closed, so Banking is now the primary Robinhood role for the Gio referral."
     },
     "https://www.linkedin.com/jobs/view/4434935666/": {
       "notes": "Recruiter-masked (Motion Recruitment agency). Fully remote, $250-400k. Strong growth/PLG/experimentation fit; \"Referral experience a must\" maps directly to AJ (PitchTop viral referral mechanics, B2B2C loops). KEY UNKNOWN: actual company/sector/mission -- qualify on the call before investing.",
@@ -1327,6 +1338,55 @@
     },
     "https://jobs.ashbyhq.com/notion/3129e7bd-f717-47d3-9fdd-c4df026bbf20": {
       "notes": "Notion Startup Market Lead AMER (SF also NY). AI-work platform, startup GTM. NY option. Added 2026-07-15."
+    },
+    "https://careers.asurion.com/us/en/job/ASRASRUSASU0020452EXTERNALENUS/VP--Growth": {
+      "notes": "INBOUND via recruiter Jordan Shull (added 2026-07-15; UPGRADED to high after inbound details). CONFIRMED REMOTE (geo deal-breaker resolved). Mandate = BUILD growth function from scratch, reports to CPO, owns acquisition/monetization/PLG/lifecycle/retention/experimentation/subscription growth = AJ core wheelhouse, 0-to-1. Target profile: subscription/recurring rev, PLG mindset, B2B2C, builder-not-optimizer -- matches AJ exactly (Beacons/Checkmate subscription monetization, PLG+lifecycle, Checkmate B2B2C, 3x founder). Company = 200M+ subscribers. VP level + likely $250-400k = comp/level match. Only caveat: off #1 AI thesis (legacy device-insurance). Still qualify on call: comp band, autonomy/resourcing, AI appetite in growth stack. | DOWNGRADED to medium 2026-07-16 after screen: role = coalition-building/matrixed influence, not from-scratch build. Recruiter energy dropped on AJ founder-builder background. Awaiting their decision; not a priority.",
+      "events": [
+        {
+          "date": "2026-07-15",
+          "channel": "inbound",
+          "outcome": "received",
+          "note": "Inbound from recruiter Jordan Shull. Remote VP Growth, build-from-scratch, reports to CPO. AJ replying to schedule."
+        },
+        {
+          "date": "2026-07-16",
+          "channel": "interview",
+          "outcome": "completed_screen",
+          "note": "Recruiter screen done. REALITY vs inbound pitch: role is heavy COALITION-BUILDING across different products and teams (matrixed influence in a large legacy org), not the clean from-scratch PLG build the inbound implied. AJ read the recruiter LOSING ENERGY after his (startup/founder/builder) background. AJ expects may not proceed. Assessment: working-style mismatch -- coalition/stakeholder-herding in a 40-yr-old matrixed org is AJ low-autonomy zone, not his 0-1 sweet spot. Mutual fade likely fine."
+        }
+      ],
+      "materials": {
+        "cv": "cv/main_asurion.tex",
+        "cv_pdf": "cv/main_asurion.pdf"
+      }
+    },
+    "https://jobs.ashbyhq.com/workos/257e30d0-eaa3-4ce1-a47d-2b2c4f65cf1a": {
+      "notes": "WorkOS PM-Growth (US/Canada REMOTE). Dev-infra PLG growth PM = ngrok/Netlify-twin. Remote geo. Clean fit. Added 2026-07-19."
+    },
+    "https://jobs.ashbyhq.com/perplexity/b349ec0e-be02-47b0-8595-8de0dbb074c5": {
+      "notes": "Perplexity Enterprise Product Growth Manager (SF). NOTE: AJ ALREADY in Perplexity process (Demand Gen Lead, Raman Malik HM round). SF geo. Flag to recruiter/Raman as adjacent interest; possible alt if DemandGen does not land. Added 2026-07-19."
+    },
+    "https://www.linkedin.com/jobs/view/4415511091/": {
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "other",
+          "to": "Upward Coach",
+          "note": "Coach referral request submitted via Upward portal for Warner Bros. Discovery — Senior Product Manager, Growth (International)",
+          "outcome": "pending"
+        }
+      ]
+    },
+    "https://www.linkedin.com/jobs/view/4421063564/": {
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "other",
+          "to": "Upward Coach",
+          "note": "Coach referral request submitted via Upward portal for Cockroach Labs — VP, Growth Marketing",
+          "outcome": "pending"
+        }
+      ]
     }
   }
 }
