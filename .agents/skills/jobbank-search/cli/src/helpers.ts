@@ -1,3 +1,5 @@
+import { parse as parseHtml } from "node-html-parser"
+
 export const BASE_URL = "https://jobbank.dk"
 
 export const USER_AGENT =
@@ -157,4 +159,37 @@ export function extractJobIdFromUrl(url: string): string {
   // URL format: https://jobbank.dk/job/{id}/{company-slug}/{title-slug}
   const match = url.match(/\/job\/(\d+)\//)
   return match ? match[1] : ""
+}
+
+function findJobPosting(value: unknown): Record<string, unknown> | null {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const jobPosting = findJobPosting(item)
+      if (jobPosting) return jobPosting
+    }
+    return null
+  }
+
+  if (!value || typeof value !== "object") return null
+
+  const record = value as Record<string, unknown>
+  if (record["@type"] === "JobPosting") return record
+
+  return findJobPosting(record["@graph"])
+}
+
+export function parseJobPostingJsonLd(html: string): Record<string, unknown> | null {
+  const root = parseHtml(html)
+  const scripts = root.querySelectorAll('script[type="application/ld+json"]')
+
+  for (const script of scripts) {
+    try {
+      const jobPosting = findJobPosting(JSON.parse(script.text) as unknown)
+      if (jobPosting) return jobPosting
+    } catch {
+      // Invalid JSON-LD should not prevent later scripts from being checked.
+    }
+  }
+
+  return null
 }
