@@ -186,4 +186,14 @@ async function main(): Promise<number> {
   return 1
 }
 
-main().then((code) => process.exit(code))
+main()
+  .then((code) => process.exit(code))
+  .catch((e) => {
+    process.stderr.write(
+      JSON.stringify({
+        error: e instanceof Error ? e.message : String(e),
+        code: "INTERNAL_ERROR",
+      }) + "\n",
+    )
+    process.exit(1)
+  })
