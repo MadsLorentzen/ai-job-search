@@ -213,6 +213,7 @@ export const detail = defineCommand({
 
     try {
       const response = await fetch(url, {
+        signal: AbortSignal.timeout(15000),
         headers: {
           "Accept": "text/html,application/xhtml+xml",
           "User-Agent": "Mozilla/5.0",

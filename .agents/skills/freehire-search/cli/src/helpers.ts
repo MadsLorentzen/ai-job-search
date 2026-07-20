@@ -40,6 +40,7 @@ export async function apiGet<T>(path: string): Promise<Envelope<T> | null> {
     let response: Response
     try {
       response = await fetch(url, {
+        signal: AbortSignal.timeout(15000),
         headers: { "User-Agent": UA, Accept: "application/json" },
         redirect: "follow",
       })

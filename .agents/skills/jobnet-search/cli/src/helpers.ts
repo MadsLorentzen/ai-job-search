@@ -11,6 +11,7 @@ export async function apiFetch<T>(path: string, params?: Record<string, string>)
   let delay = 500
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const response = await fetch(url, {
+      signal: AbortSignal.timeout(15000),
       headers: {
         "x-csrf": "1",
       },

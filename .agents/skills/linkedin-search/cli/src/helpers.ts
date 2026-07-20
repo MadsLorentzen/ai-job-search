@@ -22,6 +22,7 @@ export async function htmlFetch(url: string): Promise<string> {
   let delay = 500
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const response = await fetch(url, {
+      signal: AbortSignal.timeout(15000),
       headers: {
         "User-Agent": UA,
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",

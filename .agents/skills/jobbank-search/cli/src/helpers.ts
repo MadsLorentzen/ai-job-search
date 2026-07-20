@@ -14,6 +14,7 @@ export async function fetchWithUA(url: string): Promise<Response> {
   let delay = 500
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const response = await fetch(url, {
+      signal: AbortSignal.timeout(15000),
       headers: { "User-Agent": USER_AGENT },
     })
     if (response.status === 429 || response.status >= 500) {
