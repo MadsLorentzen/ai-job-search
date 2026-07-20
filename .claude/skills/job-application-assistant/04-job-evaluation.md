@@ -20,7 +20,7 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
+**Strong match areas:** SAS/R/SQL/Python clinical programming, SDTM/ADaM, TLF generation, MMRM and longitudinal/mixed-effects analysis, survival analysis, multiple imputation, EHR-derived data QC
 **Moderate match areas:** [YOUR_SECONDARY_SKILLS]
 **Weak match areas:** [SKILLS_YOU_LACK]
 
@@ -67,9 +67,9 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Data Analytics / Clinical Data Analysis roles
+- Biostatistics roles
+- Healthcare Data Science roles
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
 - Tasks that energize: [YOUR_ENERGIZING_TASKS]

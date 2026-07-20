@@ -28,6 +28,7 @@ framework_version: 1.0.0
 - [ENVIRONMENT_PREFERENCE_1]
 - [ENVIRONMENT_PREFERENCE_2]
 - [ENVIRONMENT_PREFERENCE_3]
+- *[Inferred from LinkedIn About - review before relying on this]*: Motivated by seeing how data influences patient care, medical research, and public health decisions. Enjoys transforming complex datasets into clear, actionable findings through statistical modeling, real-world evidence research, and clinical data analysis. Draws interest broadly across clinical research, real-world evidence, biostatistics, epidemiology, healthcare analytics, and machine learning.
 
 ## Growth Areas (frame positively in applications)
 - **[AREA_1]:** [HOW_TO_FRAME_IT_POSITIVELY]

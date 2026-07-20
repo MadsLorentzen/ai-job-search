@@ -39,6 +39,48 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
 
+## STAR Candidates (Complete Manually)
+
+### MMRM primary efficacy analysis for Phase III COPD trial
+**Source:** CV/LinkedIn - Biostatistician Intern, Canming Data (CRO)
+**What happened:** Supported MMRM-based primary efficacy analysis for Week 12 change from baseline in trough FEV1, including LS mean estimates, treatment comparisons, and sensitivity analyses.
+**Why it matters:** Technical statistical methods questions, clinical trial experience, attention to regulatory rigor (ICH E9(R1), analysis populations)
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Real-world knee osteoarthritis cohort analysis (2,648 patients)
+**Source:** CV/LinkedIn - Clinical Research Data Analyst, Emory University School of Medicine
+**What happened:** Led real-world clinical outcomes analyses comparing three orthobiologic treatments for knee osteoarthritis using EHR-derived longitudinal data and adjusted linear mixed-effects modeling.
+**Why it matters:** Ownership/leadership questions, handling messy real-world data, translating clinical questions into statistical analyses, stakeholder collaboration (orthopedic physicians)
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Thompson Sampling algorithm for brain-computer interface research
+**Source:** CV/LinkedIn - Research Assistant, Rollins School of Public Health (2023-2024)
+**What happened:** Developed adaptive Thompson Sampling algorithms in Python and integrated NLP-based language model dictionaries to improve real-time classification performance; presented findings at Society for Neuroscience Annual Meeting.
+**Why it matters:** Independent technical problem-solving, algorithm design, presenting research to an audience
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Bayesian modeling of post-stroke recovery trajectories with R Shiny dashboard
+**Source:** LinkedIn - Research Assistant, Rollins School of Public Health (current, NIH-funded)
+**What happened:** Analyzed actigraphy data using Bayesian Weibull proportional hazards models to characterize sleep-wake pattern recovery, and built an R Shiny dashboard for clinical interpretation.
+**Why it matters:** Advanced statistical modeling questions, translating analysis into a usable tool for clinicians, current/ongoing work
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
 ## Common Tough Questions
 
 ### "Why did you leave [previous company]?"
