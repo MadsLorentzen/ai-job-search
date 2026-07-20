@@ -69,6 +69,37 @@ export interface JobDetail extends JobCard {
 }
 
 /**
+ * Extract the inner HTML of a <div> identified by a CSS class name, correctly
+ * handling nested <div> elements by tracking tag depth.
+ */
+export function extractDivContent(html: string, className: string): string | null {
+  const escaped = className.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const openRe = new RegExp(`<div[^>]*class="[^"]*${escaped}[^"]*"[^>]*>`, 'i')
+  const open = openRe.exec(html)
+  if (!open) return null
+
+  let i = open.index + open[0].length
+  let depth = 1
+
+  while (depth > 0 && i < html.length) {
+    const nextOpen = html.indexOf('<div', i)
+    const nextClose = html.indexOf('</div>', i)
+
+    if (nextClose === -1) return null
+
+    if (nextOpen !== -1 && nextOpen < nextClose) {
+      depth++
+      i = nextOpen + 4
+    } else {
+      depth--
+      i = nextClose + 6
+    }
+  }
+
+  return html.slice(open.index + open[0].length, i - 6)
+}
+
+/**
  * Convert a Unicode code point to a string. Uses `fromCodePoint` (not
  * `fromCharCode`) so supplementary-plane code points (e.g. emoji, U+1F600)
  * decode correctly, and drops out-of-range values instead of throwing.
@@ -180,11 +211,11 @@ export function parseJobDetail(html: string, id: string): JobDetail {
 
   // Rich description block. Keep paragraph/line breaks as newlines.
   let description: string | null = null
-  const desc = html.match(
-    /class="(?:show-more-less-html__markup|description__text[^"]*)"[^>]*>([\s\S]*?)<\/div>/i,
-  )
-  if (desc) {
-    const withBreaks = desc[1]
+  const descHtml =
+    extractDivContent(html, "show-more-less-html__markup") ??
+    extractDivContent(html, "description__text")
+  if (descHtml) {
+    const withBreaks = descHtml
       .replace(/<\s*br\s*\/?>/gi, "\n")
       .replace(/<\/(p|li|ul|ol|div|h\d)>/gi, "\n")
     description = decodeHtmlEntities(stripTags(withBreaks)).replace(/\n{3,}/g, "\n\n").trim() || null

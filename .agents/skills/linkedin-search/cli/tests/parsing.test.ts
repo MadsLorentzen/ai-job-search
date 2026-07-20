@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { parseJobCards, parseJobDetail } from "../src/helpers";
+import { parseJobCards, parseJobDetail, extractDivContent } from "../src/helpers";
 
 // Minimal search-card markup: parseJobCards splits on the job-posting URN and
 // needs an id, a base-search-card__title, and a full-link. Everything else is
@@ -51,5 +51,63 @@ describe("decodeHtmlEntities (via parseJobDetail)", () => {
     const html = `<h1 class="topcard__title">Se&#xF1;or Engineer</h1>`;
     const job = parseJobDetail(html, "999");
     expect(job.title).toBe("Señor Engineer");
+  });
+});
+
+describe("extractDivContent", () => {
+  test("extracts content from simple div", () => {
+    const html = '<div class="description__text">Simple text</div>';
+    expect(extractDivContent(html, "description__text")).toBe("Simple text");
+  });
+
+  test("extracts content with nested divs — the regression case", () => {
+    const html = `<div class="description__text">
+      <div>Requirements:</div>
+      <ul><li>Skill A</li></ul>
+      <div>About Us:</div>
+      <p>We are...</p>
+    </div>`;
+    expect(extractDivContent(html, "description__text")).toBe(
+      '\n      <div>Requirements:</div>\n      <ul><li>Skill A</li></ul>\n      <div>About Us:</div>\n      <p>We are...</p>\n    ',
+    );
+  });
+
+  test("returns null when class not found", () => {
+    expect(extractDivContent("<div>no class</div>", "nonexistent")).toBeNull();
+  });
+
+  test("works with show-more-less-html__markup class", () => {
+    const html = '<div class="show-more-less-html__markup">LinkedIn content</div>';
+    expect(extractDivContent(html, "show-more-less-html__markup")).toBe("LinkedIn content");
+  });
+
+  test("handles deeply nested divs (3 levels)", () => {
+    const html = `<div class="description__text">
+      <div>
+        <div>Deep content</div>
+      </div>
+    </div>`;
+    expect(extractDivContent(html, "description__text")).toBe(
+      '\n      <div>\n        <div>Deep content</div>\n      </div>\n    ',
+    );
+  });
+
+  test("handles empty content", () => {
+    const html = '<div class="description__text"></div>';
+    expect(extractDivContent(html, "description__text")).toBe("");
+  });
+
+  test("parseJobDetail uses extractDivContent and preserves full description", () => {
+    const html = `<div class="description__text">
+      <div>Requirements:</div>
+      <ul><li>5 years Python</li></ul>
+      <div>About Us:</div>
+      <p>We are hiring!</p>
+    </div>`;
+    const job = parseJobDetail(html, "999");
+    expect(job.description).toContain("Requirements:");
+    expect(job.description).toContain("5 years Python");
+    expect(job.description).toContain("About Us:");
+    expect(job.description).toContain("We are hiring!");
   });
 });
