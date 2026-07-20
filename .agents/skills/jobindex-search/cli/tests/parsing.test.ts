@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { parseJobCards } from "../src/helpers";
+import { parseJobCards, extractDivContent } from "../src/helpers";
 
 // Minimal jobad-wrapper markup: parseJobCards splits on `jobad-wrapper-<id>`
 // and reads the title from the <h4><a href>…</a></h4> and the company from the
@@ -42,5 +42,57 @@ describe("decodeHtmlEntities (via parseJobCards)", () => {
   test("decodes hex entities in the company name too", () => {
     const [c] = parseJobCards(card("h6", "Engineer", "N&#xF8;rrebro ApS"));
     expect(c.company).toBe("Nørrebro ApS");
+  });
+});
+
+describe("extractDivContent", () => {
+  test("extracts content from simple div", () => {
+    const html = '<div class="job-text">Simple text</div>';
+    expect(extractDivContent(html, "job-text")).toBe("Simple text");
+  });
+
+  test("extracts content with nested divs — the regression case", () => {
+    const html = `<div class="job-text">
+      <div class="highlight">First section</div>
+      <div class="details">Second section with important info</div>
+    </div>`;
+    expect(extractDivContent(html, "job-text")).toBe(
+      '\n      <div class="highlight">First section</div>\n      <div class="details">Second section with important info</div>\n    ',
+    );
+  });
+
+  test("returns null when class not found", () => {
+    expect(extractDivContent("<div>no class</div>", "nonexistent")).toBeNull();
+  });
+
+  test("works with extra attributes on the div", () => {
+    const html = '<div id="desc" class="job-text" data-x="1">Content</div>';
+    expect(extractDivContent(html, "job-text")).toBe("Content");
+  });
+
+  test("handles deeply nested divs (3 levels)", () => {
+    const html = `<div class="job-text">
+      <div>
+        <div>Deep content</div>
+      </div>
+    </div>`;
+    expect(extractDivContent(html, "job-text")).toBe(
+      '\n      <div>\n        <div>Deep content</div>\n      </div>\n    ',
+    );
+  });
+
+  test("handles empty content", () => {
+    const html = '<div class="job-text"></div>';
+    expect(extractDivContent(html, "job-text")).toBe("");
+  });
+
+  test("handles br and other non-div tags", () => {
+    const html = '<div class="job-text">Line1<br>Line2<br>Line3</div>';
+    expect(extractDivContent(html, "job-text")).toBe("Line1<br>Line2<br>Line3");
+  });
+
+  test("escapes special regex characters in class name", () => {
+    const html = '<div class="job-text (special)">Content</div>';
+    expect(extractDivContent(html, "job-text (special)")).toBe("Content");
   });
 });

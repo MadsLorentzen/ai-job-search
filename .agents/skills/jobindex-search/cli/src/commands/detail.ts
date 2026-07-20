@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { htmlFetch, writeError } from "../helpers.js"
+import { htmlFetch, writeError, extractDivContent } from "../helpers.js"
 
 const BASE_URL = "https://www.jobindex.dk"
 
@@ -180,9 +180,9 @@ function parseDetailPage(html: string, url: string, id: string): DetailResult {
   let description: string | null = null
 
   // Try job-text class first
-  const jobTextMatch = html.match(/class="job-text"[^>]*>([\s\S]*?)<\/div>\s*(?:<div|<\/div>)/i)
-  if (jobTextMatch) {
-    description = decodeHtmlEntities(stripTags(jobTextMatch[1])).replace(/\s+/g, " ").trim() || null
+  const jobTextHtml = extractDivContent(html, "job-text")
+  if (jobTextHtml) {
+    description = decodeHtmlEntities(stripTags(jobTextHtml)).replace(/\s+/g, " ").trim() || null
   }
 
   // Fallback: try og:description meta tag for a brief description
