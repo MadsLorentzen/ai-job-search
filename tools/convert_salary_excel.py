@@ -114,10 +114,9 @@ def parse_sheet(ws, sheet_label=None):
     company_col = None
     city_col = None
     for i, h in enumerate(headers):
-        h_lower = h.lower()
         if header_matches(h, COMPANY_PATTERNS):
             company_col = i
-        elif h_lower in CITY_PATTERNS:
+        elif header_matches(h, CITY_PATTERNS):
             city_col = i
 
     if company_col is None:

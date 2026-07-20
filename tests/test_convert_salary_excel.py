@@ -104,6 +104,22 @@ class DetectColumnTypeTests(unittest.TestCase):
                     companies[0]["categories"]["salary"], {"index": 105.5}
                 )
 
+    def test_parse_sheet_detects_city_column_with_token_header(self):
+        # City headers are matched with the same token-based header_matches()
+        # used for the company column, not exact string equality. Real-world
+        # sheets rarely use the bare token "City" or "Kommune" alone; headers
+        # like "City Name" / "City/Kommune" must still be detected as the city
+        # column (previously silently left as city_col=None -> empty city).
+        for header in ("City", "City Name", "Kommune", "City/Kommune"):
+            with self.subTest(header=header):
+                ws = FakeWorksheet([
+                    ("Company", header, "Salary"),
+                    ("Example Corp", "Aarhus", 105.5),
+                ])
+                companies = parse_sheet(ws)
+                self.assertEqual(len(companies), 1)
+                self.assertEqual(companies[0]["city"], "Aarhus")
+
     def test_skips_free_text_column(self):
         # A free-text "Notes" column must not become a bogus salary category.
         ws = FakeWorksheet([
