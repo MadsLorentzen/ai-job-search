@@ -42,6 +42,7 @@ export async function apiGet<T>(path: string): Promise<Envelope<T> | null> {
       response = await fetch(url, {
         headers: { "User-Agent": UA, Accept: "application/json" },
         redirect: "follow",
+        signal: AbortSignal.timeout(15000),
       })
     } catch (e) {
       // Connection refused / DNS failure / timeout: the API is unreachable.

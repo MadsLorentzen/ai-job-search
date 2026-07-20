@@ -14,6 +14,7 @@ export async function apiFetch<T>(path: string, params?: Record<string, string>)
       headers: {
         "x-csrf": "1",
       },
+      signal: AbortSignal.timeout(15000),
     })
 
     if (response.status === 429 || response.status >= 500) {

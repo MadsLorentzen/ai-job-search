@@ -217,6 +217,7 @@ export const detail = defineCommand({
           "Accept": "text/html,application/xhtml+xml",
           "User-Agent": "Mozilla/5.0",
         },
+        signal: AbortSignal.timeout(15000),
       })
 
       if (response.status === 404) {

@@ -14,7 +14,7 @@ export async function apiFetch<T>(path: string, params?: Record<string, string>)
   const maxRetries = 6
   let delay = 500
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const response = await fetch(url)
+    const response = await fetch(url, { signal: AbortSignal.timeout(15000) })
     if (response.status === 429 || response.status >= 500) {
       if (attempt === maxRetries) {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`)
@@ -43,6 +43,7 @@ export async function htmlFetch(url: string): Promise<string> {
         "Accept-Language": "da,en;q=0.9",
       },
       redirect: "follow",
+      signal: AbortSignal.timeout(15000),
     })
     if (response.status === 429 || response.status >= 500) {
       if (attempt === maxRetries) {

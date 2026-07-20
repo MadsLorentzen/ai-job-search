@@ -29,6 +29,7 @@ export async function htmlFetch(url: string): Promise<string> {
         "X-Requested-With": "XMLHttpRequest",
       },
       redirect: "follow",
+      signal: AbortSignal.timeout(15000),
     })
     if (response.status === 429 || response.status >= 500) {
       if (attempt === maxRetries) {
