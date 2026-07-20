@@ -114,6 +114,42 @@ gh repo fork MadsLorentzen/ai-job-search --clone
 cd ai-job-search
 ```
 
+### Decide public vs private before your first run
+
+A fork of a public repository is public. Once you start using the framework, the repo accumulates files describing **your** job search, not just the tooling:
+
+| File | What it would expose |
+|------|----------------------|
+| `seen_jobs.json` | Every posting scraped, with fit scores and your reasons for skipping roles |
+| `01-candidate-profile.md`, `CLAUDE.md` | Your full profile, including honest notes on your gaps |
+| `documents/interview/`, `documents/applications/` | Which employers you applied to, what you submitted, your weak points and prepared answers |
+| `job_search_tracker.csv` | Which roles you are pursuing right now |
+
+`.gitignore` covers all of these, plus CVs and cover letters. But an ignore rule only helps if the file lands where the rule expects, and any new tracking file you invent yourself starts out untracked-but-not-ignored. A current employer, a company you applied to, or an interviewer can read a public fork.
+
+**The safe default is a private fork:**
+
+```bash
+gh repo edit --visibility private
+```
+
+You lose nothing — upstream updates still reach you through the `upstream` remote, and `tools/check_upstream_updates.py` works unchanged.
+
+If you keep the fork public, run `git status` before each commit and confirm nothing personal is staged.
+
+**If you have already committed personal data to a public fork,** adding an ignore rule now is not enough — the file stays in history. Purge it, then force-push:
+
+```bash
+# Back the file up first: filter-branch removes it from your working tree too.
+git filter-branch --force --index-filter \
+  'git rm -r --cached --ignore-unmatch <path>' \
+  --prune-empty --tag-name-filter cat -- --all
+
+git push --force-with-lease origin <branch>
+```
+
+Note that force-pushing moves the branch pointer but does **not** guarantee the data is gone: orphaned commits can stay reachable by full SHA until GitHub garbage-collects them, which you may need to ask GitHub Support to do.
+
 Or manually: fork on GitHub, then clone your fork.
 
 ## 3. Install job search CLI dependencies
