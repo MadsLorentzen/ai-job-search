@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Zhengyi (Joe) Ou
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Zhengyi (Joe) Ou, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,70 +10,71 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
-
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+- **Name:** Zhengyi (Joe) Ou
+- **Location:** Atlanta, GA, USA (open to relocation anywhere in the US; open to remote/hybrid/onsite)
+- **Languages:** English (Fluent), Mandarin (Native)
+- **CV language:** English
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Graduated May 2026 (MSPH Biostatistics, Emory University), seeking full-time roles
+- **LinkedIn headline:** "Biostatistics @ Emory | Clinical Research • EHR Data • R • Python • SAS"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **Master of Science in Public Health (MSPH) in Biostatistics** (2024-2026) - Emory University, Rollins School of Public Health
+  - Topics: Clinical trial biostatistics, longitudinal analysis, SAS/R/SQL programming
+- **Bachelor of Science (B.S.) in Applied Mathematics and Statistics** (2020-2024) - Emory University, College of Arts and Sciences
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Research Assistant** (Oct 2025 - May 2026, current) - **Rollins School of Public Health, Emory University** (Atlanta, GA)
+  - Analyzed actigraphy data from post-stroke patients using Bayesian Weibull proportional hazards models in R, as part of an NIH-funded study
+  - Built an accompanying R Shiny dashboard to visualize recovery trajectories for clinical interpretation
+- **Clinical Research Data Analyst** (Aug 2025 - Dec 2025) - **Emory University School of Medicine** (Atlanta, GA)
+  - Led real-world clinical outcomes analyses for a longitudinal cohort of 2,648 patients evaluating comparative effectiveness of three orthobiologic treatments for knee osteoarthritis
+  - Developed reproducible R workflows for data preprocessing, validation, mixed-effects modeling, and publication-ready tables/figures
+- **Biostatistician Intern** (May 2025 - Aug 2025) - **Canming Data (CRO)** (Beijing, China)
+  - Supported SAP tableshell development, TLF generation, and MMRM-based primary efficacy analysis for a Phase III COPD clinical trial
+  - Worked with raw eCRF datasets and analysis population definitions (FAS, PPS, Safety Set, PK Set); supported QC checks
+- **Graduate Teaching Assistant** (Sep 2024 - Dec 2025) - **Emory University** (Atlanta, GA)
+  - QTM 151 (Scientific Programming, Python), QTM 210 (Probability)
+- **Research Assistant** (Jun 2023 - May 2024) - **Rollins School of Public Health, Emory University** (Atlanta, GA)
+  - Developed adaptive Thompson Sampling algorithms in Python for ERP-based brain-computer interface research
+  - Presented research findings at the Society for Neuroscience Annual Meeting
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** SAS, R, SQL/MySQL, Python, clinical trial biostatistics (MMRM, mixed-effects models, survival analysis, multiple imputation)
+- **Secondary:** SDTM/ADaM, TLF generation, SAP tableshells, ICH E9(R1), Git/GitHub, R Shiny
+- **Domain:** Clinical trials, real-world evidence, EHR-derived data analysis, healthcare analytics
+- **Software:** SAS, R, Python, SQL/MySQL, Git/GitHub
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- None on file
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- Co-author (2026, under review). "Comparative Efficacy of Cellular Injectates for Knee Osteoarthritis: A Retrospective Longitudinal Analysis of Real-World Patient Outcomes." American Journal of Sports Medicine.
+- Presenter (2023). "Adaptive Stimulus Selection via Thompson Sampling in ERP-Based Brain-Computer Interfaces." Society for Neuroscience Annual Meeting.
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- None on file
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
+<!-- Inferred from LinkedIn About - review before relying on this -->
+- **Mission-driven:** Motivated by seeing how data influences patient care, medical research, and public health decisions
+- **Analytical translator:** Enjoys transforming complex datasets into clear, actionable findings
+- **Strengths:** Statistical modeling, real-world evidence research, clinical data analysis
 - **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- **Thrives in:** Roles bridging statistics and clinical/healthcare decision-making
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Seeing how data and statistical analysis influence patient care, medical research, and public health decisions
+- Transforming complex clinical/healthcare datasets into clear, actionable findings
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- Clinical Research / CROs: (e.g. Canming Data and similar contract research organizations)
+- Healthcare / Academic Medical Centers: (e.g. Emory University School of Medicine)
+- Pharma, biotech, and health-tech companies (open, no specific companies identified yet)
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Employer explicitly states they do not offer visa sponsorship
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

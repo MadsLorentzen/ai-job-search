@@ -10,66 +10,65 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Primary (US job boards):
+- **indeed.com** - largest general US job board
+- **linkedin.com/jobs** - LinkedIn job listings (filter: United States, nationwide); also covered by `linkedin-search` CLI
+- **rasmussen.io / clinicaltrialjobs.com** - niche clinical trials / biostatistics job boards (optional)
+- **glassdoor.com** - another major US board (optional)
 
 Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for known target companies
+- Direct Google searches with `site:` filters for known target companies (pharma, CRO, academic medical centers, biotech)
 
 ## Query Categories
 
 Queries are grouped by priority. Each query should be combined with your location terms (e.g. your city, region, or metro area) where the site supports it.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: Biostatistics / Clinical Trial Programming
 
-These match your strongest and most desired career direction.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
-```
-
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
+These match the strongest and most desired career direction.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:indeed.com "Biostatistician" United States
+site:indeed.com "Clinical Research Data Analyst" United States
+site:linkedin.com/jobs "Biostatistician" United States
+site:linkedin.com/jobs "Statistical Programmer" United States
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
+### Priority 2: Clinical/Healthcare Data Analytics
 
-Adjacent roles you could pivot into.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
-```
-
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
+These match domain expertise in EHR-derived and real-world clinical data.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:indeed.com "Clinical Data Analyst" R OR SAS United States
+site:indeed.com "Research Data Analyst" clinical trials United States
+site:linkedin.com/jobs "Healthcare Data Scientist" United States
+```
+
+### Priority 3: Adjacent Roles
+
+Adjacent roles to pivot into.
+
+```
+site:indeed.com "Statistical Programmer" SAS United States
+site:indeed.com "Data Analyst" clinical trials United States
+```
+
+### Priority 4: Broader Data / Consulting
+
+Wider net for general data roles that value clinical trial or statistical modeling experience.
+
+```
+site:indeed.com "Data Scientist" clinical OR healthcare United States
+site:linkedin.com/jobs "Data Analyst" R SAS United States
 ```
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+Open to relocation anywhere in the US and to any work arrangement (remote/hybrid/onsite) - no location filter needed. When evaluating results:
+- **Ideal:** Remote roles, or roles in major biostatistics/pharma/CRO hubs (Boston, NJ/Philadelphia, RTP/NC, SF Bay Area)
+- **Acceptable:** Any US location with relocation support or reasonable relocation feasibility
+- **Borderline:** Roles requiring extensive international travel
+- **Too far / exclude:** Postings explicitly outside the US, or postings that explicitly state they do not offer visa sponsorship (hard deal-breaker - see `04-job-evaluation.md`)
 
 ## Date Filter
 

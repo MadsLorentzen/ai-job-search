@@ -1,8 +1,7 @@
-%% Example CV - [YOUR_NAME]
+%% Example CV - Zhengyi (Joe) Ou
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
 %% Compile with: lualatex main_example.tex
 %% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
@@ -24,18 +23,18 @@
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Zhengyi (Joe) Ou - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Zhengyi (Joe)}{Ou}
+\address{Atlanta, GA}{}{}
+\phone[mobile]{+1 404-926-6260}
+\email{joeou2002@gmail.com}
+\extrainfo{\href{https://linkedin.com/in/zhengyiou}{LinkedIn}, \href{https://github.com/2zOu2}{GitHub}}
 
 \begin{document}
 
@@ -46,7 +45,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{Biostatistics graduate (MSPH, Emory University) with hands-on experience across clinical trial biostatistics and real-world healthcare data analysis. Supported SAP tableshell development, TLF generation, and MMRM-based efficacy analysis for a Phase III COPD trial as a Biostatistician Intern, and led statistical analysis of a 2,648-patient longitudinal cohort at Emory University School of Medicine. Proficient in SAS, R, Python, and SQL, with working knowledge of ICH E9(R1) and CDISC/SDTM/ADaM standards.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +55,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{Clinical Programming}: SAS, R, SQL/MySQL, Python, Git/GitHub
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Clinical Trial \& Regulatory}: SAP Tableshells, TLF Generation, ICH E9(R1), Estimands, Analysis Populations, CDISC Concepts, SDTM/ADaM Fundamentals
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Statistical Methods}: MMRM, Linear Mixed Models, Longitudinal Analysis, GLM, Survival Analysis, Multiple Imputation, Power \& Sample Size Calculation
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Clinical Data \& Reporting}: Raw eCRF Data, Data Validation, QC Checks, Analysis Dataset Preparation, Reproducible Reporting, ETL
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Visualization \& Tools}: R Shiny, reproducible R/SAS workflows
 
 \end{itemize}
 
@@ -77,31 +76,47 @@
 \begin{itemize}
 
 % --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{2025--Present}{Research Assistant}{Rollins School of Public Health, Emory University}{Atlanta, GA}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item Analyzed actigraphy data from post-stroke patients using Bayesian Weibull proportional hazards models in R to characterize sleep-wake pattern recovery trajectories, as part of an NIH-funded study
+    \item Built an accompanying R Shiny dashboard to help visualize recovery trajectories for clinical interpretation
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{2025}{Clinical Research Data Analyst}{Emory University School of Medicine}{Atlanta, GA}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+    \item Led real-world clinical outcomes analyses for a longitudinal cohort of 2,648 patients and 3,452 knees evaluating comparative effectiveness of three orthobiologic treatments for knee osteoarthritis
+    \item Built analysis-ready longitudinal datasets from EHR-derived clinical outcomes, including follow-up visit alignment, missingness assessment, and QC workflows
+    \item Developed reproducible R workflows for data preprocessing, validation, statistical analysis, and generation of publication-ready tables and figures
+    \item Performed adjusted linear mixed-effects modeling to evaluate treatment effectiveness across repeated follow-up visits over a 24-month observation period
+\end{itemize}}}
+
+\vspace{3pt}
+
+\item{\cventry{2025}{Biostatistician Intern}{Canming Data (CRO)}{Beijing, China}{}{\vspace{1pt}
+\begin{itemize}
+    \item Supported SAP tableshell development and statistical programming activities for a randomized, double-blind, placebo-controlled Phase III COPD clinical trial
+    \item Prepared TLF shells and programming specifications for subject disposition, baseline characteristics, efficacy analyses, safety summaries, adverse events, and patient-level listings
+    \item Supported MMRM-based primary efficacy analysis for Week 12 change from baseline in trough FEV1, including LS mean estimates, treatment comparisons, and sensitivity analyses
+    \item Worked with raw eCRF datasets and reviewed analysis population definitions (FAS, PPS, Safety Set, PK Set); supported QC checks for treatment groups, missing values, and output validation
+\end{itemize}}}
+
+\vspace{3pt}
+
+\item{\cventry{2024--2025}{Graduate Teaching Assistant}{Emory University}{Atlanta, GA}{}{\vspace{1pt}
+\begin{itemize}
+    \item QTM 151 - Scientific Programming (Python)
+    \item QTM 210 - Probability
 \end{itemize}}}
 
 \vspace{3pt}
 
 % --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{2023--2024}{Research Assistant}{Rollins School of Public Health, Emory University}{Atlanta, GA}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+    \item Developed adaptive Thompson Sampling algorithms in Python for ERP-based brain-computer interface research
+    \item Integrated NLP-based language model dictionaries to improve real-time classification performance in noisy clinical signal environments; presented findings at the Society for Neuroscience Annual Meeting
 \end{itemize}}}
 
 \end{itemize}
@@ -114,15 +129,11 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
+\item{\cventry{2024--2026}{Master of Science in Public Health (MSPH), Biostatistics}{Emory University, Rollins School of Public Health}{Atlanta, GA}{}{}}
 
 \vspace{3pt}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
-}}
+\item{\cventry{2020--2024}{Bachelor of Science (B.S.), Applied Mathematics and Statistics}{Emory University, College of Arts and Sciences}{Atlanta, GA}{}{}}
 
 \end{itemize}
 
@@ -133,7 +144,7 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
+\item Mandarin (native), English (fluent).
 \end{itemize}
 
 % ============================================================
@@ -143,18 +154,20 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Publications}
 \vspace{1pt}
 \begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
+\item Co-author. ``Comparative Efficacy of Cellular Injectates for Knee Osteoarthritis: A Retrospective Longitudinal Analysis of Real-World Patient Outcomes.'' Under review, American Journal of Sports Medicine, 2026.
+\item Presenter. ``Adaptive Stimulus Selection via Thompson Sampling in ERP-Based Brain-Computer Interfaces.'' Society for Neuroscience Annual Meeting, 2023.
 \end{itemize}
 
 % ============================================================
 %     HONORS AND AWARDS (optional)
 % ============================================================
 
-\section{Honors and Awards}
-\vspace{1pt}
-\begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
-\end{itemize}
+% No awards on file yet - add entries here as they come up, e.g.:
+% \section{Honors and Awards}
+% \vspace{1pt}
+% \begin{itemize}
+% \item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+% \end{itemize}
 
 % ============================================================
 %     REFERENCES

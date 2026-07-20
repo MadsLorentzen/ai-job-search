@@ -10,10 +10,10 @@ framework_version: 1.0.0
 - **Phone:** +1 404-926-6260
 - **Email:** joeou2002@gmail.com
 - **LinkedIn:** linkedin.com/in/zhengyiou
-- **GitHub:** [YOUR_GITHUB_URL]
-- **Languages:** [YOUR_LANGUAGES with proficiency levels]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **Constraints:** [YOUR_COMMUTE_OR_LOCATION_CONSTRAINTS]
+- **GitHub:** github.com/2zOu2
+- **Languages:** English (Fluent), Mandarin (Native)
+- **Status:** Graduated May 2026 (MSPH Biostatistics, Emory), seeking full-time roles
+- **Constraints:** Open to relocation anywhere in the US, open to any work arrangement (remote/hybrid/onsite); requires visa sponsorship - exclude only postings that explicitly state no sponsorship
 
 ## Education
 

@@ -51,9 +51,9 @@ Does the role and company culture match the behavioral profile?
 **Red flags to research:** Department disorganization, work dominated by maintenance over development, poor chemistry with leadership, culture mismatches. Check reviews, media coverage, LinkedIn connections, and network contacts for insider perspective.
 
 ### 4. Location & Logistics (Pass/Fail + Notes)
-- Within commute range: PASS
-- Remote with occasional office: PASS
-- Requires relocation: FAIL (deal-breaker)
+- Anywhere in the US (remote, hybrid, or onsite): PASS - open to relocation, no fixed location constraint
+- Explicitly states no visa sponsorship: FAIL (deal-breaker)
+- Visa sponsorship not mentioned: PASS, but flag to confirm during application
 - Frequent international travel: FLAG (discuss with user)
 
 ### 5. Career Alignment & Motivation (0-100)
@@ -77,8 +77,8 @@ Does this role advance career goals and contain tasks that energize?
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
+- **Security**: Requires visa sponsorship - prioritize employers with a track record of sponsoring international candidates
+- **Flexibility**: Open to relocation anywhere in the US and to any work arrangement (remote/hybrid/onsite)
 - **Professional development**: [YOUR_GROWTH_PRIORITIES]
 
 ### 6. Salary Benchmark (Optional)

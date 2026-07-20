@@ -111,12 +111,11 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 
 **Create 2-3 profile statement templates for your main role types:**
 
-<!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Biostatistician / Clinical Trial Programming roles:**
+> Biostatistics graduate (MSPH, Emory University) with hands-on experience supporting SAP tableshell development, TLF generation, and MMRM-based efficacy analysis for a Phase III COPD clinical trial as a Biostatistician Intern at Canming Data. Proficient in SAS, R, and SQL, with working knowledge of ICH E9(R1), CDISC/SDTM/ADaM standards, and analysis population definitions (FAS, PPS, Safety Set, PK Set). Combines regulatory-aware clinical programming with a strong statistical modeling foundation to deliver accurate, audit-ready trial outputs.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For Clinical/Healthcare Data Analyst roles:**
+> Biostatistics graduate (MSPH, Emory University) with experience turning real-world EHR-derived clinical data into actionable outcomes research. Led statistical analysis of a 2,648-patient longitudinal cohort at Emory University School of Medicine, building reproducible R workflows for data validation, mixed-effects modeling, and publication-ready reporting. Skilled at translating clinical questions into rigorous statistical analyses in direct collaboration with physicians and research staff.
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 
