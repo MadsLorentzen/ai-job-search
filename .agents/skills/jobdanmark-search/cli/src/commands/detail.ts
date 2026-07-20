@@ -134,7 +134,14 @@ function overviewValue(root: ReturnType<typeof parse>, label: string): string | 
 
 function fromRenderedHtml(root: ReturnType<typeof parse>, slug: string, url: string): DetailResult {
   const pageTitle = cleanText(root.querySelector("title")?.text ?? "")
-  if (pageTitle.toLowerCase().includes("404") || root.text.toLowerCase().includes("siden blev ikke fundet")) {
+  const titleLower = pageTitle.toLowerCase()
+  const bodyText = root.text.toLowerCase()
+  if (
+    bodyText.includes("siden blev ikke fundet") ||
+    titleLower.startsWith("404") ||
+    titleLower.includes("page not found") ||
+    titleLower.includes("siden blev ikke fundet")
+  ) {
     throw new Error("NOT_FOUND")
   }
 

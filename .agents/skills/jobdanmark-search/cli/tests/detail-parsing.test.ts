@@ -49,4 +49,23 @@ describe("parseJobPostingFromHtml", () => {
     expect(parsed.description).toContain("identificere relevante datasæt");
     expect(parsed.applyUrl).toBe("https://jfm.career.emply.com/da/apply/example");
   });
+
+  test("does not reject titles containing '404' mid-phrase", () => {
+    const htmlWith404InTitle = HTML_WITHOUT_JSON_LD.replace(
+      "<title>Journalistisk udvikler s&#xF8;ges | jobdanmark</title>",
+      "<title>HTTP 404 Page Designer | jobdanmark</title>",
+    ).replace(
+      '<h3 class="title">Journalistisk udvikler s&#xF8;ges</h3>',
+      '<h3 class="title">HTTP 404 Page Designer</h3>',
+    );
+
+    const parsed = parseJobPostingFromHtml(
+      htmlWith404InTitle,
+      "http-404-designer",
+      "https://jobdanmark.dk/job/http-404-designer",
+    );
+
+    expect(parsed.title).toBe("HTTP 404 Page Designer");
+    expect(parsed.hiringOrganization.name).toBe("JFM");
+  });
 });
