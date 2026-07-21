@@ -157,8 +157,8 @@ export function parseRssDescription(desc: string): ParsedDescription {
 }
 
 export function extractJobIdFromUrl(url: string): string {
-  // URL format: https://jobbank.dk/job/{id}/{company-slug}/{title-slug}
-  const match = url.match(/\/job\/(\d+)\//)
+  // URL format: https://jobbank.dk/job/{id}[/{company-slug}/{title-slug}]
+  const match = url.match(/\/job\/(\d+)(?:\/|$)/)
   return match ? match[1] : ""
 }
 

@@ -86,4 +86,8 @@ describe("extractJobIdFromUrl", () => {
     expect(extractJobIdFromUrl("https://jobbank.dk/job/12345/acme/role")).toBe("12345");
     expect(extractJobIdFromUrl("https://jobbank.dk/job/not-a-number/acme/role")).toBe("");
   });
+
+  test("extracts ID from URL without trailing slug segments", () => {
+    expect(extractJobIdFromUrl("https://jobbank.dk/job/12345")).toBe("12345");
+  });
 });
