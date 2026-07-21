@@ -298,6 +298,14 @@ List the files written:
 
 Tell the user: "Both files are ready for your review. Open them to check the final output before compiling."
 
+### Application-Form Fields (Optional Third Artifact)
+
+Check whether the posting or the portal it came from asks for free-text fields the CV and cover letter don't cover — a self-introduction paragraph, structured project entries, a character-limited pitch, or a motivation/competency question under a word cap (see `.claude/skills/job-application-assistant/08-application-forms.md`, "When this applies"). If it does, or the user has already mentioned the portal, offer it in the same turn:
+
+> "This posting has free-text application fields I can draft too — [name the specific fields, e.g. a self-introduction paragraph and structured project entries]. Want those drafted?"
+
+**Only on yes**, read `08-application-forms.md` and draft the fields per its rules, grounded against the same three-source union as the CV and cover letter. Save per that file's "Output format" section. **On no, or when the posting has no such fields, say nothing further and move on** — this is an optional addition and never changes the default two-document output.
+
 ### Next Steps
 - **Submitted?** `/outcome <company>` logs it in the tracker and starts the per-application record that `/setup` later uses to calibrate the fit framework.
 - **Interview scheduled?** `/interview` builds a stage-specific prep pack from this posting and the documents you just created.
