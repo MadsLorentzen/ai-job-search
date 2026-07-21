@@ -157,5 +157,30 @@ class DetectColumnTypeTests(unittest.TestCase):
         self.assertEqual(companies[0]["categories"]["salary_index"], {"index": 105.5})
 
 
+    def test_parse_sheet_pairs_interleaved_count_index_columns_by_name(self):
+        ws = FakeWorksheet([
+            ("Company", "Antal kvinder", "Antal mænd", "Kvinder indeks", "Mænd indeks"),
+            ("Example Corp", 15, 20, 95.0, 108.0),
+        ])
+
+        companies = parse_sheet(ws)
+
+        categories = companies[0]["categories"]
+        self.assertEqual(categories["kvinder"], {"count": 15, "index": 95.0})
+        self.assertEqual(categories["mænd"], {"count": 20, "index": 108.0})
+
+    def test_parse_sheet_non_adjacent_columns_no_cross_match(self):
+        ws = FakeWorksheet([
+            ("Company", "Count_A", "Count_B", "Index_A", "Index_B"),
+            ("Example Corp", 10, 20, 100.0, 200.0),
+        ])
+
+        companies = parse_sheet(ws)
+
+        categories = companies[0]["categories"]
+        self.assertEqual(categories["a"], {"count": 10, "index": 100.0})
+        self.assertEqual(categories["b"], {"count": 20, "index": 200.0})
+
+
 if __name__ == "__main__":
     unittest.main()

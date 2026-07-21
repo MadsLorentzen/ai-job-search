@@ -132,53 +132,55 @@ def parse_sheet(ws, sheet_label=None):
             continue
         data_cols.append((i, h))
 
-    # Try to detect paired count/index columns per category
-    # Heuristic: if columns come in pairs and alternate count/index, group them
-    categories = []
-    i = 0
-    while i < len(data_cols):
-        col_idx, col_header = data_cols[i]
+    # Group data columns by detected type and derive category names
+    count_cols = []
+    index_cols = []
+    untyped_cols = []
+
+    for col_idx, col_header in data_cols:
         col_type = detect_column_type(col_header)
+        if col_type == "count":
+            cat_name = strip_type_patterns(col_header, COUNT_PATTERNS)
+            count_cols.append((col_idx, col_header, cat_name))
+        elif col_type == "index":
+            cat_name = strip_type_patterns(col_header, INDEX_PATTERNS)
+            index_cols.append((col_idx, col_header, cat_name))
+        else:
+            untyped_cols.append((col_idx, col_header))
 
-        if i + 1 < len(data_cols):
-            next_col_idx, next_col_header = data_cols[i + 1]
-            next_col_type = detect_column_type(next_col_header)
+    # Pair count/index columns by matching category name
+    categories = []
+    used_counts = set()
+    used_indexes = set()
 
-            # If we have a count/index pair, group them
-            if col_type == "count" and next_col_type == "index":
-                # Use the header minus the count/index suffix as category name
-                cat_name = strip_type_patterns(col_header, COUNT_PATTERNS)
-                if not cat_name:
-                    cat_name = f"category_{len(categories)+1}"
-                else:
-                    cat_name = cat_name.replace(" ", "_").replace("-", "_")
+    for ci, (c_idx, c_header, c_cat) in enumerate(count_cols):
+        for ii, (i_idx, i_header, i_cat) in enumerate(index_cols):
+            if ii in used_indexes:
+                continue
+            if c_cat and i_cat and c_cat == i_cat:
+                cat_name = c_cat.replace(" ", "_").replace("-", "_")
                 categories.append({
                     "name": cat_name,
-                    "count_col": col_idx,
-                    "index_col": next_col_idx,
+                    "count_col": c_idx,
+                    "index_col": i_idx,
                 })
-                i += 2
-                continue
-            elif col_type == "index" and next_col_type == "count":
-                cat_name = strip_type_patterns(col_header, INDEX_PATTERNS)
-                if not cat_name:
-                    cat_name = f"category_{len(categories)+1}"
-                else:
-                    cat_name = cat_name.replace(" ", "_").replace("-", "_")
-                categories.append({
-                    "name": cat_name,
-                    "index_col": col_idx,
-                    "count_col": next_col_idx,
-                })
-                i += 2
-                continue
+                used_counts.add(ci)
+                used_indexes.add(ii)
+                break
 
-        # Single column - treat as a standalone value
-        categories.append({
-            "name": col_header.lower().replace(" ", "_"),
-            "value_col": col_idx,
-        })
-        i += 1
+    # Remaining unmatched count columns become standalone (use original header)
+    for ci, (c_idx, c_header, _) in enumerate(count_cols):
+        if ci not in used_counts:
+            categories.append({"name": c_header.lower().replace(" ", "_"), "value_col": c_idx})
+
+    # Remaining unmatched index columns become standalone (use original header)
+    for ii, (i_idx, i_header, _) in enumerate(index_cols):
+        if ii not in used_indexes:
+            categories.append({"name": i_header.lower().replace(" ", "_"), "value_col": i_idx})
+
+    # Untyped columns become standalone
+    for col_idx, col_header in untyped_cols:
+        categories.append({"name": col_header.lower().replace(" ", "_"), "value_col": col_idx})
 
     # Parse data rows
     companies = []
