@@ -44,7 +44,10 @@ ALLOWED_PERMISSIONS = {
 # Personal-data ignore rules that must never disappear from .gitignore.
 REQUIRED_IGNORE_RULES = [
     "salary_data.json",
-    "job_scraper/seen_jobs.json",
+    # Depth-independent: the job-scraper skill resolves `job_scraper/` relative
+    # to its own directory, so the state file lands under .claude/skills/... and
+    # a repo-rooted rule silently fails to match it.
+    "**/job_scraper/seen_jobs.json",
     "cv/main_*.tex",
     "!cv/main_example.tex",
     "cover_letters/cover_*.tex",
@@ -53,6 +56,7 @@ REQUIRED_IGNORE_RULES = [
     "documents/diplomas/**",
     "documents/references/**",
     "documents/applications/**",
+    "documents/interview/**",
     "job_search_tracker.csv",
 ]
 

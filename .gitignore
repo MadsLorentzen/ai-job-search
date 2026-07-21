@@ -20,9 +20,12 @@ venv/
 
 # Personal data (never commit these)
 salary_data.json
-job_scraper/seen_jobs.json
-job_scraper/notion_sync.json
-job_scraper/*.md
+# Match at any depth: the job-scraper skill resolves `job_scraper/` relative to
+# its own directory, so these land at .claude/skills/job-scraper/job_scraper/*.
+# A rooted `job_scraper/...` pattern silently fails to match them.
+**/job_scraper/seen_jobs.json
+**/job_scraper/notion_sync.json
+**/job_scraper/*.md
 *_BehavioralReport.pdf
 linkedin_Profile.pdf
 
@@ -61,6 +64,9 @@ documents/diplomas/**
 documents/references/**
 documents/applications/**
 documents/postings/**
+# Interview prep and experience records: these name the employers applied to,
+# quote what was submitted, and set out the candidate's weak points.
+documents/interview/**
 !documents/**/.gitkeep
 
 # Personal job search tracking
