@@ -56,6 +56,7 @@ def parse_frontmatter(path: Path) -> dict:
     if not path.exists():
         return {}
     text = path.read_text(encoding="utf-8")
+    text = text.replace("\r\n", "\n")
     if not text.startswith("---\n"):
         return {}
     end = text.find("\n---", 4)
