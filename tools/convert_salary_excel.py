@@ -91,12 +91,14 @@ def detect_column_type(header):
 
 def parse_sheet(ws, sheet_label=None):
     """Parse a single worksheet into a list of company entries and detected categories."""
-    # Find header row
+    # Find header row and save cells
     header_row = None
+    header_cells = None
     for row_idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=False), start=1):
         for cell in row:
             if cell.value and header_matches(str(cell.value), COMPANY_PATTERNS):
                 header_row = row_idx
+                header_cells = row
                 break
         if header_row:
             break
@@ -107,7 +109,7 @@ def parse_sheet(ws, sheet_label=None):
 
     # Read headers
     headers = []
-    for cell in ws[header_row]:
+    for cell in header_cells:
         headers.append(str(cell.value).strip() if cell.value else "")
 
     # Find company and city columns

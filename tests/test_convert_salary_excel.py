@@ -1,4 +1,7 @@
 import unittest
+import tempfile
+import json
+from pathlib import Path
 from types import SimpleNamespace
 
 from tools.convert_salary_excel import (
@@ -7,6 +10,11 @@ from tools.convert_salary_excel import (
     header_matches,
     parse_sheet,
 )
+
+try:
+    import openpyxl
+except ImportError:
+    openpyxl = None
 
 
 class FakeWorksheet:
@@ -155,6 +163,34 @@ class DetectColumnTypeTests(unittest.TestCase):
 
         self.assertIn("salary_index", companies[0]["categories"])
         self.assertEqual(companies[0]["categories"]["salary_index"], {"index": 105.5})
+
+
+    @unittest.skipIf(openpyxl is None, "openpyxl not installed")
+    def test_parse_sheet_read_only_works(self):
+        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
+            path = Path(tmp.name)
+        try:
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.append(["Company", "Salary Index"])
+            ws.append(["Example Corp", 105.5])
+            wb.save(path)
+            wb.close()
+
+            wb2 = openpyxl.load_workbook(path, read_only=True, data_only=True)
+            try:
+                ws2 = wb2.active
+                companies = parse_sheet(ws2)
+                self.assertEqual(len(companies), 1)
+                self.assertEqual(companies[0]["company"], "Example Corp")
+                self.assertEqual(
+                    companies[0]["categories"]["salary_index"], {"index": 105.5}
+                )
+            finally:
+                wb2.close()
+        finally:
+            if path.exists():
+                path.unlink()
 
 
 if __name__ == "__main__":

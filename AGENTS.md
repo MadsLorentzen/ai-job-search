@@ -1,5 +1,5 @@
 ---
-framework_version: 1.0.0
+framework_version: 1.1.0
 ---
 
 # Agent Guidelines: AI Job Search
@@ -17,3 +17,23 @@ To prevent duplication and configuration drift across different AI agent framewo
    - Do not duplicate these rules or specifications. Treat `.claude/` files as the single source of truth.
 3. **Portal Search Skills:**
    - Job-portal search CLIs live under [.agents/skills/](.agents/skills/) in the portable Agent Skills format (with a `SKILL.md` per portal). Codex and Antigravity discover these automatically; the `/scrape` workflow in [.claude/skills/job-scraper/](.claude/skills/job-scraper/) orchestrates them.
+
+## Contribution Rules (Normativa Vinculante)
+
+Toda contribución a este repositorio **debe** cumplir estrictamente con:
+
+1. **CONTRIBUTING.md** — El archivo [CONTRIBUTING.md](CONTRIBUTING.md) es la autoridad máxima sobre qué se mergea y qué se declina. Sus reglas son vinculantes:
+   - Bug fixes requieren el caso fallido demostrado en tests.
+   - Un solo cambio por PR (no kitchen-sink).
+   - PRs se abren contra `MadsLorentzen/ai-job-search` (upstream), no contra el fork.
+   - El PR debe verificar que el `base repository` apunte a upstream antes de publicar.
+
+2. **Conventional Commits** — Todos los commits deben seguir el formato `tipo(alcance): descripción`. Tipos válidos: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
+
+3. **Pull Requests siempre** — Ningún cambio se pushea directamente a `master` del fork ni se commitea sin PR. El flujo correcto es:
+   - Branch con nombre `fix/` o `feat/` desde `master`.
+   - Push del branch al fork.
+   - PR contra upstream.
+   - Mantener `master` del fork sincronizado con `upstream/master`.
+
+4. **Verificación pre-PR** — Antes de abrir un PR, ejecutar: `python tools/lint_skills.py`, `python tools/check_framework_version.py`, y los test suites relevantes. Todos deben pasar.
