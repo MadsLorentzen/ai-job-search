@@ -19,7 +19,9 @@ documents/
 │       ├── job_posting.md       # The original job posting (paste as text)
 │       ├── cover_letter.tex     # The cover letter you submitted
 │       ├── cv_draft.tex         # The CV variant you submitted
+│       ├── submission.md        # Channel + screening answers, written by /submit
 │       └── outcome.md           # Result + notes (fill in after hearing back)
+├── application_answers.example.md  # Screening-answer template — copy to application_answers.md
 └── README.md                    # This file
 ```
 
@@ -109,6 +111,19 @@ A drop folder for raw job posting text when Claude can't fetch a page directly (
 
 ---
 
+## application_answers.example.md
+
+The canonical screening-answer file: identity, work authorization, availability,
+compensation floors/targets, years-of-experience quantities, a short-answer library, and
+screening yes/no defaults — the ~25 things almost every application form asks.
+
+**Setup:** copy it to `application_answers.md` (gitignored) and fill in your own answers.
+The **`/submit`** command reads it before filling any application form, and appends
+newly-answered questions back to it so the same question is never answered from scratch
+twice.
+
+---
+
 ## applications/
 
 A record of past job applications. Each subfolder is one application.
@@ -132,6 +147,8 @@ applications/
 **`cover_letter.tex`** — The cover letter you actually submitted. Used to extract writing style patterns and structure for `06-cover-letter-templates.md`.
 
 **`cv_draft.tex`** — The CV variant you submitted. Used to extract profile statement styles for `05-cv-templates.md`.
+
+**`submission.md`** — Written by the **`/submit`** command when it files an application through its portal: the date, channel (Greenhouse, LinkedIn Easy Apply, company careers page, etc.), posting URL, and the exact screening answers given on the form. Its purpose is keeping `/interview` from contradicting what the form actually said. Not present for applications submitted outside `/submit`.
 
 **`outcome.md`** — Fill this in after the application resolves. Format:
 
@@ -157,7 +174,7 @@ Any signal about what they valued or didn't?
 
 `in_progress` marks an application that is still open (used by `/outcome` for interview-stage updates before a resolution). `/setup`'s calibration draws conclusions only from applications with a final status.
 
-Application folders may also contain **`interview_prep_<stage>.md`** files written by `/interview` (one per interview stage, kept as history). `/setup` reads only the four files named above and ignores these.
+Application folders may also contain **`interview_prep_<stage>.md`** files written by `/interview` (one per interview stage, kept as history) and **`submission.md`** written by `/submit`. `/setup` reads only `job_posting.md`, `cover_letter.tex`, `cv_draft.tex`, and `outcome.md`, and ignores these extras.
 
 **What `/setup` learns from outcome.md:**
 - Which role types and companies have led to interviews (signals strong fit areas)

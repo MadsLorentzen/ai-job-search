@@ -72,6 +72,9 @@ documents/interview/**
 # Personal job search tracking
 job_search_tracker.csv
 
+# Screening-answer library filled in from the .example.md template - personal data
+documents/application_answers.md
+
 # Gmail sync state (message IDs, subjects - personal data)
 gmail_sync/
 
