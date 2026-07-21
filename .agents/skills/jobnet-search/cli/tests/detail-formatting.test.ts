@@ -70,6 +70,26 @@ describe("formatDetailPlain", () => {
     expect(formatted).not.toContain("&amp;");
   });
 
+  test("decodes numeric HTML entities (decimal &#229; and hex &#xE5;)", () => {
+    const formatted = formatDetailPlain(
+      detail({ body: "<p>R&#229;dgivning &amp; &#xE5;rligt</p>" }),
+    );
+
+    expect(formatted).toContain("Rådgivning & årligt");
+    expect(formatted).not.toContain("&#229;");
+    expect(formatted).not.toContain("&#xE5;");
+  });
+
+  test("decodes supplementary-plane code points (&#128512;)", () => {
+    const formatted = formatDetailPlain(
+      detail({ body: "<p>Growth &#128512; &#x1F600;</p>" }),
+    );
+
+    expect(formatted).toContain("Growth 😀 😀");
+    expect(formatted).not.toContain("&#128512;");
+    expect(formatted).not.toContain("&#x1F600;");
+  });
+
   test("uses placeholders when optional city, deadline, and apply URL are absent", () => {
     const formatted = formatDetailPlain(
       detail({

@@ -41,6 +41,15 @@ export function writeError(error: string, code: string): void {
   process.stderr.write(JSON.stringify({ error, code }) + "\n")
 }
 
+/**
+ * Convert a Unicode code point to a string. Uses `fromCodePoint` (not
+ * `fromCharCode`) so supplementary-plane code points (e.g. emoji, U+1F600)
+ * decode correctly, and drops out-of-range values instead of throwing.
+ */
+function numericEntity(cp: number): string {
+  return cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : ""
+}
+
 export function stripHtml(html: string): string {
   return html
     .replace(/<[^>]*>/g, " ")
@@ -50,6 +59,8 @@ export function stripHtml(html: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, " ")
+    .replace(/&#(\d+);/g, (_, dec) => numericEntity(parseInt(dec, 10)))
+    .replace(/&#[xX]([0-9a-fA-F]+);/g, (_, hex) => numericEntity(parseInt(hex, 16)))
     .replace(/\s+/g, " ")
     .trim()
 }
