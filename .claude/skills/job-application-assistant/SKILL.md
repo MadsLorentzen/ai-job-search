@@ -5,7 +5,7 @@ description: >
   and preparing for interviews. Triggers on keywords like: job posting, job application, CV,
   cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling
 allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Edit, Write, AskUserQuestion
-framework_version: 1.0.1
+framework_version: 1.1.0
 ---
 
 # Job Application Assistant
@@ -56,6 +56,7 @@ When the user provides a job posting (URL or text), follow this workflow:
 | `05-cv-templates.md` | LaTeX CV structure and tailoring rules |
 | `06-cover-letter-templates.md` | LaTeX cover letter structure and tailoring rules |
 | `07-interview-prep.md` | STAR examples, tough questions, roleplay guidelines |
+| `08-application-forms.md` | Portal free-text fields: self-introduction, project entries, character-limited pitches |
 
 ---
 
