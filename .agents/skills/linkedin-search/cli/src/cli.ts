@@ -36,6 +36,13 @@ function parseFlags(argv: string[]): Flags {
   return flags
 }
 
+/** Resolve a flag to a string: --flag "value" -> "value", bare --flag -> defaultValue */
+function stringFlag(raw: string | boolean | string[], defaultValue?: string): string | undefined {
+  if (typeof raw === "string") return raw
+  if (raw === true) return defaultValue
+  return undefined
+}
+
 const HELP = `linkedin-cli — search jobs on LinkedIn (any country/region, plus remote)
 
 USAGE
@@ -113,7 +120,7 @@ async function main(): Promise<number> {
       query: typeof flags.query === "string" ? flags.query : undefined,
       location,
       jobage: flags.jobage ? parseInt(flags.jobage as string, 10) : 9999,
-      remote: typeof flags.remote === "string" ? flags.remote : undefined,
+      remote: stringFlag(flags.remote, "remote"),
       page: flags.page ? Math.max(1, parseInt(flags.page as string, 10)) : 1,
       limit: flags.limit ? parseInt(flags.limit as string, 10) : undefined,
       format: (["json", "table", "plain"].includes(fmt) ? fmt : "json") as SearchOpts["format"],

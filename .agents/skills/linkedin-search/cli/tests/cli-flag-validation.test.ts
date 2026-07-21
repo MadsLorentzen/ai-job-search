@@ -67,6 +67,20 @@ describe("LinkedIn CLI flag validation", () => {
     });
   });
 
+  describe("--remote flag", () => {
+    test("bare --remote (no value) defaults to 'remote', no error", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--remote", "--limit", "1"]);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).not.toBe("BAD_ARG");
+    });
+
+    test("--remote hybrid passes through as string", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--remote", "hybrid", "--limit", "1"]);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).not.toBe("BAD_ARG");
+    });
+  });
+
   describe("existing validations (regression)", () => {
     test("missing --location exits 1 with NO_LOCATION", async () => {
       const result = await runCLI(["search"]);
