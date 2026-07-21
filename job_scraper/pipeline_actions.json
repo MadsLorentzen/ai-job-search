@@ -58,7 +58,7 @@
         }
       ],
       "follow_up_due": "2026-06-25",
-      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths — Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
+      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths \u2014 Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
     },
     "https://jobs.ashbyhq.com/perplexity/dd9c7675-1369-4320-afdb-c8caef22ce3a": {
       "outreach": [
@@ -72,7 +72,7 @@
         }
       ],
       "follow_up_due": "2026-06-25",
-      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths — Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
+      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths \u2014 Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
     },
     "https://jobs.ashbyhq.com/perplexity/5ec96ca1-319a-4b85-99ce-e06629099cf9": {
       "outreach": [
@@ -86,7 +86,7 @@
         }
       ],
       "follow_up_due": "2026-06-25",
-      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths — Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
+      "fallback_plan": "If Jeff doesnt respond by 2026-06-25: pivot to other paths \u2014 Jesse Zhang -> Mikkoh Chen (2-hop, verify current Perplexity affiliation), Alex Ortiz -> none captured for Perplexity. Tier 3 coach dashboard has 1 in-network at Perplexity per summary."
     },
     "https://jobs.ashbyhq.com/cursor/123af173-6f9b-4089-9d96-d0c028b9e841": {
       "outreach": [
@@ -108,7 +108,7 @@
           "channel": "linkedin_dm",
           "to": "Alex Ortiz",
           "via_broker": null,
-          "note": "Asked Alex Ortiz about Cursor connect (Jordan MacDonald, 2-hop). Re: PM Agent Harness role — direct match for AJs Warmode work.",
+          "note": "Asked Alex Ortiz about Cursor connect (Jordan MacDonald, 2-hop). Re: PM Agent Harness role \u2014 direct match for AJs Warmode work.",
           "outcome": "pending"
         }
       ],
@@ -175,7 +175,7 @@
         "cv_pdf": "cv/main_chime.pdf",
         "cover_letter": "cover_letters/cover_chime_growth_pmm.tex",
         "cover_letter_pdf": "cover_letters/cover_chime_growth_pmm.pdf",
-        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. SF, 4 days/week in office — conflicts with AJ NYC on-site deal-breaker. Materials built; held in triage for human review, NOT auto-apply."
+        "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. SF, 4 days/week in office \u2014 conflicts with AJ NYC on-site deal-breaker. Materials built; held in triage for human review, NOT auto-apply."
       }
     },
     "https://jobs.ashbyhq.com/plaid/0661cdab-9bc9-4614-8d2f-8f38ba4f0ec3": {
@@ -805,7 +805,31 @@
         "cover_letter": "cover_letters/cover_shelf_gtm.tex",
         "cover_letter_pdf": "cover_letters/cover_shelf_gtm.pdf",
         "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Strong fit. AI knowledge-automation, hands-on GTM/growth IC. NYC in-person."
-      }
+      },
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "application",
+          "to": "Shelf",
+          "note": "Auto-submitted application (CV+cover). Confirmation received.",
+          "outcome": "submitted"
+        }
+      ],
+      "notes": "Cold applied 2026-07-19; Kevin Ford (Head of Marketing at Shelf, and the role reports closely to Head of Marketing = effectively the hiring manager) CALLED AJ morning of 2026-07-20 (~12hr after apply). Very strong signal. Shelf = GenAI context/answer-automation platform (agentic AI), Series B $52.5M (Tiger Global+Insight), customers incl John Deere, HelloFresh, Glovo, HBR; HQ Stamford CT but THIS role is NYC. Role = high-agency generalist \"force multiplier\" on core team (Operator/Orchestrator/Creative Force), builds from blank page across growth/campaigns/automation/events/strategy, AI-native leverage. FIT: strong on builder/0-1/high-agency/AI-native/first-principles (Warmode/Matic/Claude Code = direct match). CAVEATS: generalist utility role under Head of Marketing (level likely below VP target; more operator/EiR); has creative/copy/brand/events lean. ACTION: call Kevin back promptly. | 2026-07-21 call set. 5-DAY IN-OFFICE NYC (geo OK but full in-office). AJ: decent fit + on-thesis; COMP is the crux. NOTE: Substack Russell screen also 7/21 2:30pm ET -- avoid overlap.",
+      "events": [
+        {
+          "date": "2026-07-20",
+          "channel": "inbound",
+          "outcome": "call_attempt",
+          "note": "Kevin Ford (Head of Marketing, Shelf) called AJ ~morning, day after cold apply. Callback pending. Hiring-manager-level inbound = hot signal."
+        },
+        {
+          "date": "2026-07-21",
+          "channel": "interview",
+          "outcome": "scheduled",
+          "note": "AJ called Kevin back; 30-min call scheduled for Tue 7/21. Role = 5 days in-office NYC. AJ read: decent skills/impact fit, company on-thesis. KEY VARIABLE = compensation (Series B operator role, likely below VP-level comp). Clarify scope/level then surface their range."
+        }
+      ]
     },
     "https://job-boards.greenhouse.io/altanaai/jobs/7748625003": {
       "materials": {
@@ -982,6 +1006,12 @@
           "channel": "interview",
           "outcome": "advanced",
           "note": "PASSED internal phone screen (round 1). Advancing to a Topgrading interview (chronological, full-career-history deep-dive methodology)."
+        },
+        {
+          "date": "2026-07-19",
+          "channel": "interview",
+          "outcome": "closed",
+          "note": "Role no longer active (per AJ). Process ended before Topgrading round. Prep doc retained for reuse."
         }
       ],
       "notes": "Round 2 = Topgrading interview (2026-06-30 advance). Prep: chronological career walkthrough, accomplishments+failures per role, TORC (reference-check honesty).",
@@ -1016,7 +1046,16 @@
         "cover_letter": "cover_letters/cover_headway_pricing.tex",
         "cover_letter_pdf": "cover_letters/cover_headway_pricing.pdf",
         "notes": "Built 2026-06-24 (tonight sweep, expanded universe). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. NY. Pricing/monetization PM = AJ depth (Beacons 120% pricing). Pricing JD body not fetchable; tailored from title+company. Staff-IC vs VP."
-      }
+      },
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "application",
+          "to": "Headway",
+          "note": "Auto-submitted application (CV+cover). Confirmation received.",
+          "outcome": "submitted"
+        }
+      ]
     },
     "https://boards.greenhouse.io/faire/jobs/8564041002?gh_jid=8564041002": {
       "materials": {
@@ -1035,7 +1074,16 @@
         "cover_letter": "cover_letters/cover_faire_growth.tex",
         "cover_letter_pdf": "cover_letters/cover_faire_growth.pdf",
         "notes": "Built 2026-06-24 (tonight sweep, expanded universe). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. NYC. Growth-loop/marketplace product. Strong (B2B2C loops, marketplace). Staff-IC vs VP; wholesale-B2B by analogy."
-      }
+      },
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "application",
+          "to": "Faire",
+          "note": "Auto-submitted application (CV+cover). Confirmation received.",
+          "outcome": "submitted"
+        }
+      ]
     },
     "https://job-boards.greenhouse.io/life360/jobs/8562336002": {
       "materials": {
@@ -1063,7 +1111,16 @@
         "cover_letter": "cover_letters/cover_decagon.tex",
         "cover_letter_pdf": "cover_letters/cover_decagon.pdf",
         "notes": "Built 2026-06-24 (AI-PM sweep). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. Agentic-AI PM = AJ exact AI-native lane (Warmode/Matic on Claude Code). NYC. Decagon customers Notion/Duolingo/Affirm."
-      }
+      },
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "application",
+          "to": "Decagon",
+          "note": "Auto-submitted application (CV+cover). Confirmation received.",
+          "outcome": "submitted"
+        }
+      ]
     },
     "https://jobs.ashbyhq.com/pinecone/7261adcb-026d-4552-8f89-7a46156c40c5": {
       "materials": {
@@ -1082,7 +1139,16 @@
         "cover_letter": "cover_letters/cover_linear.tex",
         "cover_letter_pdf": "cover_letters/cover_linear.pdf",
         "notes": "Built 2026-06-24 (AI-PM sweep). Recompiled CV 2pp/cover 1pp, 0 err, no em-dash. Remote NA. Engineer-PM + PLG + craft, strong. IC vs VP framed deliberate."
-      }
+      },
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "application",
+          "to": "Linear",
+          "note": "Auto-submitted application (CV+cover). Confirmation received.",
+          "outcome": "submitted"
+        }
+      ]
     },
     "https://jobs.lever.co/mistral/ca22a1ac-c87e-4463-914a-6753ca79318c": {
       "materials": {
@@ -1210,7 +1276,22 @@
       "notes": "ngrok-twin: dev-infra PLG, Principal PM Growth, fully remote. Top fit of the 2026-06-28 sweep. Worth tailored package + referral check. | Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
     },
     "https://jobs.ashbyhq.com/gorgias/7025f159-96f0-4621-81e9-7b985c8a959d": {
-      "notes": "NYC, AI, ecommerce-SaaS growth surface."
+      "notes": "NYC, AI, ecommerce-SaaS growth surface.",
+      "materials": {
+        "cv": "cv/main_gorgias.tex",
+        "cv_pdf": "cv/main_gorgias.pdf",
+        "cover": "cover_letters/cover_gorgias.tex",
+        "cover_pdf": "cover_letters/cover_gorgias.pdf"
+      },
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "application",
+          "to": "Gorgias",
+          "note": "Auto-submitted application (CV, resume-only). Confirmation received.",
+          "outcome": "submitted"
+        }
+      ]
     },
     "https://jobs.ashbyhq.com/commure/613f9eab-8af5-4f8a-bf99-cf5d2a3962aa": {
       "notes": "Growth-leadership title, remote-friendly. Healthcare-AI domain (minor gap)."
@@ -1325,13 +1406,34 @@
       }
     },
     "https://capitalone.wd12.myworkdayjobs.com/job/McLean-VA/Senior-Product-Manager--Growth---Capital-One-Shopping--Remote-Eligible-_R246326-1": {
-      "notes": "Sr PM Growth, Capital One Shopping (Remote-Eligible). Clean growth-PM + remote. Consumer shopping/commerce surface. Added 2026-07-15."
+      "notes": "Sr PM Growth, Capital One Shopping (Remote-Eligible). Clean growth-PM + remote. Consumer shopping/commerce surface. Added 2026-07-15.",
+      "materials": {
+        "cv": "cv/main_capitalone.tex",
+        "cv_pdf": "cv/main_capitalone.pdf",
+        "cover": "cover_letters/cover_capitalone.tex",
+        "cover_pdf": "cover_letters/cover_capitalone.pdf"
+      }
     },
     "https://jobs.ashbyhq.com/suno/ea10a217-1e03-4620-b5bd-e43b67dadbb2": {
       "notes": "Suno PM, NYC, AI-core consumer. NOTE: AJ has existing warm/personal path to Suno -- route via that. Added 2026-07-15."
     },
     "https://jobs.ashbyhq.com/baseten/342a4c0e-7da3-490e-927f-dffb51f847b2": {
-      "notes": "Baseten PM Enterprise (SF also NY). AI infra/inference. NY option = geo OK. Added 2026-07-15."
+      "notes": "Baseten PM Enterprise (SF also NY). AI infra/inference. NY option = geo OK. Added 2026-07-15.",
+      "materials": {
+        "cv": "cv/main_baseten.tex",
+        "cv_pdf": "cv/main_baseten.pdf",
+        "cover": "cover_letters/cover_baseten.tex",
+        "cover_pdf": "cover_letters/cover_baseten.pdf"
+      },
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "application",
+          "to": "Baseten",
+          "note": "Auto-submitted application (CV, resume-only). Confirmation received.",
+          "outcome": "submitted"
+        }
+      ]
     },
     "https://jobs.ashbyhq.com/harvey/d1669780-6956-4e5b-bc84-590267c565ea": {
       "notes": "Harvey Staff PM, Vault (NY). AI legal. NOTE: AJ already has Harvey referral path (Founding Product Growth Lead). Added 2026-07-15."
@@ -1361,7 +1463,22 @@
       }
     },
     "https://jobs.ashbyhq.com/workos/257e30d0-eaa3-4ce1-a47d-2b2c4f65cf1a": {
-      "notes": "WorkOS PM-Growth (US/Canada REMOTE). Dev-infra PLG growth PM = ngrok/Netlify-twin. Remote geo. Clean fit. Added 2026-07-19."
+      "notes": "WorkOS PM-Growth (US/Canada REMOTE). Dev-infra PLG growth PM = ngrok/Netlify-twin. Remote geo. Clean fit. Added 2026-07-19.",
+      "materials": {
+        "cv": "cv/main_workos.tex",
+        "cv_pdf": "cv/main_workos.pdf",
+        "cover": "cover_letters/cover_workos.tex",
+        "cover_pdf": "cover_letters/cover_workos.pdf"
+      },
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "application",
+          "to": "WorkOS",
+          "note": "Auto-submitted application (CV, resume-only). Confirmation received.",
+          "outcome": "submitted"
+        }
+      ]
     },
     "https://jobs.ashbyhq.com/perplexity/b349ec0e-be02-47b0-8595-8de0dbb074c5": {
       "notes": "Perplexity Enterprise Product Growth Manager (SF). NOTE: AJ ALREADY in Perplexity process (Demand Gen Lead, Raman Malik HM round). SF geo. Flag to recruiter/Raman as adjacent interest; possible alt if DemandGen does not land. Added 2026-07-19."
@@ -1372,7 +1489,7 @@
           "date": "2026-07-19",
           "channel": "other",
           "to": "Upward Coach",
-          "note": "Coach referral request submitted via Upward portal for Warner Bros. Discovery — Senior Product Manager, Growth (International)",
+          "note": "Coach referral request submitted via Upward portal for Warner Bros. Discovery \u2014 Senior Product Manager, Growth (International)",
           "outcome": "pending"
         }
       ]
@@ -1383,8 +1500,58 @@
           "date": "2026-07-19",
           "channel": "other",
           "to": "Upward Coach",
-          "note": "Coach referral request submitted via Upward portal for Cockroach Labs — VP, Growth Marketing",
+          "note": "Coach referral request submitted via Upward portal for Cockroach Labs \u2014 VP, Growth Marketing",
           "outcome": "pending"
+        }
+      ]
+    },
+    "https://www.linkedin.com/jobs/view/4429156672/": {
+      "outreach": [
+        {
+          "date": "2026-07-20",
+          "channel": "other",
+          "to": "Upward Coach",
+          "note": "Coach referral request submitted via Upward portal for Rippling \u2014 Head of Automated Growth",
+          "outcome": "pending"
+        }
+      ]
+    },
+    "https://www.linkedin.com/jobs/view/4422640417/": {
+      "outreach": [
+        {
+          "date": "2026-07-20",
+          "channel": "other",
+          "to": "Upward Coach",
+          "note": "Coach referral request submitted via Upward portal for Snap Inc. \u2014 Head of User Growth Strategy & Operations",
+          "outcome": "pending"
+        }
+      ]
+    },
+    "https://www.linkedin.com/jobs/view/4367640179/": {
+      "outreach": [
+        {
+          "date": "2026-07-20",
+          "channel": "other",
+          "to": "Upward Coach",
+          "note": "Coach referral request submitted via Upward portal for Moloco \u2014 Senior Growth Director, Moloco Ads",
+          "outcome": "pending"
+        }
+      ]
+    },
+    "https://www.brex.com/careers/8436528002?gh_jid=8436528002": {
+      "materials": {
+        "cv": "cv/main_brex.tex",
+        "cv_pdf": "cv/main_brex.pdf",
+        "cover": "cover_letters/cover_brex.tex",
+        "cover_pdf": "cover_letters/cover_brex.pdf"
+      },
+      "outreach": [
+        {
+          "date": "2026-07-19",
+          "channel": "application",
+          "to": "Brex",
+          "note": "Auto-submitted application (CV+cover). Confirmation received.",
+          "outcome": "submitted"
         }
       ]
     }
