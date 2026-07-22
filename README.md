@@ -318,6 +318,10 @@ To wipe your profile data and start fresh:
 
 `/reset` shows exactly what will be deleted and requires you to type `RESET` to confirm. Nothing is deleted until you do.
 
+### Staying up to date
+
+Upstream moves fast. Rather than pulling raw `master` and hoping, update your fork to a tagged [release](../../releases) - a vetted checkpoint described in [CHANGELOG.md](CHANGELOG.md). `python3 tools/check_upstream_updates.py` previews exactly which of your personalized files an update touches before you merge. Full walkthrough in [SETUP.md, section 8](SETUP.md#8-pulling-upstream-updates-into-your-fork).
+
 ## Tips for better results
 
 ### Profile depth matters

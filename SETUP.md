@@ -288,6 +288,8 @@ These commands apply to the stock templates (moderncv CV, `cover.cls` cover lett
 
 Upstream keeps improving the methodology files your fork has personalized, so plan for updates from day one:
 
+**Prefer releases over raw `master`.** Tagged [releases](../../releases) are vetted checkpoints, each described in [CHANGELOG.md](CHANGELOG.md). Updating to a tag pulls a stable, documented state instead of whatever `master` happens to be mid-review. Fetch tags with `git fetch upstream --tags` and merge a release (for example `git merge v1.0.0`) when you want stability; pull `master` directly only when you specifically want the latest unreleased changes. The steps below apply either way - substitute the release tag for `upstream/master` where you see it.
+
 1. **Commit your personalization to your fork.** `/setup` edits CLAUDE.md and the profile skill files in place — those edits are *yours*, and your fork is private working space, so commit them. The genuinely sensitive files (tracker, salary data, `documents/`, application archives) are gitignored and never enter git either way. An uncommitted working tree is the most common reason `git pull` refuses to merge at all (`Your local changes ... would be overwritten`).
 2. **Preview what changed before pulling:**
    ```bash

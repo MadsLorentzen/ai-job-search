@@ -32,6 +32,7 @@ A new command therefore faces a high bar. The test that admitted the existing on
 Reviews here are empirical. Bug reports are reproduced on master before the fix is considered; "all tests green" is checked against whether the tests can distinguish master from the fix. PRs whose premise doesn't reproduce get declined even when the code is fine - it has happened ([#35]'s converter fix, [#52]'s first version). You can make this fast:
 
 - State the failing case and how to reproduce it.
+- **Reproduce on the real path, not a constructed input.** A test that fails on master and passes on the fix is necessary but not sufficient: the failing input has to be one the workflow actually produces, not one the test hand-builds. Show the failure through the path the code really runs - the documented CLI invocation, real portal output, an actual data file - not a synthetic value fed straight to the function. A fix whose only demonstration is an input the real code path never receives gets declined even though its test is green.
 - Put CLI tests in `.agents/skills/<name>/cli/tests/` (bun test, network-free where possible); Python tool tests in `tests/`.
 - Run what CI runs: `python3 tools/lint_skills.py`, `python3 tools/check_framework_version.py`, `bun run typecheck` in touched CLIs, and the relevant test suites.
 
