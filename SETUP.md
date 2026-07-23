@@ -296,7 +296,7 @@ Upstream keeps improving the methodology files your fork has personalized, so pl
    git fetch upstream    # or origin, if you cloned the template directly
    python3 tools/check_upstream_updates.py
    ```
-   It compares the `framework_version` markers in your framework files against upstream and lists exactly which methodology files changed, with the diff command for each.
+   It compares the `framework_version` markers in your framework files against upstream and lists exactly which methodology files changed, with the diff command for each. This only covers the 9 methodology files under `.claude/skills/job-application-assistant/` — it won't tell you about changes elsewhere (portal CLIs, `tools/`, CI). For that, `python3 tools/check_upstream_commits.py` lists every upstream commit your fork doesn't have yet, regardless of which files it touched.
 3. **Merge normally.** `git merge upstream/master` (or `git pull`) three-way-merges upstream's edits around your personalization; because methodology edits rarely touch the lines `/setup` filled in, most updates land cleanly. A conflict in a personalized file is a *feature*, not a failure — it means upstream changed methodology in a section you customized, and the version marker plus its changelog commit tell you why. Resolve by keeping your data and adopting the methodology change around it.
 
 ## Troubleshooting
