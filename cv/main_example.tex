@@ -1,18 +1,13 @@
-%% Example CV - [YOUR_NAME]
-%% Comprehensive overview of all competencies, experience, and achievements.
-%% Use as a master reference when tailoring role-specific CVs.
+%% CV Master Template
+%% Complete competency, experience, and achievement overview.
+%% Use as master reference when building role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
 %% Compile with: lualatex main_example.tex
-%% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
 \documentclass[11pt,a4paper,sans]{moderncv}
 \moderncvstyle{banking}
 \moderncvcolor{blue}
 
-% Force both first and last name AND section headings to render in moderncv
-% blue (color1). Default banking on lualatex+MiKTeX leaves these black, which
-% looks inconsistent with the rest of the blue accent scheme.
 \renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
 \renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
 \renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
@@ -27,15 +22,16 @@
     pdftitle={[YOUR_NAME] - CV},
     pdfpagemode=FullScreen,
 }
-\usepackage[scale=0.80]{geometry}
+\usepackage[scale=0.77]{geometry}
 \usepackage{import}
+\usepackage{needspace}
 
-% personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+% Personal data — replace placeholders with your own information
+\name{[YOUR_FIRST_NAME]}{[YOUR_LAST_NAME]}
+\address{[YOUR_CITY], [YOUR_REGION], [YOUR_COUNTRY]}{}{}
+\phone[mobile]{[YOUR_PHONE]}
+\email{[YOUR_EMAIL]}
+\extrainfo{\href{[YOUR_LINKEDIN_URL]}{LinkedIn}, \href{[YOUR_GITHUB_URL]}{GitHub}}
 
 \begin{document}
 
@@ -46,7 +42,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{[Your professional summary here — 3-4 sentences that serve as an elevator pitch. Focus on your key skills, experience, and what you bring to the employer.]}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +52,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{[Skill Category 1]}: [Tool 1], [Tool 2], [Tool 3] — [brief description of application]
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{[Skill Category 2]}: [Tool 1], [Tool 2], [Tool 3] — [brief description of application]
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{[Skill Category 3]}: [Tool 1], [Tool 2], [Tool 3] — [brief description of application]
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{[Skill Category 4]}: [Tool 1], [Tool 2], [Tool 3] — [brief description of application]
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{[Skill Category 5]}: [Tool 1], [Tool 2], [Tool 3] — [brief description of application]
 
 \end{itemize}
 
@@ -76,32 +72,23 @@
 \vspace{3pt}
 \begin{itemize}
 
-% --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% --- Most recent role ---
+\item{\cventry{[START_DATE]--[END_DATE]}{[JOB_TITLE]}{[COMPANY_NAME]}{[LOCATION]}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item [Key achievement/responsibility 1 — use specific tools and metrics]
+    \item [Key achievement/responsibility 2 — focus on measurable results]
+    \item [Key achievement/responsibility 3 — highlight collaboration]
+    \item [Key achievement/responsibility 4 — show initiative]
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% --- Previous role ---
+\item{\cventry{[START_DATE]--[END_DATE]}{[JOB_TITLE]}{[COMPANY_NAME]}{[LOCATION]}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-\end{itemize}}}
-
-\vspace{3pt}
-
-% --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
-\begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+    \item [Key achievement/responsibility 1]
+    \item [Key achievement/responsibility 2]
+    \item [Key achievement/responsibility 3]
 \end{itemize}}}
 
 \end{itemize}
@@ -114,15 +101,23 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
+\item{\cventry{[YEAR]}{[DEGREE_TITLE]}{[INSTITUTION_NAME]}{[COUNTRY]}{}{[Key topics covered]}}
 
-\vspace{3pt}
+\end{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
-}}
+% ============================================================
+%     CERTIFICATIONS
+% ============================================================
+
+\section{Certifications}
+\vspace{1pt}
+\begin{itemize}
+
+\item \textbf{[Domain 1]}: [Certification 1] ([Issuer], [Year]), [Certification 2] ([Issuer], [Year])
+
+\item \textbf{[Domain 2]}: [Certification 1] ([Issuer], [Year]), [Certification 2] ([Issuer], [Year])
+
+\item \textbf{[Domain 3]}: [Certification 1] ([Issuer], [Year]), [Certification 2] ([Issuer], [Year])
 
 \end{itemize}
 
@@ -133,27 +128,7 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
-\end{itemize}
-
-% ============================================================
-%     PUBLICATIONS (optional)
-% ============================================================
-
-\section{Publications}
-\vspace{1pt}
-\begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
-% ============================================================
-
-\section{Honors and Awards}
-\vspace{1pt}
-\begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item [Language 1] ([proficiency level]), [Language 2] ([proficiency level]).
 \end{itemize}
 
 % ============================================================

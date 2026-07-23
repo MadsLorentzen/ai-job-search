@@ -1,60 +1,57 @@
-# Candidate Profile
+<!-- SETUP: This file is populated by the /setup command. Delete this comment after setup. -->
 
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all sections will be filled with your actual information -->
+# Candidate Profile
 
 ## Identity
 - **Name:** [YOUR_NAME]
-- **Location:** [YOUR_ADDRESS]
+- **Location:** [YOUR_CITY], [YOUR_REGION], [YOUR_COUNTRY]
 - **Phone:** [YOUR_PHONE]
 - **Email:** [YOUR_EMAIL]
 - **LinkedIn:** [YOUR_LINKEDIN_URL]
 - **GitHub:** [YOUR_GITHUB_URL]
-- **Languages:** [YOUR_LANGUAGES with proficiency levels]
+- **Languages:** [YOUR_NATIVE_LANGUAGE], [YOUR_SECOND_LANGUAGE]
 - **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **Constraints:** [YOUR_COMMUTE_OR_LOCATION_CONSTRAINTS]
+- **Constraints:** [YOUR_WORK_PREFERENCES]
 
 ## Education
 
 | Degree | Period | Institution | Key Topics |
 |--------|--------|-------------|------------|
-| [DEGREE] | [YEARS] | [INSTITUTION] | [TOPICS] |
+| [YOUR_DEGREE] | [YOUR_YEAR] | [YOUR_INSTITUTION] | [KEY_TOPICS] |
 
 ## Professional Experience
 
-### [JOB_TITLE] - [COMPANY] ([START] - [END])
-[LOCATION]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_1]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_2]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_3]
-
-<!-- Add more roles as needed -->
+### [YOUR_JOB_TITLE] — [YOUR_COMPANY] ([YOUR_START_DATE] — [YOUR_END_DATE])
+[YOUR_LOCATION]
+- [Describe your key responsibilities and achievements here]
+- [Focus on measurable results and specific tools/technologies used]
+- [Include collaboration details and methodology]
 
 ## Independent Projects
-<!-- Projects outside of employment: freelance, open source, personal -->
-- **[PROJECT_NAME]**: [DESCRIPTION]
+- [List relevant personal projects with brief descriptions]
 
 ## Technical Skills
 
-### Programming & ML
-- **[LANGUAGE]** ([PROFICIENCY]): [FRAMEWORKS_AND_LIBRARIES]
-- [OTHER_SKILLS]
+### Programming & Automation
+- **[Language/Tool]**: [Specific skills and applications]
+
+### Testing & QA
+- **[Category]**: [Specific tools and methods]
+
+### DevOps & Tools
+- **[Category]**: [Specific tools and practices]
+
+### Cloud & AI
+- **[Category]**: [Specific platforms and applications]
 
 ### Domain Expertise
-- [DOMAIN_1]
-- [DOMAIN_2]
+- [List your domain-specific knowledge areas]
 
-### Software & Tools
-- [TOOL_LIST]
-
-## Publications
-<!-- List peer-reviewed publications, if any -->
-1. [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL]. [DOI_LINK]
+## Certifications (selected)
+- [List your most relevant certifications with issuer and year]
 
 ## Awards
-- [AWARD] - [EVENT] ([YEAR])
+- [If applicable]
 
 ## References
-- [NAME], [TITLE], [COMPANY] ([EMAIL], [PHONE])
-
-More references available upon request.
+- [If applicable]

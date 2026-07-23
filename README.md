@@ -6,7 +6,7 @@
 
 > **Fork of** [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search) — migrated from Claude Code to OpenCode, with Colombian job portals added.
 
-[![CI](https://github.com/FARLEY-PIEDRAHITA-OROZCO/ai-job-search-opencode/actions/workflows/ci.yml/badge.svg)](https://github.com/FARLEY-PIEDRAHITA-OROZCO/ai-job-search-opencode/actions/workflows/ci.yml)
+[![CI](https://github.com/[YOUR_GITHUB_USERNAME]/ai-job-search-opencode/actions/workflows/ci.yml/badge.svg)](https://github.com/[YOUR_GITHUB_USERNAME]/ai-job-search-opencode/actions/workflows/ci.yml)
 
 ## What's different in this fork
 
@@ -60,7 +60,7 @@ The framework encodes career guidance best practices, including structured evalu
 ### 1. Clone
 
 ```bash
-git clone https://github.com/FARLEY-PIEDRAHITA-OROZCO/ai-job-search-opencode.git
+git clone https://github.com/[YOUR_GITHUB_USERNAME]/ai-job-search-opencode.git
 cd ai-job-search-opencode
 ```
 
@@ -222,4 +222,4 @@ bun run src/cli.ts detail "https://www.elempleo.com/co/ofertas-trabajo/..." --fo
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Original work copyright (c) 2026 Mads Lorentzen. Modifications copyright (c) 2026 Farley Piedrahita Orozco.
+MIT — see [LICENSE](LICENSE). Original work copyright (c) 2026 Mads Lorentzen. Modifications copyright (c) 2026 [YOUR_NAME].

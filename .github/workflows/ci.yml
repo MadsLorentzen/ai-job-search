@@ -58,7 +58,7 @@ jobs:
             exit 1
           fi
       - name: Assert exact page counts
-        if: github.repository == 'FARLEY-PIEDRAHITA-OROZCO/ai-job-search-opencode'
+        if: github.repository == '[YOUR_GITHUB_USERNAME]/[YOUR_REPO_NAME]'
         run: |
           grep -q 'Output written on main_example.pdf (2 pages' cv/main_example.log \
             || { echo '::error::cv/main_example.tex no longer compiles to exactly 2 pages'; exit 1; }
@@ -89,7 +89,7 @@ jobs:
 
   placeholder-integrity:
     name: Placeholder integrity
-    if: github.repository == 'FARLEY-PIEDRAHITA-OROZCO/ai-job-search-opencode'
+    if: github.repository == '[YOUR_GITHUB_USERNAME]/[YOUR_REPO_NAME]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -105,6 +105,6 @@ jobs:
           check AGENTS.md '\[YOUR_NAME\]'
           check cv/main_example.tex '\[YOUR_NAME\]'
           check cover_letters/cover_example.tex '\[YOUR NAME\]'
-          check .opencode/skill/job-application-assistant/01-candidate-profile.md '<!-- SETUP'
-          check .opencode/skill/job-application-assistant/04-job-evaluation.md '\[YOUR_PRIMARY_SKILLS\]'
+          check .opencode/skill/job-application-assistant/01-candidate-profile.md '\[YOUR_NAME\]'
+          check .opencode/skill/job-application-assistant/04-job-evaluation.md '\[YOUR_'
           exit $fail

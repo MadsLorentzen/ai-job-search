@@ -1,38 +1,71 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["AGENTS.md"],
+  "instructions": [
+    "AGENTS.md"
+  ],
   "skills": {
     "paths": [
-      ".opencode/skill",
+      ".opencode/skills",
       ".agents/skills"
     ]
   },
   "agent": {
     "reviewer": {
-      "description": "Reviews application drafts — CV and cover letter — for quality, targeting, accuracy, and consistency. Read-only; never edits files directly.",
+      "description": "Reviews application drafts (CV and cover letter) for quality, ATS optimization, accuracy and consistency.",
       "mode": "subagent",
-      "permission": { "edit": "deny", "write": "deny", "bash": "deny" },
-      "prompt": "You are a strict reviewer for job application materials. You receive CV and cover letter drafts inline and must provide structured feedback. Research the company via WebSearch and WebFetch. Verify all claims. Return JSON with: { \"edits\": [{ \"file\": \"...\", \"oldString\": \"...\", \"newString\": \"...\" }], \"narrative_suggestions\": [\"...\"], \"company_research\": \"...\", \"ats_keyword_gaps\": [\"...\"], \"verification_notes\": [\"...\"] }. Do NOT write files yourself."
+      "prompt": "You are a strict reviewer for job application materials. You receive CV and cover letter drafts inline and must provide structured feedback. Research the company when possible. Verify claims. Return JSON with edits, narrative suggestions, company research, ATS keyword gaps and verification notes. Never modify files directly."
     },
     "job-scorer": {
-      "description": "Scores a single job posting against the candidate profile on four dimensions: technical fit, experience match, behavioral/culture match, and career alignment.",
+      "description": "Scores a job posting against the candidate profile.",
       "mode": "subagent",
-      "permission": { "edit": "deny", "write": "deny", "bash": "deny" },
-      "prompt": "You are a job scoring agent. You receive a job posting and must evaluate it against the candidate profile. Read 01-candidate-profile.md and 04-job-evaluation.md. Use WebFetch to get the full posting. Return a JSON score object: { \"technical_score\": { \"score\": 0-100, \"reasoning\": \"...\" }, \"experience_score\": { \"score\": 0-100, \"reasoning\": \"...\" }, \"behavioral_score\": { \"score\": 0-100, \"reasoning\": \"...\" }, \"career_score\": { \"score\": 0-100, \"reasoning\": \"...\" }, \"location_pass\": true/false, \"dealbreaker_flags\": [], \"overall_verdict\": \"strong_match|moderate_match|weak_match|dealbreaker\" }."
+      "prompt": "You are a job scoring agent. Read the candidate profile and evaluate the job posting. Return structured JSON containing technical_score, experience_score, behavioral_score, career_score, location_pass, dealbreaker_flags and overall_verdict."
     }
   },
   "command": {
-    "apply": { "description": "Full drafter-reviewer job application workflow for a job posting URL or text" },
-    "setup": { "description": "Profile onboarding: documents folder, CV import, or interview mode" },
-    "scrape": { "description": "Search job portals for new positions matching your profile" },
-    "rank": { "description": "Batch-score scraped jobs against the fit framework into a ranked shortlist" },
-    "interview": { "description": "Stage-specific interview preparation with mock interview" },
-    "outcome": { "description": "Record application results, archive materials, update tracker" },
-    "expand": { "description": "Enrich profile by scanning documents and online presence for undiscovered competencies" },
-    "upskill": { "description": "Analyze skill gaps against tracked postings and generate a learning plan" },
-    "add-template": { "description": "Register custom LaTeX CV or cover letter templates" },
-    "add-portal": { "description": "Generate a job-portal search skill for any market" },
-    "reset": { "description": "Reset profile data or documents folder with confirmation" }
+    "apply": {
+      "description": "Full drafter-reviewer workflow",
+      "template": ".opencode/commands/apply.md"
+    },
+    "setup": {
+      "description": "Profile onboarding",
+      "template": ".opencode/commands/setup.md"
+    },
+    "scrape": {
+      "description": "Search job portals",
+      "template": ".opencode/commands/scrape.md"
+    },
+    "rank": {
+      "description": "Rank scraped jobs",
+      "template": ".opencode/commands/rank.md"
+    },
+    "interview": {
+      "description": "Interview preparation",
+      "template": ".opencode/commands/interview.md"
+    },
+    "outcome": {
+      "description": "Record application results",
+      "template": ".opencode/commands/outcome.md"
+    },
+    "expand": {
+      "description": "Expand candidate profile",
+      "template": ".opencode/commands/expand.md"
+    },
+    "upskill": {
+      "description": "Generate learning plan",
+      "template": ".opencode/commands/upskill.md"
+    },
+    "add-template": {
+      "description": "Register LaTeX templates",
+      "template": ".opencode/commands/add-template.md"
+    },
+    "add-portal": {
+      "description": "Create a job portal skill",
+      "template": ".opencode/commands/add-portal.md"
+    },
+    "reset": {
+      "description": "Reset candidate profile",
+      "template": ".opencode/commands/reset.md"
+    }
   },
   "permission": {
     "read": "allow",

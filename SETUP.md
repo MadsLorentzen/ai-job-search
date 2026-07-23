@@ -112,7 +112,7 @@ If `pdftotext` is missing, `/apply` skips the mechanical check with a warning an
 ## 2. Clone
 
 ```bash
-git clone https://github.com/FARLEY-PIEDRAHITA-OROZCO/ai-job-search-opencode.git
+git clone https://github.com/[YOUR_GITHUB_USERNAME]/ai-job-search-opencode.git
 cd ai-job-search-opencode
 ```
 
