@@ -1,7 +1,7 @@
 {
   "name": "freehire-cli",
   "version": "1.0.0",
-  "description": "CLI for searching the freehire.dev job aggregator's public JSON API across many markets (tech-focused) — no authentication, zero runtime dependencies. Base URL is swappable via FREEHIRE_API_URL for self-hosting.",
+  "description": "CLI for searching the freehire.me job aggregator's public JSON API across many markets (tech-focused) — no authentication, zero runtime dependencies. Base URL is swappable via FREEHIRE_API_URL for self-hosting.",
   "type": "module",
   "main": "src/cli.ts",
   "bin": {

@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
-// Self-contained CLI for searching the freehire.dev aggregator's public JSON API.
+// Self-contained CLI for searching the freehire.me aggregator's public JSON API.
 // No external CLI framework and zero runtime dependencies, so it runs anywhere
 // `bun` is available with nothing installed beyond the repo clone.
 //
 // Hosted-service dependency: reads are public (no API key), but they hit
-// freehire.dev — a personal project maintained best-effort (no formal SLA). Point
+// freehire.me — a personal project maintained best-effort (no formal SLA). Point
 // FREEHIRE_API_URL at a self-hosted freehire backend to swap the source.
 
 import { runSearch, type SearchOpts } from "./commands/search.js"
@@ -69,7 +69,7 @@ function commaList(raw: FlagValue): string[] {
     .filter(Boolean)
 }
 
-const HELP = `freehire-cli — search the freehire.dev job aggregator (many markets, tech-focused)
+const HELP = `freehire-cli — search the freehire.me job aggregator (many markets, tech-focused)
 
 USAGE
   bun run src/cli.ts search [-q "<keywords>"] [facet flags] [--format json|table|plain]
@@ -82,7 +82,7 @@ SEARCH FLAGS
   --limit, -n <n>         Results per page (API limit). Default 25.
   --format <fmt>          json (default) | table | plain.
 
-FACET FILTERS (values from freehire.dev's controlled vocabularies; comma = OR)
+FACET FILTERS (values from freehire.me's controlled vocabularies; comma = OR)
   --region <codes>        Macro-region: global, eu, us, apac, latam, cis, ...  e.g. --region eu,us
   --country <codes>       ISO-3166 alpha-2, e.g. --country DE,GB
   --city <names>          City name(s), e.g. --city Berlin
@@ -95,7 +95,7 @@ FACET FILTERS (values from freehire.dev's controlled vocabularies; comma = OR)
 
 DETAIL
   <slug|url>              A freehire public slug (from a search result's id/slug)
-                          or a full https://freehire.dev/jobs/<slug> URL.
+                          or a full https://freehire.me/jobs/<slug> URL.
 
 EXAMPLES
   bun run src/cli.ts search -q "backend engineer" --seniority senior --limit 10 --format table

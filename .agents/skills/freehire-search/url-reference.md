@@ -1,8 +1,8 @@
-# freehire.dev API reference
+# freehire.me API reference
 
 The endpoints, parameters, and response shapes this skill depends on. This is the
 file to update if the freehire API changes. Base URL defaults to
-`https://freehire.dev` and is overridable via the `FREEHIRE_API_URL` env var.
+`https://freehire.me` and is overridable via the `FREEHIRE_API_URL` env var.
 
 ## Authentication
 

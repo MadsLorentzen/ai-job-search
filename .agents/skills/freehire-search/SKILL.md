@@ -3,7 +3,7 @@ name: freehire-search
 version: 1.0.0
 description: >
   Use this skill to search live software / tech / data / engineering job listings
-  across many countries and markets (and remote) via the freehire.dev aggregator's
+  across many countries and markets (and remote) via the freehire.me aggregator's
   public API, or to look up a specific posting. It aggregates roles from ~50 ATS
   platforms into one schema, so a single skill covers many markets — but its faceted
   filtering (skills, category, seniority) is tuned tech-first, so scope triggers to
@@ -17,7 +17,7 @@ allowed-tools: Bash(bun run .agents/skills/freehire-search/cli/src/cli.ts *)
 
 # freehire Search Skill
 
-Search live job listings from the **[freehire.dev](https://freehire.dev)** job
+Search live job listings from the **[freehire.me](https://freehire.me)** job
 aggregator — an open-source IT job board that normalizes postings from ~50 ATS
 platforms across many countries into one schema. No authentication, no API key,
 and **zero runtime dependencies** — it runs with just `bun`. The market is chosen
@@ -40,10 +40,10 @@ coverage exists but is still maturing; don't rely on this skill for general
 
 ## ℹ️ Hosted-service dependency (best-effort, no SLA)
 
-This skill depends on a third-party hosted service, freehire.dev. Reads are
+This skill depends on a third-party hosted service, freehire.me. Reads are
 **public and unauthenticated** — the same zero-signup bar as `linkedin-search`.
 
-**freehire.dev is a personal project but actively maintained; it runs on a
+**freehire.me is a personal project but actively maintained; it runs on a
 best-effort basis (no formal SLA).** If the API is unreachable, the CLI fails
 gracefully — a non-zero exit with a clear error message — so an outage degrades
 this source rather than breaking the surrounding workflow.
@@ -52,7 +52,7 @@ this source rather than breaking the surrounding workflow.
 MIT-licensed repo — [`strelov1/freehire`](https://github.com/strelov1/freehire)
 (Go + PostgreSQL + Meilisearch) — that stands up with one command via Docker
 Compose (`make up` → API on `:8080`, same `/api/v1/...` paths). The skill honors a
-base-URL env var, `FREEHIRE_API_URL` (default `https://freehire.dev`), so pointing
+base-URL env var, `FREEHIRE_API_URL` (default `https://freehire.me`), so pointing
 it at a local instance is a one-line change:
 
 ```bash
@@ -99,7 +99,7 @@ Facet filters (values come from freehire's controlled vocabularies; comma-separa
 > **Location is a facet, not free text.** Unlike `linkedin-search`'s `--location`,
 > freehire filters geography through the structured `--region`/`--country`/`--city`
 > facets. Discover the live values for a market at
-> [`/api/v1/jobs/facets`](https://freehire.dev/api/v1/jobs/facets) (append `?q=<role>`
+> [`/api/v1/jobs/facets`](https://freehire.me/api/v1/jobs/facets) (append `?q=<role>`
 > to scope it) — never invent facet values.
 
 ### Fetch full job detail
@@ -109,7 +109,7 @@ bun run .agents/skills/freehire-search/cli/src/cli.ts detail <slug|url> [--forma
 ```
 
 `slug` is the `id` from a `search` result (e.g. `golang-zensar-2bxu6dxm`). You may
-also pass a full `https://freehire.dev/jobs/<slug>` URL. Returns the full (HTML-stripped)
+also pass a full `https://freehire.me/jobs/<slug>` URL. Returns the full (HTML-stripped)
 description, skills, region/country, and — when the posting is enriched — seniority,
 category, employment type, and salary.
 
@@ -163,7 +163,7 @@ dictionaries never guess). So:
 
 ## Notes
 
-- Data is from freehire.dev's public API — no credentials required. Only per-user
+- Data is from freehire.me's public API — no credentials required. Only per-user
   tracking (apply/save) needs a key, and this skill deliberately does not touch it:
   it is **search + detail only**.
 - `id` in search results is the freehire `public_slug` — pass it as-is to `detail`.

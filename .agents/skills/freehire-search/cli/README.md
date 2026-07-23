@@ -1,13 +1,13 @@
 # freehire-cli
 
-CLI for searching the [freehire.dev](https://freehire.dev) job aggregator across
+CLI for searching the [freehire.me](https://freehire.me) job aggregator across
 **many markets** (tech-focused), via its public JSON API.
 
-**Data source**: freehire.dev REST API (`/api/v1/jobs/search`, `/api/v1/jobs/facets`, `/api/v1/jobs/{slug}`).
+**Data source**: freehire.me REST API (`/api/v1/jobs/search`, `/api/v1/jobs/facets`, `/api/v1/jobs/{slug}`).
 **Authentication**: None required — reads are public (only tracking mutations need a key, and those are out of scope here).
 **Dependencies**: None (plain `bun` + `fetch`). `bun install` is optional and only pulls dev type defs.
 
-> **Hosted-service dependency.** This skill talks to freehire.dev, a personal
+> **Hosted-service dependency.** This skill talks to freehire.me, a personal
 > project maintained on a **best-effort basis with no formal SLA**. If the API is
 > unreachable the CLI exits non-zero with a clear error rather than hanging, so an
 > outage degrades gracefully instead of breaking the caller. Point `FREEHIRE_API_URL`
@@ -25,7 +25,7 @@ The CLI runs without any install because it has zero runtime dependencies.
 
 ## Self-hosting / base URL
 
-The base URL defaults to `https://freehire.dev` and is overridable with an env var:
+The base URL defaults to `https://freehire.me` and is overridable with an env var:
 
 ```bash
 FREEHIRE_API_URL=http://localhost:8080 bun run src/cli.ts search -q "go"
@@ -83,5 +83,5 @@ See `../SKILL.md` for the full flag reference and the hosted-dependency note.
 
 Facet values come from freehire's controlled vocabularies. Discover the live
 values (with counts) for a market at
-[`/api/v1/jobs/facets`](https://freehire.dev/api/v1/jobs/facets), or narrow it,
-e.g. `https://freehire.dev/api/v1/jobs/facets?q=react`.
+[`/api/v1/jobs/facets`](https://freehire.me/api/v1/jobs/facets), or narrow it,
+e.g. `https://freehire.me/api/v1/jobs/facets?q=react`.

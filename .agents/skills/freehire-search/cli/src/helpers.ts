@@ -1,10 +1,10 @@
-// Data source: the freehire.dev public REST API (JSON, `{data, meta}` envelope).
+// Data source: the freehire.me public REST API (JSON, `{data, meta}` envelope).
 // Reads are unauthenticated — no API key, the same bar as linkedin-search — and
 // unlike the HTML-scraping portals there is no markup to parse: we fetch JSON and
 // reshape it into the portal-skill contract's result fields. The base URL is
 // swappable via FREEHIRE_API_URL for self-hosting.
 
-export const DEFAULT_BASE_URL = "https://freehire.dev"
+export const DEFAULT_BASE_URL = "https://freehire.me"
 
 /** API base URL: FREEHIRE_API_URL (for a self-hosted instance) or the default. */
 export function baseUrl(): string {
@@ -16,7 +16,7 @@ export function writeError(error: string, code: string): void {
   process.stderr.write(JSON.stringify({ error, code }) + "\n")
 }
 
-const UA = "freehire-search-skill/1.0 (+https://freehire.dev)"
+const UA = "freehire-search-skill/1.0 (+https://freehire.me)"
 
 /** The shared API response envelope: {data, meta, error}. */
 export interface Envelope<T> {
