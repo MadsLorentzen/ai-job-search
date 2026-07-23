@@ -169,6 +169,22 @@ class DetectColumnTypeTests(unittest.TestCase):
         self.assertEqual(categories["kvinder"], {"count": 15, "index": 95.0})
         self.assertEqual(categories["mænd"], {"count": 20, "index": 108.0})
 
+    def test_standalone_count_column_is_stored_as_count_not_index(self):
+        # A count column with no matching index column (e.g. a lone total
+        # headcount) is still count data. It must not be emitted as a salary
+        # index, which salary_lookup would render with a bogus "vs baseline"
+        # percentage. The paired category alongside it is unaffected.
+        ws = FakeWorksheet([
+            ("Company", "Antal", "IT Count", "IT Index"),
+            ("Example Corp", 250, 30, 108.5),
+        ])
+
+        companies = parse_sheet(ws)
+
+        categories = companies[0]["categories"]
+        self.assertEqual(categories["antal"], {"count": 250})
+        self.assertEqual(categories["it"], {"count": 30, "index": 108.5})
+
     def test_parse_sheet_non_adjacent_columns_no_cross_match(self):
         ws = FakeWorksheet([
             ("Company", "Count_A", "Count_B", "Index_A", "Index_B"),

@@ -168,10 +168,14 @@ def parse_sheet(ws, sheet_label=None):
                 used_indexes.add(ii)
                 break
 
-    # Remaining unmatched count columns become standalone (use original header)
+    # Remaining unmatched count columns become standalone. They are still count
+    # data, so tag them as such — otherwise a lone headcount would be emitted as
+    # a salary index and rendered with a meaningless "vs baseline" percentage.
     for ci, (c_idx, c_header, _) in enumerate(count_cols):
         if ci not in used_counts:
-            categories.append({"name": c_header.lower().replace(" ", "_"), "value_col": c_idx})
+            categories.append(
+                {"name": c_header.lower().replace(" ", "_"), "value_col": c_idx, "field": "count"}
+            )
 
     # Remaining unmatched index columns become standalone (use original header)
     for ii, (i_idx, i_header, _) in enumerate(index_cols):
@@ -226,7 +230,8 @@ def parse_sheet(ws, sheet_label=None):
                         # Non-numeric standalone value (e.g. a free-text "Notes"
                         # column) is not salary data; skip it for this row.
                         continue
-                    entry["categories"][cat_name] = {"index": val}
+                    field = cat.get("field", "index")
+                    entry["categories"][cat_name] = {field: int(val) if field == "count" else val}
 
         companies.append(entry)
 
