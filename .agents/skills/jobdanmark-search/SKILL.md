@@ -17,7 +17,7 @@ description: >
   work in denmark, employment denmark, job denmark, jobs near me denmark,
   apprentice denmark, internship denmark, part-time denmark, full-time denmark.
 context: fork
-enabled: true  # set to false to keep this portal installed but have /scrape skip it
+enabled: false  # disabled: Danish demo portal, not used in this French-market fork (see .claude/skills/job-scraper/search-queries.md)
 allowed-tools: Bash(bun run .agents/skills/jobdanmark-search/cli/src/cli.ts *)
 ---
 

@@ -4,17 +4,34 @@
 
 ## Installed portal CLIs (primary for `/scrape`)
 
-`/scrape` discovers every portal skill under `.agents/skills/*/SKILL.md` and runs its CLI first. Shipped country-agnostic CLIs include `linkedin-search` and `freehire-search`; Danish demos and any skill you add with `/add-portal` are included the same way. You do **not** need a matching `site:` line below for those CLIs to run.
+`/scrape` discovers every portal skill under `.agents/skills/*/SKILL.md` and runs its CLI first. You do **not** need a matching `site:` line below for those CLIs to run.
+
+**This fork targets the French market.** Enabled portals:
+
+| Skill | Covers | Notes |
+|---|---|---|
+| `wttj-search` | Welcome to the Jungle — the main French board, ~95k postings | Personal use only; WAF-throttled on detail fetches |
+| `stationf-search` | STATION F job board — ~650 postings from Paris campus startups | Small, high-signal supplement |
+| `linkedin-search` | LinkedIn, country-agnostic | Use `--location "Paris, Île-de-France, France"` |
+| `freehire-search` | Multi-market tech aggregator | Use `--country FR --city Paris` |
+
+The four Danish demo portals (`jobindex`, `jobbank`, `jobnet`, `jobdanmark`) ship with the
+framework but are `enabled: false` here — `/scrape` skips them and reports them on its
+`skipped (disabled):` line. Re-enable one by flipping the flag in its `SKILL.md`.
+
+**Useful French flags** the two French CLIs share: `--contract cdi|cdd|stage|alternance|freelance`,
+`--remote full|partial|punctual|no`, `--location <city>`, `--region Ile-de-France`
+(unaccented, hyphenated), `--department Tech|Business|Sales|…`, `--language fr|en`.
 
 The `site:` query templates in this file are the **WebSearch fallback** — for portals without a CLI, company career pages, or when a CLI fails.
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Primary (French market):
+- **welcometothejungle.com** - the largest French job board; covered by the `wttj-search` CLI
+- **jobs.stationf.co** - Paris startup-campus board; covered by the `stationf-search` CLI
+- **linkedin.com/jobs** - LinkedIn job listings (filter: France / Paris); also covered by `linkedin-search` CLI
+- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional; e.g. APEC for cadre roles, Choose Your Boost, HelloWork, Indeed.fr)
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for known target companies
@@ -28,9 +45,10 @@ Queries are grouped by priority. Each query should be combined with your locatio
 These match your strongest and most desired career direction.
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
+site:welcometothejungle.com "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
+site:welcometothejungle.com "[YOUR_KEY_SKILL]" [YOUR_CITY]
+site:jobs.stationf.co "[YOUR_PRIMARY_JOB_TITLE]"
+site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" France
 ```
 
 ### Priority 2: [YOUR_DOMAIN_EXPERTISE]
@@ -38,9 +56,9 @@ site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
 These match your domain expertise.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:welcometothejungle.com [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
+site:welcometothejungle.com [YOUR_DOMAIN_KEYWORD_2] France
+site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] France
 ```
 
 ### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
@@ -48,8 +66,8 @@ site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
 Adjacent roles you could pivot into.
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
+site:welcometothejungle.com "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
+site:welcometothejungle.com "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
 ```
 
 ### Priority 4: Broader Technical / Consulting
@@ -57,9 +75,9 @@ site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
 Wider net for general technical roles.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
+site:welcometothejungle.com [YOUR_KEY_SKILL] developer [YOUR_CITY]
 site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:welcometothejungle.com "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
 ```
 
 ## Location Filter

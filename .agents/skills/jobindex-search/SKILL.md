@@ -17,7 +17,7 @@ description: >
   hiring denmark, job listings denmark, python jobs denmark, grafisk designer job,
   data engineer job, softwareudvikler job, full stack developer job danmark.
 context: fork
-enabled: true  # set to false to keep this portal installed but have /scrape skip it
+enabled: false  # disabled: Danish demo portal, not used in this French-market fork (see .claude/skills/job-scraper/search-queries.md)
 allowed-tools: Bash(bun run .agents/skills/jobindex-search/cli/src/cli.ts *)
 ---
 

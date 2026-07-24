@@ -342,6 +342,27 @@ class UtilityTests(unittest.TestCase):
         self.assertEqual(extract_core_words("A/S"), [])
         self.assertEqual(extract_core_words("Test Company (Sub-entity)"), ["test", "company"])
 
+    def test_normalize_strips_french_legal_forms(self):
+        self.assertEqual(normalize("Dassault Systèmes SE SAS"), "dassaultsystèmesse")
+        self.assertEqual(normalize("Capgemini France SAS"), "capgemini")
+        self.assertEqual(normalize("Groupe BPCE"), "bpce")
+        self.assertEqual(normalize("Decathlon SASU"), "decathlon")
+
+    def test_normalize_keeps_french_accents_instead_of_deleting_them(self):
+        # Accented letters must survive normalization; deleting them would make
+        # "Société" normalize to "socit" and never match the anglicized path.
+        self.assertEqual(normalize("Société Générale"), "sociétégénérale")
+        self.assertEqual(normalize("Crédit Agricole"), "créditagricole")
+
+    def test_anglicize_replaces_french_accents(self):
+        self.assertEqual(anglicize("société générale"), "societe generale")
+        self.assertEqual(anglicize("crédit agricole"), "credit agricole")
+        self.assertEqual(anglicize("système"), "systeme")
+
+    def test_french_query_matches_accented_entry(self):
+        self.assertEqual(match_score("Societe Generale", "Société Générale SA"), 85)
+        self.assertEqual(match_score("Société Générale", "Société Générale SA"), 100)
+
 
 class MatchScoreTests(unittest.TestCase):
     def test_exact_match_score(self):

@@ -26,19 +26,38 @@ from pathlib import Path
 
 DATA_FILE = Path(__file__).parent / "salary_data.json"
 
-# Common Danish <-> anglicized spelling variants
+# Accented <-> anglicized spelling variants (French and Nordic). Matching runs
+# down two paths — the accented form and this folded form — so a dataset spelling
+# "Société Générale" still matches a query typed "Societe Generale".
 SPELLING_VARIANTS = {
     "ø": "o", "æ": "ae", "å": "aa",
     "ö": "o", "ä": "ae", "ü": "u",
+    "é": "e", "è": "e", "ê": "e", "ë": "e",
+    "à": "a", "â": "a",
+    "î": "i", "ï": "i",
+    "ô": "o", "œ": "oe",
+    "ù": "u", "û": "u",
+    "ç": "c", "ÿ": "y",
 }
+
+# Characters kept when normalizing a name; everything else is dropped. Accented
+# letters must be listed here or they would be *deleted* rather than folded,
+# which silently breaks matching on French names.
+NAME_CHARS = "a-zæøåöäüéèêëàâîïôœùûçÿ0-9"
 
 # Legal suffixes and noise to strip when matching company names
 STRIP_PATTERNS = [
+    # French legal forms
+    r"\bsas\b", r"\bsasu\b", r"\bsarl\b", r"\beurl\b", r"\bsa\b", r"\bsnc\b",
+    r"\bsci\b", r"\bscop\b", r"\bscic\b", r"\bgie\b", r"\bsem\b",
+    r"\bs\.a\.s\.\b", r"\bs\.a\.r\.l\.\b", r"\bs\.a\.\b",
+    # Danish/Nordic legal forms
     r"\ba/s\b", r"\baps\b", r"\bi/s\b", r"\bp/s\b", r"\bk/s\b",
     r"\bivs\b", r"\bamba\b", r"\ba\.m\.b\.a\.\b",
     r"\(vg\)", r"\(.*?\)",  # (VG) and other parentheticals
-    r"\bdanmark\b", r"\bdenmark\b", r"\bscandinavia\b", r"\bnordic\b",
-    r"\bgroup\b", r"\bholding\b",
+    # Country/region qualifiers on subsidiary names ("X France SAS")
+    r"\bfrance\b", r"\bdanmark\b", r"\bdenmark\b", r"\bscandinavia\b", r"\bnordic\b",
+    r"\bgroupe\b", r"\bgroup\b", r"\bholding\b",
     r",\s*.*$",  # everything after comma (sub-entities)
 ]
 
@@ -166,15 +185,15 @@ def normalize(s):
     s = s.lower().strip()
     for pat in STRIP_PATTERNS:
         s = re.sub(pat, "", s)
-    s = re.sub(r"[^a-zæøåöäü0-9]", "", s)
+    s = re.sub(rf"[^{NAME_CHARS}]", "", s)
     return s.strip()
 
 
 def anglicize(s):
-    """Convert Danish/Nordic characters to anglicized equivalents."""
+    """Convert accented French/Nordic characters to anglicized equivalents."""
     s = s.lower()
-    for danish, english in SPELLING_VARIANTS.items():
-        s = s.replace(danish, english)
+    for accented, plain in SPELLING_VARIANTS.items():
+        s = s.replace(accented, plain)
     return s
 
 
@@ -183,7 +202,7 @@ def extract_core_words(s):
     s = s.lower()
     for pat in STRIP_PATTERNS:
         s = re.sub(pat, "", s)
-    words = re.findall(r"[a-zæøåöäü0-9]+", s)
+    words = re.findall(rf"[{NAME_CHARS}]+", s)
     return [w for w in words if len(w) > 1]
 
 

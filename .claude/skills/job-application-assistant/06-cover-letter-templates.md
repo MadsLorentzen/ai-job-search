@@ -1,5 +1,5 @@
 ---
-framework_version: 1.0.1
+framework_version: 1.1.0
 ---
 
 # Cover Letter Templates and Tailoring Guide
@@ -153,8 +153,23 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 
 ### Non-English Cover Letters
 - Same template structure, just write content in the posting's language
-- Adjust date format to local convention
+- Adjust date format to local convention (French: "Paris, le 24 juillet 2026")
 - Adjust closing to local convention (e.g. "Med venlig hilsen," for Danish)
+
+#### French cover letters (lettre de motivation)
+- **Salutation:** "Madame, Monsieur," when no name is known — never "Cher/Chère" to a stranger.
+  With a named recipient: "Madame Dupont," / "Monsieur Dupont,".
+- **Closing:** the full formula, not a short sign-off:
+  "Je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées."
+  The salutation and the closing must address the same person(s) — if you opened with
+  "Monsieur Dupont," the closing says "Monsieur," not "Madame, Monsieur,".
+- **Register:** vouvoiement throughout, no contractions, no first-name familiarity.
+- Name the **contract type** you are applying for (CDI, CDD, stage, alternance) when the
+  posting specifies one — French recruiters expect the application to match the offer.
+- State **availability** ("disponible à partir du …") and, for stage/alternance, the
+  school rhythm ("rythme d'alternance : 3 semaines entreprise / 1 semaine école") when known.
+- Keep the accents correct in LaTeX (é è ê à ç ù û ï) — compile with xelatex and read the
+  PDF; a missing accent is a visible error to a French reader.
 
 ## Checklist Before Finalizing
 - [ ] No em-dashes (use commas or periods instead)

@@ -1,5 +1,5 @@
 ---
-framework_version: 1.1.0
+framework_version: 1.2.0
 ---
 
 # Job Evaluation Framework
@@ -79,6 +79,24 @@ Does the role and company culture match the behavioral profile?
 - Remote with occasional office: PASS
 - Requires relocation: FAIL (deal-breaker)
 - Frequent international travel: FLAG (discuss with user)
+
+#### French-market signals (record these; they change the verdict, not just the flavour)
+
+French postings state conditions that other markets leave implicit. Read them off the
+posting and report them — the portal CLIs (`wttj-search`, `stationf-search`) return the
+first three as structured fields, so they cost nothing to check.
+
+| Signal | Why it matters |
+|---|---|
+| **Contract type** — CDI, CDD, stage, alternance, freelance, intérim | The single biggest fit filter. A CDD or intérim is time-boxed; a stage requires an active *convention de stage* with a school; an alternance requires enrolment in a training programme. Applying to a contract type the candidate cannot legally hold is a hard FAIL, not a low score — check this before scoring, alongside the eligibility gate. |
+| **Télétravail** — `no` / `punctual` / `partial` / `fulltime` / `unknown` | Days-per-week on site is the practical commute question in Île-de-France. `unknown` is the largest bucket on WTTJ and means *unstated*, not on-site — treat it as a question for the employer, never as a FAIL. |
+| **Statut** — cadre vs non-cadre / agent de maîtrise | Governs pay structure, RTT, retirement contributions, and the notice period. A cadre posting at a non-cadre salary is a signal worth raising. |
+| **Salary** — quoted as `k€ brut annuel` (gross, usually over 12 or 13 months) | Compare gross to gross. Convert a monthly figure by the stated number of months (13-month years are common), and never compare a French *brut* figure against a *net* one. Most postings publish nothing; absence is normal, not a red flag. |
+| **Expérience minimum / niveau d'études** (`BAC_5`, `BAC_3`, …) | French postings filter hard on diploma level. `BAC_5` = Master/engineering-school level. A genuine mismatch here is worth naming honestly rather than papering over. |
+
+Also worth flagging when present: `mutuelle` (health cover), `tickets restaurant`,
+`participation`/`intéressement`, and the **période d'essai** length — these are standard
+components, and their absence from an otherwise detailed posting is itself informative.
 
 ### 5. Career Alignment & Motivation (0-100)
 Does this role advance career goals and contain tasks that energize?
