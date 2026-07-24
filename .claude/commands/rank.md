@@ -93,24 +93,25 @@ Ranked <N> new postings (<X> shortlisted, <Y> below threshold, <Z> expired/vetoe
 
 ### Shortlist
 
-| # | Score | Verdict | Title | Company | Location | Deadline | |
-|---|-------|---------|-------|---------|----------|----------|---|
-| 1 | 78 | Strong Fit | ... | ... | ... | ... | 🔥 |
+| # | Score | Verdict | Title | Company | Location | Deadline | | URL |
+|---|-------|---------|-------|---------|----------|----------|---|-----|
+| 1 | 78 | Strong Fit | ... | ... | ... | ... | 🔥 | [Link](...) |
 
 ### Why these ranked highest
 **1. <Title> at <Company> (78)** - [2-3 strength bullets and the honest gap, from the agent's findings]
 [repeat for each shortlisted job]
 
 ### Below threshold
-| Score | Verdict | Title | Company | One-line reason |
+| Score | Verdict | Title | Company | One-line reason | URL |
 
 ### Excluded
-- <Title> at <Company> - location FAIL: requires relocation
-- <Title> at <Company> - expired <date>
+- <Title> at <Company> - location FAIL: requires relocation - [Link](...)
+- <Title> at <Company> - expired <date> - [Link](...)
 ```
 
 Rules for the presentation:
 
+- Every table (shortlist, below threshold, excluded) includes the posting URL as a clickable link - the `key` in `seen_jobs.json` is already that URL, so this never requires an extra lookup. Never drop the link for brevity.
 - Every claim traces to fetched posting text or the profile - no invented details.
 - Say explicitly that these are **triage scores from the posting text only**, and that `/apply` will re-evaluate with company research before anything is drafted.
 - Then ask: "Want to apply to any of these? Give me the number(s) and I'll start with the full `/apply` workflow."
