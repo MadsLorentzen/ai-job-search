@@ -62,9 +62,37 @@
               "icon": "lucide-file",
               "title": "Perplexity interview"
             }
+          },
+          {
+            "id": "93259f3b859b0ee8",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Thoughts on Perplexity GTM for discussion.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Thoughts on Perplexity GTM for discussion"
+            }
+          },
+          {
+            "id": "e64ec238497e245c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Perplexity GTM Appendix.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Perplexity GTM Appendix"
+            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -226,43 +254,43 @@
       "bases:Create new base": false
     }
   },
-  "active": "f52a69e71d07478b",
+  "active": "93259f3b859b0ee8",
   "lastOpenFiles": [
-    "vault/Job Pipeline/07 Interview/Shelf - Growth & Strategy Lead, GTM.md",
-    "vault/Job Pipeline/06 Applied/Brex - Staff Product Manager, Growth.md",
-    "vault/Job Pipeline/06 Applied/Baseten - Product Manager, Enterprise.md",
-    "vault/Job Pipeline/06 Applied/WorkOS - Product Manager - Growth.md",
-    "vault/Job Pipeline/06 Applied/Gorgias - Staff Product Manager - AI Journey.md",
-    "documents/applications/brex-staff-product-manager-growth/submission.md",
+    "vault/Job Pipeline/02 Triaged/Robinhood - Staff PM, International Growth & Expansion.md",
+    "vault/Job Pipeline/02 Triaged/Mercury - Senior Product Manager - Activation.md",
+    "vault/Job Pipeline/02 Triaged/Plaid - Product Manager, Growth.md",
+    "vault/Job Pipeline/02 Triaged/ConvertKit - Senior Creator Growth Manager.md",
+    "vault/Job Pipeline/01 New/OpenAI - Product Manager, IT.md",
+    "vault/Job Pipeline/01 New/Anthropic - [Pipeline] Product Manager, Research (Code).md",
+    "vault/Job Pipeline/01 New/Sierra - Product Manager, Agent Development (Spanish speaking).md",
+    "vault/Job Pipeline/01 New/Suno - Staff Product Manager.md",
+    "vault/Job Pipeline/01 New/Commure - SeniorStaff Product Manager, Ambient.md",
+    "vault/Job Pipeline/01 New/Commure - Product Manager, EHR.md",
+    "vault/Job Pipeline/01 New/Midjourney - Product Manager.md",
+    "vault/Job Pipeline/01 New/OpenAI - Pricing Strategist.md",
+    "vault/Job Pipeline/01 New/Stripe - Head of Self-Serve Paid Media.md",
+    "vault/Job Pipeline/01 New/Anthropic - Staff+ Software Engineer, Enterprise AI Products.md",
+    "vault/Job Pipeline/01 New/Twilio - Manager, Sales Development-LATAM NAMER Hybrid.md",
+    "vault/Job Pipeline/01 New/Twilio - Manager, Sales Development.md",
+    "vault/Job Pipeline/01 New/Gusto - Marketing Programs Specialist, Symmetry.md",
+    "vault/Job Pipeline/01 New/Vercel - Director of Forward Deployed Engineering.md",
+    "vault/Job Pipeline/01 New/Vercel - Commercial Account Executive, Install Base.md",
+    "vault/Job Pipeline/01 New/ConvertKit - Senior Customer Success Manager.md",
+    "vault/Job Pipeline/01 New/Faire - Senior Software Engineer - Insider.md",
+    "vault/Job Pipeline/01 New/Mixpanel - Head of Sales, India.md",
+    "vault/Job Pipeline/01 New/Pinecone - Business Development Representative.md",
+    "vault/Job Pipeline/01 New/NVIDIA - Global AI Natives Sales Lead, GTM.md",
+    "vault/Job Pipeline/01 New/Adobe - Product Designer, Acrobat Mobile Growth.md",
+    "vault/Job Pipeline/01 New/Amazon (Shanghai) International Trading Company Limited - Strategic Brand Growth Manager, CN2MX.md",
+    "cv/main_scaleai.log",
+    "cv/main_scaleai.pdf",
+    "cv/main_scaleai.aux",
+    "cv/main_scaleai.out",
+    "cv/main_scaleai.tex",
+    "documents/applications/shelf-growth-strategy-lead",
     "documents/applications/brex-staff-product-manager-growth/submission.json",
     "documents/applications/brex-staff-product-manager-growth",
-    "documents/applications/baseten-product-manager-enterprise/submission.md",
     "documents/applications/baseten-product-manager-enterprise/submission.json",
-    "documents/applications/baseten-product-manager-enterprise",
-    "documents/applications/workos-product-manager-growth/submission.md",
-    "documents/applications/workos-product-manager-growth/submission.json",
-    "documents/applications/workos-product-manager-growth",
-    "documents/applications/gorgias-senior-lead-pm-ai-journey/submission.md",
-    "documents/applications/gorgias-senior-lead-pm-ai-journey/submission.json",
-    "documents/applications/gorgias-senior-lead-pm-ai-journey",
-    "vault/Job Pipeline/06 Applied/Shelf - Growth & Strategy Lead, GTM.md",
-    "vault/Job Pipeline/06 Applied/Faire - Staff Product Manager, Relationship Growth.md",
-    "vault/Job Pipeline/06 Applied/Headway - Staff Product Manager, Pricing.md",
-    "vault/Job Pipeline/06 Applied/Linear - Product Manager.md",
-    "vault/Job Pipeline/06 Applied/Decagon - Senior Agent Product Manager.md",
-    "documents/applications/shelf-growth-strategy-lead-gtm/submission.md",
-    "documents/applications/shelf-growth-strategy-lead-gtm/submission.json",
-    "documents/applications/shelf-growth-strategy-lead-gtm",
-    "documents/applications/faire-staff-product-manager-relationship-growth/submission.md",
-    "documents/applications/headway-staff-product-manager-pricing/submission.md",
-    "documents/applications/linear-product-manager/submission.md",
-    "documents/applications/decagon-senior-agent-product-manager/submission.md",
-    "vault/Job Pipeline/08 Outcome/AIOS - Head of Product Growth.md",
-    "vault/Job Pipeline/02 Triaged/Headway - Head of Patient Growth Marketing.md",
-    "vault/Job Pipeline/05 Ready to Apply/WorkOS - Product Manager - Growth.md",
-    "vault/Job Pipeline/05 Ready to Apply/Baseten - Product Manager, Enterprise.md",
-    "vault/Job Pipeline/05 Ready to Apply/Capital One - Senior Product Manager, Growth - Capital One Shopping (Remot.md",
-    "vault/Job Pipeline/05 Ready to Apply/Gorgias - Staff Product Manager - AI Journey.md",
-    "vault/Job Pipeline/05 Ready to Apply/Brex - Staff Product Manager, Growth.md"
+    "documents/applications/baseten-product-manager-enterprise"
   ]
 }

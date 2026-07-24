@@ -216,7 +216,7 @@
         }
       ],
       "follow_up_due": "2026-07-06",
-      "notes": "Cold apply CONVERTED -> recruiter screen. Substack = creator subscription platform (near-identical to AJ Beacons background). Role: PM, Growth (NEW role, product-first), owns ORGANIC acquisition flywheel: SEO, ASO, sign-up/onboarding/first-run, D1/D7 retention, funnel instrumentation. Reports to Head of Growth; works with Activation + Growth Marketing. GEO FLAG: listed San Francisco (HQ) only -- AJ is NYC; clarify remote/NYC early (potential deal-breaker). FIT: onboarding/activation/experimentation/subscription funnel = AJ core (Beacons). GAP: SEO/ASO as named disciplines not in AJ profile -- be honest, lean on adjacent organic-growth + fast learning + engineer-PM.",
+      "notes": "Cold apply CONVERTED -> recruiter screen. Substack = creator subscription platform (near-identical to AJ Beacons background). Role: PM, Growth (NEW role, product-first), owns ORGANIC acquisition flywheel: SEO, ASO, sign-up/onboarding/first-run, D1/D7 retention, funnel instrumentation. Reports to Head of Growth; works with Activation + Growth Marketing. GEO FLAG: listed San Francisco (HQ) only -- AJ is NYC; clarify remote/NYC early (potential deal-breaker). FIT: onboarding/activation/experimentation/subscription funnel = AJ core (Beacons). GAP: SEO/ASO as named disciplines not in AJ profile -- be honest, lean on adjacent organic-growth + fast learning + engineer-PM. | 2026-07-21: advanced to Chris Chen (chris-aston) HM round. BEST-FIT role. Comp likely ~$230k base + options (strike ~$1bn). Crux = comp vs. exceptional fit. | Chris Aston Chen = Substack HEAD OF GROWTH (AJ future manager). Ex-Roblox 7yr (growth). Writes chenstack.substack.com on platforms/creator ecosystems/cold starts. Prep: read his writing to mirror frame (Raman-style). Rapport goldmine = shared creator-platform-growth worldview (his Roblox creator economy + AJ Beacons creator subscriptions).",
       "events": [
         {
           "date": "2026-07-21",
@@ -224,6 +224,19 @@
           "channel": "interview",
           "outcome": "scheduled",
           "note": "Recruiter screen with Russell Lifson (Substack). Booked Tue 2:30 PM ET. Priority: clarify remote/NYC vs SF-only early; land the Beacons creator-subscription fit; handle SEO/ASO gap honestly."
+        },
+        {
+          "date": "2026-07-21",
+          "channel": "interview",
+          "outcome": "advanced",
+          "note": "PASSED Russell Lifson recruiter screen -> advancing to 30-min call with Chris Chen (LinkedIn: chris-aston) = likely hiring manager / Head of Growth. AJ: role alignment is PHENOMENAL (Beacons-twin: creator subscriptions, PLG, onboarding/lifecycle). COMP expectation: base tops ~$230k + options w/ strike ~$1bn valuation. Below AJ $250k+ target but close + equity; on best-fit on-thesis role."
+        },
+        {
+          "date": "2026-07-27",
+          "time": "12:45 ET",
+          "channel": "interview",
+          "outcome": "scheduled",
+          "note": "HM round: Mon 7/27 12:45p ET with Chris Aston Chen (Head of Growth, future manager). Best-fit role. (Chris booked Monday himself despite the offsite week -> good sign.)"
         }
       ]
     },
@@ -432,7 +445,8 @@
         "cover_letter": "cover_letters/cover_ramp_growth_operator.tex",
         "cover_letter_pdf": "cover_letters/cover_ramp_growth_operator.pdf",
         "notes": "Built 2026-06-22 (batch 2) via parallel drafter agents on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. HELD: SDR/BD outbound seat, $120-150K. VP-level exec auto-applying reads as spray-and-pray. Materials built if AJ wants it."
-      }
+      },
+      "notes": "Skipped 2026-07-24: listing no longer active (liveness check)."
     },
     "https://job-boards.greenhouse.io/customerio/jobs/7964655": {
       "materials": {
@@ -441,7 +455,8 @@
         "cover_letter": "cover_letters/cover_customerio_pmm.tex",
         "cover_letter_pdf": "cover_letters/cover_customerio_pmm.pdf",
         "notes": "Built 2026-06-23 (batch 3, expanded universe) via parallel drafters on ajcv.cls/cover_aj.cls. Recompiled: CV 2pp, cover 1pp, 0 err, no em-dash. Remote. AJ exact depth: lifecycle/messaging platform (Iterable peer). PMM-title vs growth-leadership framed deliberate."
-      }
+      },
+      "notes": "Skipped 2026-07-24: listing no longer active (liveness check)."
     },
     "https://jobs.ashbyhq.com/supabase/82665e7b-1dac-401d-ac0b-42e3f2485421": {
       "materials": {
@@ -804,7 +819,8 @@
         "cv_pdf": "cv/main_shelf.pdf",
         "cover_letter": "cover_letters/cover_shelf_gtm.tex",
         "cover_letter_pdf": "cover_letters/cover_shelf_gtm.pdf",
-        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Strong fit. AI knowledge-automation, hands-on GTM/growth IC. NYC in-person."
+        "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Strong fit. AI knowledge-automation, hands-on GTM/growth IC. NYC in-person.",
+        "diligence": "documents/applications/shelf-growth-strategy-lead/diligence.md"
       },
       "outreach": [
         {
@@ -815,7 +831,7 @@
           "outcome": "submitted"
         }
       ],
-      "notes": "Cold applied 2026-07-19; Kevin Ford (Head of Marketing at Shelf, and the role reports closely to Head of Marketing = effectively the hiring manager) CALLED AJ morning of 2026-07-20 (~12hr after apply). Very strong signal. Shelf = GenAI context/answer-automation platform (agentic AI), Series B $52.5M (Tiger Global+Insight), customers incl John Deere, HelloFresh, Glovo, HBR; HQ Stamford CT but THIS role is NYC. Role = high-agency generalist \"force multiplier\" on core team (Operator/Orchestrator/Creative Force), builds from blank page across growth/campaigns/automation/events/strategy, AI-native leverage. FIT: strong on builder/0-1/high-agency/AI-native/first-principles (Warmode/Matic/Claude Code = direct match). CAVEATS: generalist utility role under Head of Marketing (level likely below VP target; more operator/EiR); has creative/copy/brand/events lean. ACTION: call Kevin back promptly. | 2026-07-21 call set. 5-DAY IN-OFFICE NYC (geo OK but full in-office). AJ: decent fit + on-thesis; COMP is the crux. NOTE: Substack Russell screen also 7/21 2:30pm ET -- avoid overlap.",
+      "notes": "Cold applied 2026-07-19; Kevin Ford (Head of Marketing at Shelf, and the role reports closely to Head of Marketing = effectively the hiring manager) CALLED AJ morning of 2026-07-20 (~12hr after apply). Very strong signal. Shelf = GenAI context/answer-automation platform (agentic AI), Series B $52.5M (Tiger Global+Insight), customers incl John Deere, HelloFresh, Glovo, HBR; HQ Stamford CT but THIS role is NYC. Role = high-agency generalist \"force multiplier\" on core team (Operator/Orchestrator/Creative Force), builds from blank page across growth/campaigns/automation/events/strategy, AI-native leverage. FIT: strong on builder/0-1/high-agency/AI-native/first-principles (Warmode/Matic/Claude Code = direct match). CAVEATS: generalist utility role under Head of Marketing (level likely below VP target; more operator/EiR); has creative/copy/brand/events lean. ACTION: call Kevin back promptly. | 2026-07-21 call set. 5-DAY IN-OFFICE NYC (geo OK but full in-office). AJ: decent fit + on-thesis; COMP is the crux. NOTE: Substack Russell screen also 7/21 2:30pm ET -- avoid overlap. | 2026-07-21: advanced past HM call. Safety-school framing. Culture flags (turnover/long-hours/storm) -> diligence needed; comp bar RAISED not lowered. | DILIGENCE (2026-07-21): MODERATE concern. NOT toxic (Glassdoor 4.1, founding team intact). Real risk = 5-YR FUNDING GAP (Series B Aug2021, no Series C) + intense/grind culture (63% CEO approval, WLB 3.6). Uber/Progressive/Prudential customers UNCONFIRMED. Resolve runway/raise question before proceeding. | 2026-07-23 CEO round: pitched \"Head of Automation\" role (deploy new AI product to automate internal ops). Virtual Mon PM. No longer a simple safety-school; now high-variance speculative play. Resolve product-reality + runway + scope/comp Monday. SCHEDULING: Mon already has Substack 12:45p ET + maybe Perplexity -- protect Substack, space Shelf clear. | 2026-07-23: cash-flow-even @ $20M rev (stability upgraded). Options strike $0.27, believed raise $20 (upside real but speculative, tied to new product). Equity thesis = same bet as \"is the product real.\"",
       "events": [
         {
           "date": "2026-07-20",
@@ -828,6 +844,37 @@
           "channel": "interview",
           "outcome": "scheduled",
           "note": "AJ called Kevin back; 30-min call scheduled for Tue 7/21. Role = 5 days in-office NYC. AJ read: decent skills/impact fit, company on-thesis. KEY VARIABLE = compensation (Series B operator role, likely below VP-level comp). Clarify scope/level then surface their range."
+        },
+        {
+          "date": "2026-07-21",
+          "channel": "interview",
+          "outcome": "advanced",
+          "note": "30-min call w/ Kevin Ford done -> ADVANCING to next call. Customers: Uber + Progressive-or-Prudential (unconfirmed). FLAGS: team has been FLUCTUATING (turnover); long hours, in-office Midtown; Kevin rambled; hiring \"founder types, not specialists.\" Kevin easily impressed, believes strong fit. AJ read: company may be going through a storm / possible toxic leadership env. AJ FRAMING: pursue as SAFETY-SCHOOL option -- keep advancing for optionality/leverage/reps, low emotional investment. COMP still the crux AND culture flags raise the bar (grind + in-office + possible toxicity => comp/terms must be strong to justify). TODO: diligence Shelf culture/turnover (Glassdoor, LinkedIn tenure, recent departures, leadership reviews) before investing further."
+        },
+        {
+          "date": "2026-07-21",
+          "channel": "interview",
+          "outcome": "follow_up_call",
+          "note": "Kevin Ford called AGAIN to collect SPECIFIC revenue numbers for DailyPay/Beacons/Checkmate. AJ gave numbers with explanations. Kevin said he was excited from earlier call and is taking it to the team. Read: Kevin advocating internally / wants clean quotable metrics (possibly answering internal skepticism about a nonlinear founder-VP with 10x/5.7x/3x numbers). ACTION for AJ: keep numbers IDENTICAL + well-attributed in all future rounds; be ready to defend what was his contribution vs market/team; ensure references corroborate. Net signal = positive (numbers are the centerpiece; Kevin invested)."
+        },
+        {
+          "date": "2026-07-23",
+          "time": "10:00 ET",
+          "channel": "interview",
+          "outcome": "scheduled",
+          "note": "CEO ROUND: Thu 7/23 10a ET with CEO Sedarius Perrotta. URGENT prep (tomorrow AM). Use this to (1) resolve the funding-gap/ARR/runway question directly, (2) be ready to defend revenue numbers w/ attribution (Kevin took them to the team), (3) assess culture/vision firsthand."
+        },
+        {
+          "date": "2026-07-23",
+          "channel": "interview",
+          "outcome": "ceo_round_strong",
+          "note": "CEO call ran 90 min (30 over slot) -- strong engagement. CEO did a chronological \"story from high school forward\" interview (Topgrading-style). Stopped at early DailyPay to ask if AJ had done ABM; AJ answered honestly (not formally in-role, but touched it in several ways). PIVOT: CEO pitched a DIFFERENT, invented-on-the-spot role -- \"HEAD OF AUTOMATION\": use their NEW unreleased product (based on his MIT research, \"unlocked by ChatGPT,\" claims big winner) to automate ALL internal processes (GTM, customer service, HR). Wanted AJ in NYC in-person Monday; AJ declined (Substack interview Mon + family trip). CEO to set a VIRTUAL meeting Mon afternoon. REFRAME: Shelf shifted from \"safety-school growth role\" to \"founder-courted, novel AI-automation leadership role.\" Head of Automation fits AJ rarest skill (agentic AI building: Warmode/Matic) better than the growth role AND matches \"what excites AJ\" (AI as core capability). BUT: internal-ops/cost-center role (not revenue/growth = career-vector question); founder-invented role = undefined/under-resourced risk; new product = healthy skepticism; company-health flags (5yr funding gap, grind, turnover) STILL STAND and are HIGHER stakes if betting the company on an unreleased product. Funding/runway question NOT yet resolved -- resolve Monday."
+        },
+        {
+          "date": "2026-07-23",
+          "channel": "interview",
+          "outcome": "comp_stability_intel",
+          "note": "CEO stated: CASH-FLOW-EVEN now at ~$20M revenue (RESOLVES the funding-gap flag favorably -> \"disciplined/profitable,\" not \"cant raise\"; can sustain w/o raising). Options STRIKE = $0.27/share; CEO BELIEVES next raise at $20/share (~74x paper spread). CAVEAT: $20 is founder belief tied to the UNRELEASED new product -- high-variance, illiquid, contingent. Verify Monday: option GRANT SIZE (# shares / %), vesting, current 409A/last-round price (sanity-check $0.27), basis for the $20 (term sheet vs aspiration), liquidity path. Base salary still matters on its own."
         }
       ]
     },
@@ -881,7 +928,8 @@
         "cover_letter": "cover_letters/cover_geniussports_growth.tex",
         "cover_letter_pdf": "cover_letters/cover_geniussports_growth.pdf",
         "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. HELD: role is LA (not NYC) + partnership deal-closing seat, not PLG. Materials built if AJ wants it."
-      }
+      },
+      "notes": "Skipped 2026-07-24: listing no longer active (liveness check)."
     },
     "https://jobs.ashbyhq.com/abacum/0065df8b-b21c-43e9-86e2-3774a25ee740": {
       "materials": {
@@ -1399,6 +1447,19 @@
           "channel": "interview",
           "outcome": "advanced",
           "note": "PASSED recruiter screen (Kanita Fuller). Advancing to 30-min call with Raman Malik, VP of Product Growth = the hiring manager / future manager. KEY INTEL: role has been slow to fill because prior candidates were too attached to playbooks. Ramin wants someone more AI-fluent, more technical, more forward-thinking. AJ should lead into that gap: engineer-PM, builds agentic tooling (Warmode/Matic on Claude Code), anti-playbook first-principles operator."
+        },
+        {
+          "date": "2026-07-22",
+          "channel": "interview",
+          "outcome": "availability_sent",
+          "note": "Perplexity (Raman Malik HM round) availability request received; AJ offered Fri 7/24, Mon 7/27, Tue 7/28. WATCH: Mon 7/27 also has Substack 12:45p ET -- ensure no overlap; prefer Fri or Tue for Perplexity."
+        },
+        {
+          "date": "2026-07-24",
+          "time": "17:30 ET",
+          "channel": "interview",
+          "outcome": "scheduled",
+          "note": "Raman Malik HM round SCHEDULED Fri 7/24 5:30p ET. Resolves Monday collision (off Monday). URGENT: prep + deliverables due tomorrow; late-day slot -> arrive fresh."
         }
       ],
       "materials": {
@@ -1478,6 +1539,14 @@
           "note": "Auto-submitted application (CV, resume-only). Confirmation received.",
           "outcome": "submitted"
         }
+      ],
+      "events": [
+        {
+          "date": "2026-07-22",
+          "channel": "application",
+          "outcome": "rejected",
+          "note": "Rejected after cold auto-apply. Clean-match high-fit growth PM (dev-infra/PLG) but cold channel bounced."
+        }
       ]
     },
     "https://jobs.ashbyhq.com/perplexity/b349ec0e-be02-47b0-8595-8de0dbb074c5": {
@@ -1554,6 +1623,28 @@
           "outcome": "submitted"
         }
       ]
+    },
+    "scaleai:growth-strategy-operations-lead": {
+      "materials": {
+        "cv": "cv/main_scaleai.tex",
+        "cv_pdf": "cv/main_scaleai.pdf"
+      },
+      "notes": "INBOUND: Hijae Kim (Scale AI) invited AJ to email resume for Growth Strategy & Operations Lead. Frontier-AI, on-thesis. Tailored CV built (growth-as-a-system: revenue intelligence, experimentation ops, analytics/KPI, cross-functional growth ops). Email drafted 2026-07-22; AJ sending w/ resume attached."
+    },
+    "https://jobs.ashbyhq.com/plaid/542d46b1-1032-49c8-b96f-806ace7b3a8b": {
+      "notes": "Plaid PM Growth (NYC office). Clean growth PM, fintech, NYC. Added 2026-07-24."
+    },
+    "https://job-boards.greenhouse.io/mercury/jobs/6121369004": {
+      "notes": "Mercury Senior PM - Activation (SF/NY/Remote US). Activation = AJ core lane; remote geo. Added 2026-07-24. NOTE: AJ also has Mercury Head of Product Business Lending triaged."
+    },
+    "https://jobs.ashbyhq.com/kit/a5374fbd-df51-44f9-8e76-0609e402616d": {
+      "notes": "ConvertKit/Kit Senior Creator Growth Manager (Remote). Creator-economy growth = AJ Beacons lane; remote. Added 2026-07-24."
+    },
+    "https://boards.greenhouse.io/robinhood/jobs/8060585?t=gh_src=&gh_jid=8060585": {
+      "notes": "Robinhood Staff PM International Growth (Menlo Park/NYC -- NYC option now, unlike the London-only one). NOTE: route via GIO personal path, not cold. Added 2026-07-24."
+    },
+    "https://job-boards.greenhouse.io/xai/jobs/5055608007": {
+      "notes": "Skipped 2026-07-24: listing no longer active (liveness check)."
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-07-19 (scheduled pass)",
+  "last_run": "2026-07-21 (manual pass)",
   "finds": [
     {
       "url": "https://www.linkedin.com/jobs/view/4420162332/",
@@ -219,7 +219,7 @@
       "source": "linkedin",
       "raw_description_snippet": "[Listing-derived from LinkedIn recommended; full JD via /apply] Director, Applied AI at Metropolis Technologies. New York, NY (On-site). Surfaced in AJ's LinkedIn Top job picks.",
       "fit_signal": "low",
-      "why": "AI payments/parking company; applied-AI leadership rather than growth — off-profile."
+      "why": "AI payments/parking company; applied-AI leadership rather than growth \u2014 off-profile."
     },
     {
       "url": "https://www.linkedin.com/jobs/view/4426193756/",
@@ -349,9 +349,9 @@
       "location": "San Francisco, CA (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Lead at Grw AI — San Francisco, CA (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Lead at Grw AI \u2014 San Francisco, CA (On-site).",
       "fit_signal": "medium",
-      "why": "Founding Growth Lead at an AI startup — 0-to-1 growth ownership AJ excels at, but SF on-site.",
+      "why": "Founding Growth Lead at an AI startup \u2014 0-to-1 growth ownership AJ excels at, but SF on-site.",
       "status": "new"
     },
     {
@@ -361,9 +361,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Marketing at Starboard — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Marketing at Starboard \u2014 New York, NY (On-site).",
       "fit_signal": "medium",
-      "why": "Founding Growth Marketing at Starboard — NYC 0-to-1 founding growth role.",
+      "why": "Founding Growth Marketing at Starboard \u2014 NYC 0-to-1 founding growth role.",
       "status": "new"
     },
     {
@@ -373,9 +373,9 @@
       "location": "Palo Alto, CA (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth & Business Development (Contractor) at Let Wash — Palo Alto, CA (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth & Business Development (Contractor) at Let Wash \u2014 Palo Alto, CA (Hybrid).",
       "fit_signal": "low",
-      "why": "Contractor BD/growth role — contractor + off-profile.",
+      "why": "Contractor BD/growth role \u2014 contractor + off-profile.",
       "status": "skipped"
     },
     {
@@ -385,9 +385,9 @@
       "location": "New York, NY (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Sr. Marketing Tech Engineer at The Knot Worldwide — New York, NY (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Sr. Marketing Tech Engineer at The Knot Worldwide \u2014 New York, NY (Hybrid).",
       "fit_signal": "low",
-      "why": "Marketing-tech engineer — martech ops, not growth ownership.",
+      "why": "Marketing-tech engineer \u2014 martech ops, not growth ownership.",
       "status": "skipped"
     },
     {
@@ -397,9 +397,9 @@
       "location": "Dallas, TX (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Career Accelerator Program Product Marketing Engineer mmWave Radar at Texas Instruments — Dallas, TX (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Career Accelerator Program Product Marketing Engineer mmWave Radar at Texas Instruments \u2014 Dallas, TX (On-site).",
       "fit_signal": "low",
-      "why": "Hardware/radar product marketing engineer — wrong domain.",
+      "why": "Hardware/radar product marketing engineer \u2014 wrong domain.",
       "status": "skipped"
     },
     {
@@ -409,9 +409,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Growth Engineer at MLabs — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Growth Engineer at MLabs \u2014 New York, NY (On-site).",
       "fit_signal": "high",
-      "why": "NYC Growth Engineer at $250-300K — direct match to AJ's growth-engineering + PLG profile, strong comp.",
+      "why": "NYC Growth Engineer at $250-300K \u2014 direct match to AJ's growth-engineering + PLG profile, strong comp.",
       "status": "new"
     },
     {
@@ -421,9 +421,9 @@
       "location": "United States (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] GTM Engineer at Kana — United States (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] GTM Engineer at Kana \u2014 United States (Remote).",
       "fit_signal": "medium",
-      "why": "GTM Engineer at Kana — remote growth-engineering role blending GTM + build.",
+      "why": "GTM Engineer at Kana \u2014 remote growth-engineering role blending GTM + build.",
       "status": "new"
     },
     {
@@ -433,9 +433,9 @@
       "location": "United States (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] SEO Strategist at Digital Marketing Recruiters — United States (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] SEO Strategist at Digital Marketing Recruiters \u2014 United States (Remote).",
       "fit_signal": "low",
-      "why": "SEO strategist via recruiter — off-function.",
+      "why": "SEO strategist via recruiter \u2014 off-function.",
       "status": "skipped"
     },
     {
@@ -445,9 +445,9 @@
       "location": "United States (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Campaign Marketing Manager at HireTalent — United States (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Campaign Marketing Manager at HireTalent \u2014 United States (Remote).",
       "fit_signal": "low",
-      "why": "Campaign marketing manager staffing repost — off-function.",
+      "why": "Campaign marketing manager staffing repost \u2014 off-function.",
       "status": "skipped"
     },
     {
@@ -457,9 +457,9 @@
       "location": "Dallas, TX (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Field Marketing Specialist at 7AI — Dallas, TX (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Field Marketing Specialist at 7AI \u2014 Dallas, TX (On-site).",
       "fit_signal": "low",
-      "why": "Field marketing specialist — off-function/seniority.",
+      "why": "Field marketing specialist \u2014 off-function/seniority.",
       "status": "skipped"
     },
     {
@@ -469,9 +469,9 @@
       "location": "United States (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] ABM/Lead Generation Marketer at 24 Seven Talent — United States (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] ABM/Lead Generation Marketer at 24 Seven Talent \u2014 United States (Remote).",
       "fit_signal": "low",
-      "why": "ABM/lead-gen marketer via staffing — off-function.",
+      "why": "ABM/lead-gen marketer via staffing \u2014 off-function.",
       "status": "skipped"
     },
     {
@@ -481,9 +481,9 @@
       "location": "Kennesaw, GA (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Marketing Specialist at Myticas Consulting — Kennesaw, GA (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Marketing Specialist at Myticas Consulting \u2014 Kennesaw, GA (Hybrid).",
       "fit_signal": "low",
-      "why": "Product marketing specialist staffing repost — off-function.",
+      "why": "Product marketing specialist staffing repost \u2014 off-function.",
       "status": "skipped"
     },
     {
@@ -493,9 +493,9 @@
       "location": "United States (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Social Media - Venture Capital at Alfa AI — United States (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Social Media - Venture Capital at Alfa AI \u2014 United States (Remote).",
       "fit_signal": "low",
-      "why": "Head of Social Media — off-function.",
+      "why": "Head of Social Media \u2014 off-function.",
       "status": "skipped"
     },
     {
@@ -505,9 +505,9 @@
       "location": "Tustin, CA (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Hubspot Growth Marketing Specialist at Wizehire — Tustin, CA (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Hubspot Growth Marketing Specialist at Wizehire \u2014 Tustin, CA (On-site).",
       "fit_signal": "low",
-      "why": "HubSpot growth-marketing specialist — off-seniority/function.",
+      "why": "HubSpot growth-marketing specialist \u2014 off-seniority/function.",
       "status": "skipped"
     },
     {
@@ -517,7 +517,7 @@
       "location": "San Francisco Bay Area (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Growth at Digital Waffle — San Francisco Bay Area (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Growth at Digital Waffle \u2014 San Francisco Bay Area (On-site).",
       "fit_signal": "low",
       "why": "Head of Growth via recruiter, SF on-site, company obscured.",
       "status": "skipped"
@@ -529,9 +529,9 @@
       "location": "Englewood Cliffs, NJ (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Director of CTV Retail Media at LG Electronics North America — Englewood Cliffs, NJ (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Director of CTV Retail Media at LG Electronics North America \u2014 Englewood Cliffs, NJ (On-site).",
       "fit_signal": "low",
-      "why": "CTV retail media director — ad/media, off-profile.",
+      "why": "CTV retail media director \u2014 ad/media, off-profile.",
       "status": "skipped"
     },
     {
@@ -541,9 +541,9 @@
       "location": "Chicago, IL (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] VP, Commerce Media at Mars United Commerce — Chicago, IL (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] VP, Commerce Media at Mars United Commerce \u2014 Chicago, IL (Hybrid).",
       "fit_signal": "low",
-      "why": "VP Commerce Media — ad/media, off-profile.",
+      "why": "VP Commerce Media \u2014 ad/media, off-profile.",
       "status": "skipped"
     },
     {
@@ -553,9 +553,9 @@
       "location": "New York City Metropolitan Area (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Director of Brand Partnerships & Experiential Sales at New York Technology Partners — New York City Metropolitan Area (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Director of Brand Partnerships & Experiential Sales at New York Technology Partners \u2014 New York City Metropolitan Area (Hybrid).",
       "fit_signal": "low",
-      "why": "Brand partnerships/experiential sales — sales, off-profile.",
+      "why": "Brand partnerships/experiential sales \u2014 sales, off-profile.",
       "status": "skipped"
     },
     {
@@ -565,9 +565,9 @@
       "location": "Manhattan, New York (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Director of Growth Marketing at Flexzo Ai — Manhattan, New York (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Director of Growth Marketing at Flexzo Ai \u2014 Manhattan, New York (Remote).",
       "fit_signal": "medium",
-      "why": "Director of Growth Marketing at Flexzo AI — remote NYC, AI-native, growth leadership.",
+      "why": "Director of Growth Marketing at Flexzo AI \u2014 remote NYC, AI-native, growth leadership.",
       "status": "new"
     },
     {
@@ -577,9 +577,9 @@
       "location": "Chicago, IL (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Associate Director, Client Media Solutions at Real Chemistry — Chicago, IL (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Associate Director, Client Media Solutions at Real Chemistry \u2014 Chicago, IL (Remote).",
       "fit_signal": "low",
-      "why": "Client media solutions — agency media, off-profile.",
+      "why": "Client media solutions \u2014 agency media, off-profile.",
       "status": "skipped"
     },
     {
@@ -589,9 +589,9 @@
       "location": "Los Angeles, CA (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Business Development Director (Growth) at The Trade Desk — Los Angeles, CA (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Business Development Director (Growth) at The Trade Desk \u2014 Los Angeles, CA (On-site).",
       "fit_signal": "low",
-      "why": "Business development director — enterprise sales, off-profile.",
+      "why": "Business development director \u2014 enterprise sales, off-profile.",
       "status": "skipped"
     },
     {
@@ -601,7 +601,7 @@
       "location": "Irving, TX (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager at Precision Technologies — Irving, TX (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager at Precision Technologies \u2014 Irving, TX (On-site).",
       "fit_signal": "low",
       "why": "Generic staffing PM role, TX on-site.",
       "status": "skipped"
@@ -613,9 +613,9 @@
       "location": "New York, NY (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Associate Manager, Digital Product Operations & Governance at The Leading Hotels of the World — New York, NY (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Associate Manager, Digital Product Operations & Governance at The Leading Hotels of the World \u2014 New York, NY (Hybrid).",
       "fit_signal": "low",
-      "why": "Digital product ops/governance — ops, off-profile.",
+      "why": "Digital product ops/governance \u2014 ops, off-profile.",
       "status": "skipped"
     },
     {
@@ -625,9 +625,9 @@
       "location": "Dallas, TX (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Medicare Product Manager at Seneca Resources — Dallas, TX (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Medicare Product Manager at Seneca Resources \u2014 Dallas, TX (On-site).",
       "fit_signal": "low",
-      "why": "Medicare PM contract — wrong domain.",
+      "why": "Medicare PM contract \u2014 wrong domain.",
       "status": "skipped"
     },
     {
@@ -637,7 +637,7 @@
       "location": "Richardson, TX (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager at Optomi — Richardson, TX (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager at Optomi \u2014 Richardson, TX (Hybrid).",
       "fit_signal": "low",
       "why": "Generic staffing PM, TX.",
       "status": "skipped"
@@ -649,7 +649,7 @@
       "location": "Charlotte, NC (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager at Calculated Hire — Charlotte, NC (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager at Calculated Hire \u2014 Charlotte, NC (On-site).",
       "fit_signal": "low",
       "why": "Generic staffing PM, NC.",
       "status": "skipped"
@@ -661,9 +661,9 @@
       "location": "Doylestown, PA (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager at Instinct Science — Doylestown, PA (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager at Instinct Science \u2014 Doylestown, PA (Remote).",
       "fit_signal": "low",
-      "why": "Veterinary-software PM — wrong domain.",
+      "why": "Veterinary-software PM \u2014 wrong domain.",
       "status": "skipped"
     },
     {
@@ -673,9 +673,9 @@
       "location": "Bellevue, WA (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager Telecom Data Engineering at Lorven Technologies Inc. — Bellevue, WA (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager Telecom Data Engineering at Lorven Technologies Inc. \u2014 Bellevue, WA (On-site).",
       "fit_signal": "low",
-      "why": "Telecom data-engineering PM — wrong domain.",
+      "why": "Telecom data-engineering PM \u2014 wrong domain.",
       "status": "skipped"
     },
     {
@@ -685,9 +685,9 @@
       "location": "San Francisco Bay Area (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Technical Founder OS Pet Ownership at Stealth Startup — San Francisco Bay Area (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Technical Founder OS Pet Ownership at Stealth Startup \u2014 San Francisco Bay Area (Hybrid).",
       "fit_signal": "low",
-      "why": "Vague stealth 'technical founder' pet-ownership post — off-profile.",
+      "why": "Vague stealth 'technical founder' pet-ownership post \u2014 off-profile.",
       "status": "skipped"
     },
     {
@@ -697,9 +697,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] VP of Marketing at Evvy — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] VP of Marketing at Evvy \u2014 New York, NY (On-site).",
       "fit_signal": "low",
-      "why": "VP of Marketing — marketing-led, not growth.",
+      "why": "VP of Marketing \u2014 marketing-led, not growth.",
       "status": "skipped"
     },
     {
@@ -709,9 +709,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Marketing at Capsa AI — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Marketing at Capsa AI \u2014 New York, NY (On-site).",
       "fit_signal": "low",
-      "why": "Head of Marketing (AI-native) — marketing-led, not growth.",
+      "why": "Head of Marketing (AI-native) \u2014 marketing-led, not growth.",
       "status": "skipped"
     },
     {
@@ -721,9 +721,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Growth at Jobot — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Growth at Jobot \u2014 New York, NY (On-site).",
       "fit_signal": "low",
-      "why": "Head of Growth (NYC) via Jobot recruiter — real leadership role but company obscured; worth a click-through.",
+      "why": "Head of Growth (NYC) via Jobot recruiter \u2014 real leadership role but company obscured; worth a click-through.",
       "status": "new"
     },
     {
@@ -733,9 +733,9 @@
       "location": "New York, NY (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Content and Growth Lead at Motion Recruitment — New York, NY (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Content and Growth Lead at Motion Recruitment \u2014 New York, NY (Hybrid).",
       "fit_signal": "low",
-      "why": "Founding content/growth via recruiter — content-weighted, company obscured.",
+      "why": "Founding content/growth via recruiter \u2014 content-weighted, company obscured.",
       "status": "skipped"
     },
     {
@@ -745,9 +745,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Director, Data & AI Portfolio Value Creation at Tenfold Search & Advisory — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Director, Data & AI Portfolio Value Creation at Tenfold Search & Advisory \u2014 New York, NY (On-site).",
       "fit_signal": "low",
-      "why": "Data & AI PE value-creation director — consulting/PE, off-profile.",
+      "why": "Data & AI PE value-creation director \u2014 consulting/PE, off-profile.",
       "status": "skipped"
     },
     {
@@ -757,9 +757,9 @@
       "location": "New York, NY (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] SVP, Strategic Growth at Genius Sports — New York, NY (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] SVP, Strategic Growth at Genius Sports \u2014 New York, NY (Hybrid).",
       "fit_signal": "low",
-      "why": "SVP Strategic Growth (sports) — enterprise sales/partnerships.",
+      "why": "SVP Strategic Growth (sports) \u2014 enterprise sales/partnerships.",
       "status": "skipped"
     },
     {
@@ -769,9 +769,9 @@
       "location": "New City, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] VP of B2B Marketing, CLEAR1 at CLEAR — New City, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] VP of B2B Marketing, CLEAR1 at CLEAR \u2014 New City, NY (On-site).",
       "fit_signal": "low",
-      "why": "VP B2B Marketing — marketing-led, off-profile.",
+      "why": "VP B2B Marketing \u2014 marketing-led, off-profile.",
       "status": "skipped"
     },
     {
@@ -781,9 +781,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] SVP, Ad Sales Growth Strategy at Paramount — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] SVP, Ad Sales Growth Strategy at Paramount \u2014 New York, NY (On-site).",
       "fit_signal": "low",
-      "why": "SVP Ad Sales growth strategy — ad sales, off-profile.",
+      "why": "SVP Ad Sales growth strategy \u2014 ad sales, off-profile.",
       "status": "skipped"
     },
     {
@@ -793,7 +793,7 @@
       "location": "New York City Metropolitan Area (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Growth at GTM Talent LLC — New York City Metropolitan Area (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Growth at GTM Talent LLC \u2014 New York City Metropolitan Area (Hybrid).",
       "fit_signal": "low",
       "why": "Head of Growth via recruiter, company obscured.",
       "status": "skipped"
@@ -805,9 +805,9 @@
       "location": "New York City Metropolitan Area (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Marketing and Growth at Hovland Barnes — New York City Metropolitan Area (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Marketing and Growth at Hovland Barnes \u2014 New York City Metropolitan Area (On-site).",
       "fit_signal": "low",
-      "why": "Head of Marketing and Growth via recruiter — marketing-weighted, obscured.",
+      "why": "Head of Marketing and Growth via recruiter \u2014 marketing-weighted, obscured.",
       "status": "skipped"
     },
     {
@@ -817,9 +817,9 @@
       "location": "New York City Metropolitan Area (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] VP Account Growth at GDS Group — New York City Metropolitan Area (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] VP Account Growth at GDS Group \u2014 New York City Metropolitan Area (On-site).",
       "fit_signal": "low",
-      "why": "VP Account Growth — account sales, off-profile.",
+      "why": "VP Account Growth \u2014 account sales, off-profile.",
       "status": "skipped"
     },
     {
@@ -829,9 +829,9 @@
       "location": "New York, NY (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Automated Growth at Rippling — New York, NY (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Automated Growth at Rippling \u2014 New York, NY (Hybrid).",
       "fit_signal": "high",
-      "why": "Head of Automated Growth at Rippling — growth-stage leader, NYC hybrid, automation/experimentation-heavy growth role.",
+      "why": "Head of Automated Growth at Rippling \u2014 growth-stage leader, NYC hybrid, automation/experimentation-heavy growth role.",
       "status": "referral_pending"
     },
     {
@@ -841,9 +841,9 @@
       "location": "San Francisco, CA (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Lead at Liva AI — San Francisco, CA (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Lead at Liva AI \u2014 San Francisco, CA (Hybrid).",
       "fit_signal": "medium",
-      "why": "Founding Growth Lead at an AI startup (SF hybrid) — strong role type, off-location.",
+      "why": "Founding Growth Lead at an AI startup (SF hybrid) \u2014 strong role type, off-location.",
       "status": "new"
     },
     {
@@ -853,9 +853,9 @@
       "location": "Redwood City, CA (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth & Brand Lead at Electric Air — Redwood City, CA (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth & Brand Lead at Electric Air \u2014 Redwood City, CA (Hybrid).",
       "fit_signal": "low",
-      "why": "Founding Growth & Brand Lead, Redwood City — brand-weighted, off-location.",
+      "why": "Founding Growth & Brand Lead, Redwood City \u2014 brand-weighted, off-location.",
       "status": "skipped"
     },
     {
@@ -865,9 +865,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Marketing at Sidewalk — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Marketing at Sidewalk \u2014 New York, NY (On-site).",
       "fit_signal": "medium",
-      "why": "Founding Growth Marketing, NYC — founding growth but marketing-weighted.",
+      "why": "Founding Growth Marketing, NYC \u2014 founding growth but marketing-weighted.",
       "status": "new"
     },
     {
@@ -877,9 +877,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Lead at Moda — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Lead at Moda \u2014 New York, NY (On-site).",
       "fit_signal": "medium",
-      "why": "Founding Growth Lead, NYC startup — 0-to-1 growth ownership; very early stage.",
+      "why": "Founding Growth Lead, NYC startup \u2014 0-to-1 growth ownership; very early stage.",
       "status": "new"
     },
     {
@@ -889,9 +889,9 @@
       "location": "San Francisco Bay Area (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Marketer at Spectrum Search — San Francisco Bay Area (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Marketer at Spectrum Search \u2014 San Francisco Bay Area (On-site).",
       "fit_signal": "low",
-      "why": "Founding Growth Marketer via recruiter (Spectrum Search), SF — obscured, off-location.",
+      "why": "Founding Growth Marketer via recruiter (Spectrum Search), SF \u2014 obscured, off-location.",
       "status": "skipped"
     },
     {
@@ -901,9 +901,9 @@
       "location": "San Francisco Bay Area (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth & GTM Lead at careerTWiN — San Francisco Bay Area (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth & GTM Lead at careerTWiN \u2014 San Francisco Bay Area (Hybrid).",
       "fit_signal": "low",
-      "why": "Founding Growth & GTM via recruiter (careerTWiN), SF — obscured, off-location.",
+      "why": "Founding Growth & GTM via recruiter (careerTWiN), SF \u2014 obscured, off-location.",
       "status": "skipped"
     },
     {
@@ -913,9 +913,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth at Confido — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth at Confido \u2014 New York, NY (On-site).",
       "fit_signal": "high",
-      "why": "Founding Growth at NYC startup w/ posted comp $150-190K — 0-to-1 growth ownership, AJ's core.",
+      "why": "Founding Growth at NYC startup w/ posted comp $150-190K \u2014 0-to-1 growth ownership, AJ's core.",
       "status": "new"
     },
     {
@@ -925,9 +925,9 @@
       "location": "Mountain View, CA (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Marketing Engineer at AI Fund — Mountain View, CA (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Marketing Engineer at AI Fund \u2014 Mountain View, CA (On-site).",
       "fit_signal": "low",
-      "why": "Marketing Engineer at AI Fund, Mountain View — martech IC, off-location.",
+      "why": "Marketing Engineer at AI Fund, Mountain View \u2014 martech IC, off-location.",
       "status": "skipped"
     },
     {
@@ -937,9 +937,9 @@
       "location": "New York, NY (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] GTM Engineer at Icreon — New York, NY (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] GTM Engineer at Icreon \u2014 New York, NY (Hybrid).",
       "fit_signal": "medium",
-      "why": "GTM Engineer, NYC — growth-engineering adjacent, AI/automation flavor.",
+      "why": "GTM Engineer, NYC \u2014 growth-engineering adjacent, AI/automation flavor.",
       "status": "new"
     },
     {
@@ -949,9 +949,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Marketing Engineer at VTS — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Marketing Engineer at VTS \u2014 New York, NY (On-site).",
       "fit_signal": "low",
-      "why": "Marketing Engineer, VTS (NYC) — martech IC, real-estate SaaS; off-profile.",
+      "why": "Marketing Engineer, VTS (NYC) \u2014 martech IC, real-estate SaaS; off-profile.",
       "status": "skipped"
     },
     {
@@ -961,9 +961,9 @@
       "location": "California, United States (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Growth Engineer at GC AI — California, United States (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Growth Engineer at GC AI \u2014 California, United States (Remote).",
       "fit_signal": "high",
-      "why": "Growth Engineer, fully remote at an AI company, $165-350K — direct match to builder-operator growth profile.",
+      "why": "Growth Engineer, fully remote at an AI company, $165-350K \u2014 direct match to builder-operator growth profile.",
       "status": "new"
     },
     {
@@ -973,9 +973,9 @@
       "location": "San Francisco, CA (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] GTM Engineer, Marketing at Nooks — San Francisco, CA (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] GTM Engineer, Marketing at Nooks \u2014 San Francisco, CA (Hybrid).",
       "fit_signal": "medium",
-      "why": "GTM Engineer (Marketing), SF — growth-engineering adjacent, off-location.",
+      "why": "GTM Engineer (Marketing), SF \u2014 growth-engineering adjacent, off-location.",
       "status": "new"
     },
     {
@@ -985,9 +985,9 @@
       "location": "Boston, MA (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Email Campaign Engineer at Fidelity Investments — Boston, MA (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Email Campaign Engineer at Fidelity Investments \u2014 Boston, MA (On-site).",
       "fit_signal": "low",
-      "why": "Email Campaign Engineer at Fidelity — IC martech at big corp, no 0-to-1 latitude.",
+      "why": "Email Campaign Engineer at Fidelity \u2014 IC martech at big corp, no 0-to-1 latitude.",
       "status": "skipped"
     },
     {
@@ -997,9 +997,9 @@
       "location": "Memphis, TN (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] MarTech Engineer at Largeton Group — Memphis, TN (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] MarTech Engineer at Largeton Group \u2014 Memphis, TN (On-site).",
       "fit_signal": "low",
-      "why": "MarTech Engineer, Memphis — off-location, off-function.",
+      "why": "MarTech Engineer, Memphis \u2014 off-location, off-function.",
       "status": "skipped"
     },
     {
@@ -1009,9 +1009,9 @@
       "location": "United States (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] CRM Marketing Specialist at NLB Services — United States (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] CRM Marketing Specialist at NLB Services \u2014 United States (Remote).",
       "fit_signal": "low",
-      "why": "CRM Marketing Specialist via recruiter (NLB) — junior/specialist, off-profile.",
+      "why": "CRM Marketing Specialist via recruiter (NLB) \u2014 junior/specialist, off-profile.",
       "status": "skipped"
     },
     {
@@ -1021,9 +1021,9 @@
       "location": "New York, NY (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Marketing Lead at F2 — New York, NY (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Marketing Lead at F2 \u2014 New York, NY (Hybrid).",
       "fit_signal": "low",
-      "why": "Product Marketing Lead, F2 (NYC) — PMM, not growth.",
+      "why": "Product Marketing Lead, F2 (NYC) \u2014 PMM, not growth.",
       "status": "skipped"
     },
     {
@@ -1033,9 +1033,9 @@
       "location": "Fairfax County, VA (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Marketing Director- AI Profitability at Intapp — Fairfax County, VA (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Marketing Director- AI Profitability at Intapp \u2014 Fairfax County, VA (Remote).",
       "fit_signal": "low",
-      "why": "Product Marketing Director, Intapp — PMM function, not growth.",
+      "why": "Product Marketing Director, Intapp \u2014 PMM function, not growth.",
       "status": "skipped"
     },
     {
@@ -1045,9 +1045,9 @@
       "location": "San Francisco, CA (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of User Growth Strategy & Operations at Snap Inc. — San Francisco, CA (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of User Growth Strategy & Operations at Snap Inc. \u2014 San Francisco, CA (On-site).",
       "fit_signal": "low",
-      "why": "Duplicate of Snap NY listing (SF location) — collapsed to the NYC posting.",
+      "why": "Duplicate of Snap NY listing (SF location) \u2014 collapsed to the NYC posting.",
       "status": "skipped"
     },
     {
@@ -1057,9 +1057,9 @@
       "location": "United States (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Director of Marketing Operations at 411 Locals — United States (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Director of Marketing Operations at 411 Locals \u2014 United States (Remote).",
       "fit_signal": "low",
-      "why": "Director of Marketing Operations, 411 Locals — marketing-ops, off-profile.",
+      "why": "Director of Marketing Operations, 411 Locals \u2014 marketing-ops, off-profile.",
       "status": "skipped"
     },
     {
@@ -1069,9 +1069,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Head of Growth & Content at Ceno — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Head of Growth & Content at Ceno \u2014 New York, NY (On-site).",
       "fit_signal": "medium",
-      "why": "Founding Head of Growth & Content, NYC — 0-to-1 growth leadership though content-weighted.",
+      "why": "Founding Head of Growth & Content, NYC \u2014 0-to-1 growth leadership though content-weighted.",
       "status": "new"
     },
     {
@@ -1081,9 +1081,9 @@
       "location": "New York, NY (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Vice President of Marketing & GTM Strategy at Shelf — New York, NY (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Vice President of Marketing & GTM Strategy at Shelf \u2014 New York, NY (Hybrid).",
       "fit_signal": "low",
-      "why": "VP Marketing & GTM Strategy, Shelf — marketing-weighted leadership.",
+      "why": "VP Marketing & GTM Strategy, Shelf \u2014 marketing-weighted leadership.",
       "status": "skipped"
     },
     {
@@ -1093,9 +1093,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of User Growth Strategy & Operations at Snap Inc. — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of User Growth Strategy & Operations at Snap Inc. \u2014 New York, NY (On-site).",
       "fit_signal": "medium",
-      "why": "Head of User Growth Strategy & Ops at Snap (NYC) — large-org growth leadership; ops-weighted.",
+      "why": "Head of User Growth Strategy & Ops at Snap (NYC) \u2014 large-org growth leadership; ops-weighted.",
       "status": "referral_pending"
     },
     {
@@ -1105,9 +1105,9 @@
       "location": "New York City Metropolitan Area (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Vice President of Growth at Metrics Recruitment — New York City Metropolitan Area (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Vice President of Growth at Metrics Recruitment \u2014 New York City Metropolitan Area (Hybrid).",
       "fit_signal": "low",
-      "why": "VP of Growth via recruiter (Metrics Recruitment) — obscured employer.",
+      "why": "VP of Growth via recruiter (Metrics Recruitment) \u2014 obscured employer.",
       "status": "skipped"
     },
     {
@@ -1117,9 +1117,9 @@
       "location": "New York City Metropolitan Area (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Senior Director, Applied AI at Redesign Health — New York City Metropolitan Area (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Senior Director, Applied AI at Redesign Health \u2014 New York City Metropolitan Area (Hybrid).",
       "fit_signal": "low",
-      "why": "Senior Director, Applied AI, Redesign Health — AI but not a growth function.",
+      "why": "Senior Director, Applied AI, Redesign Health \u2014 AI but not a growth function.",
       "status": "skipped"
     },
     {
@@ -1129,9 +1129,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Senior Growth Director - Moloco Ads at Moloco — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Senior Growth Director - Moloco Ads at Moloco \u2014 New York, NY (On-site).",
       "fit_signal": "medium",
-      "why": "Senior Growth Director, Moloco Ads (NYC) — growth leadership but ads/sales-adjacent.",
+      "why": "Senior Growth Director, Moloco Ads (NYC) \u2014 growth leadership but ads/sales-adjacent.",
       "status": "referral_pending"
     },
     {
@@ -1141,7 +1141,7 @@
       "location": "San Francisco Bay Area (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Operations at Hedge (YC P26) — San Francisco Bay Area (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Operations at Hedge (YC P26) \u2014 San Francisco Bay Area (On-site).",
       "fit_signal": "low",
       "why": "Founding growth ops at a YC startup, but SF on-site conflicts with NYC/remote preference.",
       "status": "new"
@@ -1153,7 +1153,7 @@
       "location": "Jersey City, NJ (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Marketing Manager B2C at DirectHireAI — Jersey City, NJ (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Marketing Manager B2C at DirectHireAI \u2014 Jersey City, NJ (Hybrid).",
       "fit_signal": "low",
       "why": "Recruiter-posted B2C growth-marketing role, junior and off AJ's growth-leadership profile.",
       "status": "skipped"
@@ -1165,9 +1165,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Manager at Ploy — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Manager at Ploy \u2014 New York, NY (On-site).",
       "fit_signal": "medium",
-      "why": "Founding growth manager at an early NYC startup — on-profile 0-to-1 growth, on-site.",
+      "why": "Founding growth manager at an early NYC startup \u2014 on-profile 0-to-1 growth, on-site.",
       "status": "new"
     },
     {
@@ -1177,21 +1177,21 @@
       "location": "San Francisco, CA (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth at Clera — San Francisco, CA (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth at Clera \u2014 San Francisco, CA (On-site).",
       "fit_signal": "low",
-      "why": "Founding growth at an SF on-site early startup — role fits but geography is weak.",
+      "why": "Founding growth at an SF on-site early startup \u2014 role fits but geography is weak.",
       "status": "new"
     },
     {
       "url": "https://www.linkedin.com/jobs/view/4441151029/",
-      "title": "Founding Growth Associate — Procurement AI",
+      "title": "Founding Growth Associate \u2014 Procurement AI",
       "company": "David Joseph & Company",
       "location": "New York, United States (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Associate — Procurement AI at David Joseph & Company — New York, United States (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Founding Growth Associate \u2014 Procurement AI at David Joseph & Company \u2014 New York, United States (On-site).",
       "fit_signal": "low",
-      "why": "Recruiter-posted junior 'associate' growth role — below AJ's seniority.",
+      "why": "Recruiter-posted junior 'associate' growth role \u2014 below AJ's seniority.",
       "status": "skipped"
     },
     {
@@ -1201,9 +1201,9 @@
       "location": "San Francisco, CA (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Growth Engineer at 11x — San Francisco, CA (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Growth Engineer at 11x \u2014 San Francisco, CA (On-site).",
       "fit_signal": "medium",
-      "why": "Growth Engineer at 11x (AI-native) — strong role fit; SF on-site lowers it.",
+      "why": "Growth Engineer at 11x (AI-native) \u2014 strong role fit; SF on-site lowers it.",
       "status": "new"
     },
     {
@@ -1213,9 +1213,9 @@
       "location": "San Francisco, CA (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Growth Lead at Jobright.ai — San Francisco, CA (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Growth Lead at Jobright.ai \u2014 San Francisco, CA (Hybrid).",
       "fit_signal": "medium",
-      "why": "Growth Lead at Jobright.ai (AI-native) — good IC growth fit; SF hybrid.",
+      "why": "Growth Lead at Jobright.ai (AI-native) \u2014 good IC growth fit; SF hybrid.",
       "status": "new"
     },
     {
@@ -1225,9 +1225,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Senior Product Manager, Growth - International at Warner Bros. Discovery — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Senior Product Manager, Growth - International at Warner Bros. Discovery \u2014 New York, NY (On-site).",
       "fit_signal": "medium",
-      "why": "Sr PM Growth (International) at Warner Bros Discovery — real growth-PM scope in a large NYC org.",
+      "why": "Sr PM Growth (International) at Warner Bros Discovery \u2014 real growth-PM scope in a large NYC org.",
       "status": "referral_pending"
     },
     {
@@ -1237,9 +1237,9 @@
       "location": "New York, NY (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager, Safety & Security at Cohere — New York, NY (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Product Manager, Safety & Security at Cohere \u2014 New York, NY (Remote).",
       "fit_signal": "medium",
-      "why": "PM Safety & Security at Cohere (frontier AI, NYC remote) — AI-native but not a growth surface.",
+      "why": "PM Safety & Security at Cohere (frontier AI, NYC remote) \u2014 AI-native but not a growth surface.",
       "status": "new"
     },
     {
@@ -1249,9 +1249,9 @@
       "location": "United States (Remote)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Principal Product Manager at Twilio — United States (Remote).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Principal Product Manager at Twilio \u2014 United States (Remote).",
       "fit_signal": "low",
-      "why": "Principal PM at Twilio (remote) — generic PM in a large org, limited 0-to-1 latitude.",
+      "why": "Principal PM at Twilio (remote) \u2014 generic PM in a large org, limited 0-to-1 latitude.",
       "status": "new"
     },
     {
@@ -1261,9 +1261,9 @@
       "location": "New York, NY (On-site)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Marketing, Moloco Commerce Media at Moloco — New York, NY (On-site).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] Head of Marketing, Moloco Commerce Media at Moloco \u2014 New York, NY (On-site).",
       "fit_signal": "medium",
-      "why": "Head of Marketing, Moloco Commerce Media (NYC) — marketing-led not pure growth; Moloco is a 2-hop target.",
+      "why": "Head of Marketing, Moloco Commerce Media (NYC) \u2014 marketing-led not pure growth; Moloco is a 2-hop target.",
       "status": "new"
     },
     {
@@ -1273,10 +1273,130 @@
       "location": "New York, NY (Hybrid)",
       "posted_date": null,
       "source": "linkedin",
-      "raw_description_snippet": "[Listing-derived; full JD via /apply] VP, Growth Marketing at Cockroach Labs — New York, NY (Hybrid).",
+      "raw_description_snippet": "[Listing-derived; full JD via /apply] VP, Growth Marketing at Cockroach Labs \u2014 New York, NY (Hybrid).",
       "fit_signal": "medium",
-      "why": "VP Growth Marketing at Cockroach Labs (NYC hybrid) — growth leadership at a growth-stage infra co.",
+      "why": "VP Growth Marketing at Cockroach Labs (NYC hybrid) \u2014 growth leadership at a growth-stage infra co.",
       "status": "referral_pending"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4444345222/",
+      "title": "Head of Growth Product",
+      "company": "Juicebox",
+      "location": "San Francisco, CA (On-site)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Head of Growth Product at Juicebox. San Francisco, CA (On-site).",
+      "fit_signal": "high",
+      "why": "AI recruiting startup (PeopleGPT); Head of Growth Product with strong comp ($225-300k); AI-core + growth-product ownership. SF on-site is the con.",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4435554608/",
+      "title": "Growth Engineer",
+      "company": "Hearth",
+      "location": "New York, NY (On-site)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Growth Engineer at Hearth. New York, NY (On-site).",
+      "fit_signal": "medium",
+      "why": "Growth engineer at an NYC fintech (home-improvement financing); IC growth-eng + fintech overlap with AJ's DailyPay background.",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4424954228/",
+      "title": "Software Developer, Growth Engineer",
+      "company": "Blitzy",
+      "location": "Cambridge, MA (On-site)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Software Developer, Growth Engineer at Blitzy. Cambridge, MA (On-site).",
+      "fit_signal": "medium",
+      "why": "Growth engineer at an AI dev-automation startup; AI-core + growth-eng, but Cambridge on-site.",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4417383074/",
+      "title": "Growth Lead, Blitz (US)",
+      "company": "Voodoo",
+      "location": "New York, NY (Remote)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Growth Lead, Blitz (US) at Voodoo. New York, NY (Remote).",
+      "fit_signal": "medium",
+      "why": "Growth lead at a mobile-games publisher; consumer growth + remote; less AI-core.",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4427676508/",
+      "title": "Growth Lead, Consumer Fraud Reporting",
+      "company": "TRM Labs",
+      "location": "United States (Remote)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Growth Lead, Consumer Fraud Reporting at TRM Labs. United States (Remote).",
+      "fit_signal": "medium",
+      "why": "Growth lead (remote) at a blockchain-intelligence company; growth ownership + remote, niche fraud-reporting surface.",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4444913864/",
+      "title": "Business Operations & Growth Lead",
+      "company": "SalaryGuide",
+      "location": "United States (Remote)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Business Operations & Growth Lead at SalaryGuide. United States (Remote).",
+      "fit_signal": "medium",
+      "why": "Remote ops+growth lead ($168-203k) at a comp-data startup; growth ownership, verify stage/AI.",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4442626997/",
+      "title": "Growth Lead",
+      "company": "Jack",
+      "location": "United States (Remote)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Growth Lead at Jack. United States (Remote).",
+      "fit_signal": "medium",
+      "why": "Remote growth lead ($150-200k); verify company sector/stage.",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4444720642/",
+      "title": "Head of Growth",
+      "company": "DocDraft",
+      "location": "United States (Remote)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Head of Growth at DocDraft. United States (Remote).",
+      "fit_signal": "medium",
+      "why": "Remote head-of-growth at an AI legal-docs startup; growth leadership + AI + remote; early stage to verify.",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4443765002/",
+      "title": "Growth Engineer",
+      "company": "Ant-Tech",
+      "location": "New York, NY (On-site)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Growth Engineer at Ant-Tech. New York, NY (On-site).",
+      "fit_signal": "low",
+      "why": "NYC growth engineer; company/sector unclear \u2014 verify legitimacy before pursuing.",
+      "status": "skipped"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4443523715/",
+      "title": "Founding Growth Partner (Zero-to-One Seller)",
+      "company": "Downshift",
+      "location": "Los Angeles, CA (Remote)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Founding Growth Partner (Zero-to-One Seller) at Downshift. Los Angeles, CA (Remote).",
+      "fit_signal": "low",
+      "why": "Sales-leaning founding-growth partner role; more BD/seller than PLG growth.",
+      "status": "skipped"
     }
   ]
 }
