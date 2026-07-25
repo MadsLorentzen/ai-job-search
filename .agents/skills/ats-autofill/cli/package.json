@@ -1,11 +1,11 @@
 {
-  "name": "jobnet-cli",
+  "name": "ats-autofill",
   "version": "1.0.0",
-  "description": "CLI for the Jobnet.dk Danish government job portal API",
+  "description": "CLI for prefilling US job application forms (Greenhouse, Lever, Ashby, Workday, generic). Never submits — fills, screenshots, and hands the browser to a human for review.",
   "type": "module",
   "main": "src/cli.ts",
   "bin": {
-    "jobnet": "src/cli.ts"
+    "ats-autofill": "src/cli.ts"
   },
   "scripts": {
     "start": "bun run src/cli.ts",
@@ -13,9 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@bunli/core": "latest",
-    "@bunli/utils": "latest",
-    "zod": "^3.23.0"
+    "playwright": "^1.48.0"
   },
   "devDependencies": {
     "typescript": "^5.4.0",

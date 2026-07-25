@@ -16,7 +16,9 @@ Follow these steps **exactly in order**. Do not skip steps.
 
 - If `$ARGUMENTS` looks like a URL, use `WebFetch` to retrieve the job posting content.
 - If it is pasted text, use it directly.
-- Extract: **company name**, **role title**, **department** (if mentioned), **location**, and **language** of the posting (Danish or English).
+- If `WebFetch` fails, say so and ask the user to paste the description. Indeed, Dice, and LinkedIn block automated fetching; that is expected, not a bug to work around.
+- Extract: **company name**, **role title**, **department** (if mentioned), **location**, **work arrangement** (remote / hybrid / onsite), and any **work-authorization or clearance requirements**.
+- Note whether an employer ATS link exists (Greenhouse, Lever, Ashby, Workday). If the user gave an aggregator link, look for the underlying ATS posting, since that is the form `/autofill` can drive.
 - Store these for use throughout the workflow.
 
 ---
@@ -71,7 +73,7 @@ Also read the most recent existing CV and cover letter files for concrete struct
 - Keep to 2 pages
 
 ### Cover Letter (`cover_letters/cover_<company>_<role>.tex`)
-- **Match the language of the job posting** (Danish posting -> Danish cover letter, English posting -> English cover letter)
+- Written in **English**
 - Follow the structure from `06-cover-letter-templates.md`
 - Use the `cover.cls` template
 - Tailor the opening paragraph to the specific role and company
@@ -240,7 +242,13 @@ Summarize 3-5 key decisions made to tailor the application:
 
 ### Files Created
 List the files written:
-- `cv/main_<company>.tex`
-- `cover_letters/cover_<company>_<role>.tex`
+- `cv/main_<company>.tex` and `cv/main_<company>.pdf`
+- `cover_letters/cover_<company>_<role>.tex` and the matching `.pdf`
 
-Tell the user: "Both files are ready for your review. Open them to check the final output before compiling."
+### Next step
+
+If an employer ATS link exists (Greenhouse, Lever, Ashby, Workday), offer it:
+
+> "Both documents are ready. Run `/autofill <ats_url>` and I'll prefill the application form with these attached. You review and submit."
+
+If only an aggregator link exists (LinkedIn, Indeed, Dice), say so plainly: those must be applied to by hand, because automating them violates their Terms of Service. Suggest checking the company's own careers page for an ATS posting first.

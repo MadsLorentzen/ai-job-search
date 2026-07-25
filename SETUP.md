@@ -22,9 +22,9 @@ Python 3.10+ is required for the salary lookup tool. Check with:
 python --version
 ```
 
-### Bun (for job search tools)
+### Bun (for the job search and autofill tools)
 
-The job portal CLIs (four Danish portals plus the country-agnostic LinkedIn tool) are written in TypeScript and run with Bun:
+The `linkedin-search` and `ats-autofill` CLIs are written in TypeScript and run with Bun:
 
 ```bash
 curl -fsSL https://bun.sh/install | bash
@@ -49,17 +49,37 @@ cd ai-job-search
 
 Or manually: fork on GitHub, then clone your fork.
 
-## 3. Install job search CLI dependencies
+## 3. Install CLI dependencies
 
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search; do
+for tool in linkedin-search ats-autofill; do
   cd .agents/skills/$tool/cli && bun install && cd ../../../..
 done
+cd .agents/skills/ats-autofill/cli && bunx playwright install chromium && cd ../../../..
 ```
 
 For `linkedin-search` the install is optional: it has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls TypeScript dev types.
 
-If you're outside Denmark, you can generate an equivalent search skill for your local job board with `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
+`ats-autofill` needs its install because it drives a real browser. Verify with:
+
+```bash
+cd .agents/skills/ats-autofill/cli && bun run src/cli.ts doctor
+```
+
+`doctor` exits non-zero and tells you what is missing. If you already have a Chromium binary that Playwright didn't install, set `ATS_AUTOFILL_CHROMIUM=/path/to/chrome` rather than downloading another copy.
+
+## 3b. Create your application profile
+
+```bash
+cp application_profile.example.json application_profile.json
+```
+
+Fill in contact details and work authorization. This file is gitignored and never committed. Two notes:
+
+- **Leave `desiredSalary` null** unless you want a number auto-typed into compensation fields. A blank box is a better negotiating position than a figure entered before you know the range.
+- **Any value left as `CONFIRM`** is treated as missing and skipped, so a placeholder can never be typed into a real employer's form.
+
+To add a dedicated CLI for another job board, use `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
 
 ## 4. Run the setup interview
 
@@ -126,7 +146,7 @@ This creates `salary_data.json` which the `/apply` workflow uses for salary benc
 Find a job posting you're interested in, then:
 
 ```
-/apply https://jobindex.dk/job/1234567
+/apply https://job-boards.greenhouse.io/acme/jobs/1234567
 ```
 
 Or paste the job description directly:

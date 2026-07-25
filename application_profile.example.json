@@ -1,0 +1,62 @@
+{
+  "_comment": "Copy to application_profile.json (gitignored) and fill in. Used by .agents/skills/ats-autofill to prefill application forms. Anything left null is simply not filled, and the CLI reports it so you fill it in by hand.",
+
+  "identity": {
+    "firstName": "",
+    "lastName": "",
+    "preferredName": null,
+    "email": "",
+    "phone": "",
+    "addressLine1": null,
+    "city": "",
+    "state": "",
+    "postalCode": "",
+    "country": "United States"
+  },
+
+  "links": {
+    "linkedin": null,
+    "github": null,
+    "portfolio": null,
+    "other": null
+  },
+
+  "workAuthorization": {
+    "_comment": "Both booleans are required. authorizedUS = can work in the US today. requiresSponsorship = will need sponsorship now or in the future. The CLI resolves question polarity from these two, so getting them right matters more than any other field.",
+    "authorizedUS": true,
+    "requiresSponsorship": false,
+    "citizenshipStatus": "US Citizen",
+    "activeClearance": null,
+    "clearanceEligible": true
+  },
+
+  "eeo": {
+    "_comment": "Voluntary self-identification. 'Decline to self-identify' is the default and is always a valid answer. Set real values only if you want them submitted.",
+    "gender": "Decline to self-identify",
+    "race": "Decline to self-identify",
+    "veteranStatus": "Decline to self-identify",
+    "disabilityStatus": "Decline to self-identify",
+    "hispanicLatino": "Decline to self-identify"
+  },
+
+  "preferences": {
+    "_comment": "desiredSalary and currentSalary stay null on purpose. A blank compensation box is a stronger negotiating position than a number you typed before you knew the range.",
+    "remotePreference": "Remote",
+    "willingToRelocate": false,
+    "noticePeriod": null,
+    "earliestStartDate": null,
+    "desiredSalary": null,
+    "currentSalary": null
+  },
+
+  "documents": {
+    "_comment": "Paths relative to the repo root, or absolute. Override per application with --resume / --cover.",
+    "resume": "documents/cv/your_resume.pdf",
+    "coverLetter": null
+  },
+
+  "answers": {
+    "_comment": "Free-text answers keyed by a distinctive substring of the question label, lowercased. Matched by substring, so keep keys short and specific.",
+    "how did you hear about": "LinkedIn"
+  }
+}

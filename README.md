@@ -14,23 +14,25 @@ An AI-powered job application framework built on [Claude Code](https://claude.co
 
 ## What this is
 
-A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Danish market (Jobindex, Jobnet, Akademikernes Jobbank, etc.), but the pattern is designed to be swapped for your local job boards.
+A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. This fork is configured for the **US market**: LinkedIn, Indeed, Dice, Built In, Wellfound, ClearanceJobs, USAJobs, and employer ATS boards on Greenhouse, Lever, Ashby, and Workday.
 
 ```
-/setup          /scrape              /apply <url>
-  |                |                     |
-  v                v                     v
-Fill in        Search job           Evaluate fit
-your profile   portals              Score & recommend
-  |                |                     |
-  v                v                     v
-Profile        Present matches      Draft CV + Cover Letter
-files ready    with fit ratings     (LaTeX, tailored)
-                   |                     |
-                   v                     v
-               Pick a match         Reviewer agent critiques
-               -> /apply            -> Revise -> Final output
+/setup          /scrape              /apply <url>          /autofill <url>
+  |                |                     |                       |
+  v                v                     v                       v
+Fill in        Search job           Evaluate fit           Prefill the
+your profile   boards + ATS         Score & recommend      employer's form
+  |                |                     |                       |
+  v                v                     v                       v
+Profile        Present matches      Draft CV + Cover Letter  Screenshot +
+files ready    with fit ratings     (LaTeX, tailored)        field report
+                   |                     |                       |
+                   v                     v                       v
+               Pick a match         Reviewer agent critiques  YOU review
+               -> /apply            -> Revise -> Final output  and submit
 ```
+
+**`/autofill` never clicks Submit.** It fills the form, attaches your tailored documents, screenshots the result, and hands the browser to you. Automated submission on LinkedIn, Indeed, and Dice violates their Terms of Service and risks losing the accounts your job search depends on.
 
 The framework encodes career guidance best practices, including structured evaluation criteria, forward-looking cover letter framing, and optional salary benchmarking.
 
@@ -38,7 +40,8 @@ The framework encodes career guidance best practices, including structured evalu
 
 - [Claude Code](https://claude.com/claude-code) (CLI)
 - Python 3.10+
-- [Bun](https://bun.sh) (for Danish job search CLI tools)
+- [Bun](https://bun.sh) (for the job search and autofill CLI tools)
+- Chromium via Playwright (for `/autofill`; installed in step 2 below)
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/) or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`.
 
 ## Quick start
@@ -50,17 +53,32 @@ gh repo fork MadsLorentzen/ai-job-search --clone
 cd ai-job-search
 ```
 
-### 2. Install job search tools
+### 2. Install the CLI tools
 
 ```bash
-cd .agents/skills/jobbank-search/cli && bun install && cd ../../../..
-cd .agents/skills/jobdanmark-search/cli && bun install && cd ../../../..
-cd .agents/skills/jobindex-search/cli && bun install && cd ../../../..
-cd .agents/skills/jobnet-search/cli && bun install && cd ../../../..
 cd .agents/skills/linkedin-search/cli && bun install && cd ../../../..
+cd .agents/skills/ats-autofill/cli && bun install && bunx playwright install chromium && cd ../../../..
 ```
 
 For `linkedin-search` the install is optional: it has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls TypeScript dev types.
+
+`ats-autofill` does need its install, since it drives a real browser. Verify with:
+
+```bash
+cd .agents/skills/ats-autofill/cli && bun run src/cli.ts doctor
+```
+
+If you already have a Chromium that Playwright didn't install, point at it with `ATS_AUTOFILL_CHROMIUM=/path/to/chrome` instead of downloading a second copy.
+
+### 2b. Set up your application profile
+
+`/autofill` fills forms from a local profile file holding your contact details and work-authorization answers:
+
+```bash
+cp application_profile.example.json application_profile.json
+```
+
+Fill it in. It is gitignored and never committed. Leave `desiredSalary` null unless you want a number auto-typed into compensation fields; a blank box is a better negotiating position. Any value left as `CONFIRM` is treated as missing and skipped rather than typed into a real form.
 
 ### 3. Set up your profile
 
@@ -83,10 +101,10 @@ This searches multiple job portals for positions matching your profile, deduplic
 ### 5. Apply to a job
 
 ```bash
-/apply https://jobindex.dk/job/1234567
+/apply https://job-boards.greenhouse.io/acme/jobs/1234567
 ```
 
-If the URL can't be fetched (some job portals block automated access), you can paste the job description directly instead:
+If the URL can't be fetched (Indeed, Dice, and LinkedIn block automated access), paste the job description directly instead:
 
 ```bash
 /apply <paste the full job description here>
@@ -94,9 +112,17 @@ If the URL can't be fetched (some job portals block automated access), you can p
 
 This runs the full workflow: evaluate fit, draft CV + cover letter, review with a second agent, revise, and present the final output.
 
+### 6. Prefill the application
+
+```bash
+/autofill https://job-boards.greenhouse.io/acme/jobs/1234567
+```
+
+Claude inspects the form, shows you what it will fill, attaches the tailored CV and cover letter from `/apply`, and opens a browser with everything filled in. Anything it can't confidently map is reported under NEEDS YOUR INPUT. **You review and click Submit.**
+
 ## Other commands
 
-`/setup`, `/scrape`, and `/apply` form the core workflow. Four more commands extend it once your profile is in place:
+`/setup`, `/scrape`, `/apply`, and `/autofill` form the core workflow. Four more commands extend it once your profile is in place:
 
 - **`/expand`** enriches your profile by scanning public sources you've already linked in it (GitHub repos, portfolio site, Kaggle, Google Scholar) and looking up syllabi for named courses and certifications. Discovered competencies are added to your profile with a source tag. Useful right after `/setup` to surface skills that documents alone don't make explicit.
 - **`/upskill`** analyzes the gap between your profile and your tracked job postings (or a single posting via `/upskill <URL>`). Produces a prioritized heatmap of skill gaps and a learning plan with web-searched study resources and time estimates. Useful for career planning between applications.
@@ -113,6 +139,7 @@ ai-job-search/
 ├── .claude/
 │   ├── commands/
 │   │   ├── apply.md                   # /apply workflow (drafter-reviewer)
+│   │   ├── autofill.md                # /autofill prefill an application form (never submits)
 │   │   ├── setup.md                   # /setup onboarding (documents folder, CV import, or interview)
 │   │   ├── expand.md                  # /expand competency enrichment from documents and online presence
 │   │   ├── add-template.md            # /add-template register custom LaTeX templates
@@ -131,12 +158,10 @@ ai-job-search/
 │   │   ├── job-scraper/               # Job search orchestration
 │   │   └── upskill/                   # /upskill skill gap analysis and learning plan
 │   └── settings.json                  # Claude Code permissions (shared, scoped)
-├── .agents/skills/                    # Job portal CLI tools
-│   ├── jobbank-search/                # Akademikernes Jobbank (Denmark)
-│   ├── jobdanmark-search/             # Jobdanmark.dk (Denmark)
-│   ├── jobindex-search/               # Jobindex.dk (Denmark)
-│   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
-│   └── linkedin-search/               # LinkedIn public job listings (country-agnostic)
+├── .agents/skills/                    # CLI tools
+│   ├── linkedin-search/               # LinkedIn public job listings (country-agnostic)
+│   └── ats-autofill/                  # Application form prefill (Greenhouse/Lever/Ashby/Workday)
+├── application_profile.example.json   # Template for the autofill profile (copy, don't edit)
 ├── cv/
 │   └── main_example.tex               # moderncv LaTeX template
 ├── cover_letters/
@@ -228,7 +253,11 @@ If you prefer doing it by hand, the manual route still works: update the guidanc
 
 ### Job search tools
 
-The four Danish CLI tools in `.agents/skills/` (Jobbank, Jobdanmark, Jobindex, Jobnet) demonstrate the pattern for building a job-portal integration for a specific market. If you're in a different country, run:
+Discovery runs against US boards. `/scrape` uses WebSearch against LinkedIn, Indeed, Dice, Built In, Wellfound, ClearanceJobs, USAJobs, and employer ATS boards, with the query set defined in `.claude/skills/job-scraper/search-queries.md`.
+
+Prefer the employer's own ATS link (Greenhouse, Lever, Ashby, Workday) over an aggregator link when both exist. It is always current, and it is the form `/autofill` can actually drive.
+
+To add a dedicated CLI for another board, run:
 
 ```
 /add-portal
