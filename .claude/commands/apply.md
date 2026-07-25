@@ -8,7 +8,7 @@ Follow these steps **exactly in order**. Do not skip steps.
 - Never re-Read a file whose contents are already in your context from an earlier step. If you read it in Step 1, it is still available in Step 2.
 - When dispatching the reviewer agent, pass draft content **inline in the agent prompt** rather than asking the agent to Read files you already have in memory.
 - Run the full verification checklist exactly once, at the end (Step 6). The reviewer focuses on content critique, not verification.
-- Step 5 (compile and inspect PDFs) is mandatory and non-skippable — LaTeX page-break decisions are unpredictable, and `.tex` files that look fine often produce broken PDFs (orphaned entry titles, cover letters spilling to page 2, bullet fonts mismatching).
+- Step 5 (compile and inspect PDFs) is mandatory and non-skippable — page-break decisions are unpredictable, and source files that look fine often produce broken PDFs (orphaned entry titles, cover letters spilling to page 2, bullet fonts mismatching).
 
 ---
 
@@ -60,9 +60,11 @@ Read only the reference files you do not yet have:
 - `.claude/skills/job-application-assistant/05-cv-templates.md`
 - `.claude/skills/job-application-assistant/06-cover-letter-templates.md`
 
+**Resolve the active template (do this once, reuse everywhere below):** if `05-cv-templates.md` or `06-cover-letter-templates.md` opens with an `ACTIVE-TEMPLATE` managed block (inserted by `/add-template`), read its declared **source extension** and **compile command** — these override the stock `.tex`/lualatex (CV) and `.tex`/xelatex (cover letter) defaults for the rest of this workflow. Call these `<CV_EXT>`/`<CV_COMPILE>` and `<COVER_EXT>`/`<COVER_COMPILE>`; where no block is present, they default to `.tex`, the stock lualatex command, and the stock xelatex command respectively. Every `.tex` reference below is really `<CV_EXT>` or `<COVER_EXT>` — stock behavior is unchanged, this only matters when a custom template is active.
+
 Also read the most recent existing CV and cover letter files for concrete structural reference (one of each is enough):
-- Read any existing `cv/main_*.tex` file as a LaTeX template reference
-- Read any existing `cover_letters/cover_*.tex` or `cover_letters/Cover_*.tex` file as a template reference
+- Read any existing `cv/main_*<CV_EXT>` file as a structural reference
+- Read any existing `cover_letters/cover_*<COVER_EXT>` or `cover_letters/Cover_*<COVER_EXT>` file as a structural reference
 
 *The master candidate profile (`01-candidate-profile.md`), the master CV (`cv/main_example.tex`), and CLAUDE.md's Candidate Profile section are the sole source of truth for facts; existing tailored CVs may be read for structure and phrasing only, never as a source of claims.*
 
@@ -71,7 +73,7 @@ Also read the most recent existing CV and cover letter files for concrete struct
 - **Engage nice-to-haves by name** where the profile supports honest adjacency (e.g. "conceptually aligned with <named tool>"), and use the posting's own term over a synonym wherever it is truthfully applicable - including in CV section headings (a posting hiring for "MLOps" should find a heading containing "MLOps", not only a paraphrase).
 - **Address stated logistics and prerequisites** in the cover letter where the posting raises them: security clearance willingness, start date or availability, commute or location fit, and the posting's reference/job ID where one exists. When the employer operates across several countries, a truthful language-capabilities sentence mapped to their footprint is high-value targeting.
 
-### CV (`cv/main_<company>_<role>.tex`)
+### CV (`cv/main_<company>_<role><CV_EXT>`)
 - In the **CV language from the profile** (the `CV language:` line in CLAUDE.md's Identity section). When the profile does not set one, default to **English**. Never switch language per posting - the CV language is a profile-level choice, so all CVs stay consistent and reusable
 - Follow the moderncv/banking format from `05-cv-templates.md`
 - Tailor the profile statement and experience bullets to the specific role
@@ -79,7 +81,7 @@ Also read the most recent existing CV and cover letter files for concrete struct
 - Keep to 2 pages
 - **Grounding Audit:** Before writing to disk, audit all tailored bullet points against the union of three sources: `.claude/skills/job-application-assistant/01-candidate-profile.md` + the master CV (`cv/main_example.tex`) + `CLAUDE.md`'s Candidate Profile section to verify that all dates, roles, and metrics match exactly (zero profile drift or fabrication).
 
-### Cover Letter (`cover_letters/cover_<company>_<role>.tex`)
+### Cover Letter (`cover_letters/cover_<company>_<role><COVER_EXT>`)
 - **Match the language of the job posting** (Danish posting -> Danish cover letter, English posting -> English cover letter)
 - Follow the structure from `06-cover-letter-templates.md`
 - Use the `cover.cls` template
@@ -94,7 +96,7 @@ Write both files to disk. Keep the exact text of both drafts in working memory �
 
 ## Step 3: REVIEWER - Research & Critique
 
-Use the **Agent tool** to spawn a `general-purpose` reviewer agent. The reviewer gets a fresh context, so pass the drafts **inline in the prompt** below (do not make the reviewer Read them). Scope the reviewer's file reads to content-critique essentials only — the reviewer does not need the LaTeX template files (`05`, `06`) to critique content, since those govern structural/LaTeX concerns the drafter already applied.
+Use the **Agent tool** to spawn a `general-purpose` reviewer agent. The reviewer gets a fresh context, so pass the drafts **inline in the prompt** below (do not make the reviewer Read them). Scope the reviewer's file reads to content-critique essentials only — the reviewer does not need the template structure files (`05`, `06`) to critique content, since those govern structural/toolchain concerns the drafter already applied.
 
 Replace `<COMPANY>`, `<ROLE>`, `<INSERT_JOB_POSTING_TEXT_HERE>`, `<INSERT_CV_DRAFT_HERE>`, and `<INSERT_COVER_LETTER_DRAFT_HERE>` with actual values before dispatching.
 
@@ -122,7 +124,7 @@ Read these reference files — and only these — to ground your critique:
 - The master CV baseline template (`cv/main_example.tex`)
 - The workspace root `CLAUDE.md` file (specifically the Candidate Profile section)
 
-Do NOT read `05-cv-templates.md` or `06-cover-letter-templates.md` — those govern LaTeX structure the drafter already applied and are not needed for content critique.
+Do NOT read `05-cv-templates.md` or `06-cover-letter-templates.md` — those govern template structure the drafter already applied and are not needed for content critique.
 
 ### 3. Factual Grounding Audit
 Compare every date, employer, job title, and quantitative metric in both drafts against the union of three sources: `.claude/skills/job-application-assistant/01-candidate-profile.md` + the master CV baseline template (`cv/main_example.tex`) + `CLAUDE.md`'s Candidate Profile section. A claim is grounded if ANY of these sources supports it. Mismatches between these three sources themselves must be reported to the user as a profile-consistency warning rather than treated as draft drift. Draft mismatches must be flagged as Part A edits with `"reason": "grounding"` so they can be distinguished from style changes. Keep the tolerance honest: reframed emphasis is fine; changed facts and escalated numbers are not.
@@ -130,11 +132,11 @@ Compare every date, employer, job title, and quantitative metric in both drafts 
 ### 4. Drafts to Review
 Both drafts are provided inline below. Do NOT use the Read tool on the draft files — use these exact texts.
 
-<CV_DRAFT file="cv/main_<COMPANY>_<ROLE>.tex">
+<CV_DRAFT file="cv/main_<COMPANY>_<ROLE><CV_EXT>">
 <INSERT_CV_DRAFT_HERE>
 </CV_DRAFT>
 
-<COVER_LETTER_DRAFT file="cover_letters/cover_<COMPANY>_<ROLE>.tex">
+<COVER_LETTER_DRAFT file="cover_letters/cover_<COMPANY>_<ROLE><COVER_EXT>">
 <INSERT_COVER_LETTER_DRAFT_HERE>
 </COVER_LETTER_DRAFT>
 
@@ -151,7 +153,7 @@ Return your feedback in **two parts**:
 A JSON array of concrete edits the drafter can apply directly without re-reading the files. Each edit is an object:
 ```json
 {
-  "file": "cv/main_<COMPANY>_<ROLE>.tex" | "cover_letters/cover_<COMPANY>_<ROLE>.tex",
+  "file": "cv/main_<COMPANY>_<ROLE><CV_EXT>" | "cover_letters/cover_<COMPANY>_<ROLE><COVER_EXT>",
   "old_string": "<exact text currently in the draft>",
   "new_string": "<replacement text>",
   "reason": "<one-line rationale: keyword match / company angle / reframing / style / grounding>"
@@ -194,17 +196,20 @@ After all edits are applied, the two files on disk are the final drafts.
 
 ## Step 5: DRAFTER - Compile & Inspect PDFs (MANDATORY)
 
-**Never skip this step.** The `.tex` files looking fine is not sufficient — LaTeX page-break decisions are unpredictable and commonly produce broken layouts (orphaned job titles separated from their bullets, cover letters spilling to 2 pages, bullet fonts not matching body text). Compile both documents and visually verify the PDFs before presenting.
+**Never skip this step.** The source files looking fine is not sufficient — page-break decisions are unpredictable and commonly produce broken layouts (orphaned job titles separated from their bullets, cover letters spilling to 2 pages, bullet fonts not matching body text). Compile both documents and visually verify the PDFs before presenting.
 
 ### 5a. Compile
+
+Use `<CV_COMPILE>` and `<COVER_COMPILE>` resolved in Step 2 (the active template's declared compile command, or the stock defaults below if no custom template is active):
 
 ```bash
 cd cv && lualatex -interaction=nonstopmode main_<company>_<role>.tex
 cd ../cover_letters && xelatex -interaction=nonstopmode cover_<company>_<role>.tex
 ```
 
-- CV uses **lualatex** — pdflatex fails on modern MiKTeX with fontawesome5 font-expansion errors. lualatex handles the same sources cleanly.
-- Cover letter uses **xelatex** — cover.cls requires fontspec.
+- **Stock CV** uses **lualatex** — pdflatex fails on modern MiKTeX with fontawesome5 font-expansion errors. lualatex handles the same sources cleanly.
+- **Stock cover letter** uses **xelatex** — cover.cls requires fontspec.
+- **Custom template active:** run its declared `<CV_COMPILE>`/`<COVER_COMPILE>` command instead, substituting the actual filename for `<file>`. Never fall back to lualatex/xelatex when a custom template's compile command is a different toolchain (e.g. `typst compile`) — that command is what the manifest actually verified in `/add-template` Step 4.
 
 If either compile fails, fix the error and re-compile until clean.
 
@@ -225,7 +230,7 @@ Read both PDFs via the Read tool and verify:
 
 ### 5c. Iterate until clean
 
-If the layout has problems, edit the `.tex` files and recompile. Common fixes (see `05-cv-templates.md` and `06-cover-letter-templates.md` for full details):
+If the layout has problems, edit the source files (`<CV_EXT>`/`<COVER_EXT>`) and recompile. Common fixes below are **LaTeX-specific** (stock templates, or a custom LaTeX template) — see `05-cv-templates.md` and `06-cover-letter-templates.md` for full details, and consult the active template's own manifest ("Known pitfalls") for a non-LaTeX toolchain:
 
 - **Orphaned CV entry title:** `\usepackage{needspace}` in preamble, then `\needspace{5\baselineskip}` immediately before the problematic `\cventry`
 - **CV spills to page 3 with only a trailing section:** `\enlargethispage{2-3\baselineskip}` before a late section
@@ -256,7 +261,7 @@ Read the `.txt` file.
 - [ ] **Reading order matches the visual order** — section headings appear in the same sequence as on the page, and lines from different sections are not interleaved. The stock banking template is single-column and safe; custom templates registered via `/add-template` with sidebars or multi-column layouts are where this breaks.
 - [ ] **Dates recognizable** — each role and degree has its years present in the extraction.
 
-Failures here are template-level problems: fix them in the `.tex` (e.g. print the email as text rather than icon-only), then re-run 5a–5c and re-extract. If a custom template's layout fundamentally scrambles extraction order, tell the user prominently — they may be trading ATS compatibility for looks.
+Failures here are template-level problems: fix them in the `<CV_EXT>` source (e.g. print the email as text rather than icon-only), then re-run 5a–5c and re-extract. If a custom template's layout fundamentally scrambles extraction order, tell the user prominently — they may be trading ATS compatibility for looks.
 
 **3. Keyword coverage.** Reuse the required/preferred keyword list you extracted in Step 1 — do not re-derive it. Match each keyword against the extracted text, **in the posting's language** (when the posting's language differs from the CV language — e.g. a Danish posting against an English CV — a concept the CV legitimately covers in its own language counts as synonym-only; note the language difference). Report a table:
 
@@ -273,7 +278,7 @@ Failures here are template-level problems: fix them in the `.tex` (e.g. print th
 
 ### 5e. Clean up build artifacts
 
-After the final clean compile, delete the `.aux`, `.log`, `.out` files (keep the `.tex` and `.pdf`).
+After the final clean compile, delete intermediate build files the compile command left behind — LaTeX toolchains leave `.aux`/`.log`/`.out`; a custom template's toolchain may leave nothing beyond the PDF. Keep the source file and the `.pdf`.
 
 ---
 
@@ -293,8 +298,8 @@ Summarize 3-5 key decisions made to tailor the application:
 
 ### Files Created
 List the files written:
-- `cv/main_<company>_<role>.tex`
-- `cover_letters/cover_<company>_<role>.tex`
+- `cv/main_<company>_<role><CV_EXT>`
+- `cover_letters/cover_<company>_<role><COVER_EXT>`
 
 Tell the user: "Both files are ready for your review. Open them to check the final output before compiling."
 
