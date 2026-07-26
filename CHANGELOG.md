@@ -13,7 +13,10 @@ per-file diff commands.
 
 ## [Unreleased]
 
-_Changes landed on `master` since the last release will be listed here._
+- **Custom templates: any compile-to-PDF toolchain (Typst, ...)** - `/add-template` no longer
+  hardcodes a `lualatex`/`xelatex`/`pdflatex` engine enum. Custom templates now declare a
+  source extension and a full compile command, so Typst (`typst compile`) registers the same
+  way a custom LaTeX template does. Stock CV/cover letter templates stay LaTeX, unchanged.
 
 ## [1.0.0] - 2026-07-22
 

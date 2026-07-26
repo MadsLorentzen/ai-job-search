@@ -48,9 +48,9 @@ REQUIRED_IGNORE_RULES = [
     # to its own directory, so the state file lands under .claude/skills/... and
     # a repo-rooted rule silently fails to match it.
     "**/job_scraper/seen_jobs.json",
-    "cv/main_*.tex",
+    "cv/main_*.*",
     "!cv/main_example.tex",
-    "cover_letters/cover_*.tex",
+    "cover_letters/cover_*.*",
     "documents/cv/**",
     "documents/linkedin/**",
     "documents/diplomas/**",
