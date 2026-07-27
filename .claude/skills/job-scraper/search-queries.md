@@ -89,6 +89,7 @@ Michael is **relocation-friendly** — geography is a wide net, not a hard filte
 - **US tech hubs (SF Bay Area, NYC, Austin, LA/SoCal, Seattle):** ideal — open to relocating
 - **Orange County / Greater LA:** current base (no relocation needed)
 - **English-speaking Europe (London, Dublin, Amsterdam, Berlin), remote or relocation:** acceptable — FLAG visa/work-authorization (US citizen, needs sponsorship for EU) and timezone overlap for remote
+- **Nordic countries (Copenhagen, Stockholm, Oslo, Helsinki):** acceptable in principle, but FLAG heavily — Michael has noted these markets frequently require local-language fluency even when the workplace language is English, on top of the same US-citizen visa/sponsorship barrier as the rest of the EU. Surface roles here only if the posting explicitly doesn't require the local language.
 - **Non-English-primary work environments:** borderline — Spanish is fine, other languages a barrier
 
 ## Salary Filter
