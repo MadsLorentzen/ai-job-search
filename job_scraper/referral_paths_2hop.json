@@ -155,6 +155,24 @@
           "company": "Vercel",
           "linkedin": "https://www.linkedin.com/in/talhatariq/",
           "note": "Senior exec; from triaged-roles check"
+        },
+        {
+          "name": "Lakshmi Balakrishnan",
+          "role": "Program Manager @ Google",
+          "company": "Google",
+          "linkedin": "https://www.linkedin.com/in/lakshmibalakrishnan-94241499/"
+        },
+        {
+          "name": "Elayne W.",
+          "role": "Program Management @ Google",
+          "company": "Google",
+          "linkedin": "https://www.linkedin.com/in/elaynewesley/"
+        },
+        {
+          "name": "Mita Yun",
+          "role": "Senior Staff Software Engineer @ Google",
+          "company": "Google",
+          "linkedin": "https://www.linkedin.com/in/mita-yun-63b73257/"
         }
       ]
     },
@@ -543,7 +561,25 @@
       "two_hop_brokers": [],
       "note": "New mid/large find from 2026-07-15 pass. Coach dashboard shows 2 connections \u2014 request via Upward PM. Role is ads/sales-adjacent growth leadership; medium fit. 2-hop broker sweep not run.",
       "found": "2026-07-15"
-    }
+    },
+    "Google": [
+      {
+        "person": "Lakshmi Balakrishnan (PM)",
+        "via": "Alex Ortiz"
+      },
+      {
+        "person": "Elayne W. (PM)",
+        "via": "Alex Ortiz"
+      },
+      {
+        "person": "Mita Yun (Sr Staff SWE)",
+        "via": "Alex Ortiz"
+      },
+      {
+        "person": "+ coach dashboard: 50 in-network referrers (strongest path)",
+        "via": "Upward coach"
+      }
+    ]
   },
   "_batch3_startups_finding": "Ran top brokers (Jesse Zhang, Alex Ortiz, Biju Ashokan) against the browser_finds + lead startups (Suno, Oscilar, HappyRobot, Legora, TrueBuilt, Taste Labs, Pallet, Gradial, StackAI, Legion Health, Salient, 11x, ClassDojo, Rula, Arcadia, Playbook, Cashera, etc.). Result: essentially NO 2-hop paths \u2014 these companies are too small/early (<~50 employees) for brokers' networks to overlap. The only hit was Samsara (a large public company), via Alex Ortiz. Takeaway: 2-hop referral pathing pays off at mid/large companies; for the small startups, direct founder outreach (or AJ's own 1st-degree) is the better play.",
   "_batch4_new_finds_finding": "Ran top brokers (Alex, Jesse, Chantel, Kayvon, Cameron) vs the strongest NEW finds. ADOBE is strongly covered (Chantel Benson is a Director of PM there = direct path for the Firefly Growth PM role, plus 6 more Adobe people via Chantel/Alex). Mercury's new Head of Growth Marketing reuses the existing path (Nick Dellis via Kayvon). NO 2-hop paths found for the other new targets \u2014 consumer cos (Poshmark, Hinge, Maven Clinic, Justworks, Commure, Unite Us, Genius Sports, The Farmer's Dog) and small AI startups (Abacum, Inworld, Listen Labs, Lemurian, LYNA): brokers' networks don't reach them. Direct application / founder outreach is the better play there.",
@@ -616,5 +652,6 @@
       "11x": "0 coach connections, SF on-site"
     }
   },
-  "_batch_2026-07-21_manual_finding": "Manual pass added 10 new roles (8 new / 2 skipped). Referral inspection: NONE of the new companies (Juicebox, Hearth, Blitzy, Voodoo, TRM Labs, SalaryGuide, Jack, DocDraft) have coach-dashboard coverage, and a 2-hop check (Alex Ortiz) found no broker paths. All are small/niche startups -> direct application only. Best new role: Juicebox (Head of Growth Product, AI recruiting, $225-300k, SF on-site)."
+  "_batch_2026-07-21_manual_finding": "Manual pass added 10 new roles (8 new / 2 skipped). Referral inspection: NONE of the new companies (Juicebox, Hearth, Blitzy, Voodoo, TRM Labs, SalaryGuide, Jack, DocDraft) have coach-dashboard coverage, and a 2-hop check (Alex Ortiz) found no broker paths. All are small/niche startups -> direct application only. Best new role: Juicebox (Head of Growth Product, AI recruiting, $225-300k, SF on-site).",
+  "_batch_2026-07-21_anthropic_google": "Focused Anthropic+Google pass. ROLES: Anthropic Staff SWE Growth (NYC & SF) + Research PM Labs + Manager Growth Sales already tracked in pipeline; added Google NYC roles (Global Product Lead Product-Growth, Sr PM On Device AI, PM Workspace Ecosystem). REFERRALS \u2014 Anthropic: coach 3 + strong 2-hop (Kat Killion GTM & Ryan Ball via Alex Ortiz; Henry Shi via Jesse; Shad Ahmed via Chantel; Adrian Santos via Caren); 1st-degree none. Google: coach dashboard 50 (dominant) + 2-hop via Alex Ortiz (Lakshmi Balakrishnan PM, Elayne W. PM, Mita Yun Sr Staff SWE). NEITHER has a personal 1st-degree employee, so best routes = Anthropic via Alex Ortiz brokered GTM intros or coach; Google via coach (50) or Alex Ortiz."
 }

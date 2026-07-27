@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-07-21 (manual pass)",
+  "last_run": "2026-07-21 (Anthropic+Google pass)",
   "finds": [
     {
       "url": "https://www.linkedin.com/jobs/view/4420162332/",
@@ -1396,6 +1396,66 @@
       "raw_description_snippet": "[Listing-derived from LinkedIn past-week search; full JD via /apply] Founding Growth Partner (Zero-to-One Seller) at Downshift. Los Angeles, CA (Remote).",
       "fit_signal": "low",
       "why": "Sales-leaning founding-growth partner role; more BD/seller than PLG growth.",
+      "status": "skipped"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4435824902/",
+      "title": "Global Product Lead, Product Growth Areas & Adoption Reporting",
+      "company": "Google",
+      "location": "New York, NY (On-site)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn company-scoped search; full JD via /apply] Global Product Lead, Product Growth Areas & Adoption Reporting at Google. New York, NY (On-site).",
+      "fit_signal": "medium",
+      "why": "Product-growth leadership at Google NYC; growth-product ownership + huge referral leverage (coach dashboard: 50). On-site big-org.",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4444293731/",
+      "title": "Senior Product Manager, On Device AI",
+      "company": "Google",
+      "location": "New York, NY (On-site)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn company-scoped search; full JD via /apply] Senior Product Manager, On Device AI at Google. New York, NY (On-site).",
+      "fit_signal": "medium",
+      "why": "Sr AI PM at Google NYC; AI-core PM + strong referral leverage (50), on-site.",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4432350889/",
+      "title": "Product Manager, Workspace Ecosystem",
+      "company": "Google",
+      "location": "New York, NY (On-site)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn company-scoped search; full JD via /apply] Product Manager, Workspace Ecosystem at Google. New York, NY (On-site).",
+      "fit_signal": "medium",
+      "why": "Ecosystem PM at Google NYC; general PM, high referral leverage (50).",
+      "status": "new"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4434138142/",
+      "title": "Senior AI Marketing Solutions Architect, Growth AI Transformation",
+      "company": "Google",
+      "location": "New York, NY (On-site)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn company-scoped search; full JD via /apply] Senior AI Marketing Solutions Architect, Growth AI Transformation at Google. New York, NY (On-site).",
+      "fit_signal": "low",
+      "why": "Growth-AI solutions architect (sales-eng leaning) at Google NYC; adjacent, not core growth-product.",
+      "status": "skipped"
+    },
+    {
+      "url": "https://www.linkedin.com/jobs/view/4426133638/",
+      "title": "Product Manager II, Ads",
+      "company": "Google",
+      "location": "New York, NY (On-site)",
+      "posted_date": null,
+      "source": "linkedin",
+      "raw_description_snippet": "[Listing-derived from LinkedIn company-scoped search; full JD via /apply] Product Manager II, Ads at Google. New York, NY (On-site).",
+      "fit_signal": "low",
+      "why": "Ads PM at Google NYC; general/ads PM, off AJ's PLG/consumer core.",
       "status": "skipped"
     }
   ]

@@ -1434,7 +1434,7 @@
       "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
     },
     "https://jobs.ashbyhq.com/perplexity/2be717cb-ad3e-4052-a464-79b107a70406": {
-      "notes": "Perplexity GTM demand-gen lead for enterprise/business products. SF or NYC (geo OK). AI-native tooling emphasis (build own tools, automate, treat campaigns as experiments) -- plays to AJ engineer-PM/experimentation edge, though it is a demand-gen/marketing seat vs pure growth/PM. Frontier-AI target company. Added to Interview 2026-07-13. | HM round: Raman Malik (VP Product Growth, future manager). Positioning: AI-fluent + technical + forward-thinking, NOT a playbook operator. | HM identity confirmed: Raman Malik (VP Product Growth), LinkedIn: https://www.linkedin.com/in/ramanrmalik/",
+      "notes": "Perplexity GTM demand-gen lead for enterprise/business products. SF or NYC (geo OK). AI-native tooling emphasis (build own tools, automate, treat campaigns as experiments) -- plays to AJ engineer-PM/experimentation edge, though it is a demand-gen/marketing seat vs pure growth/PM. Frontier-AI target company. Added to Interview 2026-07-13. | HM round: Raman Malik (VP Product Growth, future manager). Positioning: AI-fluent + technical + forward-thinking, NOT a playbook operator. | HM identity confirmed: Raman Malik (VP Product Growth), LinkedIn: https://www.linkedin.com/in/ramanrmalik/ | 2026-07-24 Raman round STRONG: writing praised (culture is writing-centric), role EVOLVING from Demand Gen Lead (marketing exec) -> bespoke opportunistic BUILDER/systems role (\"canvas + unlimited tokens to build gtm\"). Better fit for AJ edge. Parallel to Shelf CEO re-scoping to Head of Automation -- leaders read AJ as builder not executor. Next gate: Ramans weekend read of doc -> email early next week. Role/level/comp UNDEFINED (opportunity + risk).",
       "events": [
         {
           "date": "2026-07-13",
@@ -1460,6 +1460,12 @@
           "channel": "interview",
           "outcome": "scheduled",
           "note": "Raman Malik HM round SCHEDULED Fri 7/24 5:30p ET. Resolves Monday collision (off Monday). URGENT: prep + deliverables due tomorrow; late-day slot -> arrive fresh."
+        },
+        {
+          "date": "2026-07-24",
+          "channel": "interview",
+          "outcome": "completed_strong",
+          "note": "Raman round done (Fri 7/24 5:30p, ended 5min early). Logistics: Raman had MISSED AJ emailed deliverable; realized mid-call; apologized, will read in detail this weekend, connect early next week by email. AJ walked the doc (reflexive GTM + the \"big bet\" + why structured that way). STRONG SIGNAL: Raman -> \"you are a great writer, have you always had that passion?\" AJ cited writing incl his sci-fi novel. CULTURE REVEAL: first week on Raman team = ALL writing (new hires write strategic take, hone together, make concise; bar for thinking+communicating). HIRING PHILOSOPHY: OPPORTUNISTIC -- not specific tasks; \"here is your canvas, here are your tools, what will you go do\" / \"give a canvas and let people cook.\" Raman sees AJ as SYSTEMS + BUILDING (not marketing execution like the original Demand Gen Lead); AJ would get \"unlimited tokens to build gtm solutions.\" AJ read: positive on the read-vs-write dichotomy discussion; improved chances but real work left; ROLE + LEVEL still undefined."
         }
       ],
       "materials": {
@@ -1645,6 +1651,10 @@
     },
     "https://job-boards.greenhouse.io/xai/jobs/5055608007": {
       "notes": "Skipped 2026-07-24: listing no longer active (liveness check)."
+    },
+    "https://www.linkedin.com/jobs/view/4442221581/": {
+      "notes": "INBOUND: HM nudged AJ via LinkedIn. CPO at an early-stage NYC consumer MUSIC startup (shibuyaaa.com). RARE 4-WAY FIT: 0-to-1 consumer founder + technical/engineer-PM (2x CTO) + growth/PLG + MUSIC-TECH domain -- AJ uniquely has the music axis via Blast Radio (lossless social radio), damntheradio (artist social CMS: Linkin Park/Black Keys), FanBridge (artist engagement: Lady Gaga/John Mayer). Role wants: founder-mode, 0-to-1 consumer at scale, technical, distribution-first, music knowledge, build 100K retentive MAU in 6mo, recruit/lead eng/design/ML. Exec title (CPO), NYC hybrid. Comp $200K+ cash + meaningful equity (cash below AJ $250k target; exec title + equity offset). CAVEATS: VERY early stage = high-variance/unproven; consumer-music (not frontier-AI, though ML teams); they want GENUINE music passion (5-track playlist ask) -- AJ has pro music-platform depth but should convey real music affinity. APPLY via email gigs@shibuyaaa.com, subject \"Ship it!\", include: (1) product/startup built, (2) LinkedIn/CV/site, (3) 5-track playlist. | MUSIC PASSION CONFIRMED (2026-07-25): AJ is a serious lifelong musician -- led 3 bands, played in 6, wrote ~50 songs, 30yr virtuosic guitar, 12yr voice lessons (Raz Kennedy), album w/ a John Mayer collaborator, Bandcamp-featured album, wrote/performed for 3 weddings incl his own. The music-passion filter (playlist ask) is now a STRENGTH not a question. Nuance: loves the craft, not the business of music. Upgrades fit -- rare full-stack match (serious musician + 0-to-1 consumer founder + engineer-PM + growth).",
+      "fit_note": "Music-passion caveat resolved -> among the best full-self fits on the board."
     }
   }
 }

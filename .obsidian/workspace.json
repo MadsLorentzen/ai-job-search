@@ -69,7 +69,21 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Thoughts on Perplexity GTM for discussion.md",
+                "file": "PerplexityFolder260724/Thoughts on Perplexity GTM for discussion.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Thoughts on Perplexity GTM for discussion"
+            }
+          },
+          {
+            "id": "b06fa09b5083714a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "PerplexityFolder260724/Thoughts on Perplexity GTM for discussion.md",
                 "mode": "source",
                 "source": false
               },
@@ -83,7 +97,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Perplexity GTM Appendix.md",
+                "file": "PerplexityFolder260724/Perplexity GTM Appendix.md",
                 "mode": "source",
                 "source": false
               },
@@ -92,7 +106,7 @@
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -254,8 +268,26 @@
       "bases:Create new base": false
     }
   },
-  "active": "93259f3b859b0ee8",
+  "active": "b06fa09b5083714a",
   "lastOpenFiles": [
+    "vault/Job Pipeline/02 Triaged/Shibuya (A Vinyl Bar in Shibuya shibuyaaa.com) - Chief Product Officer.md",
+    "PerplexityFolder260724/Perplexity GTM - Evidence & Reference Companion.md",
+    "PerplexityFolder260724",
+    "PerplexityFolder260724/Thoughts on Perplexity GTM for discussion.md",
+    "vault/Job Pipeline/09 Skipped/Downshift - Founding Growth Partner (Zero-to-One Seller).md",
+    "vault/Job Pipeline/09 Skipped/Ant-Tech - Growth Engineer.md",
+    "vault/Job Pipeline/09 Skipped/Genius Sports - SVP, Strategic Growth (LA).md",
+    "vault/Job Pipeline/09 Skipped/Customer.io - Senior Product Marketing Manager.md",
+    "vault/Job Pipeline/09 Skipped/Ramp - Senior Growth Operator, Partner.md",
+    "vault/Job Pipeline/09 Skipped/xAI - Growth Marketing Manager – Lifecycle.md",
+    "vault/Job Pipeline/01 New/DocDraft - Head of Growth.md",
+    "vault/Job Pipeline/01 New/Jack - Growth Lead.md",
+    "vault/Job Pipeline/01 New/SalaryGuide - Business Operations & Growth Lead.md",
+    "vault/Job Pipeline/01 New/TRM Labs - Growth Lead, Consumer Fraud Reporting.md",
+    "vault/Job Pipeline/01 New/Voodoo - Growth Lead, Blitz (US).md",
+    "vault/Job Pipeline/01 New/Blitzy - Software Developer, Growth Engineer.md",
+    "vault/Job Pipeline/01 New/Hearth - Growth Engineer.md",
+    "vault/Job Pipeline/01 New/Juicebox - Head of Growth Product.md",
     "vault/Job Pipeline/02 Triaged/Robinhood - Staff PM, International Growth & Expansion.md",
     "vault/Job Pipeline/02 Triaged/Mercury - Senior Product Manager - Activation.md",
     "vault/Job Pipeline/02 Triaged/Plaid - Product Manager, Growth.md",
@@ -265,23 +297,6 @@
     "vault/Job Pipeline/01 New/Sierra - Product Manager, Agent Development (Spanish speaking).md",
     "vault/Job Pipeline/01 New/Suno - Staff Product Manager.md",
     "vault/Job Pipeline/01 New/Commure - SeniorStaff Product Manager, Ambient.md",
-    "vault/Job Pipeline/01 New/Commure - Product Manager, EHR.md",
-    "vault/Job Pipeline/01 New/Midjourney - Product Manager.md",
-    "vault/Job Pipeline/01 New/OpenAI - Pricing Strategist.md",
-    "vault/Job Pipeline/01 New/Stripe - Head of Self-Serve Paid Media.md",
-    "vault/Job Pipeline/01 New/Anthropic - Staff+ Software Engineer, Enterprise AI Products.md",
-    "vault/Job Pipeline/01 New/Twilio - Manager, Sales Development-LATAM NAMER Hybrid.md",
-    "vault/Job Pipeline/01 New/Twilio - Manager, Sales Development.md",
-    "vault/Job Pipeline/01 New/Gusto - Marketing Programs Specialist, Symmetry.md",
-    "vault/Job Pipeline/01 New/Vercel - Director of Forward Deployed Engineering.md",
-    "vault/Job Pipeline/01 New/Vercel - Commercial Account Executive, Install Base.md",
-    "vault/Job Pipeline/01 New/ConvertKit - Senior Customer Success Manager.md",
-    "vault/Job Pipeline/01 New/Faire - Senior Software Engineer - Insider.md",
-    "vault/Job Pipeline/01 New/Mixpanel - Head of Sales, India.md",
-    "vault/Job Pipeline/01 New/Pinecone - Business Development Representative.md",
-    "vault/Job Pipeline/01 New/NVIDIA - Global AI Natives Sales Lead, GTM.md",
-    "vault/Job Pipeline/01 New/Adobe - Product Designer, Acrobat Mobile Growth.md",
-    "vault/Job Pipeline/01 New/Amazon (Shanghai) International Trading Company Limited - Strategic Brand Growth Manager, CN2MX.md",
     "cv/main_scaleai.log",
     "cv/main_scaleai.pdf",
     "cv/main_scaleai.aux",
@@ -290,7 +305,6 @@
     "documents/applications/shelf-growth-strategy-lead",
     "documents/applications/brex-staff-product-manager-growth/submission.json",
     "documents/applications/brex-staff-product-manager-growth",
-    "documents/applications/baseten-product-manager-enterprise/submission.json",
-    "documents/applications/baseten-product-manager-enterprise"
+    "documents/applications/baseten-product-manager-enterprise/submission.json"
   ]
 }
