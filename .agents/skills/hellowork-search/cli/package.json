@@ -1,0 +1,20 @@
+{
+  "name": "hellowork-cli",
+  "version": "1.0.0",
+  "description": "CLI for searching jobs and freelance missions on HelloWork (France) — no authentication, zero runtime dependencies. Personal use only (robots.txt disallows the search path).",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "hellowork-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 30000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "1.3.14"
+  }
+}
