@@ -1,9 +1,10 @@
 ---
 name: upskill
 description: >
-  Compares tracked job postings against the candidate profile to identify skill gaps and generate
-  a prioritized learning plan with study resources. Triggers on: /upskill, upskill, skill gaps,
-  what should I learn, learning plan
+  Compares tracked job postings against the candidate profile to identify skill gaps, generate
+  a prioritized learning plan with study resources, and flag quick, high-ROI resume/LinkedIn
+  additions. Triggers on: /upskill, upskill, skill gaps, what should I learn, learning plan,
+  quick wins, resume additions
 allowed-tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 ---
 
@@ -120,6 +121,8 @@ For every **Critical** and **High** gap (and **Medium** gaps if fewer than 5 tot
    - Books for domain knowledge gaps
    - For each resource: name, URL, and one-line reason why it fits
 
+   Also check whether each resource issues a **verifiable certificate or credential** on completion (a real certificate with an issuing organization and, ideally, a credential ID/URL — not just a participation badge). Tag qualifying resources `[Certificate]`. Only tag a resource this way if the WebSearch result confirms it; never assume or fabricate this.
+
 3. **Write a study direction** tailored to the candidate's existing background. For example: if the candidate knows Docker, say "Skip the containers basics module — go straight to the orchestration and networking sections." Be specific about what to skip and where to start.
 
 4. **Estimate time to working proficiency** (e.g. "~20h", "~40h for a solid foundation"). Be realistic — err toward more rather than less.
@@ -140,6 +143,25 @@ Example entry format:
 
 Study direction: You already know Docker and containerisation — skip Chapter 1 on containers. Start at Pod scheduling and work through Services and Deployments. Focus on manifests and `kubectl` fluency before touching Helm.
 ```
+
+## Step 6.5: Flag Quick Wins (High ROI)
+
+Some gaps can be closed fast enough, with a strong enough resume/LinkedIn signal, to be worth doing immediately — while still job hunting — rather than waiting on the full study plan. Identify these separately.
+
+Consider only gaps that have at least one `[Certificate]`-tagged resource from Step 6.
+
+1. **Priority weight**: Critical = 4, High = 3, Medium = 2, Low = 1 (from the Step 5 heatmap).
+2. **ROI score** = priority weight ÷ estimated hours (from Step 6).
+3. A gap qualifies as a **Quick Win** if its estimated time is **≤15h** and it has a `[Certificate]`-tagged resource.
+
+Rank qualifying gaps by ROI score, descending. List the top 5 (or fewer, if fewer qualify).
+
+For each Quick Win, note:
+- The certificate-granting resource (name, URL)
+- Estimated hours
+- **Where to add it**: e.g. "Add to LinkedIn under Certifications — issuing organization, completion date, and credential URL/ID if the resource provides one."
+
+If no gaps qualify, omit the Quick Wins section from the report entirely — do not force weak candidates into it just to fill the section.
 
 ## Step 7: Suggest Study Order
 
@@ -195,6 +217,17 @@ Assemble the full report in this order:
 
 ---
 
+## Quick Wins (High ROI)
+<!-- Omit this section entirely if no gaps qualified in Step 6.5. -->
+
+| Rank | Skill / Area | Est. Time | Certificate | ROI Score |
+|------|-------------|-----------|-------------|-----------|
+| 1 | ... | ~Xh | [Resource name](url) | X.X |
+
+- **<Skill>**: Add to LinkedIn under Certifications — issuing organization, completion date, credential URL/ID if provided.
+
+---
+
 ## Learning Plan
 
 ### <Theme>
@@ -246,3 +279,4 @@ After saving, print:
 5. **Print the heatmap before the learning plan.** Always show the intermediate heatmap table in the terminal before proceeding to resource search, so the user can see what you are working from.
 6. **Omit Low-priority gaps from the learning plan.** List them in the heatmap for completeness, but do not generate study resources for them unless the user asks.
 7. **Always save the report.** Do not skip the Write step even if the user seems satisfied with the terminal output.
+8. **Never mark a resource `[Certificate]` without verifying via WebSearch that it issues a real, verifiable credential.** A generic completion badge with no issuing organization or credential ID does not qualify, and an unverified guess is worse than omitting the Quick Wins section.
