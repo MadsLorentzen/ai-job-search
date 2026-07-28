@@ -189,11 +189,14 @@ def parse_sheet(ws, sheet_label=None):
     # Parse data rows
     companies = []
     for row in ws.iter_rows(min_row=header_row + 1, values_only=True):
-        if not row[company_col]:
+        if company_col >= len(row) or not row[company_col]:
             continue
 
         company_name = str(row[company_col]).strip()
-        city_name = str(row[city_col]).strip() if city_col is not None and row[city_col] else ""
+        if city_col is not None and city_col < len(row) and row[city_col]:
+            city_name = str(row[city_col]).strip()
+        else:
+            city_name = ""
 
         entry = {
             "company": company_name,
