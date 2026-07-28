@@ -39,6 +39,70 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
 
+## STAR Candidates (Complete Manually)
+
+<!-- Extracted from CV bullets by /setup Path A. Fill in S/T/A/R details before using in an interview. -->
+
+### RAG workflow latency & cost reduction (Nannie.ai)
+**Source:** CV - AI Engineer, Nannie.ai
+**What happened:** Built a RAG workflow that brought p95 response time to 5s and cut cost by 75%, resolving context window failures and reducing hallucinations with grounding guardrails and QA regression checks.
+**Why it matters:** Strong answer for "tell me about a time you optimized a system" or "how do you approach reliability in AI systems"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Gemini-powered legal automation workflow (Nannie.ai)
+**Source:** CV - AI Engineer, Nannie.ai
+**What happened:** Led development of a workflow integrating web intake, Gmail API ingestion, classification, and AI-assisted response drafting, cutting turnaround time from hours to 5 minutes.
+**Why it matters:** Good for "describe a project you led" or "how have you used AI to automate a business process"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Hybrid Hospital RAG Chatbot
+**Source:** CV - Independent Project
+**What happened:** Built and shipped a 3-service hospital QA system with a Neo4j ETL pipeline and a hybrid RAG pipeline routing across graph reasoning, semantic retrieval, and operational lookup tools.
+**Why it matters:** Good for "walk me through a project end to end" or technical deep-dive questions on RAG/knowledge graph design
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Camera-LiDAR sensor fusion dissertation
+**Source:** CV - MSc Dissertation
+**What happened:** Trained and evaluated JMODT on KITTI (82% mAP, 91.37% MOTA) with cross-dataset validation on NuScenes Mini, analysing failure modes like occlusion and dense scenes.
+**Why it matters:** Good for "describe a research project" or "how do you handle a result that doesn't generalize"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Belle Epoque operations turnaround
+**Source:** CV - Business Manager, Belle Epoque Patisserie
+**What happened:** Directed daily operations and shift execution, increasing monthly income by 18% and average daily footfall by 15% through improved staffing, service flow, and upsell routines.
+**Why it matters:** Good for "tell me about a time you improved a process" or leadership/ownership questions - especially useful for bridging non-technical experience into a technical role narrative
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Hiring & onboarding process improvement (Belle Epoque)
+**Source:** CV - Business Manager, Belle Epoque Patisserie
+**What happened:** Owned hiring and onboarding (CV screening, interviews, training), reducing time to productivity by 30% with structured training checklists and coaching.
+**Why it matters:** Good for "tell me about a time you mentored or trained someone" or questions about building repeatable processes
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
 ## Common Tough Questions
 
 ### "Why did you leave [previous company]?"

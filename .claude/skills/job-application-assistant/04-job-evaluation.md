@@ -44,9 +44,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Python, PyTorch, LangChain, RAG pipelines, OpenAI/Gemini APIs, AI agents, LLMOps, Hugging Face Transformers, vector search, FastAPI, Docker, Kubernetes, Terraform, GCP, AWS
+**Moderate match areas:** SQL, MongoDB, CI/CD (Jenkins, GitLab), Power BI, data pipelines, robotics/sensor fusion (from MSc dissertation), Agile/Scrum delivery
+**Weak match areas:** Large-scale distributed systems at senior-platform-engineer depth; roles requiring deep experience with ML frameworks/tools not yet used in production (e.g. Spark, Kafka, or other big-data stacks not listed above)
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -58,9 +58,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** AI/ML engineering, RAG pipeline development, agentic AI workflows, cloud-native AI deployment
+**Moderate:** Robotics/autonomous systems (research-level, from MSc), general cloud/DevOps engineering, technical project delivery and stakeholder management (from Belle Epoque)
+**Entry-level:** Roles requiring several years of large-scale distributed-systems or platform-engineering experience specifically
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -91,19 +91,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Grow as an AI/ML engineer building production RAG pipelines and agentic AI systems
+- Deepen cloud infrastructure and MLOps skills (deployment, scaling, CI/CD for ML systems)
+- Build toward roles combining AI engineering with cloud-native infrastructure ownership
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
-- Non-task factors: leadership style, department culture, company values, degree of autonomy
+- Tasks that energize: Building and shipping RAG/LLM systems and AI agents; cloud deployment and MLOps work; research-leaning exploratory problems
+- Tasks that drain: Pure generalist software engineering with no AI/ML/cloud surface; highly ambiguous environments with no process
+- Non-task factors: cross-functional stakeholder contact, some structure/process, room to bring data to decisions
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: On a UK Graduate visa - roles that explicitly require citizenship/PR fail the eligibility gate; roles silent on sponsorship should be flagged and checked, not auto-skipped
+- **Flexibility**: Based in London; prefers London-based or UK-wide remote roles, open to relocation for the right opportunity
+- **Professional development**: Wants to build deeper distributed-systems/platform-engineering depth alongside continuing AI/ML and cloud work
 
 ### 6. Salary Benchmark (Optional)
 

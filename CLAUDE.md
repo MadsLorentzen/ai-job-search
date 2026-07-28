@@ -1,10 +1,10 @@
-# Job Application Assistant for [YOUR_NAME]
+# Job Application Assistant for Srija Chakraborty
 
 <!-- SETUP: This file is populated by running /setup -->
 <!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Srija Chakraborty, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -16,67 +16,75 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 <!-- This section is auto-populated by /setup. You can also fill it in manually. -->
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+- **Name:** Srija Chakraborty
+- **Location:** London, UK (open to relocation for the right role; priority is London-based or UK-wide remote roles first)
+- **Languages:** Bengali (native), English (fluent), Hindi (fluent)
+- **CV language:** English <!-- default; /setup can revisit with --section search -->
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Available immediately
+- **Work permit:** UK Graduate visa - will need employer sponsorship (Skilled Worker visa or equivalent) to remain in the UK long-term
+- **LinkedIn headline:** "AI & Cloud Engineer"
 
 ### Education
 <!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **MSc in Robotics, AI & Autonomous Systems** (Oct 2023-Nov 2024) - City, University of London, UK (2:1, 70%)
+  - Thesis: "Study of Camera-LiDAR Fusion Techniques for Detection, Tracking & Mapping in Autonomous Vehicles"
+  - Topics: Machine Learning, Robotics, Imaging, Vision, AI for Engineering Design, Advanced Signal Processing
+- **BTech in Electronics & Communication Engineering** (Aug 2019-Aug 2023) - Techno India University (GPA: 8.77)
+  - Topics: Computer Networks & Network Theory (OSI model, routing, latency/bandwidth analysis), Digital Electronics & Microprocessors (logic design, system-level thinking)
 
 ### Professional Experience
 <!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **AI Engineer** (Sep 2025 - Present) - **Nannie.ai** (London, UK)
+  - Frontier AI research using computer vision to identify animal body language and behaviour to improve wellbeing
+  - Built a RAG workflow bringing p95 response time to 5s and cutting cost by 75%; resolved context window failures and reduced hallucinations with grounding guardrails and QA regression checks
+  - Led development of a Gemini-powered legal automation workflow (web intake, Gmail API ingestion, classification, AI-assisted drafting), reducing turnaround time from hours to 5 minutes
+- **Business Manager** (Jan 2024 - Sep 2025) - **Belle Epoque Patisserie** (London, UK)
+  - Directed daily operations and shift execution, increasing monthly income by 18% and average daily footfall by 15%
+  - Owned hiring and onboarding, reducing time to productivity by 30% with structured training checklists and coaching
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Python, PyTorch, LangChain, RAG pipelines, OpenAI/Gemini APIs, AI agents, LLMOps, Hugging Face Transformers, vector search/vector DBs
+- **Secondary:** FastAPI, REST APIs, Docker, Kubernetes, Terraform, Jenkins, GitLab CI/CD, GCP (Cloud Run, Compute Engine, IAM), AWS, SQL, MongoDB
+- **Domain:** AI/ML engineering, agentic AI, RAG pipeline engineering, cloud infrastructure, robotics/autonomous systems (sensor fusion, detection, tracking)
+- **Software:** Pandas, NumPy, Power BI, Jupyter Notebook, Linux/Unix
 
 ### Certifications
 <!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- **Associate Google Cloud Digital Leader (GCP)** - completed 2025
 
 ### Publications
 <!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+None yet.
 
 ### Awards
 <!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- Global STEM Master's Leadership Scholarship - City, University of London (awarded to top 2% of applicants) (2023)
 
 ### Behavioral Profile
 <!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+<!-- Self-reported via /setup - no formal assessment (PI/DISC/MBTI) on file -->
+- **Structured collaborator** - Thrives in teams with clear process, but is equally comfortable in cross-functional roles with heavy stakeholder contact and in research-leaning, exploratory work
+- **Evidence-driven iterator** - Moves fast and ships, but backs decisions with data/benchmarks (QA regression checks, cross-dataset validation) rather than shipping blind
+- **Strengths:** Direct, concise communication; comfortable checking in frequently and collaboratively; bridges technical and non-technical stakeholders (reinforced by Belle Epoque management background)
+- **Growth areas:** Still building depth in large-scale distributed systems - strong cloud-native fundamentals (GCP, AWS, Kubernetes, Terraform) but less exposure than a senior platform engineer to very large-scale distributed infrastructure
+- **Thrives in:** Structured teams with clear process; cross-functional roles with real stakeholder contact; some room for exploratory/research work alongside delivery work
 
 ### What Excites You
 <!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Building production RAG/LLM systems and AI agents
+- Cloud infrastructure & MLOps - deployment, scaling, and infra for ML/AI systems
+- Agentic AI and applied AI engineering more broadly
 
 ### Target Sectors
 <!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- **Target role directions:** AI Engineer, Cloud/DevOps Engineer, Agentic AI roles
+- No specific target companies yet - open to broad search across AI/cloud engineering employers
 
 ### Deal-breakers
 <!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Roles that explicitly require citizenship/PR with no sponsorship path (hard eligibility-gate failure - see `04-job-evaluation.md`)
+- Flag (do not auto-skip) roles silent on visa sponsorship, and roles that are purely generalist software engineering with no AI/ML/cloud surface - surface these so Srija can decide case by case rather than filtering them out automatically
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

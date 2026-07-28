@@ -8,47 +8,48 @@ framework_version: 1.0.0
 <!-- You can use results from PI, DISC, Myers-Briggs, StrengthsFinder, or a self-assessment -->
 
 ## Overview
-[YOUR_NAME]'s behavioral assessment identifies them as a **[PROFILE_TYPE]** pattern. [1-2 SENTENCE_SUMMARY].
+Srija's self-assessed behavioral profile is a hands-on AI/cloud engineer who pairs structured, evidence-driven execution with genuine comfort operating across technical and non-technical stakeholders. Not a formal PI/DISC/Myers-Briggs assessment - self-described in `/setup`, so treat it as a working hypothesis to refine as more evidence (references, LinkedIn recommendations) comes in.
+
+<!-- [Self-reported via /setup interview questions - no formal assessment (PI/DISC/MBTI) on file] -->
 
 ## Core Behavioral Drives
 
 | Drive | Level | Meaning |
 |-------|-------|---------|
-| [DRIVE_1] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_2] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_3] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_4] | [LEVEL] | [DESCRIPTION] |
+| Process orientation | High | Prefers structured teams with clear process over unstructured chaos |
+| Stakeholder engagement | High | Comfortable and energized by cross-functional, non-technical stakeholder contact (reinforced by Belle Epoque management background) |
+| Exploration tolerance | High | Also drawn to research-leaning, exploratory work (MSc dissertation, Nannie.ai frontier research) - not purely execution-focused |
+| Decision speed | Mixed | Iterates quickly on shippable work, but wants data/benchmarks before committing on ambiguous or high-stakes calls |
 
 ## Strongest Behaviors
-- **[BEHAVIOR_1]:** [DESCRIPTION]
-- **[BEHAVIOR_2]:** [DESCRIPTION]
-- **[BEHAVIOR_3]:** [DESCRIPTION]
+- **Collaborative, high-frequency communicator:** Checks in regularly with stakeholders rather than working in isolation; direct and concise rather than verbose
+- **Evidence-driven iteration:** Combines fast shipping with QA regression checks and benchmarking (RAG grounding guardrails, cross-dataset validation on the dissertation) rather than shipping blind
+- **Comfortable bridging technical and non-technical worlds:** Belle Epoque operations/hiring experience plus AI engineering gives credibility on both sides of a technical-business conversation
 
 ## How You Work Best
-- [ENVIRONMENT_PREFERENCE_1]
-- [ENVIRONMENT_PREFERENCE_2]
-- [ENVIRONMENT_PREFERENCE_3]
+- Structured team with clear process, not ambiguous ownership
+- Cross-functional roles with real stakeholder contact, not purely heads-down IC work
+- Some room for exploratory/research work alongside delivery work
 
 ## Growth Areas (frame positively in applications)
-- **[AREA_1]:** [HOW_TO_FRAME_IT_POSITIVELY]
-- **[AREA_2]:** [HOW_TO_FRAME_IT_POSITIVELY]
+- **Large-scale distributed systems depth:** Strong RAG/ML and cloud-native (Docker/Kubernetes/Terraform) experience, but less exposure than a senior platform engineer to very large-scale distributed infrastructure. Frame as: actively building this depth, with demonstrated cloud/infra fundamentals (GCP, AWS, Kubernetes, Terraform) as the foundation.
 
 ## Mapping to Job Posting Language
 
 When a job posting mentions these keywords, it's a **strong behavioral fit**:
-- [KEYWORD_OR_PHRASE_THAT_MATCHES_YOUR_STYLE]
-- [ANOTHER_KEYWORD]
+- "cross-functional collaboration", "stakeholder communication", "fast-paced", "ownership", "small team"
+- "research-driven", "experimentation", "data-driven decision making"
 
 When a job posting mentions these, flag as **potential friction** (not deal-breaker):
-- [KEYWORD_OR_PHRASE_THAT_MIGHT_CLASH]
-- [ANOTHER_KEYWORD]
+- "highly ambiguous, unstructured environment with no process" - Srija prefers some process scaffolding
+- Roles that are purely large-scale distributed-systems infrastructure with no AI/ML surface - not a fit with current strengths, more of a stretch role
 
 ## Management Style Preferences
-- [WHAT_MANAGEMENT_STYLE_WORKS_FOR_YOU]
-- [WHAT_DOESN'T_WORK]
+- Works well with managers who check in regularly and give clear direction on priorities
+- Values room to iterate and bring data to decisions rather than being told the answer upfront
 
 ## Using This in Applications
-- **Cover letters:** [HOW_TO_WEAVE_IN_BEHAVIORAL_STRENGTHS]
-- **CV:** [WHAT_TO_EMPHASIZE]
-- **Interviews:** [WHAT_STAR_EXAMPLES_TO_USE]
-- **Don't overstate:** [WHAT_NOT_TO_CLAIM]
+- **Cover letters:** Lead with the collaborative, evidence-driven working style when the posting emphasizes cross-functional or fast-moving teams
+- **CV:** Emphasize measurable, benchmarked outcomes (p95 latency, cost cuts, mAP/MOTA scores) as evidence of the evidence-driven behavior pattern
+- **Interviews:** Use the Belle Epoque STAR examples to demonstrate stakeholder/team management; use the Nannie.ai RAG and dissertation STAR examples to demonstrate data-driven iteration
+- **Don't overstate:** Do not claim deep large-scale distributed-systems expertise this profile does not yet support

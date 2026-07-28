@@ -1,4 +1,4 @@
-%% Example CV - [YOUR_NAME]
+%% Example CV - Srija Chakraborty
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
@@ -24,18 +24,19 @@
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Srija Chakraborty - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
+\usepackage{needspace}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Srija}{Chakraborty}
+\address{London, UK}{}{}
+\phone[mobile]{07546526104}
+\email{chakrabortysrija073@gmail.com}
+\extrainfo{\href{https://linkedin.com/in/chakraborty-srija}{LinkedIn}, \href{https://github.com/srija-chakraborty}{GitHub}}
 
 \begin{document}
 
@@ -46,7 +47,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{AI \& Cloud Engineer with experience building RAG pipelines, agentic AI workflows, and scalable cloud infrastructure across research and operational environments. Skilled in Python, vector search, ML systems, and cloud deployment, with a track record of improving inference performance, reducing operational costs, and building production-ready AI solutions. MSc in Robotics, AI \& Autonomous Systems from City, University of London.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +57,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{AI \& ML}: Python, PyTorch, OpenAI APIs, Gemini APIs, LangChain, Vector DB, Prompt \& Context Engineering, AI Agents, LLMOps, Hugging Face Transformers, Model Eval, ML Inference, RAG Pipelines
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Backend \& Cloud}: FastAPI, REST APIs, Docker, Kubernetes, Terraform, Jenkins, GitLab CI/CD, GCP, AWS, Cloud Run, Compute Engine, IAM, Linux/Unix
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Data \& Analytics}: SQL, MongoDB, Pandas, NumPy, Power BI, Jupyter Notebook, Data Pipelines
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Robotics \& Autonomous Systems}: Sensor fusion, object detection and tracking, evaluation-loop design (KITTI, NuScenes)
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Delivery \& Collaboration}: Agile Methodologies, Scrum, Project Coordination, Documentation, Process Improvement, Technical Training, Operational Support
 
 \end{itemize}
 
@@ -77,32 +78,50 @@
 \begin{itemize}
 
 % --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{2025--Present}{AI Engineer}{Nannie.ai}{London, UK}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item Frontier AI research using computer vision to identify animal body language and behaviour to improve wellbeing, contributing to AI-driven monitoring solutions
+    \item Built a RAG workflow, bringing p95 response time to 5s and cutting cost by 75\%; resolved context window failures and materially reduced hallucinations with grounding guardrails and QA regression checks
+    \item Led development of a Gemini-powered legal automation workflow integrating web intake, Gmail API ingestion, classification, and AI-assisted response drafting, reducing turnaround time from hours to 5 minutes
+    \item Created a prototype for containers and microservices to implement modular, API-based serving patterns for faster iteration, with documentation and written training modules to onboard new engineers
 \end{itemize}}}
 
 \vspace{3pt}
 
 % --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{2024--2025}{Business Manager}{Belle Epoque Patisserie}{London, UK}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+    \item Directed daily operations and shift execution, increasing monthly income by 18\% and average daily footfall by 15\% through improved staffing, service flow, and upsell routines
+    \item Owned hiring and onboarding (CV screening, interviews, training), reducing time to productivity by 30\% with structured training checklists and coaching
 \end{itemize}}}
+
+\end{itemize}
+
+% ============================================================
+%     PROJECTS
+% ============================================================
+
+\section{Projects}
+\vspace{1pt}
+\begin{itemize}
+
+\item{\cventry{}{FastAPI, Neo4j, Streamlit, Docker}{Hybrid Hospital RAG Chatbot}{}{}{\vspace{1pt}
+Built and shipped a 3-service hospital QA system with a Neo4j ETL pipeline loading 6 CSV datasets into a connected graph, fully Dockerised with Compose. Hybrid RAG pipeline routes queries across graph reasoning, semantic review retrieval, and operational lookup tools, supporting 14 benchmark query types.
+}}
 
 \vspace{3pt}
 
-% --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
-\begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-\end{itemize}}}
+\item{\cventry{}{MSc Dissertation}{Camera-LiDAR Sensor Fusion for Autonomous Driving}{}{}{\vspace{1pt}
+Trained and evaluated JMODT on the KITTI dataset, achieving 82\% mAP and 91.37\% MOTA; cross-dataset validation on NuScenes Mini reached 76\% mAP and 85\% MOTA. Built a repeatable evaluation loop to compare detection/tracking performance and analysed failure modes.
+}}
+
+\vspace{3pt}
+
+\item{\cventry{}{Genetic Algorithm, Ant Colony Optimisation}{Robotic Task Optimisation using TSP}{}{}{\vspace{1pt}
+Simulated robotic path planning as a Travelling Salesman Problem and benchmarked heuristic optimisers on instances up to 100 cities, achieving within 2\% of the optimality gap against an exact brute-force baseline.
+}}
 
 \end{itemize}
 
@@ -114,14 +133,14 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
+\item{\cventry{2023--2024}{MSc Robotics, AI \& Autonomous Systems (2:1, 70\%)}{City, University of London}{UK}{}{\vspace{1pt}
+Thesis: ``Study of Camera-LiDAR Fusion Techniques for Detection, Tracking \& Mapping in Autonomous Vehicles.'' Key modules: Machine Learning, Robotics, Imaging, Vision, AI for Engineering Design, Advanced Signal Processing.
 }}
 
 \vspace{3pt}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
+\item{\cventry{2019--2023}{BTech Electronics \& Communication Engineering (GPA: 8.77)}{Techno India University}{}{}{\vspace{1pt}
+Key modules: Computer Networks \& Network Theory, Digital Electronics \& Microprocessors.
 }}
 
 \end{itemize}
@@ -133,17 +152,7 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
-\end{itemize}
-
-% ============================================================
-%     PUBLICATIONS (optional)
-% ============================================================
-
-\section{Publications}
-\vspace{1pt}
-\begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
+\item Bengali (native), English (fluent), Hindi (fluent).
 \end{itemize}
 
 % ============================================================
@@ -153,7 +162,8 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Honors and Awards}
 \vspace{1pt}
 \begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item{\textbf{Associate Google Cloud Digital Leader (GCP)} -- Certification (2025).}
+\item{\textbf{Global STEM Master's Leadership Scholarship} -- City, University of London, awarded to top 2\% of applicants (2023).}
 \end{itemize}
 
 % ============================================================

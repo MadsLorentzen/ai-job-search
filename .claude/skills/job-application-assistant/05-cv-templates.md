@@ -43,18 +43,18 @@ Expected output: `Output written on main_<company>_<role>.pdf (2 pages, ...)`. A
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Srija Chakraborty - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.77]{geometry}
 \usepackage{import}
 
 % Personal data
-\name{[FIRST_NAME]}{[LAST_NAME]}
-\address{[YOUR_ADDRESS]}{}{}
-\phone[mobile]{[YOUR_PHONE]}
-\email{[YOUR_EMAIL]}
-\extrainfo{\href{[YOUR_LINKEDIN_URL]}{LinkedIn}, \href{[YOUR_GITHUB_URL]}{GitHub}}
+\name{Srija}{Chakraborty}
+\address{London, UK}{}{}
+\phone[mobile]{07546526104}
+\email{chakrabortysrija073@gmail.com}
+\extrainfo{\href{https://linkedin.com/in/chakraborty-srija}{LinkedIn}, \href{https://github.com/srija-chakraborty}{GitHub}}
 
 \begin{document}
 \makecvtitle
@@ -116,11 +116,11 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For AI Engineer / Agentic AI roles:**
+> AI Engineer with hands-on experience building production RAG pipelines and agentic AI workflows, currently at Nannie.ai. Skilled in Python, PyTorch, LangChain, and vector search, with a track record of cutting inference latency (p95 to 5s) and cost (75%) while reducing hallucinations through grounding guardrails and QA regression checks. Backed by an MSc in Robotics, AI & Autonomous Systems and hands-on cloud deployment experience (GCP, AWS, Docker, Kubernetes).
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For Cloud / DevOps Engineer roles:**
+> AI & Cloud Engineer with production experience deploying containerised, API-based AI services on GCP and AWS. Skilled in Docker, Kubernetes, Terraform, and CI/CD (Jenkins, GitLab), with a track record of building modular, API-based serving patterns for faster iteration. Combines infrastructure fundamentals with hands-on ML/AI systems experience, bringing a practical understanding of what production AI workloads need from the platforms they run on.
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 
