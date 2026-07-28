@@ -157,6 +157,7 @@ jobs:
       fail-fast: false
       matrix:
         tool:
+          - firecrawl-search
           - freehire-search
           - jobbank-search
           - jobdanmark-search

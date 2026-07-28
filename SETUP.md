@@ -26,7 +26,7 @@ On Windows, `py --version` is often the most reliable check. If your system expo
 
 ### Bun (for job search tools)
 
-The job portal CLIs (four Danish portals plus the country-agnostic `linkedin-search` and `freehire-search` tools) are written in TypeScript and run with Bun.
+The job portal CLIs (four Danish portals plus the country-agnostic `linkedin-search`, `freehire-search`, and `firecrawl-search` tools) are written in TypeScript and run with Bun.
 
 - macOS/Linux:
 
@@ -166,7 +166,7 @@ Run these from the repository root.
 - PowerShell:
 
 ```powershell
-$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
+$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search", "firecrawl-search")
 foreach ($tool in $tools) {
   Push-Location ".agents/skills/$tool/cli"
   bun install
@@ -176,12 +176,14 @@ foreach ($tool in $tools) {
 
 - Bash / zsh / Git Bash:
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search; do
+for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search firecrawl-search; do
   (cd .agents/skills/$tool/cli && bun install)
 done
 ```
 
-For `linkedin-search` and `freehire-search` the install is optional: both have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
+For `linkedin-search`, `freehire-search`, and `firecrawl-search` the install is optional: all three have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
+
+The hosted `firecrawl-search` service additionally needs a [Firecrawl](https://firecrawl.dev) API key and is **metered per result**, so it ships `enabled: false` and is meant to be invoked directly rather than run by `/scrape` — export `FIRECRAWL_API_KEY` and call it when you need it. (A [self-hosted](https://github.com/firecrawl/firecrawl) instance via `FIRECRAWL_API_URL` needs no key and no credits.) Every other portal skill works without credentials.
 
 If you're outside Denmark, you can generate an equivalent search skill for your local job board with `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
 

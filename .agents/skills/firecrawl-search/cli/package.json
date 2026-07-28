@@ -1,0 +1,20 @@
+{
+  "name": "firecrawl-cli",
+  "version": "1.0.0",
+  "description": "CLI for searching job postings on any job board via the Firecrawl v2 REST API — no per-portal parser, zero runtime dependencies. The hosted API requires FIRECRAWL_API_KEY; FIRECRAWL_API_URL may name a keyless self-host.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "firecrawl-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 30000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "1.3.14"
+  }
+}

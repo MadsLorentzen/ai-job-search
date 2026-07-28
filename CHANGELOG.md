@@ -18,6 +18,17 @@ per-file diff commands.
   source extension and a full compile command, so Typst (`typst compile`) registers the same
   way a custom LaTeX template does. Stock CV/cover letter templates stay LaTeX, unchanged.
 
+- **New country-agnostic portal skill: `firecrawl-search`** - searches the live web via the
+  [Firecrawl](https://docs.firecrawl.dev) v2 REST API instead of one specific board, so it covers
+  any job board in any market and language with no HTML parser to maintain (Firecrawl extracts
+  company, location, and posting date from each page). Scope per query with `--site`, `--country`,
+  and `--location`; `detail <url>` reads any posting in full. Fills the gap when a market has no
+  portal skill yet or a shipped one has broken on a markup change. It is the first portal skill
+  whose hosted service needs credentials (`FIRECRAWL_API_KEY`) and the first that is metered per
+  result, so it ships `enabled: false` as its steady state - a generalist you invoke directly
+  rather than one `/scrape` runs unattended - and stays zero-runtime-dependency (REST, no SDK).
+  A self-hosted instance via `FIRECRAWL_API_URL` needs no key and no credits.
+
 ## [1.0.0] - 2026-07-22
 
 First tagged release. This marks the framework as stable and gives forks a described

@@ -81,7 +81,7 @@ cd ai-job-search
 PowerShell:
 
 ```powershell
-$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
+$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search", "firecrawl-search")
 foreach ($tool in $tools) {
   Push-Location ".agents/skills/$tool/cli"
   bun install
@@ -92,12 +92,12 @@ foreach ($tool in $tools) {
 Bash / zsh / Git Bash:
 
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search; do
+for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search firecrawl-search; do
   (cd .agents/skills/$tool/cli && bun install)
 done
 ```
 
-For `linkedin-search` and `freehire-search` the install is optional: both have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
+For `linkedin-search`, `freehire-search`, and `firecrawl-search` the install is optional: all three have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
 
 ### 3. Set up your profile
 
@@ -188,7 +188,8 @@ ai-job-search/
 │   ├── jobindex-search/               # Jobindex.dk (Denmark)
 │   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
 │   ├── linkedin-search/               # LinkedIn public job listings (country-agnostic)
-│   └── freehire-search/               # freehire.me tech job aggregator (multi-market, REST API)
+│   ├── freehire-search/               # freehire.me tech job aggregator (multi-market, REST API)
+│   └── firecrawl-search/              # Firecrawl web search - any board, any market (API key, metered)
 ├── cv/
 │   └── main_example.tex               # moderncv LaTeX template
 ├── cover_letters/
@@ -297,10 +298,11 @@ Give it your local job board's URL. The command investigates the portal (search-
 
 Maintaining a fork adapted to your market or language? Add it to the [Community forks & adaptations](https://github.com/MadsLorentzen/ai-job-search/discussions/78) thread so others can find it.
 
-For **country-agnostic** starting points outside Denmark, the repo ships two portal skills alongside the Danish demos:
+For **country-agnostic** starting points outside Denmark, the repo ships three portal skills alongside the Danish demos:
 
 - **`linkedin-search`** — built on LinkedIn's public, unauthenticated `jobs-guest` endpoints. Field-agnostic, **zero runtime dependencies** (runs with just `bun`), and takes the search location as an explicit flag, so it works for any market out of the box (`-l "Berlin, Germany"`, `-l "Mumbai, Maharashtra, India"`, `-l "Remote"`, …). Intended for **personal use only** — automated access is against LinkedIn's Terms of Service, so keep volume low. See `.agents/skills/linkedin-search/SKILL.md`.
 - **`freehire-search`** — queries the [freehire.me](https://freehire.me) aggregator's public REST API (JSON, no API key). Tech-focused (software, data, engineering, DevOps, remote), multi-market via facet flags (`--region`, `--country`, `--remote`), and **zero runtime dependencies**. Unlike the HTML-scraping Danish portals, results come back structured (skills, seniority, category). The backend is MIT-licensed and [self-hostable](https://github.com/strelov1/freehire) — point `FREEHIRE_API_URL` at your own instance if you prefer. See `.agents/skills/freehire-search/SKILL.md`.
+- **`firecrawl-search`** — searches the live web with [Firecrawl](https://docs.firecrawl.dev) instead of one specific board, so it covers **any** job board in any market and language with **no HTML parser to maintain**: Firecrawl extracts company, location, and posting date from each page. Scope it per query with `--site jobs.lever.co,job-boards.greenhouse.io`, `--country`, and `--location`. Useful when your market has no portal skill yet, or when a shipped one has broken on a markup change — and `detail <url>` reads a posting from *any* source. **Unlike every other portal skill, the hosted service needs an API key** (`FIRECRAWL_API_KEY`) and is **metered per result** (2 credits per 10 requested results, rounded up; ~5 per enriched result), so it is meant to be **invoked directly** with a `--limit` you choose rather than run by `/scrape`, and ships `enabled: false` as its steady state. [Self-hostable](https://github.com/firecrawl/firecrawl) via `FIRECRAWL_API_URL`, which needs no key and no credits. Still **zero runtime dependencies** (REST, no SDK). See `.agents/skills/firecrawl-search/SKILL.md`.
 
 ### Salary benchmarking
 
