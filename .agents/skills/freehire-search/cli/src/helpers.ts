@@ -114,6 +114,10 @@ export interface FreehireJob {
  * A search result in the portal-skill contract shape. `id` is the public_slug
  * (what `detail <slug>` consumes) and `date` is the posting date; missing values
  * are `null`, never omitted. The extra facet fields are a permitted superset.
+ *
+ * `description` is the posting's full text in the format the search asked the API
+ * for — the agent search endpoint hydrates it server-side, so it arrives already
+ * rendered and is passed through verbatim rather than run through `cleanHtml`.
  */
 export interface JobResult {
   id: string
@@ -127,6 +131,7 @@ export interface JobResult {
   regions: string[]
   countries: string[]
   skills: string[]
+  description: string | null
 }
 
 /** A job detail: the search result plus the cleaned description and enrichment. */
@@ -153,6 +158,7 @@ export function toResult(j: FreehireJob): JobResult {
     regions: j.regions,
     countries: j.countries,
     skills: j.skills,
+    description: j.description || null,
   }
 }
 

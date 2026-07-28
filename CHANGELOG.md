@@ -13,6 +13,13 @@ per-file diff commands.
 
 ## [Unreleased]
 
+- **freehire-search: full descriptions come back with the search** - `search` now calls
+  freehire's agent search endpoint (`/api/v1/agent/jobs/search`), which serves each hit's
+  complete description instead of the search index's truncated preview. A 20-role search is
+  one request rather than 1 + 20 `detail` calls, and `/scrape`'s Step 2 no longer needs a
+  per-hit fetch for this portal. `--description-format markdown|text|html` (default
+  `markdown`) selects the rendering; `table` and `plain` output is unchanged.
+
 - **Custom templates: any compile-to-PDF toolchain (Typst, ...)** - `/add-template` no longer
   hardcodes a `lualatex`/`xelatex`/`pdflatex` engine enum. Custom templates now declare a
   source extension and a full compile command, so Typst (`typst compile`) registers the same

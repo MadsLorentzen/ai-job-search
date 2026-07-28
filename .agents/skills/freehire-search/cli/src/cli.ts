@@ -7,7 +7,7 @@
 // freehire.me — a personal project maintained best-effort (no formal SLA). Point
 // FREEHIRE_API_URL at a self-hosted freehire backend to swap the source.
 
-import { runSearch, type SearchOpts } from "./commands/search.js"
+import { runSearch, DESCRIPTION_FORMATS, type DescriptionFormat, type SearchOpts } from "./commands/search.js"
 import { runDetail, type DetailOpts } from "./commands/detail.js"
 import { baseUrl } from "./helpers.js"
 
@@ -81,6 +81,8 @@ SEARCH FLAGS
   --page <n>              1-indexed page. Default 1.
   --limit, -n <n>         Results per page (API limit). Default 25.
   --format <fmt>          json (default) | table | plain.
+  --description-format    markdown (default) | text | html — how each result's
+                          full description is rendered (json output only).
 
 FACET FILTERS (values from freehire.me's controlled vocabularies; comma = OR)
   --region <codes>        Macro-region: global, eu, us, apac, latam, cis, ...  e.g. --region eu,us
@@ -129,6 +131,18 @@ async function main(): Promise<number> {
   if (cmd === "search") {
     const fmt = (flags.format as string) || "json"
 
+    // Validated here rather than server-side: the API answers an unrecognized
+    // format with raw HTML instead of an error, so a typo would silently change
+    // the output rather than fail.
+    const descFmt = stringFlag(flags["description-format"]) ?? "markdown"
+    if (!DESCRIPTION_FORMATS.includes(descFmt as DescriptionFormat)) {
+      const supported = DESCRIPTION_FORMATS.join("|")
+      process.stderr.write(
+        JSON.stringify({ error: `--description-format must be one of ${supported}, got "${descFmt}"`, code: "BAD_ARG" }) + "\n",
+      )
+      return 1
+    }
+
     for (const name of ["jobage", "page", "limit"] as const) {
       if (flags[name] !== undefined) {
         const v = parseIntFlag(name, flags[name])
@@ -157,6 +171,7 @@ async function main(): Promise<number> {
       page: flags.page ? Math.max(1, parseInt(flags.page as string, 10)) : 1,
       limit: flags.limit ? Math.max(1, parseInt(flags.limit as string, 10)) : 25,
       format: (["json", "table", "plain"].includes(fmt) ? fmt : "json") as SearchOpts["format"],
+      descriptionFormat: descFmt as DescriptionFormat,
       regions: commaList(flags.region),
       countries: commaList(flags.country),
       cities: commaList(flags.city),
