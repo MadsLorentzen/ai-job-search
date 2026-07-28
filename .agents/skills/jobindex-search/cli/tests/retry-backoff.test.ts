@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { htmlFetch } from "../src/helpers";
+import { apiFetch, htmlFetch } from "../src/helpers";
 
 // The portal contract requires backoff on 429/5xx. These tests pin the retry
 // loop offline: a stubbed fetch counts attempts, and a stubbed setTimeout
 // fires immediately so the exhaustion case does not sleep through the real
-// 500ms -> 5s backoff schedule.
+// 500ms -> 5s backoff schedule. apiFetch and htmlFetch carry separate copies
+// of the loop, so both are exercised to keep them from drifting apart.
 
 const originalFetch = globalThis.fetch;
 const originalSetTimeout = globalThis.setTimeout;
@@ -54,6 +55,35 @@ describe("htmlFetch retry/backoff", () => {
     const state = stubFetch([() => new Response("", { status: 500 })]);
 
     await expect(htmlFetch("https://www.jobindex.dk/x")).rejects.toThrow(/500/);
+    expect(state.calls).toBe(7);
+  });
+});
+
+describe("apiFetch retry/backoff", () => {
+  test("retries a 429 and succeeds on the next attempt", async () => {
+    instantTimers();
+    const state = stubFetch([
+      () => new Response("", { status: 429 }),
+      () => new Response('{"ok":true}', { status: 200 }),
+    ]);
+
+    const data = await apiFetch<{ ok: boolean }>("/x");
+    expect(data.ok).toBe(true);
+    expect(state.calls).toBe(2);
+  });
+
+  test("does not retry a plain 4xx", async () => {
+    const state = stubFetch([() => new Response("", { status: 400 })]);
+
+    await expect(apiFetch("/x")).rejects.toThrow(/400/);
+    expect(state.calls).toBe(1);
+  });
+
+  test("gives up after the initial attempt plus six retries on persistent 5xx", async () => {
+    instantTimers();
+    const state = stubFetch([() => new Response("", { status: 500 })]);
+
+    await expect(apiFetch("/x")).rejects.toThrow(/500/);
     expect(state.calls).toBe(7);
   });
 });
