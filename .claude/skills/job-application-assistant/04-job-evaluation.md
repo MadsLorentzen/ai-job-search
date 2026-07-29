@@ -1,5 +1,5 @@
 ---
-framework_version: 1.1.0
+framework_version: 1.2.0
 ---
 
 # Job Evaluation Framework
@@ -32,7 +32,7 @@ A role that fails this gate is not scored and not drafted. Everything below appl
 
 ## Scoring Dimensions
 
-Evaluate each job posting against these five dimensions:
+Evaluate each job posting against these five dimensions, plus the two salary checks below:
 
 ### 1. Technical Skills Match (0-100)
 How well do the required/preferred skills align with the candidate's capabilities?
@@ -105,7 +105,11 @@ Does this role advance career goals and contain tasks that energize?
 - **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
 - **Professional development**: [YOUR_GROWTH_PRIORITIES]
 
-### 6. Salary Benchmark (Optional)
+### 6. Salary Floor Check (always run)
+
+If the posting states a salary or rate, compare it against the relevant minimum-wage/award standard for that country and role (e.g. Fair Work award rates in Australia). This is a **flag, not an exclude** — a posting that looks underpaid is surfaced to the user with a note, never silently dropped from consideration. This check does not depend on the benchmark tool below and always runs, even if that tool isn't configured.
+
+### 7. Salary Benchmark (Optional, requires the salary tool)
 
 If the salary lookup tool is configured (`salary_data.json` exists), look up the company:
 ```
@@ -140,6 +144,7 @@ Present the evaluation as:
 | Experience Match | XX/100 | [brief note] |
 | Behavioral Fit | XX/100 | [brief note] |
 | Location | PASS/FAIL | [brief note] |
+| Salary Floor | OK/FLAGGED | [brief note, e.g. "below Fair Work award for this role" - omit row if the posting states no salary/rate] |
 | Career Alignment | XX/100 | [brief note] |
 
 **Overall Score: XX/100** (weighted average of scored dimensions)
@@ -169,7 +174,7 @@ Present the evaluation as:
 - Behavioral Fit: 15%
 - Career Alignment: 30%
 
-(Location is pass/fail, not weighted)
+(Location is pass/fail, not weighted; Salary Floor is a flag, not weighted)
 
 ## Thresholds
 - **Strong Fit** (75+): Definitely apply, tailor everything

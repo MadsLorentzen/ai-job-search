@@ -47,8 +47,9 @@ Present the evaluation to the user with:
 1. **Skills match** - which required/preferred skills match vs. gaps
 2. **Experience match** - how work history maps to the role
 3. **Behavioral/culture match** - how behavioral profile fits the role/company culture
-4. **Salary benchmark** - salary index for the company (if available)
-5. **Overall fit score** and recommendation (strong fit / moderate fit / weak fit)
+4. **Salary floor flag** - whether the posting's stated salary/rate looks below the relevant minimum-wage/award standard (flag only, never an auto-exclude)
+5. **Salary benchmark** - salary index for the company (if available)
+6. **Overall fit score** and recommendation (strong fit / moderate fit / weak fit)
 
 After presenting the evaluation, ask the user:
 > "Should I proceed with drafting the CV and cover letter for this role?"

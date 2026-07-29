@@ -25,6 +25,14 @@ per-file diff commands.
   source extension and a full compile command, so Typst (`typst compile`) registers the same
   way a custom LaTeX template does. Stock CV/cover letter templates stay LaTeX, unchanged.
 
+- **Job evaluation: an always-on Salary Floor Check** - `04-job-evaluation.md` gains a new
+  scoring dimension (#6) that flags a posting whose stated salary/rate looks below the
+  relevant minimum-wage/award standard for that country and role. It's a flag, not an
+  exclude, needs no tool or configured salary data, and now surfaces in both `/apply`'s
+  evaluation output and `/rank`'s triage shortlist (previously the check existed but had
+  nowhere to show up in either command's presentation). `framework_version` bumped 1.1.0 ->
+  1.2.0 accordingly.
+
 ## [1.0.0] - 2026-07-22
 
 First tagged release. This marks the framework as stable and gives forks a described
