@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Kyrylo Lubynets
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Kyrylo Lubynets, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,70 +10,67 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
-
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+- **Name:** Kyrylo Lubynets
+- **Location:** Poulton-le-Fylde, UK (remote-only search, UK-wide)
+- **Languages:** English (B2-C1), Ukrainian (native), Russian (native)
+- **CV language:** English
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Employed, open to new opportunities
+- **LinkedIn headline:** "Software engineer"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **Master of Engineering in Intelligent Computer Management Systems** (2017-2019) - Odessa National Polytechnic University
+- **Bachelor of Engineering in System Engineering** (2013-2017) - Odessa National Polytechnic University
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Full Stack Developer** (January 2023 - Present) - **Ideal4Finance**
+  - Developed a new module in Laminas MVC; took part in design decisions and architecture
+  - Database structure, sprint planning/demos, unit tests
+  - Stack: PHP, Laminas, Docker, MySQL, PipeDrive, Companies House API, Microsoft Graph
+- **Full Stack Developer** (April 2022 - October 2022) - **Corposoft.io**
+  - Integrated Stripe payments and Shopify/Etsy/Ebay APIs; built Vue front-end components
+  - Stack: PHP, Laravel, Vue, Docker, MySQL
+- **PHP Web Developer** (August 2021 - April 2022) - **Golden Age**
+  - Customized an Orchid-based admin panel; built API access points and PHPUnit tests
+  - Stack: PHP, Laravel, Docker, MySQL, MongoDB
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** PHP (Laravel, Laminas/Zend, Symfony)
+- **Secondary:** JavaScript/Vue.js, MySQL, MongoDB
+- **Domain:** SME web/CRM platforms, fintech backend integrations, e-commerce integrations
+- **Software:** Docker, LAMP, DigitalOcean, Google Cloud Platform, PHPUnit, Orchid CMS
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- **Google Cloud Fundamentals: Core Infrastructure**, **Google Cloud Essentials**, **Baseline: Infrastructure Google Cloud**, **Build a Website on Google Cloud**, **Create and Manage Cloud Resources**, **Perform Foundational Infrastructure Tasks in Google Cloud**, **Managing Linux Systems**, **Learning How to Learn**
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+<!-- None -->
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+<!-- None -->
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+<!-- No formal assessment on file; see 02-behavioral-profile.md for CV-inferred traits -->
+- **Results-oriented** - self-described focus on business outcomes
+- **End-to-end ownership** - comfortable owning a feature from DB design through deployment
+- **Strengths:** Continuous learner (self-driven certifications alongside full-time work), broad feature ownership
+- **Growth areas:** No formal team-lead/management experience yet
+- **Thrives in:** Individual-contributor, remote-first environments with technical autonomy
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Growing as a software developer on an IC track, without moving into people management
+- Progressing toward a Lead Developer role - technical leadership and architecture ownership
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- Fintech: companies like Ideal4Finance
+- E-commerce / SME SaaS: companies like Corposoft.io, Golden Age
+- Open to any UK-remote company matching PHP/Laravel/Laminas skill set (no specific target list)
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Fewer than 25 days annual holiday
+- Salary below the £35k-£45k baseline
+- Not fully remote (current search is remote-only)
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

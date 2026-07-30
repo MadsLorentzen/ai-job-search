@@ -12,30 +12,49 @@ Structure answers as: **Situation** (context), **Task** (your responsibility), *
 
 Keep answers to 1-2 minutes. Be specific. End with what you learned or would do differently.
 
-## Ready-Made STAR Examples
+## STAR Candidates (Complete Manually)
 
-<!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
+<!-- Extracted from CV bullets - no detailed narrative or metrics available yet. Fill in S/T/A/R specifics before using in an interview. -->
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### New Laminas MVC module - Ideal4Finance
+**Source:** CV - Ideal4Finance, Full Stack Developer
+**What happened:** Developed a new module in Laminas MVC and took part in the design decisions/architecture behind it.
+**Why it matters:** Answers "tell me about a time you owned a feature end-to-end" or "tell me about a design decision you made" - directly supports the Lead Developer narrative.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### Stripe payment integration - Corposoft.io
+**Source:** CV - Corposoft.io, Full Stack Developer
+**What happened:** Set up and integrated the Stripe payment system into a client's Laravel application.
+**Why it matters:** Answers "tell me about integrating a third-party API/payment system" or "how do you handle sensitive data (payments)".
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### Admin panel customization on Orchid - Golden Age
+**Source:** CV - Golden Age, PHP Web Developer
+**What happened:** Customized an admin panel built on the Orchid package for one of Ukraine's largest jewelry manufacturers, including artisan console commands and Excel document handling.
+**Why it matters:** Answers "tell me about working with an unfamiliar framework/package" or "tell me about automating a manual process".
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Multi-marketplace integration - Corposoft.io
+**Source:** CV - Corposoft.io, Full Stack Developer
+**What happened:** Integrated Shopify, Etsy, and Ebay APIs into a single client platform.
+**Why it matters:** Answers "tell me about a time you worked with multiple external APIs" or "how do you handle integration complexity".
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
 

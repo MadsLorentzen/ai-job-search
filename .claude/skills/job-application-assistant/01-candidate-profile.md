@@ -4,61 +4,93 @@ framework_version: 1.0.0
 
 # Candidate Profile
 
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all sections will be filled with your actual information -->
-
 ## Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_ADDRESS]
-- **Phone:** [YOUR_PHONE]
-- **Email:** [YOUR_EMAIL]
-- **LinkedIn:** [YOUR_LINKEDIN_URL]
-- **GitHub:** [YOUR_GITHUB_URL]
-- **Languages:** [YOUR_LANGUAGES with proficiency levels]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **Constraints:** [YOUR_COMMUTE_OR_LOCATION_CONSTRAINTS]
+- **Name:** Kyrylo Lubynets
+- **Location:** Poulton-le-Fylde, UK
+- **Phone:** +44 7342675330
+- **Email:** dev.lubinets@gmail.com
+- **LinkedIn:** https://www.linkedin.com/in/mrlubynets/
+- **GitHub:** https://github.com/devlubinets
+- **Languages:** English (B2-C1), Ukrainian (native), Russian (native)
+- **Status:** Employed, open to new opportunities
+- **Constraints:** UK-wide search, remote only for now
 
 ## Education
 
 | Degree | Period | Institution | Key Topics |
 |--------|--------|-------------|------------|
-| [DEGREE] | [YEARS] | [INSTITUTION] | [TOPICS] |
+| Master of Engineering, Intelligent Computer Management Systems | 2017-2019 | Odessa National Polytechnic University | Intelligent control systems |
+| Bachelor of Engineering, System Engineering | 2013-2017 | Odessa National Polytechnic University | Systems engineering, automated process control, programming |
 
 ## Professional Experience
 
-### [JOB_TITLE] - [COMPANY] ([START] - [END])
-[LOCATION]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_1]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_2]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_3]
+### Full Stack Developer - Ideal4Finance (January 2023 - Present)
+- Development of database structure
+- Support of existing projects
+- Developed new module in Laminas MVC
+- Took part in design decisions; created architecture for new features
+- Performed sprint planning, demos, inter-team communications
+- Implemented unit tests
+- Technologies: PHP, Docker, MySQL, LAMP, Traefik, PipeDrive, Companies House API, Microsoft Graph, Laminas, Unleash feature toggle, Propel
 
-<!-- Add more roles as needed -->
+### Full Stack Developer - Corposoft.io (April 2022 - October 2022)
+- Development of database structure
+- Project deployment on DigitalOcean via SSH
+- Support of existing projects
+- Set up and integrated the Stripe payment system
+- Set up and integrated Shopify, Etsy, Ebay APIs
+- File handling with dropzone.js and spatie laravel-medialibrary
+- Built front-end components in Vue
+- File/gallery/user builder, archive preparation
+- Content access control via spatie laravel-permission
+- Technologies: PHP, Vue, Laravel, Docker, MySQL, LAMP
+
+### PHP Web Developer - Golden Age (August 2021 - April 2022)
+One of the largest jewelry manufacturers in Ukraine
+- Created data access points for API
+- Customized admin panel based on the Orchid package
+- Built artisan console commands for routine tasks
+- Wrote code for handling Excel documents
+- Created tests based on PHPUnit
+- Technologies: PHP, Laravel, Docker, MySQL, MongoDB, LAMP
 
 ## Independent Projects
-<!-- Projects outside of employment: freelance, open source, personal -->
-- **[PROJECT_NAME]**: [DESCRIPTION]
+- **Google Search Console API integration**: Google Cloud project using the Search Console API
 
 ## Technical Skills
 
-### Programming & ML
-- **[LANGUAGE]** ([PROFICIENCY]): [FRAMEWORKS_AND_LIBRARIES]
-- [OTHER_SKILLS]
+### Programming
+- **PHP** (professional): Laravel, Laminas/Zend, Symfony
+- **JavaScript**: Vue.js
+- **SQL**: MySQL, MongoDB
 
 ### Domain Expertise
-- [DOMAIN_1]
-- [DOMAIN_2]
+- SME web applications and CRM systems
+- Fintech backend integrations (Companies House API, PipeDrive)
+- E-commerce integrations (Stripe, Shopify, Etsy, Ebay)
 
 ### Software & Tools
-- [TOOL_LIST]
+- Docker, LAMP, DigitalOcean, Traefik
+- Microsoft Graph API, Unleash feature toggle, Propel ORM
+- spatie/laravel-medialibrary, spatie/laravel-permission, dropzone.js
+- PHPUnit, Orchid CMS
+- Google Cloud Platform
+
+## Certifications
+- **Google Cloud Fundamentals: Core Infrastructure**
+- **Google Cloud Essentials**
+- **Baseline: Infrastructure Google Cloud**
+- **Build a Website on Google Cloud**
+- **Create and Manage Cloud Resources**
+- **Perform Foundational Infrastructure Tasks in Google Cloud**
+- **Managing Linux Systems**
+- **Learning How to Learn: Powerful mental tools to help you master tough subjects**
 
 ## Publications
-<!-- List peer-reviewed publications, if any -->
-1. [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL]. [DOI_LINK]
+<!-- None -->
 
 ## Awards
-- [AWARD] - [EVENT] ([YEAR])
+<!-- None -->
 
 ## References
-- [NAME], [TITLE], [COMPANY] ([EMAIL], [PHONE])
-
 More references available upon request.

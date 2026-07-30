@@ -1,8 +1,7 @@
-%% Example CV - [YOUR_NAME]
+%% Example CV - Kyrylo Lubynets
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
 %% Compile with: lualatex main_example.tex
 %% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
@@ -24,18 +23,18 @@
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Kyrylo Lubynets - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Kyrylo}{Lubynets}
+\address{Poulton-le-Fylde, UK}{}{}
+\phone[mobile]{+44 7342675330}
+\email{dev.lubinets@gmail.com}
+\extrainfo{\href{https://www.linkedin.com/in/mrlubynets/}{LinkedIn}, \href{https://github.com/devlubinets}{GitHub}}
 
 \begin{document}
 
@@ -46,7 +45,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{Full stack PHP developer with experience building and maintaining CRM, fintech, and e-commerce web applications across Laravel, Laminas, and Symfony. Comfortable owning a feature end-to-end, from database design through to deployment, and has taken part in architecture and design decisions on production systems.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +55,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{PHP frameworks}: Laravel, Laminas/Zend, Symfony
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Front-end}: JavaScript, Vue.js
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Databases}: MySQL, MongoDB
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Integrations}: Stripe, Shopify, Etsy, Ebay, Companies House API, Microsoft Graph, PipeDrive
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Infrastructure}: Docker, LAMP, DigitalOcean, Traefik, Google Cloud Platform
 
 \end{itemize}
 
@@ -77,31 +76,31 @@
 \begin{itemize}
 
 % --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{2023--Present}{Full Stack Developer}{Ideal4Finance}{UK}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item Developed a new module in Laminas MVC; took part in design decisions and created architecture for new features
+    \item Designed and maintained database structure; implemented unit tests
+    \item Performed sprint planning, demos, and inter-team communications
+    \item Stack: PHP, Docker, MySQL, LAMP, Traefik, PipeDrive, Companies House API, Microsoft Graph, Laminas, Unleash, Propel
 \end{itemize}}}
 
 \vspace{3pt}
 
 % --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{2022}{Full Stack Developer}{Corposoft.io}{Remote}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+    \item Set up and integrated the Stripe payment system, and the Shopify, Etsy, and Ebay APIs
+    \item Deployed projects on DigitalOcean via SSH; built front-end components in Vue
+    \item Implemented file handling (dropzone.js, spatie laravel-medialibrary) and access control (spatie laravel-permission)
 \end{itemize}}}
 
 \vspace{3pt}
 
 % --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{2021--2022}{PHP Web Developer}{Golden Age}{Ukraine}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+    \item Customized an admin panel based on the Orchid package for one of Ukraine's largest jewelry manufacturers
+    \item Built artisan console commands, Excel document handling, and PHPUnit tests
 \end{itemize}}}
 
 \end{itemize}
@@ -114,14 +113,14 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
+\item{\cventry{2017--2019}{Master of Engineering in Intelligent Computer Management Systems}{Odessa National Polytechnic University}{Odessa, Ukraine}{}{\vspace{1pt}
+Intelligent control systems.
 }}
 
 \vspace{3pt}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
+\item{\cventry{2013--2017}{Bachelor of Engineering in System Engineering}{Odessa National Polytechnic University}{Odessa, Ukraine}{}{\vspace{1pt}
+Systems engineering, automated process control, programming.
 }}
 
 \end{itemize}
@@ -133,27 +132,19 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
+\item Ukrainian (native), Russian (native), English (B2-C1).
 \end{itemize}
 
 % ============================================================
-%     PUBLICATIONS (optional)
+%     CERTIFICATIONS
 % ============================================================
 
-\section{Publications}
+\section{Certifications}
 \vspace{1pt}
 \begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
-% ============================================================
-
-\section{Honors and Awards}
-\vspace{1pt}
-\begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item Google Cloud Fundamentals: Core Infrastructure; Google Cloud Essentials; Baseline: Infrastructure Google Cloud
+\item Build a Website on Google Cloud; Create and Manage Cloud Resources; Perform Foundational Infrastructure Tasks in Google Cloud
+\item Managing Linux Systems; Learning How to Learn
 \end{itemize}
 
 % ============================================================

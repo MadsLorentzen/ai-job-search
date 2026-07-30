@@ -115,12 +115,11 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 
 **Create 2-3 profile statement templates for your main role types:**
 
-<!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For PHP / Full Stack Developer roles:**
+> Full stack PHP developer with experience building and maintaining CRM, fintech, and e-commerce web applications across Laravel, Laminas, and Symfony. Comfortable owning a feature end-to-end, from database design through to deployment, and has taken part in architecture and design decisions on production systems. Uses tools like Claude Code to move faster on repetitive implementation work while keeping design decisions in hand.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For Lead Developer roles:**
+> Full stack PHP developer moving into technical leadership, with three years across fintech, e-commerce, and SME CRM platforms (Laravel, Laminas, Symfony). Has already taken part in architecture and design decisions rather than pure feature delivery, and is looking to extend that into ownership of a codebase's technical direction.
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 
