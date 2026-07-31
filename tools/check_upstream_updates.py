@@ -33,9 +33,15 @@ FRAMEWORK_FILES = [
     "AGENTS.md",
 ]
 
+UPSTREAM_REPO_SLUG = "MadsLorentzen/ai-job-search"
+
 def run_git(args: list[str]) -> tuple[int, str, str]:
     res = subprocess.run(["git"] + args, cwd=str(ROOT), capture_output=True, text=True)
     return res.returncode, res.stdout, res.stderr
+
+def get_remote_url(remote_name: str) -> str:
+    rc, stdout, _ = run_git(["remote", "get-url", remote_name])
+    return stdout.strip() if rc == 0 else ""
 
 def get_framework_version_from_text(text: str) -> str | None:
     if not text.startswith("---\n"):
@@ -75,6 +81,18 @@ def main() -> int:
         else:
             print("Error: No git remotes found.")
             return 1
+
+    # A fork's own 'origin' can never reveal upstream updates: warn so the
+    # user is not misled by the final '[OK]' line below. (Direct clones of
+    # the template repo have origin == the upstream repo, so no warning.)
+    if remote != args.remote and UPSTREAM_REPO_SLUG not in get_remote_url(remote):
+        print(
+            f"Warning: Remote '{remote}' does not point to the ai-job-search "
+            f"template repo ({UPSTREAM_REPO_SLUG}), so this check compares your "
+            f"fork against itself and will never report upstream updates. "
+            f"Add the template repo as a remote to track upstream changes, e.g.:\n"
+            f"  git remote add upstream https://github.com/{UPSTREAM_REPO_SLUG}.git"
+        )
 
     if not args.no_fetch:
         print(f"Fetching latest from remote '{remote}'...")
@@ -143,7 +161,7 @@ def main() -> int:
         print("Review these changes to see if they fit your personalized fork!")
         return 0
     else:
-        print("[OK] All framework files are up to date with upstream!")
+        print(f"[OK] All framework files are up to date with {ref}!")
         return 0
 
 if __name__ == "__main__":
