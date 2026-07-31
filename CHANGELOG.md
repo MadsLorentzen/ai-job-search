@@ -13,6 +13,16 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Added
+
+- **`/rank` now persists `strengths` and `gaps` into `seen_jobs.json`** - Step 2's scoring
+  agents already produced both arrays per job; Step 4 previously kept only `rank_score`,
+  `rank_verdict`, and `rank_date`, so the honest per-posting findings were printed once in
+  Step 5 and then discarded. Both arrays are now stored verbatim and replaced (never
+  accumulated) on `--all` re-ranks, so downstream consumers of `seen_jobs.json` can read
+  real triage findings instead of re-deriving them. See
+  [discussion #258](https://github.com/MadsLorentzen/ai-job-search/discussions/258).
+
 ### Security & privacy
 
 - **The gitignore guard now covers two more personal-data rules** - `security_guards.py`
