@@ -22,6 +22,16 @@ per-file diff commands.
   accumulated) on `--all` re-ranks, so downstream consumers of `seen_jobs.json` can read
   real triage findings instead of re-deriving them. See
   [discussion #258](https://github.com/MadsLorentzen/ai-job-search/discussions/258).
+- **`/upskill` aggregate mode now ingests `/rank`'s recorded gaps** - previously it only
+  read `job_search_tracker.csv` and *guessed* required skills from the `role`/`sector`/
+  `notes` columns, even though `/rank` had already fetched and scored postings that never
+  made it into the tracker. Aggregate mode now also reads ranked entries
+  (`rank_score >= 45`) from `job_scraper/seen_jobs.json`, dedupes them against tracker rows
+  on case-insensitive company+role, and prefers a job's recorded `gaps` over an inferred
+  skill list wherever both exist. The heatmap's Gap Source column now shows the
+  recorded-vs-inferred split per skill, and the report header states how many jobs came
+  from each source. Depends on #263 (`/rank` persisting `gaps`/`strengths`); see
+  [discussion #258](https://github.com/MadsLorentzen/ai-job-search/discussions/258).
 
 ### Security & privacy
 
