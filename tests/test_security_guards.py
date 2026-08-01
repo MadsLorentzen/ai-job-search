@@ -124,6 +124,23 @@ class GitignoreGuardTests(GuardRepoFixture):
         result = run_guards(self.root)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_generated_report_rules_are_required(self):
+        # Reports are generated from the user's tracker and application archive,
+        # so losing these ignore rules can expose personal job-search history.
+        sensitive_outputs = ["reports/", "upskill/*.md"]
+        remaining = [
+            rule
+            for rule in security_guards.REQUIRED_IGNORE_RULES
+            if rule not in sensitive_outputs
+        ]
+        self.write_gitignore(remaining)
+
+        result = run_guards(self.root)
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("reports/", result.stdout)
+        self.assertIn("upskill/*.md", result.stdout)
+
 
 class GitignoreNegationTests(GuardRepoFixture):
     def test_negation_reincluding_personal_data_fails(self):
