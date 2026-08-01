@@ -54,6 +54,25 @@ COMPOUND_PATTERNS = {"antal", "indeks", "løn", "gennemsnit", "medarbejdere"}
 ID_PATTERNS = {"id", "personnummer"}
 
 
+def parse_numeric_cell(value):
+    """Parse numeric Excel values, including localized string cells."""
+    if isinstance(value, (int, float)):
+        return float(value)
+    if not isinstance(value, str):
+        raise ValueError("not numeric")
+
+    text = value.strip().replace("\u00a0", " ").replace(" ", "")
+    if not text:
+        raise ValueError("not numeric")
+    if "," in text and "." in text:
+        text = text.replace(".", "").replace(",", ".")
+    elif "," in text:
+        if re.fullmatch(r"[+-]?\d+,\d{3}", text):
+            raise ValueError("ambiguous comma separator")
+        text = text.replace(",", ".")
+    return float(text)
+
+
 def header_matches(header, patterns):
     """Return True when a header contains a meaningful pattern match.
 
@@ -211,12 +230,12 @@ def parse_sheet(ws, sheet_label=None):
                 index_val = None
                 if cat["count_col"] < len(row) and row[cat["count_col"]] is not None:
                     try:
-                        count_val = int(row[cat["count_col"]])
+                        count_val = int(parse_numeric_cell(row[cat["count_col"]]))
                     except (ValueError, TypeError):
                         pass
                 if cat["index_col"] < len(row) and row[cat["index_col"]] is not None:
                     try:
-                        index_val = float(row[cat["index_col"]])
+                        index_val = parse_numeric_cell(row[cat["index_col"]])
                     except (ValueError, TypeError):
                         pass
                 # A count/index pair that is entirely empty for this row carries
@@ -228,7 +247,7 @@ def parse_sheet(ws, sheet_label=None):
                 if cat["value_col"] < len(row) and row[cat["value_col"]] is not None:
                     val = row[cat["value_col"]]
                     try:
-                        val = float(val)
+                        val = parse_numeric_cell(val)
                     except (ValueError, TypeError):
                         # Non-numeric standalone value (e.g. a free-text "Notes"
                         # column) is not salary data; skip it for this row.

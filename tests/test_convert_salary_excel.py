@@ -189,6 +189,46 @@ class DetectColumnTypeTests(unittest.TestCase):
         self.assertIn("salary_index", companies[0]["categories"])
         self.assertEqual(companies[0]["categories"]["salary_index"], {"index": 105.5})
 
+    def test_parse_sheet_accepts_comma_decimal_string_values(self):
+        # Locale-formatted Excel exports can carry numeric cells as strings.
+        # Danish decimal commas must not be silently dropped by float().
+        ws = FakeWorksheet([
+            ("Company", "Engineering Count", "Engineering Index"),
+            ("Example Corp", "12,0", "108,5"),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(
+            companies[0]["categories"]["engineering"],
+            {"count": 12, "index": 108.5},
+        )
+
+    def test_parse_sheet_accepts_danish_thousands_and_decimal_string(self):
+        ws = FakeWorksheet([
+            ("Company", "Salary Index"),
+            ("Example Corp", "1.234,5"),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(
+            companies[0]["categories"]["salary_index"],
+            {"index": 1234.5},
+        )
+
+    def test_parse_sheet_skips_ambiguous_single_comma_thousands_string(self):
+        # In an English-locale export, "1,234" is probably 1234, but in a
+        # decimal-comma locale it could be 1.234. Preserve the old safe-skip
+        # behavior instead of guessing and writing a 1000x-wrong salary value.
+        ws = FakeWorksheet([
+            ("Company", "Salary Index"),
+            ("Example Corp", "1,234"),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(companies[0]["categories"], {})
 
     def test_parse_sheet_pairs_interleaved_count_index_columns_by_name(self):
         ws = FakeWorksheet([
