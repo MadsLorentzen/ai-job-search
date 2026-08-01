@@ -1,4 +1,4 @@
-%% Example CV - [YOUR_NAME]
+%% Example CV - Hokam Singh
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
@@ -24,18 +24,18 @@
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Hokam Singh - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Hokam}{Singh}
+\address{Indore, India}{}{}
+\phone[mobile]{+91-7804010021}
+\email{hokamsingh07@gmail.com}
+\extrainfo{\href{https://linkedin.com/in/hokamsingh}{LinkedIn}}
 
 \begin{document}
 
@@ -46,7 +46,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{Senior backend engineer specializing in high-stakes domains: fintech, real-time gaming, and crypto/payments platforms. Builds high-throughput payment and wallet systems with strict concurrency guarantees, migrates analytics from OLTP to OLAP at scale, and ships real-time engagement infrastructure (chat, tournaments, matching engines) across multi-tenant SaaS platforms. Uses Claude Code for agentic, AI-first development to accelerate delivery without cutting corners on correctness.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +56,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{Backend}: Node.js, Express.js, NestJS, TypeScript
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Databases}: MongoDB, PostgreSQL, MySQL, Redis, Prisma, Sequelize
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Messaging}: Kafka, RabbitMQ, AWS SQS, BullMQ, AMQP
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Infrastructure}: AWS (IAM, EKS, EC2, S3, ELB, ASG), Docker, Kubernetes, Terraform
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Observability \& Tools}: Git, Swagger, Sentry, LogRocket, Datadog, Claude Code, Codex
 
 \end{itemize}
 
@@ -77,31 +77,38 @@
 \begin{itemize}
 
 % --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{2025--Present}{Senior Software Backend Engineer}{TrueIgTech (i-Gaming)}{Indore, India}{}{\vspace{1pt}
+\textit{PrizePlanet -- Multi-Brand iGaming Platform (B2C + B2B White-Label)}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item Rebuilt third-party game automation from full browser-driven sessions to a hybrid browser+API model, cutting per-action latency from 15--25s to \textasciitilde300ms and eliminating timeout/crash failures
+    \item Built a Redis-backed caching layer for high-traffic API paths (stale-while-revalidate, distributed refresh locking, cross-service invalidation), cutting primary-database load
+    \item Built and hardened the payment stack (Apple Pay, Google Pay, PayCom, Fyntek) with idempotent webhook handling and a lock-protected reconciliation worker
+    \item Migrated core analytics from PostgreSQL (OLTP) to ClickHouse (OLAP) using purpose-fit engines and pre-aggregated materialized views, cutting dashboard queries to sub-second lookups
+    \item Hardened casino bet-callback handlers for high-throughput concurrent play with row-level wallet locking and idempotent processing
+    \item Built a standalone real-time chat microservice, horizontally scalable via Redis pub/sub across Socket.io instances
 \end{itemize}}}
 
 \vspace{3pt}
 
 % --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{2023--2025}{Software Backend Engineer}{Codes For Tomorrow}{Indore, India}{}{\vspace{1pt}
+\textit{Verslan -- High-Frequency Crypto Trading Platform}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-\end{itemize}}}
-
-\vspace{3pt}
-
-% --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+    \item Engineered a scalable swap-matching engine using BullMQ job queues, reducing swap agreement latency by 65\% and handling 500+ concurrent swap requests
+    \item Integrated the BlockBee payment gateway with a fault-tolerant webhook system achieving 99.8\% transaction consistency
+    \item Built a real-time price sync processor consuming CoinMarketCap APIs, reducing data staleness to 500ms
+\end{itemize}
+\textit{BarBuddy -- Event-Based Food Ordering Platform}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+    \item Delivered a food ordering backend serving 500+ concurrent events and 50k+ active users, integrating Stripe payments and an in-app wallet
+    \item Implemented real-time order tracking with Firebase FCM push notifications, reducing order fulfillment time by 40\%
+    \item Optimized API performance with Redis caching, cutting database queries by 70\% and achieving sub-200ms response times
+\end{itemize}
+\textit{IC-Poker -- Real-Time Multiplayer Gaming Platform}
+\begin{itemize}
+    \item Built a distributed poker game engine supporting 1,000+ concurrent cash games and tournaments with sub-100ms action latency
+    \item Built Redis-based distributed locking achieving zero race conditions across parallel game instances, with crash recovery
+    \item Scaled WebSocket communication to 10,000+ events/second for gameplay, chat, and spectator dashboards
 \end{itemize}}}
 
 \end{itemize}
@@ -114,14 +121,8 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
-
-\vspace{3pt}
-
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
+\item{\cventry{2020--2023}{BCA (Bachelor of Computer Application)}{Vikram University Ujjain}{Mandsaur, Madhya Pradesh, India}{}{\vspace{1pt}
+Computer Applications.
 }}
 
 \end{itemize}
@@ -133,27 +134,17 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
+\item Hindi (native), English (professional).
 \end{itemize}
 
 % ============================================================
-%     PUBLICATIONS (optional)
+%     CERTIFICATIONS (optional)
 % ============================================================
 
-\section{Publications}
+\section{Certifications}
 \vspace{1pt}
 \begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
-% ============================================================
-
-\section{Honors and Awards}
-\vspace{1pt}
-\begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item JavaScript and NodeJS.
 \end{itemize}
 
 % ============================================================

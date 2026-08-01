@@ -44,9 +44,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Node.js, NestJS, Express.js, TypeScript, PostgreSQL/MongoDB/Redis, Kafka/RabbitMQ/BullMQ/SQS, payment/wallet systems, real-time systems (WebSockets/Socket.io), Docker/Kubernetes/AWS, production observability (Sentry, LogRocket, Datadog), AI-first/agentic development (Claude Code, Codex)
+**Moderate match areas:** Terraform/IaC at scale, ClickHouse/OLAP analytics, blockchain integration, system design at true staff-level scope
+**Weak match areas:** Frontend/UI development, ML/data science, mobile development, backend languages outside the Node/TypeScript ecosystem (Go, Python, Java, etc.)
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -58,9 +58,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** iGaming/casino platforms, fintech/payments, crypto trading platforms, real-time engagement systems (chat/tournaments), high-throughput backend/distributed systems
+**Moderate:** general enterprise SaaS, logistics/marketplace platforms, analytics/data-engineering-adjacent work (OLTP-to-OLAP migration)
+**Entry-level:** people-management/Engineering Manager roles (no formal management experience yet)
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -90,20 +90,23 @@ Does this role advance career goals and contain tasks that energize?
 | 40-59 | Decent job but doesn't build toward career goals |
 | 0-39 | Dead end or backwards step |
 
+**Target sectors (preference, not a filter):** Fintech, iGaming/real-money gaming, SaaS (enterprise/consumer), crypto/blockchain, payments. These are a *tiebreaker/bonus*, not an exclusion list — any role that matches the Technical Skills Match and Experience Match dimensions above (Node.js/NestJS/TypeScript backend, distributed systems, Redis/Kafka/queues, etc.) should be evaluated and scored normally regardless of sector. Do not downweight or skip a strong skills-match role just because its industry isn't in this list.
+
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Stay on the Senior Backend Engineer track, growing toward Staff/Principal Engineer (IC path, not management)
+- Keep working in high-stakes, high-scale domains (fintech, iGaming, crypto, payments) rather than pivoting to generic CRUD/admin backend work
+- Expand geographic reach, in priority order: remote-first roles anywhere > **US market roles (USD-denominated comp preferred)** > wider Europe/Denmark > relocation within India (Indore/Bengaluru/Ahmedabad)
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
-- Non-task factors: leadership style, department culture, company values, degree of autonomy
+- Tasks that energize: technical challenges, scale/concurrency problems, tasks tied directly to a business problem (latency, revenue, reliability)
+- Tasks that drain: *[not yet specified - refine as discovered through applications/interviews]*
+- Non-task factors: remote/flexible work, respected PTO, degree of autonomy over system design
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Currently employed (TrueIgTech), passively looking - no urgency, can be selective
+- **Flexibility**: Values remote work and honored PTO over strict in-office/always-on cultures
+- **Compensation preference**: USD-denominated pay preferred over INR, even for India-based/remote roles (e.g. global remote employer paying in USD beats a local INR offer at similar value); floor baseline is 15 LPA+ INR-equivalent
+- **Professional development**: Growth priority is deepening as an IC toward Staff/Principal, not moving into management
 
 ### 6. Salary Benchmark (Optional)
 

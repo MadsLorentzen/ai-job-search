@@ -115,12 +115,11 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 
 **Create 2-3 profile statement templates for your main role types:**
 
-<!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Senior Backend Engineer roles (fintech/iGaming/payments/crypto):**
+> Senior backend engineer specializing in high-stakes domains: fintech, real-time gaming, and crypto/payments platforms. Builds high-throughput payment and wallet systems with strict concurrency guarantees, migrates analytics from OLTP to OLAP at scale, and ships real-time engagement infrastructure (chat, tournaments, matching engines) across multi-tenant SaaS platforms. Uses Claude Code for agentic, AI-first development to accelerate delivery without cutting corners on correctness.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For Staff/Principal Engineer roles:**
+> Backend engineer with a track record of owning systems end-to-end in high-stakes domains (fintech, real-time gaming, crypto): rebuilding automation pipelines for order-of-magnitude latency gains, hardening payment and wallet paths against concurrency and idempotency failures, and migrating analytics infrastructure at scale. Looking to bring that same ownership to a Staff/Principal-scoped mandate.
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 

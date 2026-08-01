@@ -4,72 +4,75 @@
 
 ## Installed portal CLIs (primary for `/scrape`)
 
-`/scrape` discovers every portal skill under `.agents/skills/*/SKILL.md` and runs its CLI first. Shipped country-agnostic CLIs include `linkedin-search` and `freehire-search`; Danish demos and any skill you add with `/add-portal` are included the same way. You do **not** need a matching `site:` line below for those CLIs to run.
+`/scrape` discovers every portal skill under `.agents/skills/*/SKILL.md` and runs its CLI first. Shipped country-agnostic CLIs include `linkedin-search`, `freehire-search`, `remoteok-search`, and `weworkremotely-search`; Danish demos and any skill you add with `/add-portal` are included the same way. You do **not** need a matching `site:` line below for those CLIs to run.
 
 The `site:` query templates in this file are the **WebSearch fallback** — for portals without a CLI, company career pages, or when a CLI fails.
 
 ## Search Sites
 
 Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+- **linkedin.com/jobs** - LinkedIn job listings (filter: Remote / US / Europe / Denmark / India); also covered by `linkedin-search` CLI
+- **RemoteOK** - fully remote roles worldwide; covered by `remoteok-search` CLI (public JSON API, robots.txt explicitly permits Claude agents)
+- **We Work Remotely** - fully remote roles, categorized (programming/back-end/devops/etc.); covered by `weworkremotely-search` CLI (public RSS feeds, fully open robots.txt)
+- **Danish portals** (Jobindex, Jobbank, Jobdanmark, Jobnet) - covered by installed CLI skills; kept active for the Denmark/Europe search track
+- **freehire-search** - covered by installed CLI skill (country-agnostic)
+- No India-specific board installed - Naukri's robots.txt explicitly disallows Claude/AI-agent user-agents (declined on request); Instahyre, Glassdoor, and Himalayas are all behind an active Cloudflare bot-challenge; Built In disallows crawling its payments/financial-services categories specifically; CutShort and web3.career/cryptocurrencyjobs.co render listings client-side (no data in the raw HTML) or gate their API behind email signup. Use `site:naukri.com` WebSearch as the India fallback, or `/add-portal` if a workable board turns up later.
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for known target companies
 
 ## Query Categories
 
-Queries are grouped by priority. Each query should be combined with your location terms (e.g. your city, region, or metro area) where the site supports it.
+Queries are grouped by priority. Geographic priority order: **Remote (any) > US market (USD comp preferred) > Europe/Denmark > India (Indore, Bengaluru, Ahmedabad, or elsewhere)**.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: Senior Backend Engineer (Node.js/TypeScript)
 
-These match your strongest and most desired career direction.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
-```
-
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
+Strongest and most desired career direction.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:linkedin.com/jobs "Node.js Engineer" remote OR "United States"
+site:linkedin.com/jobs "Backend Engineer" NestJS remote
+site:linkedin.com/jobs "Software Engineer" TypeScript backend remote OR "United States"
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
+### Priority 2: Domain Expertise (Fintech, iGaming, SaaS, Crypto, Payments)
 
-Adjacent roles you could pivot into.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
-```
-
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
+Match domain expertise and target sectors. **This is a bonus tier, not an exclusion filter** - Priority 1, 3, and 4 already cover skills-matched roles regardless of sector, so a strong Node.js/NestJS/TypeScript backend role outside these sectors is just as valid a hit.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:linkedin.com/jobs "Backend Engineer" fintech OR payments remote OR "United States"
+site:linkedin.com/jobs "Backend Engineer" iGaming OR "real money gaming" remote OR Europe
+site:linkedin.com/jobs "Backend Engineer" crypto OR blockchain remote OR "United States"
+site:linkedin.com/jobs "Backend Engineer" SaaS remote
+site:remoteok.com backend fintech OR payments OR crypto
+site:weworkremotely.com backend fintech OR payments OR crypto
+```
+
+### Priority 3: Adjacent Roles
+
+Adjacent titles worth casting a wider net on.
+
+```
+site:linkedin.com/jobs "Full Stack Engineer" NestJS OR "Node.js" remote
+site:linkedin.com/jobs "Staff Engineer" OR "Principal Engineer" Node.js OR TypeScript remote OR "United States"
+```
+
+### Priority 4: Broader Technical
+
+Wider net for general Node.js/TypeScript backend roles.
+
+```
+site:linkedin.com/jobs "Node.js developer" remote
+site:linkedin.com/jobs "Software Engineer" Redis OR Kafka OR Kubernetes remote OR India
 ```
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+When evaluating results, classify by geographic tier rather than commute distance (remote-first search):
+- **Ideal:** Remote (any country); US market roles (USD-denominated comp preferred)
+- **Acceptable:** Europe / Denmark (remote or relocation, subject to visa sponsorship)
+- **Borderline:** Relocation within India outside Indore - Bengaluru, Ahmedabad (discuss before applying)
+- **Too far:** On-site-only roles requiring relocation with no sponsorship path and no remote option, outside India
 
 ## Date Filter
 

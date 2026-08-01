@@ -16,26 +16,33 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 <!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 1. Game Automation Rebuild (Performance & Reliability Engineering)
+**S:** Third-party game automation at TrueIgTech ran as full browser-driven sessions, taking 15-25s per action and prone to timeouts and crashes on long-running sessions.
+**T:** Redesign the automation approach to be fast and reliable without losing correctness.
+**A:** Rebuilt the pipeline into a hybrid browser+API model, using the browser only where strictly necessary and driving the rest through direct API calls.
+**R:** Cut per-action latency from 15-25s to ~300ms and eliminated the timeout/crash failure class entirely.
+**Use for:** "Tell me about your biggest technical challenge", "Describe a time you improved system performance"
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 2. Payment Stack Hardening (Fintech / Payments Reliability)
+**S:** PrizePlanet needed multiple payment rails (Apple Pay, Google Pay, card via PayCom, payouts via Fyntek) with money-correctness guarantees under real-world webhook unreliability.
+**T:** Own the payment integration and ensure it stays consistent even under duplicate/out-of-order webhook delivery and provider-side drift.
+**A:** Implemented idempotent webhook handling and a batched, lock-protected reconciliation worker that compares internal state against provider records and corrects drift.
+**R:** Payment stack runs in production with no known reconciliation-driven balance discrepancies reported.
+**Use for:** "Describe a project involving money/financial correctness", "How do you handle unreliable external systems?"
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 3. OLTP-to-OLAP Analytics Migration (Data/Analytics Architecture)
+**S:** Core analytics dashboards ran directly against PostgreSQL (OLTP), causing full table scans and slow load times as data volume grew.
+**T:** Move analytics to a system built for it without breaking existing dashboards.
+**A:** Migrated to ClickHouse (OLAP), designing the schema around purpose-fit engines (AggregatingMergeTree, SummingMergeTree, ReplacingMergeTree) with hourly pre-aggregated materialized views.
+**R:** Dashboard queries went from full table scans to sub-second lookups.
+**Use for:** "Tell me about a time you redesigned a data architecture", "How do you approach scaling a system that's outgrown its original design?"
+
+### 4. Distributed Concurrency Control in IC-Poker (Concurrency / Distributed Systems)
+**S:** A real-time multiplayer poker platform needed to run 1,000+ concurrent cash games and tournaments without race conditions corrupting game or wallet state.
+**T:** Build concurrency control that guarantees correctness under high parallel load with crash recovery.
+**A:** Implemented Redis-based distributed locks and atomic operations across the poker game engine, with a crash-recovery mechanism for interrupted operations.
+**R:** Achieved zero race conditions across parallel game instances while scaling WebSocket throughput to 10,000+ events/second.
+**Use for:** "Describe a concurrency bug you had to solve", "Tell me about building a system that has to be correct under load"
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
 
