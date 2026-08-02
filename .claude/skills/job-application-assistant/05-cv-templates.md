@@ -116,11 +116,11 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Machine Learning Engineer / Data Scientist roles:**
+> M.Sc. graduate in Statistics and Machine Learning from Linköping University, with hands-on experience across deep learning, NLP, and applied statistics. Master's thesis applied grammar-guided genetic programming to automatically optimize image-processing pipelines for industrial inspection, matching or beating a human-configured benchmark while running 2-20x faster. Combines strong theoretical grounding with delivery experience from a data science internship at Andreas Stihl AG, where independently-built NLP and BI pipelines fed directly into management reporting.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For IT/Systems Analyst roles (adjacent path):**
+> Junior IT professional with production experience in ERP systems, EDI integration, and release management at Schwarz IT / Tailwind Shipping Lines, combined with an M.Sc. in Statistics and Machine Learning. Brings applied data science skills alongside hands-on enterprise systems delivery, comfortable owning technical sub-projects independently from requirements through to rollout.
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 

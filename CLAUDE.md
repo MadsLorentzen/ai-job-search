@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Christian Kammerer
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Christian Kammerer, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,70 +10,70 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
-
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+- **Name:** Christian Kammerer
+- **Location:** Linköping, Sweden (open to relocating within Germany, Sweden, Denmark, Austria, Switzerland, the Netherlands, and South Tyrol/Northern Italy; prioritizes a livable city or a town within a 30-minute commute of one)
+- **Languages:** German (native), English (native/bilingual; TOEFL iBT 114/120, Dec 2023), Swedish (B2)
+- **CV language:** English by default; German for German-language postings
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** M.Sc. in Statistics and Machine Learning essentially complete (coursework and thesis done, pending grading of one final lab submission). Not currently employed (last role ended July 2024).
+- **Nationality:** German (EU citizen — full work rights across the EU/EEA)
+- **LinkedIn headline:** (suggested — verify/update against the actual profile) "M.Sc. Statistics & Machine Learning | Data Science, NLP & Computer Vision"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **M.Sc. in Statistics and Machine Learning** (2024-2026, complete pending final lab grade) - Linköpings Universitet, Sweden
+  - Thesis: "Grammar-Guided Genetic Programming for Automatic Optimization of Image Processing Pipelines in Industrial Inspection" — matched/beat a human-configured benchmark while running 2-20x faster; graded B
+  - Topics: Deep Learning, NLP, Graph Models, Reinforcement Learning, Big Data (PySpark), Bayesian & frequentist statistics
+- **B.Sc. in Computer Science (Medieninformatik)** (2019-2023) - Media University, Stuttgart, Germany
+  - Thesis: "Predicting Return Shipments in E-Commerce – A Basket Based Approach"
+  - Final grade 1.7 (210 ECTS)
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Lab Assistant** (2025/08 - 2026/01) - **Linköpings Universitet** (Linköping, Sweden)
+  - Supervised and corrected lab assignments in Machine Learning and Advanced Programming in R
+- **IT Business Consultant, Junior Professional** (2023/11 - 2024/07) - **Schwarz IT / Tailwind Shipping Lines** (Neckarsulm / Hamburg, Germany)
+  - Owned release management and EDI integrations for ports/terminals and agencies; accompanied IT security standards implementation within the ERP software
+  - Independently managed Import Control System (ICS1) and led a sub-project on ICS2, building a new interface with an external service provider
+  - Achievement: enabled real-time container-move updates reflected on a live customer tracking page, with significant labor reduction for the container/equipment team
+- **Data Scientist - Internship** (2021/10 - 2022/03) - **Andreas Stihl AG** (Waiblingen, Germany)
+  - Designed and built the Zero-Level Support report in Power BI, owning data modeling end-to-end in Google BigQuery
+  - Analyzed support tickets with NLP (RegEx/PoS-tagging/classifiers, clustering via k-means/t-SNE/HDBSCAN)
+  - Achievement: findings compiled into a yearly report presented to middle management
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Python, Machine Learning (deep learning, classical ML, NLP), applied statistics (Bayesian & frequentist)
+- **Secondary:** R, Java, SQL, PySpark, Google BigQuery, Power BI, genetic/evolutionary algorithms
+- **Domain:** E-commerce/logistics analytics, ERP/EDI systems, industrial inspection & image processing pipelines, customer-support analytics
+- **Software:** Jupyter, Pandas, NumPy, TensorFlow, scikit-learn, Power BI, BigQuery, Jira/Confluence
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+[none found]
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+[none found]
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+[none found]
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+<!-- Based on self-reported preferences plus formal feedback from two employer reference letters (Andreas Stihl AG, Schwarz IT) -->
+- **Independent & analytical** - rated very strong on self-direction and analytical judgment across two employer references
+- **Fast learner** - rapid ramp-up on new technical domains, per both employer references
+- **Strengths:** ownership of ambiguous technical problems end-to-end, resilience under workload, rigorous analytical thinking
+- **Growth areas:** rated relatively more reserved on relationship-building/empathy in formal feedback; consciously invests in stakeholder engagement (e.g., running customer workshops) to offset this
+- **Thrives in:** flat-hierarchy, high-autonomy teams with a genuinely good working culture, working on cutting-edge technology, in-house/product settings rather than pure consulting
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Building with cutting-edge ML/AI technology (deep learning, NLP, computer vision)
+- Work with a genuine positive impact on people, not just shareholder value (a bonus, not a hard requirement)
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- IG Metall-covered industries (automotive, aerospace, industrial engineering, electronics): preferred for strong union representation and benefits
+- Open to other sectors given a strong overall package
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Pure consulting roles (billable-hours client delivery as the core of the job)
+- Rigid, hierarchical structures with low individual autonomy
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

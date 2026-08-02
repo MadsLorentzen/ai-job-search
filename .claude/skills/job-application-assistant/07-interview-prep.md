@@ -14,44 +14,49 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 ## Ready-Made STAR Examples
 
-<!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
+### 1. Support Ticket Analysis & Reporting (Andreas Stihl AG, 2021-22)
+**S:** Stihl's customer support team had large volumes of tickets with no structured way to see recurring issues or emerging complaint trends.
+**T:** As data science intern, apply NLP to the ticket backlog to surface priorities for management.
+**A:** Cleaned and normalized ticket text with RegEx and rule-based classifiers, applied clustering and topic extraction to group tickets thematically, and built Power BI dashboards on top of data models designed in BigQuery, shaped around requirements from customer workshops.
+**R:** The clustering output fed into a yearly report presented to middle management, giving leadership a structured view of ticket themes and volumes for the first time.
+**Use for:** "Walk me through a data project end to end", "How do you make technical analysis useful to leadership?"
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 2. Real-Time EDI Integration (Schwarz IT / Tailwind Shipping Lines, 2023-24)
+**S:** Tailwind's container/equipment team relied on manual processes for tracking moves, and customers had no real-time shipment visibility.
+**T:** Coordinate between the shipping department and developers on ERP development and integrate EDI partners (agencies, ports, customs authorities).
+**A:** Accompanied ERP development, coordinated requirements between the equipment team and developers, implemented EDI integrations, and provided first-level support during rollout.
+**R:** Significantly reduced manual labor for the container/equipment team and enabled real-time container-move updates that fed a live customer tracking page.
+**Use for:** "Tell me about a project that improved efficiency", "Describe cross-functional work with developers"
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 3. Genetic Programming for Industrial Inspection Pipelines (Master's Thesis, 2026)
+**S:** Configuring image-processing pipelines for industrial inspection is normally manual, slow, and expert-dependent.
+**T:** Propose and implement a grammar-guided genetic programming approach to automatically configure and optimize these pipelines.
+**A:** Designed a grammar constraining the search to valid pipeline configurations, then used genetic programming to evolve configurations against a target performance metric, benchmarked against a human-configured baseline.
+**R:** Matched or beat the human benchmark on target performance while running 2-20x faster; thesis graded B.
+**Use for:** "Tell me about a research/optimization project", "How do you validate that a solution actually works?"
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 4. Social Listening Pipeline (Andreas Stihl AG, 2021)
+**S:** Stihl wanted structured insight into customer sentiment across Amazon, dealer sites, and forestry forums, with no existing process for it.
+**T:** Build a pipeline to collect and analyze this feedback.
+**A:** Built web crawlers, processed review/forum text, applied topic extraction and sentiment analysis to surface patterns.
+**R:** Worked technically, but to my knowledge was never adopted into a real decision-making process afterward - a lesson in securing an owner and a concrete next step before building, not after.
+**Use for:** "Tell me about a project that didn't have the impact you hoped", "What would you do differently?"
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
 
 ## Common Tough Questions
 
-### "Why did you leave [previous company]?"
-> [PREPARE YOUR ANSWER - be honest, forward-looking, no negativity about former employer]
+### "Why did you leave Schwarz IT / Tailwind Shipping Lines?"
+> Left voluntarily in July 2024 to focus fully on the M.Sc. in Statistics and Machine Learning and the thesis work that followed - a deliberate step to complete the transition into a machine learning-focused career rather than staying in an adjacent IT/ERP role long-term.
 
 ### "You don't have [specific skill/experience]."
-> [PREPARE YOUR ANSWER - acknowledge the gap, bridge to adjacent experience, show willingness to learn]
+> Acknowledge the gap directly, then point to a documented pattern rather than just asserting it: both employer reference letters (Andreas Stihl AG, Schwarz IT) independently rate fast ramp-up on unfamiliar technical topics as a strength. Back it with a concrete example, e.g. learning grammar-guided genetic programming from scratch for the master's thesis and reaching a working, benchmark-beating implementation.
 
 ### "Where do you see yourself in 5 years?"
-> [PREPARE YOUR ANSWER - show ambition aligned with the role's growth path]
+> Growing into a senior Machine Learning Engineer / Data Scientist role with deep specialization in NLP or computer vision, ideally still in-house on a product team building things with genuine user impact rather than in a pure consulting capacity.
 
 ### "What's your biggest weakness?"
-> [PREPARE YOUR ANSWER - genuine weakness with concrete mitigation strategy]
+> Interpersonal rapport-building is rated moderate rather than strong in formal employer feedback, relative to strong/very-strong ratings on analytical work and independence. Mitigation: consciously invests in direct stakeholder engagement rather than relying on it coming naturally - e.g., running customer workshops to shape dashboard requirements at Stihl rather than working from assumptions.
 
 ### "Why this company specifically?"
 > Customize per company. Must reference: specific projects, company values, market position, or team structure. Never give a generic answer.

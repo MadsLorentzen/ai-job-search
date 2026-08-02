@@ -108,3 +108,7 @@ The cover letter is **not a CV repetition**. It should be forward-looking:
 - Default to the language of the job posting
 - Cover letters in the posting's language should feel natural, not translated
 - Slightly warmer, more personal tone may be acceptable in some languages
+
+## Patterns Observed in Past Applications
+
+*[Inferred from historic Porsche/Dürr applications, 2021 - review before relying on this]* When researching a target company, lead with specific, checkable facts (named products, acquisitions, records, milestones) rather than general praise - this candidate has consistently favored concrete company knowledge over flattery.

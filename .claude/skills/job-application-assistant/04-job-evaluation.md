@@ -44,9 +44,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Python, machine learning (deep learning, classical ML, NLP), applied statistics (Bayesian & frequentist), data pipelines (Google BigQuery, PySpark), image-processing pipeline optimization (thesis-level)
+**Moderate match areas:** R, Java, SQL, BI/dashboarding (Power BI), ERP/EDI systems, genetic/evolutionary algorithms, computer vision (thesis-level exposure, not production experience)
+**Weak match areas:** Production MLOps/deployment at scale, cloud infrastructure beyond BigQuery, formal software engineering practice beyond coursework
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -58,9 +58,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** Data science/ML internship work; academic ML/NLP/computer-vision project work (thesis, coursework)
+**Moderate:** ERP/logistics/IT-consulting domain work (transferable analytical and delivery skills, not core ML)
+**Entry-level:** Full ML Engineer / Data Scientist roles — limited full-time ML-titled experience beyond one internship and academic project work
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -91,19 +91,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Move into a Machine Learning Engineer / Data Scientist / Computer Vision / NLP-focused role
+- Work with cutting-edge technology, ideally on products with genuine user or societal impact rather than pure shareholder-value optimization (a bonus, not a hard requirement)
+- Avoid pure consulting positions
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
-- Non-task factors: leadership style, department culture, company values, degree of autonomy
+- Tasks that energize: hands-on ML/DL model building, NLP, computer vision, research-driven optimization problems, autonomous ownership of a technical problem end-to-end
+- Tasks that drain: pure client-facing consulting/billable-hours delivery, work disconnected from real product impact, rigid hierarchical oversight
+- Non-task factors: flat hierarchy, high autonomy, genuinely good team culture, in-house/product-team setting
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Targeting €55k minimum, €60k+ preferred, €70k aspirational; M.Sc. essentially complete
+- **Flexibility**: Open to relocating within Germany, Sweden, Denmark, Austria, Switzerland, the Netherlands, and South Tyrol (Northern Italy); prioritizes livable cities or towns within a 30-minute commute of one
+- **Professional development**: Prioritizes staying current with cutting-edge ML/AI methods; IG Metall-covered industries (automotive, aerospace, industrial engineering, electronics) preferred for union representation and benefits, though open elsewhere for a strong overall package
 
 ### 6. Salary Benchmark (Optional)
 
