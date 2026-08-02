@@ -85,7 +85,8 @@ def main() -> int:
     # A fork's own 'origin' can never reveal upstream updates: warn so the
     # user is not misled by the final '[OK]' line below. (Direct clones of
     # the template repo have origin == the upstream repo, so no warning.)
-    if remote != args.remote and UPSTREAM_REPO_SLUG not in get_remote_url(remote):
+    # GitHub serves repo paths case-insensitively, so compare lowercased.
+    if remote != args.remote and UPSTREAM_REPO_SLUG.lower() not in get_remote_url(remote).lower():
         print(
             f"Warning: Remote '{remote}' does not point to the ai-job-search "
             f"template repo ({UPSTREAM_REPO_SLUG}), so this check compares your "

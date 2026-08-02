@@ -98,6 +98,22 @@ class DirectCloneFallbackTests(UpstreamCheckerRepoFixture):
         self.assertNotIn("does not point to the ai-job-search template repo", result.stdout)
         self.assertIn("up to date with origin/master", result.stdout)
 
+    def test_clone_with_lowercased_template_url_falls_back_without_fork_warning(self):
+        # GitHub serves repo paths case-insensitively, so a clone from
+        # https://github.com/madslorentzen/ai-job-search is still the template.
+        subprocess.run(
+            ["git", "remote", "set-url", "origin", TEMPLATE_URL.lower()],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+        )
+
+        result = self.run_checker("--remote", "upstream")
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Falling back to 'origin'", result.stdout)
+        self.assertNotIn("does not point to the ai-job-search template repo", result.stdout)
+
 
 class UpstreamRemotePresentTests(UpstreamCheckerRepoFixture):
     def setUp(self):
