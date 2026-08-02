@@ -57,7 +57,11 @@ class UpskillSkillSpec(unittest.TestCase):
         sections = _sections(SKILL.read_text(encoding="utf-8"))
         step3 = sections.get("Step 3: Pass 1 — Hard Skill Diff", "")
         self.assertIn("case-insensitive company + role", step3, "Step 3 must specify the dedupe key")
-        self.assertIn("_tracker_keys", step3, "Step 3 must point at the existing dedupe implementation, not a new one")
+        self.assertIn(
+            "/notion-sync",
+            step3,
+            "Step 3 must cite the upstream precedent for the dedupe key, not a fork-only file",
+        )
         self.assertIn(
             "Recorded gaps beat inferred skills",
             step3,
