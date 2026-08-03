@@ -93,7 +93,16 @@ command (see its SKILL.md — do not guess flags) to extract **key requirements*
 **application deadline**, and a brief description snippet.
 
 **From WebSearch results:** Use `WebFetch` on the posting URL and extract the same
-fields manually.
+fields manually. If it returns HTTP 403, retry with browser headers via curl per
+`.claude/skills/job-application-assistant/09-web-research.md` before giving up — most
+bank and corporate sites reject WebFetch's user agent while serving browsers normally.
+
+**Store a URL that actually resolves to the posting.** A listing-page URL with a
+`#fragment` appended (`.../jobs/ciso/#ikerian`) is not a posting: it fetches fine and
+returns unrelated job titles, which makes every later `/rank` and `/apply` run fail on
+that entry. When WebSearch only yields a listing page, search the employer's own careers
+site for the role and store that URL instead, or drop the candidate rather than saving a
+fragment link.
 
 For every candidate:
 - Skip if the URL or company+title combo already exists in `seen_jobs.json`

@@ -21,6 +21,23 @@ per-file diff commands.
   during #275 (vetoes reported in console output but `language_gate: null` on every persisted
   entry). Mirrors the existing `gaps`/`strengths` pinning pattern. No behavior change.
 
+### Fixed
+
+- **A `WebFetch` 403 is no longer treated as a dead posting** - `WebFetch` sends a bot user
+  agent, and many bank and corporate sites answer it with HTTP 403 while serving the same
+  page to a browser normally. Every command read that as "page unavailable" and degraded
+  silently instead of failing loudly: `/rank` marked live postings `expired`, `/apply` fell
+  back to search-result snippets or to vague cover-letter prose, and `/scrape` stored
+  listing-page `#fragment` URLs that fetch fine but return unrelated jobs, breaking every
+  later run on that entry. New `09-web-research.md` (`framework_version` 1.0.0) is the
+  single reference: the trust boundary, a curl browser-header retry with a tag-stripping
+  extractor, a four-step escalation order, the login-wall case, why the employer's own
+  careers posting beats an aggregator listing (the requisition ID and the grade survive
+  there), and the rule that a search snippet is a lead rather than a source. Wired into
+  `/apply`, `/rank`, `/interview`, `/outcome`, `/notion-sync`, the job-scraper skill, and
+  writing-style rule 5 (`03-writing-style.md` 1.1.0 to 1.2.0).
+>>>>>>> c8b2364 (fix(web-research): stop treating a WebFetch 403 as a dead posting)
+
 ## [1.3.0] - 2026-08-03
 
 ### Added

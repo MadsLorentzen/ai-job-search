@@ -4,8 +4,8 @@ description: >
   Assists with job applications: evaluating job postings, tailoring CVs, writing cover letters,
   and preparing for interviews. Triggers on keywords like: job posting, job application, CV,
   cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling
-allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Edit, Write, AskUserQuestion
-framework_version: 1.1.0
+allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Bash, Edit, Write, AskUserQuestion
+framework_version: 1.2.0
 ---
 
 # Job Application Assistant
@@ -17,9 +17,9 @@ framework_version: 1.1.0
 When the user provides a job posting (URL or text), follow this workflow:
 
 ### Step 1: Research & Evaluate Fit
-- Fetch the job posting content (use WebFetch for URLs)
+- Fetch the job posting content (use WebFetch for URLs). **A 403 is not a dead end** - follow the escalation order in `09-web-research.md` before concluding a page is unavailable, and prefer the employer's own careers posting over an aggregator listing
 - Analyze the posting for required competencies, keywords, and priorities
-- Research the company (website, LinkedIn, mission, recent news)
+- Research the company (website, LinkedIn, mission, recent news), per `09-web-research.md`
 - Score the posting against the candidate's profile using the framework in `04-job-evaluation.md`
 - Present the evaluation table and verdict
 - Suggest whether the candidate should call the employer before applying (see `04-job-evaluation.md` for guidance)
@@ -57,6 +57,7 @@ When the user provides a job posting (URL or text), follow this workflow:
 | `06-cover-letter-templates.md` | LaTeX cover letter structure and tailoring rules |
 | `07-interview-prep.md` | STAR examples, tough questions, roleplay guidelines |
 | `08-application-forms.md` | Portal free-text fields: self-introduction, project entries, character-limited pitches |
+| `09-web-research.md` | Fetching postings and company pages: trust boundary, the WebFetch 403 fallback, escalation order, claim verification |
 
 ---
 
