@@ -29,6 +29,30 @@ per-file diff commands.
   `location` veto so a re-read of the file (or a future debugging session) can recover why a
   job did or didn't make the shortlist.
 
+### Fixed
+
+- **CV date fields now use ASCII hyphens, so the PDF text layer extracts cleanly** - the
+  stock template wrote date ranges as `[YYYY--YYYY]`, and on the repo's mandated `lualatex`
+  toolchain the `--` en-dash ligature extracts from the PDF as U+FFFD (`�`). The stock
+  template therefore failed the ATS checklist's own "no `�` replacement characters" item on
+  *every* date field, and did so silently: the rendered page looks correct, and no existing
+  check inspected the extracted text. `cv/main_example.tex` now uses `[YYYY-YYYY]` and
+  `[YYYY-Present]`, and `05-cv-templates.md` documents the failure mode and the check that
+  catches it (`framework_version` 1.3.0 to 1.4.0). The two-page layout budget is unaffected.
+
+  **Fork reconciliation note.** The five changed lines in `cv/main_example.tex` are the
+  `\cventry` date fields - three under Professional Experience, two under Education -
+  precisely the lines every fork personalizes. Rebasing forks should expect conflicts there,
+  resolve them in favour of *their own* dates, and then apply the same `--` to `-` change by
+  hand. To find remaining instances across your own CV variants:
+
+  ```
+  grep -rn '\\cventry{[^}]*--' cv/
+  ```
+
+  Verify afterwards with `pdftotext -layout <file>.pdf - | grep -c '�'`, which should
+  return `0`.
+
 ### Security & privacy
 
 - **The gitignore guard now covers every personal-output rule** - `security_guards.py`
