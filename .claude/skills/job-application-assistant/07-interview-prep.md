@@ -4,8 +4,6 @@ framework_version: 1.0.0
 
 # Interview Preparation Guide
 
-<!-- SETUP: STAR examples are personalized by running /setup based on your actual experience -->
-
 ## STAR Format
 
 Structure answers as: **Situation** (context), **Task** (your responsibility), **Action** (what you did), **Result** (outcome).
@@ -14,44 +12,63 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 ## Ready-Made STAR Examples
 
-<!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
+### 1. Automated RAG evaluation pipeline (technical depth / automation / initiative)
+**S:** During my AI Testing internship at VisionMatrix Technology (Hong Kong), the team was evaluating the quality of the RAG system/agent behind an online ordering platform.
+**T:** Build an automated way to evaluate the agent's answers instead of relying on manual spot-checks.
+**A:** Deployed the API server locally in containers with varying environment variables to reproduce different configurations; set up a local LLM server to generate test cases; applied both fixed rules and an LLM-based evaluation framework as the judge; generated an HTML report from the results.
+**R:** Delivered a working automated evaluation pipeline plus an HTML report summarizing results, with recommendations for improvements and future test cases.
+**Use for:** "Tell me about a technical project", "Have you automated anything?", "What have you built with LLMs?"
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 2. UAT of a speech-to-text system and AI avatar (quality mindset / attention to detail)
+**S:** As a UAT Testing Intern at VisionMatrix's Shenzhen office, the company was shipping a speech-to-text (STT) system and an AI avatar for an online ordering platform.
+**T:** Plan and execute user-acceptance tests so that problems reached developers as reproducible findings.
+**A:** Planned and executed the tests; drafted a "hot words" list for the STT system; recorded reproducible bugs in the ordering system; reviewed backend source code and wrote data-processing scripts to verify that content retrieved from the vector database via RAG matched the tool-calling interface.
+**R:** Bugs were logged reproducibly for the dev team, and retrieval-versus-interface mismatches were surfaced systematically by script rather than by chance.
+**Use for:** "Tell me about your attention to detail", "Experience with testing?", "Working with another team/office?"
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 3. Object detection data labeling and model benchmarking (ML fundamentals / evaluation methodology)
+**S:** During the Shenzhen internship, the team was training an object detection model on video frames.
+**T:** Prepare training data and assess which open-source object detection models were effective for the task.
+**A:** Labeled video frames for training; ran and compared the effectiveness of multiple open-source object detection models.
+**R:** Produced a labeled training dataset and an effectiveness comparison across candidate models.
+**Use for:** "Any hands-on ML experience?", "How do you evaluate models?", "Is data quality important?"
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 4. AI Society External VP election campaign (communication / persuasion)
+**S:** I ran for External Vice-President of the Artificial Intelligence Society at CUHK; the role is elected by students in the AI major.
+**T:** Convince AI-major students that the society - and my candidacy - was worth their vote.
+**A:** Promoted the society and my platform directly to students across the major during the campaign period.
+**R:** Achieved a 36.4% voting rate and won the election; went on to serve the full year (Jan 2025 - Jan 2026).
+**Use for:** "Tell me about a time you persuaded people", "Communication example", "Selling an idea"
+
+### 5. Engineering Orientation Camp 2025 (leadership / organization)
+**S:** CUHK's Engineering Orientation Camp 2025 was a 3-day camp for over 200 incoming freshmen.
+**T:** Help organize the camp and lead a group of 12 freshmen through the activities.
+**A:** Assisted the organizing team with camp logistics and activities; guided my group of 12 through the program to help them get familiar with the university.
+**R:** Delivered the full 3-day program for my group as part of the 200+ freshman camp.
+**Use for:** "Leadership example", "Tell me about teamwork", "Handling responsibility for a group"
+
+### 6. Homework Management System (end-to-end delivery / requirements discovery)
+**S:** In high school, my economics teacher had difficulty analyzing students' performance across assignments.
+**T:** Design and build a solution that actually solved her analysis problem - not just a generic tool.
+**A:** Interviewed the teacher to discover the real pain point; proposed a web application using tags and diagrams with an explicit list of success criteria; designed the database, screen layouts, and UML diagrams plus a test plan; developed it in an MVC-based architecture with documentation; then tested it and evaluated it against the success criteria.
+**R:** Delivered a working, documented system that met the agreed success criteria, and identified concrete future improvements.
+**Use for:** "Walk me through a full project lifecycle", "How do you gather requirements?", "Initiative outside class"
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
 
 ## Common Tough Questions
 
-### "Why did you leave [previous company]?"
-> [PREPARE YOUR ANSWER - be honest, forward-looking, no negativity about former employer]
+### "Why did you leave VisionMatrix?"
+> Both were fixed-term summer internships (June-July in Shenzhen, July-August in Hong Kong) - they ended as scheduled, and I'm now back for Year 3 at CUHK. The experience confirmed I want to work on real AI systems, which is exactly why I'm here.
 
-### "You don't have [specific skill/experience]."
-> [PREPARE YOUR ANSWER - acknowledge the gap, bridge to adjacent experience, show willingness to learn]
+### "You don't have PyTorch/TensorFlow / model-training experience."
+> That's a fair gap - my industry work so far has been on the evaluation side of AI: benchmarking open-source detection models and building an LLM evaluation pipeline. My Python and C foundation is solid, I'm covering the theory in my CUHK coursework now, and I self-teach fast - I set up a local LLM server on my own during my internship when the task called for it.
 
 ### "Where do you see yourself in 5 years?"
-> [PREPARE YOUR ANSWER - show ambition aligned with the role's growth path]
+> Graduating in 2028, then working as an AI engineer - ideally in a startup environment like HKSTP or Cyberport, where I can grow from evaluation and testing toward owning model and LLM systems end to end.
 
 ### "What's your biggest weakness?"
-> [PREPARE YOUR ANSWER - genuine weakness with concrete mitigation strategy]
+> Repetitive manual work genuinely drains me - but I've learned to channel that: when I hit a repetitive task, I build tooling to eliminate it. That's literally how my automated RAG evaluation pipeline came to exist. I still have to be deliberate about tasks that can't be automated, and I handle those by time-boxing them.
 
 ### "Why this company specifically?"
 > Customize per company. Must reference: specific projects, company values, market position, or team structure. Never give a generic answer.

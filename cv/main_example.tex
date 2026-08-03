@@ -1,8 +1,7 @@
-%% Example CV - [YOUR_NAME]
+%% Example CV - Chan San Kit Samuel
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
 %% Compile with: lualatex main_example.tex
 %% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
@@ -24,18 +23,19 @@
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Chan San Kit Samuel - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
+\usepackage{needspace}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Chan San Kit}{Samuel}
+\address{Tseung Kwan O, Hong Kong}{}{}
+\phone[mobile]{+852 5239 4660}
+\email{chansankitsamuel@gmail.com}
+\extrainfo{\href{https://www.linkedin.com/in/chan-san-kit-samuel-a1452735a}{LinkedIn}, \href{https://github.com/chansankitsamuel}{GitHub}, \href{https://3sec3sec.com}{3sec3sec.com}}
 
 \begin{document}
 
@@ -46,7 +46,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{Year 3 Artificial Intelligence undergraduate at CUHK (BEng AI: Systems \& Technologies, GPA 3.48/4.00) with two back-to-back AI internships at VisionMatrix Technology across Hong Kong and Shenzhen. Built an automated evaluation pipeline for a production RAG agent - containerized deployment, local LLM test-case generation, and hybrid rule-based + LLM-based scoring - and tested speech-to-text, AI avatar, and object detection systems. Self-directed learner who ships working tooling; seeking AI internships with real LLM/ML work.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +56,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{AI/LLM Evaluation \& Testing}: Automated RAG-agent evaluation pipelines, hybrid LLM-based + rule-based scoring, UAT for speech-to-text and AI avatar systems, reproducible bug reporting.
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Programming}: Python, C (primary); PHP, SQL, HTML, CSS, JavaScript.
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{AI Tooling \& Local LLMs}: Local LLM servers for test-case generation, vector database retrieval checks, Claude Code, Cursor, LM Studio.
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{DevOps \& Cloud}: Git, GitHub, Bash, Docker (basics), AWS (basics).
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Languages \& Communication}: Cantonese (native), Mandarin (fluent), English (fluent); cross-border team experience (Hong Kong \& Shenzhen).
 
 \end{itemize}
 
@@ -77,31 +77,64 @@
 \begin{itemize}
 
 % --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{Jul 2026--Aug 2026}{AI Testing Intern}{VisionMatrix Technology Limited}{Hong Kong}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item Developed an automated evaluation pipeline for the RAG system/agent of an online ordering platform.
+    \item Deployed the API server locally in containers with varying environment variables to reproduce configurations.
+    \item Set up a local Large Language Model (LLM) server for automated test-case generation.
+    \item Applied both fixed rules and an LLM-based evaluation framework for judgment.
+    \item Generated an HTML report summarizing results, with recommendations for improvement and future test cases.
 \end{itemize}}}
 
 \vspace{3pt}
 
 % --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{Jun 2026--Jul 2026}{UAT Testing Intern}{VisionMatrix Technology Limited}{Shenzhen, China}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+    \item Planned and executed tests for a speech-to-text (STT) system and an AI avatar on an online ordering platform; drafted the STT ``hot words'' list and recorded reproducible bugs.
+    \item Reviewed backend source code and wrote data-processing scripts verifying that content retrieved from the vector database via the RAG system matches the tool-calling interface.
+    \item Labeled video frames for training an object detection model and evaluated the effectiveness of multiple open-source object detection models.
 \end{itemize}}}
 
-\vspace{3pt}
+\end{itemize}
 
-% --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% ============================================================
+%     PROJECTS
+% ============================================================
+
+\section{Projects}
+\vspace{3pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+
+\needspace{5\baselineskip}
+\item{\cventry{Oct 2022--Feb 2024}{Homework Management System}{Personal Project (high school)}{Hong Kong}{}{\vspace{1pt}
+\begin{itemize}
+    \item Interviewed an economics teacher to uncover her difficulty analyzing student performance; proposed a tag- and diagram-based web application with an explicit list of success criteria.
+    \item Designed the database, screen layouts, system UML diagrams, and test plan; developed the solution in an MVC-based architecture with documentation.
+    \item Tested the solution against the success criteria and identified possible future improvements.
+\end{itemize}}}
+
+\end{itemize}
+
+% ============================================================
+%     LEADERSHIP \& ACTIVITIES
+% ============================================================
+
+% Force this section to start on page 2: otherwise the section heading
+% strands at the bottom of page 1 while its entries land on page 2.
+\pagebreak
+\section{Leadership \& Activities}
+\vspace{3pt}
+\begin{itemize}
+
+\needspace{5\baselineskip}
+\item{\cventry{Jan 2025--Jan 2026}{External Vice-President}{Artificial Intelligence Society, CUHK}{Hong Kong}{}{\vspace{1pt}
+\begin{itemize}
+    \item Elected with a 36.4\% voting rate after promoting the society to students in the AI major.
+    \item Organized events including the inauguration, photo day, information day, and orientation day, receiving positive feedback from both the department and participants.
+    \item Assisted in organizing the CUHK Engineering Orientation Camp 2025 (a 3-day camp for over 200 freshmen), leading a group of 12 freshmen in activities.
 \end{itemize}}}
 
 \end{itemize}
@@ -114,14 +147,9 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
-
-\vspace{3pt}
-
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
+\needspace{5\baselineskip}
+\item{\cventry{2024--2028}{BEng, Artificial Intelligence: Systems \& Technologies}{The Chinese University of Hong Kong (CUHK)}{Hong Kong}{}{\vspace{1pt}
+In progress, expected July 2028. Cumulative GPA: 3.48/4.00. Relevant courses: Programming with C \& Python, Data Structures, Computer Systems, Operating Systems.
 }}
 
 \end{itemize}
@@ -133,27 +161,7 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
-\end{itemize}
-
-% ============================================================
-%     PUBLICATIONS (optional)
-% ============================================================
-
-\section{Publications}
-\vspace{1pt}
-\begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
-% ============================================================
-
-\section{Honors and Awards}
-\vspace{1pt}
-\begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item Cantonese (native), Mandarin (fluent), English (fluent).
 \end{itemize}
 
 % ============================================================

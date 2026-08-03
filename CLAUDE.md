@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Chan San Kit Samuel
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Chan San Kit Samuel, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,70 +10,69 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
-
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+- **Name:** Chan San Kit Samuel
+- **Location:** Tseung Kwan O, Hong Kong (Hong Kong roles only; commute tiers defined in `.claude/skills/job-scraper/search-queries.md`)
+- **Languages:** Cantonese (native), Mandarin (fluent), English (fluent)
+- **CV language:** English <!-- English unless your market expects otherwise; /setup asks -->
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Year 3 undergraduate, BEng Artificial Intelligence: Systems & Technologies, CUHK (expected graduation July 2028). Seeking AI internships - penultimate-year programs for summer 2027, part-time roles during term.
+- **LinkedIn headline:** "BEng Artificial Intelligence student at CUHK | AI Testing & LLM Evaluation"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **BEng in Artificial Intelligence: Systems & Technologies** (2024-2028, in progress - expected July 2028) - The Chinese University of Hong Kong (CUHK)
+  - Cumulative GPA: 3.48 / 4.00
+  - Topics: Programming with C & Python, Data Structures, Computer Systems, Operating Systems
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **AI Testing Intern** (July 2026 - August 2026) - **VisionMatrix Technology Limited** (Hong Kong)
+  - Developed an automated evaluation pipeline for the RAG system/agent of an online ordering platform
+  - Deployed the API server locally in containers with varying environment variables; set up a local LLM server for test-case generation
+  - Applied fixed rules plus an LLM-based evaluation framework for judgment; generated an HTML report with results and recommendations
+- **UAT Testing Intern** (June 2026 - July 2026) - **VisionMatrix Technology Limited** (Shenzhen)
+  - Planned and executed tests for a speech-to-text (STT) system and an AI avatar for an online ordering platform; drafted "hot words" for the STT system; recorded reproducible bugs
+  - Reviewed backend source code and wrote data-processing scripts verifying that content retrieved from the vector database via the RAG system matches the tool-calling interface
+  - Labeled video frames for training an object detection model; evaluated the effectiveness of multiple open-source object detection models
+
+### Leadership & Activities
+- **External Vice-President** (January 2025 - January 2026) - **Artificial Intelligence Society, CUHK**
+  - Elected with a 36.4% voting rate after promoting the society to AI-major students
+  - Organized inauguration, photo day, information day, and orientation day events, with positive feedback from the department and participants
+  - Assisted in organizing the CUHK Engineering Orientation Camp 2025 (3 days, 200+ freshmen), leading a group of 12 freshmen
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Python, C; LLM/RAG system evaluation and test automation
+- **Secondary:** PHP, SQL, HTML, CSS, JavaScript, Bash; Docker (basics), AWS (basics)
+- **Domain:** AI/LLM evaluation & QA, RAG pipelines, speech-to-text testing, object detection model benchmarking, UAT, data labeling
+- **Software:** Git, GitHub, Cursor, Claude Code, LM Studio (local LLM servers), MS Office, Adobe Premiere Pro & Photoshop
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- None yet
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- None
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- None listed
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- **Self-directed learner** - robust self-learning capability; self-taught modern AI tooling (local LLM servers, containers) and applied it immediately in internship work
+- **Executor & bridge** - delivers concrete artifacts (evaluation pipeline, events, campaigns) and connects people rather than seeking the spotlight
+- **Strengths:** rapid self-learning, shipping working systems, cross-team and cross-border communication, organized persistence (election campaign, event organization)
+- **Growth areas:** deep learning framework depth still building (coursework stage); drained by repetitive manual work - channels that into automating it
+- **Thrives in:** startup-style teams (HKSTP/Cyberport), hands-on work on real AI systems with ownership and learning curve
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Roles with genuine AI learning content that build toward a future career in the AI field
+- Startup environments working on real LLM/AI products
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- AI startups: HKSTP (Hong Kong Science Park) and Cyberport companies
+- Applied AI teams in Hong Kong tech companies (LLM products, AI evaluation/QA, ML engineering)
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Roles consisting purely of repetitive manual work with no learning content (data-entry-style tasks as the whole job)
+- Roles outside Hong Kong
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

@@ -28,6 +28,10 @@ Read the posting's eligibility / work rights / "who can apply" section **verbati
 
 If the candidate's permit also constrains *hours* or *start date* (a student visa with a term-time cap, a permit that begins on graduation), record that as a second gate under this section during `/setup`, with the specific dates. Do not merge it with the eligibility question above — they fail for different reasons and need different answers.
 
+**Candidate status (recorded at /setup, Aug 2026):** Samuel is a CUHK undergraduate searching in Hong Kong only. Hong Kong work-rights status was not separately confirmed during setup - if he holds a Hong Kong permanent identity card (the usual case for local CUHK students), the eligibility gate passes by default for Hong Kong postings. Confirm once and update this line.
+
+**Availability gate (student schedule):** full-time work only during university breaks - the next full-time window is **summer 2027, his penultimate summer**, so "penultimate-year" and "Summer 2027" internship programs are the prime targets. During term time (Sep-May) only part-time roles fit. Expected graduation: July 2028, after which full-time availability is unrestricted. A full-time term-time role fails this availability gate; a summer-only or part-time role passes it.
+
 A role that fails this gate is not scored and not drafted. Everything below applies only to roles that pass it.
 
 ## Scoring Dimensions
@@ -44,9 +48,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Python, C; LLM/RAG system evaluation; AI testing & UAT (STT systems, AI avatars, ordering platforms); test automation and evaluation pipelines; LLM-as-judge + rule-based scoring; local LLM servers (LM Studio); vector database retrieval checks; Git/GitHub; SQL
+**Moderate match areas:** object detection workflows (frame labeling, benchmarking open-source models), data processing scripts, PHP/HTML/CSS/JavaScript, Docker (basics), AWS (basics), Bash scripting, prompt-based test-case generation
+**Weak match areas:** deep learning frameworks (PyTorch/TensorFlow - not yet on CV), model training/fine-tuning in production, MLOps at scale, cloud beyond basics, formal QA certifications
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -58,9 +62,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** AI/LLM evaluation & QA internships, RAG-agent testing roles, AI product testing (two VisionMatrix internships in exactly this domain)
+**Moderate:** ML engineer internships (domain matches the degree, but no production model-training experience yet), test automation engineering, AI/data analyst internships, applied NLP roles
+**Entry-level:** general software engineering internships, data science internships, university research assistant positions
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -91,19 +95,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Build genuine AI engineering capability (not credential-collecting) toward a career in the AI field, most likely on the startup track
+- Land a penultimate-year internship for summer 2027 with real LLM/ML product work (HKSTP/Cyberport startups are the stated dream targets)
+- Grow from AI evaluation/QA toward broader AI engineering ownership over time
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: working on real LLM/AI systems, building evaluation and automation pipelines, learning new AI techniques, startup pace with personal ownership
+- Tasks that drain: repetitive manual work with no learning content (pure data-labeling queues, click-through regression as the whole job), bureaucratic slow-moving environments
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Student; at internship stage he explicitly prioritizes genuine AI learning content over compensation or brand name
+- **Flexibility**: Full-time only during university breaks (summer 2027 next); part-time during term; Hong Kong only
+- **Professional development**: Learning curve is the top filter - mentorship from experienced engineers and exposure to real AI systems matter more than title or pay
 
 ### 6. Salary Benchmark (Optional)
 

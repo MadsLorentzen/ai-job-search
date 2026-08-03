@@ -116,11 +116,13 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For AI/LLM Evaluation & QA intern roles:**
+> Year 3 Artificial Intelligence undergraduate at CUHK (BEng AI: Systems & Technologies, GPA 3.48/4.00) with two back-to-back AI testing internships at VisionMatrix Technology. Built an automated evaluation pipeline for a production RAG ordering agent: containerized local API deployment with varying environment variables, a local LLM server for test-case generation, and a hybrid rule-based + LLM-as-judge scoring framework, delivered as an HTML report with concrete recommendations. Equally comfortable reading backend code, scripting retrieval checks against vector databases, and designing reproducible test cases. Looking to bring this evaluation-first toolkit to a team shipping real LLM products.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For AI/ML Engineer intern roles:**
+> Year 3 BEng Artificial Intelligence: Systems & Technologies student at CUHK (GPA 3.48/4.00), combining coursework in data structures, computer systems, and operating systems with hands-on industry exposure to production AI: tested a speech-to-text system and AI avatar, benchmarked open-source object detection models, and built an automated LLM evaluation pipeline at VisionMatrix Technology. Programs in Python and C; self-teaches new tooling fast (local LLM servers, Docker, Claude Code) to get working systems shipped. Seeking an AI/ML internship with real model work and strong mentorship.
+
+Tailor these per posting - swap the emphasis (evaluation depth vs. engineering breadth) to mirror the role's language, and verify every claim against `01-candidate-profile.md` before use.
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 

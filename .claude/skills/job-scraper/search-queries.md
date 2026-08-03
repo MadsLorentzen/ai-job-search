@@ -1,6 +1,6 @@
 # Search Queries for Job Scraper
 
-<!-- SETUP: Customize these queries based on your skills, target roles, and location -->
+<!-- Customized for Chan San Kit Samuel by /setup (Aug 2026): AI/ML Engineer Intern + AI/LLM Evaluation & QA Intern, Hong Kong only -->
 
 ## Installed portal CLIs (primary for `/scrape`)
 
@@ -10,66 +10,80 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Primary (Hong Kong job boards):
+- **hk.jobsdb.com** - JobsDB Hong Kong, the market's largest board; covered by the `jobsdb-hk-search` CLI, with `site:hk.jobsdb.com` as a WebSearch fallback
+- **linkedin.com/jobs** - LinkedIn job listings (filter: Hong Kong); also covered by `linkedin-search` CLI
+- **freehire** - country-agnostic aggregator; covered by `freehire-search` CLI
+
+Manual-only (cannot be automated):
+- **CUHK career portal** - requires CUHK login + Duo MFA, so no CLI can reach it. Check manually about once a week; valuable for on-campus research-assistant / student-helper roles and CUHK-partner internships.
+
+Optional future additions (run `/add-portal` to build a CLI): CTgoodjobs, cpjobs.
 
 Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for known target companies
+- Direct Google searches with `site:` filters for known target companies, and the HKSTP / Cyberport startup directories (stated dream employers)
 
 ## Query Categories
 
-Queries are grouped by priority. Each query should be combined with your location terms (e.g. your city, region, or metro area) where the site supports it.
+Queries are grouped by priority. Each query should be combined with your location terms (Hong Kong) where the site supports it. Internship synonym keywords to mix in: `intern`, `internship`, `trainee`, `placement`, `student helper`, `part-time intern`, plus `penultimate` and `summer 2027` for program-based recruiting.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: AI/LLM Evaluation & QA Intern
 
-These match your strongest and most desired career direction.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
-```
-
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
+Samuel's strongest and most distinctive direction (two internships in exactly this domain).
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:hk.jobsdb.com "AI intern" Hong Kong
+site:hk.jobsdb.com "AI testing intern" Hong Kong
+site:hk.jobsdb.com "LLM" intern Hong Kong
+site:hk.jobsdb.com "RAG" Hong Kong
+site:linkedin.com/jobs "AI intern" Hong Kong
+site:linkedin.com/jobs "QA intern" AI Hong Kong
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
+### Priority 2: AI/ML Engineer Intern
 
-Adjacent roles you could pivot into.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
-```
-
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
+Matches the degree and long-term career direction.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:hk.jobsdb.com "machine learning intern" Hong Kong
+site:hk.jobsdb.com "AI engineer intern" Hong Kong
+site:hk.jobsdb.com "deep learning" intern Hong Kong
+site:linkedin.com/jobs "machine learning intern" Hong Kong
+site:linkedin.com/jobs "NLP intern" Hong Kong
 ```
+
+### Priority 3: Adjacent Data Roles
+
+Adjacent roles that still build toward an AI career.
+
+```
+site:hk.jobsdb.com "data science intern" Hong Kong
+site:hk.jobsdb.com "data analyst intern" python Hong Kong
+site:linkedin.com/jobs "data science intern" Hong Kong
+```
+
+### Priority 4: Broader Tech Internships & Programs
+
+Wider net, including program-based recruiting and startup-hub directories.
+
+```
+site:hk.jobsdb.com "software engineer intern" Hong Kong
+site:hk.jobsdb.com "summer internship 2027" technology Hong Kong
+site:hk.jobsdb.com "penultimate" internship Hong Kong
+site:linkedin.com/jobs "summer internship 2027" Hong Kong technology
+"HKSTP" OR "Hong Kong Science Park" "AI intern"
+"Cyberport" startup "AI intern" OR "machine learning intern"
+```
+
+**Timing note:** Samuel graduates July 2028, so summer 2027 is his penultimate summer - he is eligible for "penultimate-year" internship programs. Large HK programs (banks, conglomerates, MNC tech) typically recruit for summer internships between September and March; startup internships appear year-round.
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+When evaluating results, verify the job location is within reasonable commute distance from Tseung Kwan O:
+- **Ideal:** Tseung Kwan O (incl. TKO Industrial Estate); Kwun Tong / Kowloon East; HK Island East (North Point, Quarry Bay, Taikoo Shing)
+- **Acceptable:** rest of Kowloon; HK Island (Central, Admiralty, Wan Chai, Causeway Bay); Shatin / HK Science Park (HKSTP - target startup hub, worth the commute); Cyberport (target startup hub, ~60-75 min); Tsuen Wan / Kwai Fong
+- **Borderline:** Tsing Yi, Tung Chung / Airport (>60 min by transit)
+- **Too far:** Tuen Mun, Yuen Long, Tin Shui Wai (>75 min); anywhere outside Hong Kong (deal-breaker)
 
 ## Date Filter
 
