@@ -28,7 +28,7 @@ Read the posting's eligibility / work rights / "who can apply" section **verbati
 
 If the candidate's permit also constrains *hours* or *start date* (a student visa with a term-time cap, a permit that begins on graduation), record that as a second gate under this section during `/setup`, with the specific dates. Do not merge it with the eligibility question above — they fail for different reasons and need different answers.
 
-**Candidate status (recorded at /setup, Aug 2026):** Samuel is a CUHK undergraduate searching in Hong Kong only. Hong Kong work-rights status was not separately confirmed during setup - if he holds a Hong Kong permanent identity card (the usual case for local CUHK students), the eligibility gate passes by default for Hong Kong postings. Confirm once and update this line.
+**Candidate status (confirmed at /setup, Aug 2026):** Samuel is a CUHK undergraduate searching in Hong Kong only and holds a **Hong Kong permanent identity card** - he has the unrestricted right to work in Hong Kong, so the eligibility gate **passes by default for Hong Kong postings** (including roles that state a permanent-residency requirement). The gate still runs verbatim for any role outside Hong Kong.
 
 **Availability gate (student schedule):** full-time work only during university breaks - the next full-time window is **summer 2027, his penultimate summer**, so "penultimate-year" and "Summer 2027" internship programs are the prime targets. During term time (Sep-May) only part-time roles fit. Expected graduation: July 2028, after which full-time availability is unrestricted. A full-time term-time role fails this availability gate; a summer-only or part-time role passes it.
 

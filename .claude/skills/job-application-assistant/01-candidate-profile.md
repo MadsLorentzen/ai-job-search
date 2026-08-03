@@ -14,6 +14,7 @@ framework_version: 1.0.0
 - **Website:** https://3sec3sec.com
 - **Languages:** Cantonese (native), Mandarin (fluent), English (fluent)
 - **Status:** Year 3 undergraduate, BEng Artificial Intelligence: Systems & Technologies, CUHK (expected July 2028); seeking AI internships
+- **Work rights:** Hong Kong permanent identity card holder - unrestricted right to work in Hong Kong.
 - **Constraints:** Hong Kong roles only. Full-time availability during university breaks (next: summer 2027, penultimate summer); part-time only during term (Sep-May).
 
 ## Education

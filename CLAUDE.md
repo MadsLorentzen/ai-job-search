@@ -17,6 +17,7 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 - **CV language:** English <!-- English unless your market expects otherwise; /setup asks -->
 
 - **Status:** Year 3 undergraduate, BEng Artificial Intelligence: Systems & Technologies, CUHK (expected graduation July 2028). Seeking AI internships - penultimate-year programs for summer 2027, part-time roles during term.
+- **Work rights:** Hong Kong permanent identity card holder - unrestricted right to work in Hong Kong.
 - **LinkedIn headline:** "BEng Artificial Intelligence student at CUHK | AI Testing & LLM Evaluation"
 
 ### Education
