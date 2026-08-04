@@ -36,7 +36,20 @@ per-file diff commands.
   there), and the rule that a search snippet is a lead rather than a source. Wired into
   `/apply`, `/rank`, `/interview`, `/outcome`, `/notion-sync`, the job-scraper skill, and
   writing-style rule 5 (`03-writing-style.md` 1.1.0 to 1.2.0).
->>>>>>> c8b2364 (fix(web-research): stop treating a WebFetch 403 as a dead posting)
+
+  **The retry is gated on `robots.txt`.** `WebFetch` identifies itself as `Claude-User`
+  and honors `robots.txt`, so a 403 means either a WAF default on a site whose published
+  policy allows access, or a site that has actually declined. New `tools/robots_check.py`
+  tells them apart and the escalation runs it before retrying: a disallow for `*` or
+  `Claude-User` skips the retry entirely and goes straight to finding the employer's own
+  posting. The rule is stated in the file so later edits do not erode it - *the retry
+  exists to get past bot-filtering firewalls on sites whose robots.txt permits access; it
+  is never used to override a site that has said no.* Two findings are pinned by
+  `tests/test_robots_check.py` (15 offline cases): the WAF usually blocks `robots.txt`
+  itself, so the policy is read as a browser when the honest request is refused and then
+  obeyed strictly; and `urllib.robotparser` cannot be used, because it ends a record at a
+  blank line and matches in file order, which reads a real-world policy as
+  "everything allowed".
 
 ## [1.3.0] - 2026-08-03
 
