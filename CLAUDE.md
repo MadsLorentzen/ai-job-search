@@ -34,17 +34,30 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
   - Planned and executed tests for a speech-to-text (STT) system and an AI avatar for an online ordering platform; drafted "hot words" for the STT system; recorded reproducible bugs
   - Reviewed backend source code and wrote data-processing scripts verifying that content retrieved from the vector database via the RAG system matches the tool-calling interface
   - Labeled video frames for training an object detection model; evaluated the effectiveness of multiple open-source object detection models
+- **Coding & STEM Instructor** (June 2025 - August 2025) - **Cobo Academy** (Hong Kong)
+  - Conducted 10 weeks of project-based coding lessons for children aged 4-15 in English and Mandarin
+  - Facilitated 4 coding camps at Canadian International School of Hong Kong and Chinese International School
+  - Planned lesson flows, prepared instructional materials, coordinated with instructors, and communicated with parents
 
 ### Leadership & Activities
 - **External Vice-President** (January 2025 - January 2026) - **Artificial Intelligence Society, CUHK**
   - Elected with a 36.4% voting rate after promoting the society to AI-major students
   - Organized inauguration, photo day, information day, and orientation day events, with positive feedback from the department and participants
   - Assisted in organizing the CUHK Engineering Orientation Camp 2025 (3 days, 200+ freshmen), leading a group of 12 freshmen
+- **Service-Learning: Mobility-Impaired Elderly** (February 2025 - March 2025) - **CUHK**
+  - Surveyed 50 elderly residents on anti-slip awareness; investigated BMGSNO renovation pricing; reported findings with policy recommendations to the Urban Renewal Authority
+- **Service-Learning: SEN Primary Students** (February 2025 - March 2025) - **CUHK**
+  - Planned play-therapy and guided-reading activities for primary students with special educational needs, introducing SDG themes
+
+### Selected Projects
+- **Movie Recommender System** (Jan 2026 - Feb 2026): content-based recommender web app - Pandas data processing, NLTK text normalization, Scikit-Learn vectorization + cosine similarity, movie posters via REST API
+- **DQN vs A3C Deep RL Comparison** (Jun 2023 - Jul 2024): implemented both algorithms for traffic-light control in simulation and compared their effectiveness in reducing congestion
+- **Homework Management System** (Oct 2022 - Feb 2024): MVC web app for a high-school economics teacher, full lifecycle from requirements interview to success-criteria evaluation
 
 ### Technical Skills
 - **Primary:** Python, C; LLM/RAG system evaluation and test automation
-- **Secondary:** PHP, SQL, HTML, CSS, JavaScript, Bash; Docker (basics), AWS (basics)
-- **Domain:** AI/LLM evaluation & QA, RAG pipelines, speech-to-text testing, object detection model benchmarking, UAT, data labeling
+- **Secondary:** Pandas, NLTK, Scikit-Learn; PHP, SQL, HTML, CSS, JavaScript, Bash; Docker (basics), AWS (basics)
+- **Domain:** AI/LLM evaluation & QA, RAG pipelines, speech-to-text testing, object detection model benchmarking, UAT, data labeling, applied NLP/recommenders, bilingual STEM instruction
 - **Software:** Git, GitHub, Cursor, Claude Code, LM Studio (local LLM servers), MS Office, Adobe Premiere Pro & Photoshop
 
 ### Certifications

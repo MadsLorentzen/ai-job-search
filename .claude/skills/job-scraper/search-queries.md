@@ -48,6 +48,7 @@ Matches the degree and long-term career direction.
 site:hk.jobsdb.com "machine learning intern" Hong Kong
 site:hk.jobsdb.com "AI engineer intern" Hong Kong
 site:hk.jobsdb.com "deep learning" intern Hong Kong
+site:hk.jobsdb.com "NLP" intern Hong Kong
 site:linkedin.com/jobs "machine learning intern" Hong Kong
 site:linkedin.com/jobs "NLP intern" Hong Kong
 ```

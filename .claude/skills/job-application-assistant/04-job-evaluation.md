@@ -49,7 +49,7 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 0-39 | Fundamental mismatch |
 
 **Strong match areas:** Python, C; LLM/RAG system evaluation; AI testing & UAT (STT systems, AI avatars, ordering platforms); test automation and evaluation pipelines; LLM-as-judge + rule-based scoring; local LLM servers (LM Studio); vector database retrieval checks; Git/GitHub; SQL
-**Moderate match areas:** object detection workflows (frame labeling, benchmarking open-source models), data processing scripts, PHP/HTML/CSS/JavaScript, Docker (basics), AWS (basics), Bash scripting, prompt-based test-case generation
+**Moderate match areas:** object detection workflows (frame labeling, benchmarking open-source models), data processing scripts, Python data stack (Pandas, NLTK, Scikit-Learn - movie recommender project), applied NLP basics (vectorization, cosine similarity), DQN/A3C reinforcement learning (simulation project), bilingual coding instruction (paid, children 4-15), PHP/HTML/CSS/JavaScript, Docker (basics), AWS (basics), Bash scripting, prompt-based test-case generation
 **Weak match areas:** deep learning frameworks (PyTorch/TensorFlow - not yet on CV), model training/fine-tuning in production, MLOps at scale, cloud beyond basics, formal QA certifications
 
 ### 2. Experience Match (0-100)
@@ -64,7 +64,7 @@ Does work history align with what they're looking for?
 
 **Strong:** AI/LLM evaluation & QA internships, RAG-agent testing roles, AI product testing (two VisionMatrix internships in exactly this domain)
 **Moderate:** ML engineer internships (domain matches the degree, but no production model-training experience yet), test automation engineering, AI/data analyst internships, applied NLP roles
-**Entry-level:** general software engineering internships, data science internships, university research assistant positions
+**Entry-level:** general software engineering internships, data science internships (now backed by a Pandas/NLTK/Scikit-Learn project), university research assistant positions, EdTech / coding-instruction roles
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?

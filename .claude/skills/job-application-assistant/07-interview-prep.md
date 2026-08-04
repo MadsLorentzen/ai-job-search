@@ -54,7 +54,35 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 **R:** Delivered a working, documented system that met the agreed success criteria, and identified concrete future improvements.
 **Use for:** "Walk me through a full project lifecycle", "How do you gather requirements?", "Initiative outside class"
 
-<!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
+### 7. Movie Recommender System (end-to-end NLP project / applied ML)
+**S:** I wanted hands-on practice with the Python data stack beyond coursework, so I built a content-based movie recommender as a personal project (Jan-Feb 2026).
+**T:** Take a raw movie dataset to a working web app that recommends similar movies.
+**A:** Processed the dataset and extracted descriptive words with Pandas; removed morphological affixes with NLTK; performed word vectorization and cosine-similarity computation with Scikit-Learn; built a web interface where users choose a movie and get recommendations ranked by description similarity; loaded movie posters via REST API.
+**R:** Delivered a working recommender web app covering the full pipeline from raw data to user interface.
+**Use for:** "Walk me through an ML project", "Any NLP experience?", "Tell me about a project you drove end to end"
+
+### 8. DQN vs A3C deep reinforcement learning comparison (self-directed research / objective evaluation)
+**S:** Before university (Jun 2023 - Jul 2024), I ran a comparative study of two deep reinforcement learning algorithms, DQN and A3C.
+**T:** Research both algorithms and compare their effectiveness on a concrete control problem.
+**A:** Researched and analyzed DQN and A3C; implemented both to control traffic lights in a simulated environment; compared their effectiveness in reducing traffic congestion; evaluated the results while explicitly considering the investigation's limitations.
+**R:** Produced a like-for-like comparison of the two algorithms on the traffic-control task, with limitations acknowledged.
+**Use for:** "Tell me about self-directed learning", "Research experience?", "How do you compare two approaches objectively?"
+
+### 9. Teaching coding to children aged 4-15 (communication to non-technical audiences)
+**S:** At Cobo Academy (summer 2025), I taught project-based coding to children whose ages ranged from 4 to 15, in both English and Mandarin.
+**T:** Keep lessons engaging and understandable across a huge age and ability range, including 4 camps at Canadian International School and Chinese International School.
+**A:** Planned lesson flows and prepared instructional materials tailored to each group; conducted 10 weeks of lessons; coordinated with fellow instructors and communicated with parents about progress.
+**R:** Delivered the full 10-week program and 4 international-school camps, with parent communication throughout.
+**Use for:** "Explain something technical to a non-technical audience", "Tell me about adapting your communication style", "Experience with mentoring or teaching?"
+
+### 10. Elderly home-safety service-learning (initiative / reporting to an external authority)
+**S:** In a CUHK service-learning project (Feb-Mar 2025), we worked with mobility-impaired elderly residents on home safety.
+**T:** Understand the residents' real risks and awareness gaps, and do something useful with what we found.
+**A:** Surveyed 50 elderly people and found low awareness of anti-slip prevention and the Building Maintenance Grant Scheme for Needy Owners (BMGSNO); helped install anti-slip accessories in a resident's bathroom; investigated the BMGSNO and discovered renovation companies were charging applicants higher prices because of the scheme's complicated application procedure.
+**R:** Reported our findings to the Urban Renewal Authority with concrete recommendations: stronger promotion of anti-slip education and subsidy programs, a contractor certification mechanism, and a standardized renovation contract template.
+**Use for:** "Tell me about community impact", "A time you escalated a finding", "Investigating a problem beyond the obvious"
+
+<!-- Library of STAR examples - pick the best fit per question; do not recite all of them. -->
 
 ## Common Tough Questions
 
