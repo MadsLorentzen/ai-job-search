@@ -63,6 +63,7 @@ export interface JobDetail extends JobCard {
   employmentType: string | null
   jobFunction: string | null
   industries: string | null
+  isActive: boolean
 }
 
 /**
@@ -227,6 +228,16 @@ export function parseJobDetail(html: string, id: string): JobDetail {
     criteria[clean(cm[1]).toLowerCase()] = clean(cm[2])
   }
 
+  // Active Status Detection: check for "No longer accepting applications" or closed markers
+  const closedMarkers = [
+    /no longer accepting applications/i,
+    /job posting has expired/i,
+    /this job is no longer available/i,
+    /position has been filled/i,
+    /closed-job/i
+  ]
+  const isActive = !closedMarkers.some((pattern) => pattern.test(html))
+
   return {
     id,
     title: title ? clean(title) : "(untitled)",
@@ -240,6 +251,7 @@ export function parseJobDetail(html: string, id: string): JobDetail {
     employmentType: criteria["employment type"] ?? null,
     jobFunction: criteria["job function"] ?? null,
     industries: criteria["industries"] ?? null,
+    isActive,
   }
 }
 
