@@ -143,18 +143,36 @@ site:indeed.com "payments platform" (engineer OR developer) remote
 site:wellfound.com fintech backend engineer remote
 ```
 
-### Priority 3: Engineering Lead / Tech Lead
+### Priority 3: Engineering Manager / Tech Lead
 
-Player-coach roles that keep technical ownership. Score on demonstrated
-responsibility (team of 7, hiring, mentorship), not on job titles held.
+Third confirmed track, and the one most easily forgotten because every other
+query is IC-flavoured. **Run it every time.**
 
-CLI terms: `tech lead`, `technical lead`, `lead engineer`, `lead software engineer`,
-`engineering manager`, `staff engineer`
+Portals: `greenhouse-search --registry --us-remote` (66 EM matches at last run),
+`linkedin-search`
 
-```
-site:builtin.com "tech lead" backend remote
-site:indeed.com "engineering manager" (golang OR ".net" OR backend) remote
-```
+CLI terms: `engineering manager`, `software engineering manager`, `manager, software`,
+`manager, engineering`, `team lead`, `lead engineer`, `engineering lead`
+(`tech lead manager` returns 0 — the title exists at Google, almost nowhere else.)
+
+**"Entry-level engineering manager" is not a posted title.** A first-time manager
+role is posted as plain "Engineering Manager" / "Manager, Software Engineering";
+seniority is implied by team size and scope. Filter by what the title does NOT say:
+
+- **Right rung:** "Engineering Manager", "Manager, Software Engineering", "Team Lead"
+- **Wrong rung (wants existing manager tenure):** anything with Senior / Sr. /
+  Group / Director / Head of / Principal / VP / second-line
+
+At the last run that split 66 matches into ~42 first-time-rung and ~24 requiring
+prior EM experience.
+
+**Two filters this search needs that the others do not:**
+1. **"Engineering Manager" is not a software title outside tech.** Manufacturing
+   and hardware firms (PRISM Plastics, Novelis, Hiab, Zurn Elkay, Mitsubishi
+   Electric, Teledyne) post mechanical-engineering managers under the identical
+   title. 11 of 53 results were these. Exclude by employer industry, not title.
+2. **Exclude sales/solutions/customer engineering managers** — "Regional Manager,
+   Sales Engineering" is a quota-carrying role, not an engineering one.
 
 ### Priority 4: Broader Technical / Consulting
 

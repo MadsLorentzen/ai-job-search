@@ -26,6 +26,21 @@ export interface SearchOpts {
 
 const PAGE_SIZE = 25
 
+/**
+ * Client-side pagination over the full matched set.
+ *
+ * `limit` sets the page SIZE; it does NOT trim inside a fixed 25-row page.
+ * The earlier version sliced a fixed PAGE_SIZE window and only then applied
+ * `limit`, which silently capped every result set at 25 — so `-n 70` against 66
+ * matches returned 25 rows that read as the complete answer. Silent truncation
+ * is worse than an error, because nothing signals that results were dropped.
+ */
+export function paginate<T>(all: T[], page: number, limit?: number): T[] {
+  const pageSize = limit !== undefined && limit > 0 ? limit : PAGE_SIZE
+  const start = Math.max(0, (page - 1) * pageSize)
+  return all.slice(start, start + pageSize)
+}
+
 export function buildUrl(board: string): string {
   return `${API_BASE}/${encodeURIComponent(board)}/jobs`
 }
@@ -94,9 +109,7 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
     })
 
     // Greenhouse returns a whole board in one response, so paginate client-side.
-    const start = (opts.page - 1) * PAGE_SIZE
-    let results = all.slice(start, start + PAGE_SIZE)
-    if (opts.limit !== undefined && opts.limit >= 0) results = results.slice(0, opts.limit)
+    const results = paginate(all, opts.page, opts.limit)
 
     if (opts.format === "table") {
       process.stdout.write(renderTable(results) + "\n")

@@ -68,9 +68,12 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
       return tb - ta
     })
 
-    const start = (opts.page - 1) * PAGE_SIZE
-    let results = all.slice(start, start + PAGE_SIZE)
-    if (opts.limit !== undefined && opts.limit >= 0) results = results.slice(0, opts.limit)
+    // --limit sets the page SIZE rather than trimming inside a fixed 25-row page.
+    // Applied after a fixed slice it silently capped every result set at 25, so a
+    // larger -n looked like the true total instead of a truncated view.
+    const pageSize = opts.limit !== undefined && opts.limit > 0 ? opts.limit : PAGE_SIZE
+    const start = (opts.page - 1) * pageSize
+    const results = all.slice(start, start + pageSize)
 
     if (opts.format === "table") {
       process.stdout.write(renderTable(results) + "\n")

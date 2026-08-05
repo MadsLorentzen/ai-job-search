@@ -3,6 +3,7 @@
 import { describe, expect, test } from "bun:test"
 import { pool, loadRegistry, REGISTRY_PATH, matchesUsRemote, normalizeJob } from "../src/helpers.js"
 import { toSlug } from "../src/commands/discover.js"
+import { paginate } from "../src/commands/search.js"
 import { runCLI } from "./helpers.js"
 
 describe("toSlug", () => {
@@ -145,5 +146,36 @@ describe("matchesUsRemote", () => {
 
   test("a job with no location is not assumed US-remote", () => {
     expect(matchesUsRemote(normalizeJob({ id: 1, title: "T" }, "b")!)).toBe(false)
+  })
+})
+
+describe("paginate — --limit is the page size (truncation regression)", () => {
+  const rows = Array.from({ length: 66 }, (_, i) => i)
+
+  test("a limit above the default page size returns more than 25 rows", () => {
+    // Regression: limit used to be applied AFTER slicing a fixed 25-row page,
+    // so `-n 70` against 66 matches returned 25 rows that read as the complete
+    // answer. Silent truncation is worse than an error.
+    expect(paginate(rows, 1, 70)).toHaveLength(66)
+    expect(paginate(rows, 1, 40)).toHaveLength(40)
+  })
+
+  test("defaults to a 25-row page when no limit is given", () => {
+    expect(paginate(rows, 1)).toHaveLength(25)
+    expect(paginate(rows, 2)).toHaveLength(25)
+    expect(paginate(rows, 3)).toHaveLength(16)
+  })
+
+  test("pages step by the limit, not by the default size", () => {
+    expect(paginate(rows, 2, 10)).toEqual(rows.slice(10, 20))
+    expect(paginate(rows, 3, 10)).toEqual(rows.slice(20, 30))
+  })
+
+  test("a page past the end is empty rather than wrapping", () => {
+    expect(paginate(rows, 99, 25)).toEqual([])
+  })
+
+  test("never returns more than the matched set", () => {
+    expect(paginate([1, 2, 3], 1, 500)).toHaveLength(3)
   })
 })
