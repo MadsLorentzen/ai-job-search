@@ -1,10 +1,10 @@
-# Job Application Assistant for [YOUR_NAME]
+# Job Application Assistant for John Thadison
 
 <!-- SETUP: This file is populated by running /setup -->
 <!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for John Thadison, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -16,76 +16,118 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 <!-- This section is auto-populated by /setup. You can also fill it in manually. -->
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
+- **Name:** John C. Thadison, Jr. (goes by John Thadison)
+- **Location:** Cedar Falls, IA, USA (**remote-first, US-wide**; not seeking relocation. Local
+  on-site within the Waterloo–Cedar Falls area is acceptable but the market there is thin.)
 - **Languages:**
   | Language | Level |
   |----------|-------|
-  | [LANGUAGE] | [LEVEL] |
+  | English | Native |
   <!-- Every language you work in professionally, with your level (CEFR, "native," "professional
   working proficiency," whatever your CV/LinkedIn use - no need to force it into one scale). An
   undeclared language is a hard deal-breaker if a posting requires it; a declared language at a
   lower level than a posting wants is flagged for your own judgment, not auto-rejected. See
   04-job-evaluation.md's Language Gate. -->
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+- **CV language:** English
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Between roles, actively searching. Departed Moov Financial 07/2026; available immediately.
+- **LinkedIn headline:** "Senior Software Engineer"
+- **LinkedIn:** https://www.linkedin.com/in/johnthadison/ · **GitHub:** https://github.com/jthadison
+- **Contact:** jthadison@gmail.com · +1 601-620-9459
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **M.S. in Computer Engineering Technology** (1998-2000) - University of Southern Mississippi, Hattiesburg
+- **B.S. in Computer Engineering Technology** (1993-1998) - University of Southern Mississippi, Hattiesburg
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+<!-- Full detail with all bullets lives in
+     .claude/skills/job-application-assistant/01-candidate-profile.md -->
+- **Senior Software Engineer** (07/2025 - 07/2026) - **Moov Financial** (Cedar Falls, IA)
+  - Go across 50+ microservices in an event-driven GCP architecture
+  - Integrated Claude Code and Codex into engineering workflows, including custom skills
+  - OpenTelemetry instrumentation for observability; rigorous code review
+- **Senior Software/DevOps Engineer** (06/2022 - 04/2025) - **Brightwell** (Atlanta, GA)
+  - Led 7 distributed engineers delivering the ReadyRemit SaaS payments platform inception→production
+  - 99.9% reliability on millions of cross-border transactions (Visa/Mastercard APIs, Azure)
+  - Cut operational incidents 35% via testing/monitoring strategy; established Azure DevOps CI/CD
+- **Software Developer** (03/2015 - 06/2022) - **Far Reach Technologies** (Cedar Falls, IA)
+  - Lead developer/consultant on enterprise SaaS: .NET Core, EF, MVC, Angular/TypeScript
+  - Onboarding processes that accelerated new-developer productivity 25%
+- **Software Developer** (11/2014 - 03/2015) - **The VGM Group, Inc.** (Waterloo, IA)
+  - Secure .NET payment processing for DME order/billing; card authorization under PCI-sensitive constraints
+- **Application/Report Developer IV** (10/2010 - 11/2014) - **Deloitte Consulting** (Hattiesburg, MS)
+  - Enterprise government applications for Department of Homeland Security (.NET, Oracle, Agile)
+- **Senior Software Engineer** (08/2009 - 10/2010) - **Radiance Technologies** (Stennis Space Center, MS)
+  - Lead Java developer, GIS applications at the Naval Oceanographic Office
+- **Senior Applications Developer** (07/2006 - 08/2009) - **BearingPoint, Inc.** (Hattiesburg, MS)
+  - Java/J2EE enterprise applications (Spring, Hibernate, Oracle); led distributed teams
+- **Senior Applications Developer** (05/2000 - 07/2006) - **Verizon Business** (Clinton, MS)
+  - Revenue management and billing audit systems processing large-scale financial data
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Go · C#/.NET Core & .NET Framework · Java/J2EE/Spring · SQL (PostgreSQL, SQL Server, Oracle) · microservices & distributed systems · REST API design · event-driven architecture
+- **Secondary:** TypeScript/Angular · Google Cloud Platform · OpenTelemetry · Infrastructure as Code · geospatial/GIS (dated)
+- **Domain:** Payments/fintech — **~4 recent years** (Brightwell 2022-2025 cross-border/Visa/Mastercard; Moov 2025-2026), plus 5 months DME card processing at VGM 2014-15 · enterprise SaaS 0-to-1 · large-scale financial data outside payments (Verizon revenue/billing audit 2000-2006) · government/public sector (DHS, US Navy)
+
+<!-- ACCURACY GUARD: payments experience is ~4 YEARS, not career-length. Verizon's revenue
+     management and billing audit work is adjacent financial-data engineering, NOT fintech.
+     Never write or imply "25+ years in payments/fintech" in a CV or cover letter. The honest,
+     and still strong, claim is four contiguous years current through 2026. -->
+
+- **Software:** Microsoft Azure (DevOps, Application Insights, Blob Storage) · Git/GitHub · CI/CD pipelines · NUnit & TDD · Claude Code, Codex, MCP servers
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- **Microsoft Certified: Azure Fundamentals (AZ-900)** - Microsoft, completed 01/2025
+
+<!-- Note: LinkedIn's "Certifications" panel lists LinkedIn Learning coursework (Docker,
+     Kubernetes, Kafka, Microservices Foundations) — coursework, not credentials. Do not present
+     those as certifications or as production expertise. -->
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+<!-- None on record. -->
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+<!-- None on record. -->
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+<!-- No formal assessment (PI/DISC/MBTI/StrengthsFinder) and no reference letters were available
+     at /setup. The traits below are INFERRED FROM DOCUMENTED WORK HISTORY, each tied to specific
+     evidence. See 02-behavioral-profile.md for the full version and for the sections that were
+     deliberately left blank rather than guessed. -->
+- **Hands-on leader** - led 7 engineers on ReadyRemit while personally architecting it; stayed a
+  hands-on Go contributor at Moov. His own LinkedIn summary: "leading engineering teams from
+  design through production while remaining hands-on."
+- **Builds 0-to-1** - repeatedly trusted with greenfield systems rather than inherited maintenance
+- **Strengths:** distributed systems depth (career-long) and payments-platform work (recent, ~4
+  years); reliability engineering (99.9% uptime,
+  35% incident reduction); mentorship with measured outcomes (25% onboarding gain); sustained
+  technical reinvention (Java → .NET → Go, each landing at senior/lead); early practical AI-tooling
+  adoption
+- **Growth areas:** NOT RECORDED - needs your input, not a guess. This feeds interview answers
+  where a manufactured weakness is transparently hollow.
+- **Thrives in:** distributed/remote teams; end-to-end system ownership; regulated domains where
+  correctness matters; player-coach scope
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+<!-- Inferred from the pattern of roles taken — confirm or correct. -->
+- Building systems from zero to production, with architectural ownership
+- Payments and financial infrastructure, where correctness is non-negotiable
+- Staying hands-on in the code while carrying leadership responsibility
+- Mentoring engineers and raising the engineering bar
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+<!-- Three parallel tracks confirmed 2026-08-05; a posting need only satisfy ONE to be worth scoring. -->
+- **Fintech / payments** (strong *recent* match — 4 years, current): Stripe, Plaid, Adyen, Marqeta, Block, Wise, Modern Treasury, Column, Increase
+- **Backend / platform engineering at scale** (Go, .NET): any domain with distributed-systems depth
+- **Engineering leadership / tech lead**: player-coach roles that keep technical ownership
 
 ### Deal-breakers
-<!-- Hard constraints on job search. Language requirements are handled separately and
-automatically from your Languages table above - don't duplicate them here. -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- **Relocation required** - not on the table
+- **Hybrid or on-site outside the Waterloo–Cedar Falls area** - remote-first is a hard constraint
+- **"Remote" restricted to states/timezones excluding Iowa (US Central)** - check the fine print;
+  this exclusion is common and often buried
+- **Pure people-management with no technical ownership** - a genuine change of direction rather
+  than a fit; flag rather than auto-reject, but be deliberate about it
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

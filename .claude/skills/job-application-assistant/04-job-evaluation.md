@@ -60,9 +60,11 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Go (50+ microservices, event-driven, GCP) · C#/.NET Core & .NET Framework, Entity Framework, ASP.NET MVC, Web APIs · Java/J2EE/Spring/Hibernate · distributed systems & microservices · REST API design · event-driven architecture · PostgreSQL / SQL Server / Oracle, schema design and query optimization · Microsoft Azure (DevOps, Application Insights, Blob Storage) · CI/CD pipelines · unit testing & TDD · technical mentorship and team leadership · AI-assisted engineering (Claude Code, Codex, custom skills, MCP servers)
+
+**Moderate match areas:** Google Cloud Platform (1 year, at Moov) · OpenTelemetry / observability · TypeScript & Angular (real but secondary to backend) · Infrastructure as Code · geospatial/GIS (deep but dated — 2009-2010) · Docker & Kubernetes (**coursework only, no production evidence — do not claim as expertise**)
+
+**Weak match areas:** Python · Rust · React/Vue · mobile (iOS/Android) · data engineering / ML / data science · AWS (Azure and GCP are the documented clouds) · Kafka (coursework only) · front-end-heavy or design-led roles
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -74,9 +76,17 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** Distributed backend systems at scale (26 years) · enterprise SaaS built 0-to-1 · senior/lead IC roles · leading small distributed engineering teams (7 engineers) · regulated domains where correctness is non-negotiable · **payments / fintech — ~4 years, recent and contiguous (Brightwell 2022–2025, Moov 2025–2026), plus 5 months at VGM in 2014-15**
+
+<!-- ACCURACY GUARD: payments experience is FOUR years, not 26. Verizon Business (2000–2006) was
+     telecom revenue management and billing audit — adjacent financial-data work, NOT fintech, and
+     never to be counted toward payments tenure. When a posting rewards domain depth, the honest
+     claim is "four years in payments, current through 2026" — lead with recency and the specific
+     systems (ReadyRemit, cross-border, Visa/Mastercard), never with duration. -->
+
+**Moderate:** Large-scale financial data *outside* payments (Verizon revenue management and billing audit, 2000–2006) · Government / public sector (DHS via Deloitte, Naval Oceanographic Office via Radiance — strong but 2009-2014 vintage) · DevOps / platform engineering (real ownership, not a dedicated title) · consulting and client-facing delivery (Far Reach, Deloitte, BearingPoint) · healthcare / DME systems (5 months at VGM)
+
+**Entry-level:** Formal people-management titles (has *done* one-on-ones, performance feedback and hiring, but every title held is senior/lead IC — see Career Alignment note below) · data/ML engineering · developer-relations or product roles
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -91,10 +101,22 @@ Does the role and company culture match the behavioral profile?
 **Red flags to research:** Department disorganization, work dominated by maintenance over development, poor chemistry with leadership, culture mismatches. Check reviews, media coverage, LinkedIn connections, and network contacts for insider perspective.
 
 ### 4. Location & Logistics (Pass/Fail + Notes)
-- Within commute range: PASS
-- Remote with occasional office: PASS
-- Requires relocation: FAIL (deal-breaker)
-- Frequent international travel: FLAG (discuss with user)
+
+Base: **Cedar Falls, IA 50613** (Waterloo–Cedar Falls area). Search is **remote-first, US-wide**;
+relocation is not currently on the table.
+
+- Fully remote, US-wide: **PASS**
+- Remote, US with occasional travel to a hub (roughly quarterly or less): **PASS**
+- Remote but restricted to states/timezones that exclude Iowa (US Central): **FAIL** — check the
+  posting's state-eligibility list, which is frequently buried and often excludes IA
+- Hybrid requiring regular on-site days outside the Waterloo–Cedar Falls area: **FAIL**
+- On-site within commuting distance of Cedar Falls / Waterloo: **PASS**
+- Requires relocation: **FAIL** (deal-breaker)
+- Frequent international travel: **FLAG** (discuss with user)
+
+**Watch for the remote-in-name-only pattern:** a posting titled "Remote" that later specifies
+"must be located in <metro>" or lists approved states. Read the full location section before
+scoring this dimension PASS.
 
 ### 5. Career Alignment & Motivation (0-100)
 Does this role advance career goals and contain tasks that energize?
@@ -106,20 +128,46 @@ Does this role advance career goals and contain tasks that energize?
 | 40-59 | Decent job but doesn't build toward career goals |
 | 0-39 | Dead end or backwards step |
 
-**Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+**Career goals** (confirmed with candidate 2026-08-05 — three parallel tracks, all in play):
+
+1. **Senior / Staff backend engineer (Go, .NET)** — the direct continuation and the strongest,
+   most recent evidence base. Score these highest on Technical and Experience.
+2. **Fintech / payments specifically** — a narrower target with a stronger match story
+   (ReadyRemit cross-border platform, Visa/Mastercard integrations, Moov). A payments-domain
+   posting should score *above* an equivalent generic backend role on Career Alignment — but the
+   differentiator is **recency and system specifics, not duration**: ~4 contiguous years current
+   through 2026, at two payments companies. Do not inflate this to career-length.
+3. **Engineering management / tech lead** — has done the work (team of seven, one-on-ones,
+   performance feedback, hiring, mentorship with a measured 25% onboarding gain) without holding
+   a formal manager title. Score these on demonstrated responsibility, not job titles; a
+   player-coach or tech-lead framing fits the evidence better than a pure people-management role.
+
+Because all three are active, a posting only needs to satisfy **one** track to be worth scoring —
+do not penalize a strong backend IC role for lacking a management path, or vice versa. Do flag
+which track a posting serves in the evaluation notes so the CV can be framed accordingly.
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- **Tasks that energize** *(inferred from the pattern of roles taken, not yet confirmed —
+  correct these)*: building systems 0-to-1; architecture and technical direction; hands-on coding
+  retained alongside leadership; mentoring and code review; reliability/observability work;
+  adopting new tooling deliberately (Go, Claude Code, OpenTelemetry).
+- **Tasks that drain** *(NOT CONFIRMED — needs your input)*: unknown. Worth answering before
+  `/apply` runs, since this is what separates a role you can do from one you'd want. A useful
+  prompt: which parts of the Moov or Brightwell job did you find yourself avoiding?
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
-**Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+**Life situation alignment:**
+- **Security**: Between roles since 07/2026 and available immediately, which raises the value of a
+  shorter interview loop and a firm start date. Do not let this weaken salary positioning — 26
+  years of senior engineering experience, plus current payments-platform work, are the
+  negotiating position.
+  *(Financial runway / urgency not recorded — tell me if there's a timeline that should
+  reprioritize speed over fit.)*
+- **Flexibility**: US Central timezone. Remote-first. *(No other schedule constraints recorded.)*
+- **Professional development**: Go depth is the newest and most marketable skill but has the
+  shortest tenure (1 year) — roles that deepen it compound best. AZ-900 is the only formal
+  certification; Docker/Kubernetes are coursework and are the most visible gap against modern
+  backend postings. See `/upskill` for a gap analysis.
 
 ### 6. Salary Benchmark (Optional)
 
