@@ -5,7 +5,7 @@ description: >
   and preparing for interviews. Triggers on keywords like: job posting, job application, CV,
   cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling
 allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Bash, Edit, Write, AskUserQuestion
-framework_version: 1.2.0
+framework_version: 1.3.0
 ---
 
 # Job Application Assistant
@@ -36,6 +36,11 @@ When the user provides a job posting (URL or text), follow this workflow:
 - Follow the template structure in `06-cover-letter-templates.md`
 - Create `cover_letters/cover_<company>_<role>.tex`
 - Ensure the letter connects specific experience to the role requirements
+
+### Step 3b: Record the Application
+- Run this once both documents exist. A CV or cover letter drafted alone is not yet an application.
+- Follow **`/apply` Step 6b** (`.claude/commands/apply.md`) exactly: same header, same match-then-update rule, same `drafted` row, same prohibition on touching `job_scraper/seen_jobs.json`. It is stated there once so the two paths cannot drift. Two of its values are named in `/apply`'s own terms: `cv_file`/`cover_letter_file` are the paths written in Steps 2 and 3 here, and `source` is the posting URL from Step 1.
+- This step exists here because `/scrape` Step 5 routes straight into this skill. Without it, that path writes two documents and records nothing.
 
 ### Step 4: Interview Preparation
 - Follow the framework in `07-interview-prep.md`

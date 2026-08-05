@@ -68,6 +68,39 @@ per-file diff commands.
   blank line and matches in file order, which reads a real-world policy as
   "everything allowed".
 
+- **`/apply` now records the application in the tracker** - the flagship command wrote a CV
+  and a cover letter to disk and then wrote nothing to `job_search_tracker.csv`, so a drafted
+  and submitted application was invisible to `/gmail-sync`, `/html-report`, `/notion-sync`,
+  `/interview`, `/upskill` aggregate mode, and to `/rank`'s dedup exclusion - and the safety
+  net that would have caught it (`/gmail-sync`) refuses to create missing rows, so nothing
+  detected the loss. A new Step 6b appends a `drafted` row carrying the two document paths,
+  the fit rating and the posting URL, reusing `/outcome`'s exact header so the two commands
+  cannot diverge; re-running `/apply` updates that row rather than duplicating it, unless every
+  matching row holds a final status, in which case a second application to the same role gets
+  its own row. The same
+  step is mirrored into `job-application-assistant` because `/scrape` Step 5 routes straight
+  into the skill (`framework_version` 1.2.0 -> 1.3.0), and `/scrape` Step 6 now defers to it
+  instead of adding a row of its own. `seen_jobs.json` is deliberately left alone.
+
+  **`drafted` is introduced into the tracker status vocabulary**, and every reader that
+  meant *submitted* now says so. These readers define "open" by exclusion from the final
+  statuses, so a new non-final value would otherwise have joined all of them silently:
+  `/outcome`'s follow-up branch no longer drafts a chase email for an application that was
+  never sent, `/gmail-sync` no longer reports unsent drafts as stale, `/notion-sync` leaves
+  "Applied on" empty for them and says "not yet submitted" in the page body rather than
+  calling drafts submitted documents, and `/html-report` gains a sixth **Drafted** bucket
+  kept out of the funnel, the rejection rate and the headline count. `/outcome` Step 4
+  overwrites `date` with the submission date when a row leaves `drafted`, so the column
+  keeps meaning "applied on".
+
+  **`/gmail-sync` deliberately keeps searching for drafted rows.** `/apply` drafts but the
+  user submits, and forgetting to run `/outcome` afterwards is the failure this issue is
+  about. An employer reply arriving against a row still marked `drafted` is how that gets
+  caught, so those rows stay in the search set, the application acknowledgement is promoted
+  from noise to a `drafted` -> `applied` signal (it is the one email that proves a hand
+  submission, and it arrives within a day of it), and an approved match corrects the `date`
+  as well as the status. Only the staleness check skips them, since nothing was sent. (#269)
+
 ## [1.3.0] - 2026-08-03
 
 ### Added
