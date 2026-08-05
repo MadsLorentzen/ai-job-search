@@ -13,6 +13,28 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The robots gate did not fail closed** (`tools/robots_check.py`, #277). Found by an
+  adversarial review run over the merged file, not by inspection. Both cases are pinned
+  in `tests/test_robots_check.py` as FAIL-OPEN REGRESSIONs:
+
+  - **A soft `200` granted permission.** A host answering `/robots.txt` with an HTML
+    error page at status 200 produces a body that parses to zero rules, and zero rules
+    read as "allowed" - so the browser-header retry ran on permission that was never
+    given. A non-empty body carrying no recognised directive is now treated as
+    unreadable. A genuinely empty file stays allow-all, per RFC 9309.
+  - **`Disallow` patterns were never percent-decoded** while the request path was, so
+    `Disallow: /foo%20bar` never matched `/foo bar` and the rule was silently skipped -
+    a fail-open on any site that encodes its own rules.
+
+- **`curl` argument hardening** (`tools/robots_check.py`). The curl argv had no `--`
+  terminator before the URL. `gate()` rebuilds the target as `scheme://host/robots.txt`
+  before calling `_fetch`, so the gate path was never exposed; this is hardening for
+  direct callers, with a test pinning the terminator, that a dash-leading argument fails
+  closed end to end, and that `gate()` never passes a caller-supplied URL through to
+  curl. `--max-redirs 5` is set explicitly rather than left to curl's default.
+
 ### Added
 
 - **Spec-pinning tests for the Language Gate's `/rank` contract** (#278) - four regression

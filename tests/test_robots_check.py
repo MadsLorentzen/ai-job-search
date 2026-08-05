@@ -17,7 +17,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
-from robots_check import allowed  # noqa: E402
+from robots_check import allowed, is_robots_body  # noqa: E402
 
 
 # Real body served by privatebank.barclays.com: blank lines sit between the
@@ -101,6 +101,113 @@ class TestCli(unittest.TestCase):
         )
         # No URL argument: must fail loudly rather than defaulting to "allowed".
         self.assertNotEqual(out.returncode, 0)
+
+
+class TestSoftTwoHundred(unittest.TestCase):
+    """A 200 whose body is not a robots.txt used to grant permission.
+
+    Found by adversarial review, not inspection. A misconfigured host answering
+    /robots.txt with an HTML error page at status 200 parses to zero rules, and
+    zero rules read as "allowed" - so the browser retry ran on permission that
+    was never given. FAIL-OPEN REGRESSION.
+    """
+
+    def test_html_error_page_is_not_a_robots_file(self):
+        self.assertFalse(is_robots_body("<html><body>404 Not Found</body></html>"))
+
+    def test_json_error_body_is_not_a_robots_file(self):
+        self.assertFalse(is_robots_body('{"error":"not found"}'))
+
+    def test_soft_200_is_unconfirmed_not_allowed(self):
+        import robots_check
+
+        original = robots_check._fetch
+        robots_check._fetch = lambda url, ua: ("<html>404</html>", 200)
+        try:
+            rc, msg = robots_check.gate("https://x.example/jobs")
+        finally:
+            robots_check._fetch = original
+        self.assertEqual(rc, 1)
+        self.assertIn("not a robots.txt", msg)
+
+    def test_a_genuinely_empty_robots_is_still_allow_all(self):
+        """RFC 9309: an empty file permits everything. Do not over-correct."""
+        self.assertTrue(is_robots_body(""))
+        self.assertTrue(is_robots_body("\n\n   \n"))
+
+    def test_a_real_policy_is_recognised(self):
+        self.assertTrue(is_robots_body(BARCLAYS))
+        self.assertTrue(is_robots_body(JOBUP))
+
+    def test_sitemap_only_file_counts(self):
+        self.assertTrue(is_robots_body("Sitemap: https://x.example/sitemap.xml\n"))
+
+
+class TestPercentEncodedRules(unittest.TestCase):
+    """Rule patterns are percent-decoded to match the decoded request path.
+
+    FAIL-OPEN REGRESSION: without this, a site that percent-encodes its own
+    Disallow patterns has them silently skipped.
+    """
+
+    def test_encoded_space_in_disallow_now_matches(self):
+        self.assertFalse(allowed("User-agent: *\nDisallow: /foo%20bar\n", "*", "/foo bar"))
+
+    def test_encoded_rule_does_not_overmatch(self):
+        self.assertTrue(allowed("User-agent: *\nDisallow: /foo%20bar\n", "*", "/foobar"))
+
+    def test_plain_rules_are_unaffected(self):
+        self.assertFalse(allowed(JOBUP, "*", "/api/x"))
+        self.assertTrue(allowed(JOBUP, "*", "/en/jobs/x"))
+
+
+
+class TestArgumentHardening(unittest.TestCase):
+    """A URL can never be read by curl as an option.
+
+    gate() rebuilds the target as scheme://host/robots.txt, so the gate path was
+    never exposed; this pins the "--" terminator for direct _fetch callers and
+    confirms a dash-leading argument fails closed end to end.
+    """
+
+    def test_curl_argv_ends_with_a_double_dash_before_the_url(self):
+        import inspect
+
+        import robots_check
+
+        src = inspect.getsource(robots_check._fetch)
+        self.assertIn("'--', url", src)
+
+    def test_a_dash_leading_argument_fails_closed(self):
+        script = REPO_ROOT / "tools" / "robots_check.py"
+        out = subprocess.run(
+            [sys.executable, str(script), "--help"],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        self.assertEqual(out.returncode, 1)
+        self.assertNotIn("Usage: curl", out.stdout)
+
+    def test_gate_never_passes_the_caller_url_through_to_curl(self):
+        """The robots target is rebuilt from scheme+host, never the raw input."""
+        import robots_check
+
+        seen = []
+
+        original = robots_check._fetch
+
+        def spy(url, ua):
+            seen.append(url)
+            return "User-agent: *\nAllow: /\n", 200
+
+        robots_check._fetch = spy
+        try:
+            robots_check.gate("https://x.example/-o/evil?q=1")
+        finally:
+            robots_check._fetch = original
+        self.assertEqual(seen[0], "https://x.example/robots.txt")
+
 
 
 if __name__ == "__main__":
