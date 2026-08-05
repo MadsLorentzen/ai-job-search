@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { apiFetch, USER_AGENT } from "../src/helpers";
 
-// Every other Danish-portal CLI sends a browser-like User-Agent on purpose
-// (jobbank exports USER_AGENT and its tests assert it; jobindex sets it on
-// htmlFetch). Requests without one are rejected by the portals' bot filters.
-// Assert the header is present on every request. Fails on the pre-fix code.
+// Bun's fetch injects an anonymous default User-Agent (Bun/1.3.10) when code
+// sets none. This CLI should say who is asking, in the honest style jobindex
+// already uses on htmlFetch ("Mozilla/5.0 (compatible; jobindex-cli/1.0)").
+// Assert the header is present on every request. Fails on the pre-change code.
 const originalFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = originalFetch;
