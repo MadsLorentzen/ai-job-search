@@ -59,7 +59,8 @@ SEARCH FLAGS
                           Lever's workplaceType field.
   --team <text>           SERVER-SIDE filter, e.g. "Engineering". Exact match.
   --commitment <text>     SERVER-SIDE filter, e.g. "Full-time". Exact match.
-  --remote <mode>         Filter on workplaceType: remote | hybrid | onsite.
+  --remote [mode]         Filter on workplaceType: remote | hybrid | onsite.
+                          Bare --remote means --remote remote.
   --jobage <days>         Posted within N days (client-side, on createdAt).
   --page <n>              1-indexed page, 25 results/page (client-side).
   --limit, -n <n>         Cap results emitted.
@@ -110,7 +111,15 @@ async function main(): Promise<number> {
       return 1
     }
 
-    const remote = typeof flags.remote === "string" ? flags.remote.toLowerCase() : undefined
+    // A bare `--remote` (no value) parses to boolean true. Treat it as the
+    // unambiguous `--remote remote` rather than silently skipping the filter —
+    // a no-op that returns onsite jobs is worse than either erroring or working.
+    const remote =
+      flags.remote === true
+        ? "remote"
+        : typeof flags.remote === "string"
+          ? flags.remote.toLowerCase()
+          : undefined
     if (remote && !["remote", "hybrid", "onsite", "on-site"].includes(remote)) {
       process.stderr.write(
         JSON.stringify({

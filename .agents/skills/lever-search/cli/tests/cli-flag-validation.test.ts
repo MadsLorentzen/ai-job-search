@@ -28,6 +28,18 @@ describe("CLI contract", () => {
     expect(JSON.parse(r.stderr).code).toBe("BAD_ARG")
   })
 
+  test("a bare --remote is accepted as 'remote', not silently ignored", async () => {
+    // Previously this parsed to boolean true, failed the `typeof === "string"`
+    // check, and skipped the filter — returning onsite jobs with no warning.
+    // --limit abc still errors, which proves we got past flag interpretation
+    // without --remote being rejected, all without making a network call.
+    const r = await runCLI(["search", "-c", "palantir", "--remote", "--limit", "abc"])
+    expect(r.exitCode).toBe(1)
+    const err = JSON.parse(r.stderr)
+    expect(err.code).toBe("BAD_ARG")
+    expect(err.error).toContain("limit")
+  })
+
   test("an unknown command errors as JSON on stderr", async () => {
     const r = await runCLI(["frobnicate"])
     expect(r.exitCode).toBe(1)

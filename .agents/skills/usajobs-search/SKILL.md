@@ -27,8 +27,12 @@ That makes it the most precise portal here, once it is set up.
 ## ⚠️ Setup required: a free API key (~2 minutes)
 
 USAJOBS is the only authenticating portal in this fork. Without credentials every
-request returns HTTP 401, which is why **this skill ships `enabled: false`** — an
-always-failing portal in `/scrape` is worse than an absent one.
+request returns HTTP 401, and an always-failing portal in `/scrape` is worse than
+an absent one — so `enabled` tracks whether credentials are actually present.
+
+**In this fork it is `enabled: true`**: the key is configured in the repo-root
+`.env` and verified against live data. If you clone this fork and do not have your
+own USAJOBS key, set `enabled: false` until you do.
 
 1. Register at <https://developer.usajobs.gov/apirequest/> (free, email-confirmed).
 2. Put both values in **`.env` at the repo root** (the file already exists; copy
@@ -49,7 +53,8 @@ always-failing portal in `/scrape` is worse than an absent one.
    A shell `export` works too and takes precedence, but does not persist across
    terminals.
 
-3. Flip `enabled: false` → `enabled: true` in this file's frontmatter.
+3. Set `enabled: true` in this file's frontmatter. (Already done here — this step
+   is for a fresh clone that started from `enabled: false`.)
 
 `.env` and `.env.*` are gitignored, so the key is never committed. Credentials
 are read from the environment only and never written anywhere by the CLI.

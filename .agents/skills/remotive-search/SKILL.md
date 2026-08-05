@@ -38,7 +38,9 @@ republish them. The CLI emits a `Source: Remotive` attribution line in `table` a
 
 Verified 2026-08-04: the free feed returned **32 jobs total** (`total-job-count: 32`),
 spanning about a month, across 11 categories — and it **ignores every documented
-filter parameter**. `search`, `category`, `company_name` and `limit` all return the
+filter parameter**. The count drifts as jobs roll through (a probe the next day
+returned 31); the order of magnitude is the point, and the code reads the size from
+the response rather than assuming it. `search`, `category`, `company_name` and `limit` all return the
 same full record set.
 
 So: all filtering in this CLI is **client-side**, and this portal is a supplementary
