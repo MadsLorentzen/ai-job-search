@@ -25,6 +25,34 @@ around it by sweeping every known board concurrently. **`/scrape` should call th
 with `--registry --us-remote`** — this is the highest-signal channel, since it hits
 employers directly rather than through an aggregator.
 
+### ⚠️ Route by stack — the two halves of this profile need different portals
+
+Measured 2026-08-05. The same query returns wildly different results by portal:
+
+| Query | Greenhouse (91 boards) | The Muse | LinkedIn |
+|-------|------------------------|----------|----------|
+| `.net` / `c#` | **0** | **0** | 10+ (page-capped) |
+| `backend` | 43 | 9 | — |
+| `golang` | 1 | — | 10+ (page-capped) |
+
+**Greenhouse and Lever sell to modern startups, which are Go/Python/TypeScript
+shops.** The .NET-heavy employers are enterprise: of 53 probed (TransUnion,
+Equifax, Workiva, Principal, Procore, athenahealth, Oscar Health, Rocket
+Mortgage...), **41 were not on Greenhouse** — they use Workday, iCIMS, Taleo or
+SmartRecruiters, none of which have a usable public API.
+
+**Therefore, every run must cover BOTH channels:**
+
+- **Go / backend / payments / staff-level** → `greenhouse-search --registry --us-remote`
+  and `lever-search --registry`. Highest signal, hits employers directly.
+- **.NET / C# / enterprise** → `linkedin-search` with explicit `.NET`/`C#` queries,
+  plus the `site:` WebSearch fallbacks below. **The ATS registry will return zero
+  for these — that is expected, not a broken portal.** Do not conclude ".NET roles
+  don't exist" from an empty ATS sweep.
+
+Skipping the second channel hides roughly half of this candidate's marketable
+experience (20+ years .NET vs 1 year Go).
+
 Two usage rules for them:
 - **Search role nouns, not languages.** `--query` matches the job TITLE only.
   `-q "senior software engineer"` returns 179 remote matches; `-q "golang"` returns 1,
@@ -64,12 +92,36 @@ All queries are **remote-first, US-wide**. Where a portal takes a location flag,
 use `Remote` / `United States`; see the Location Gate in `04-job-evaluation.md`
 for the remote-in-name-only trap.
 
-### Priority 1: Senior / Staff Backend Engineer (Go, .NET)
+### Priority 1a: Senior / Staff Backend — Go & general (ATS registry channel)
 
-Strongest and most recent evidence base. Run these first.
+Most *recent* evidence. Run against the ATS registry, which is where these live.
 
-CLI terms: `senior software engineer`, `staff software engineer`, `backend engineer`,
-`golang`, `go engineer`, `.net`, `c#`, `distributed systems`, `microservices`, `platform engineer`
+Portals: `greenhouse-search --registry --us-remote`, `lever-search --registry`, `themuse-search`
+CLI terms: `senior software engineer`, `staff engineer`, `backend`, `platform engineer`,
+`distributed systems`, `microservices`
+(Not `golang` — see the role-nouns rule above; it returns 1 match vs 110.)
+
+### Priority 1b: Senior .NET / C# (LinkedIn + WebSearch channel)
+
+**Deepest** evidence — 20+ years vs 1 year of Go. Invisible to the ATS registry;
+must be searched separately or it is silently dropped from every run.
+
+Portals: `linkedin-search` (primary), WebSearch `site:` fallbacks
+CLI terms: `.NET developer`, `senior .NET engineer`, `C# engineer`, `.NET/C#`,
+`dotnet developer`, `ASP.NET`, `.NET Core`, `Azure .NET`
+
+```
+site:indeed.com "senior .NET developer" remote
+site:dice.com ".NET Core" remote
+site:builtin.com "c#" engineer remote
+```
+
+**Market note (observed 2026-08-05):** the remote .NET market skews heavily to
+staffing agencies — of 20 results, 10 were agencies (Kforce, Talener, Optomi,
+Vernovis, Kavaliro, Fixity, Precision, Rapid Eagle, EmergenceTek, Lucid). Direct
+employers found: TransUnion, Bitdefender, Hone Health, Airrosti, Q-Lab, VetsEZ.
+Flag agency listings so the user can judge contract-vs-permanent themselves;
+do not filter them out silently.
 
 ```
 site:builtin.com "senior software engineer" golang remote
