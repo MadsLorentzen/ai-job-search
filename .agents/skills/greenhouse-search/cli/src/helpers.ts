@@ -181,6 +181,45 @@ export function matchesLocation(card: JobCard, location: string | undefined): bo
   return have.includes(want)
 }
 
+const REMOTE_RE = /remote|anywhere|distributed/
+/**
+ * Countries and regions that, when named, mean the role is NOT US-eligible.
+ * Deliberately explicit rather than "anything that isn't the US" — location
+ * strings are unnormalized free text and an allowlist would drop valid US roles.
+ */
+const NON_US_RE = new RegExp(
+  [
+    "canada","poland","spain","portugal","germany","france","netherlands","ireland","united kingdom",
+    "\\buk\\b","england","scotland","india","brazil","mexico","argentina","colombia","chile","japan",
+    "singapore","australia","new zealand","israel","south africa","nigeria","kenya","philippines",
+    "vietnam","indonesia","china","korea","taiwan","sweden","norway","denmark","finland","switzerland",
+    "austria","belgium","italy","greece","romania","bulgaria","serbia","croatia","czech","hungary",
+    "ukraine","turkey","\\buae\\b","dubai","emea","apac","latam","\\bemea\\b",
+  ].join("|"),
+  "i",
+)
+const US_RE = /\b(us|usa|u\.s\.|united states|america|americas|north america)\b/i
+
+/**
+ * Match US-eligible remote roles.
+ *
+ * Substring matching alone cannot do this: US remote roles are spelled at least
+ * four ways ("Remote - US", "Remote US", "Remote - United States", "Remote, USA"),
+ * so no single --location value catches them all, while plain "Remote" wrongly
+ * admits "Remote Canada" / "Remote Poland" / "Remote Spain".
+ *
+ * Rule: must read as remote, AND must not name a non-US country — unless it also
+ * explicitly names the US (multi-region postings like "Remote US; Remote Canada"
+ * are genuinely open to US candidates).
+ */
+export function matchesUsRemote(card: JobCard): boolean {
+  const have = (card.location || "").toLowerCase()
+  if (!have) return false
+  if (!REMOTE_RE.test(have)) return false
+  if (US_RE.test(have)) return true
+  return !NON_US_RE.test(have)
+}
+
 export function withinJobAge(card: JobCard, days: number, now: number): boolean {
   if (!days || days <= 0 || days >= 9999) return true
   if (!card.date) return false
@@ -195,4 +234,85 @@ export function parseBoards(value: string): string[] {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean)
+}
+
+// ---------------------------------------------------------------------------
+// Company registry — what makes role-first search possible.
+//
+// Greenhouse has no cross-company search, so "find me Go roles anywhere" is
+// implemented as: sweep every known board, filter titles locally. The registry
+// is the list of known boards, shared with lever-search.
+// ---------------------------------------------------------------------------
+
+import { join } from "path"
+
+// import.meta.dir is .agents/skills/<skill>/cli/src — four levels up is .agents/
+export const REGISTRY_PATH = join(
+  import.meta.dir,
+  "../../../../ats-registry/companies.json",
+)
+
+export interface Registry {
+  schema_version?: number
+  updated?: string
+  greenhouse?: string[]
+  lever?: string[]
+}
+
+/**
+ * Load the shared registry. Returns [] rather than throwing when the file is
+ * absent or malformed — a missing registry should degrade `--registry` into a
+ * clear error at the call site, not crash the CLI.
+ */
+export async function loadRegistry(ats: "greenhouse" | "lever"): Promise<string[]> {
+  try {
+    const file = Bun.file(REGISTRY_PATH)
+    if (!(await file.exists())) return []
+    const data = (await file.json()) as Registry
+    const list = data[ats]
+    return Array.isArray(list) ? list.filter((s) => typeof s === "string" && s.trim()) : []
+  } catch {
+    return []
+  }
+}
+
+/** Persist an updated slug list back to the registry, preserving other keys. */
+export async function saveRegistry(
+  ats: "greenhouse" | "lever",
+  slugs: string[],
+): Promise<number> {
+  let data: Registry = {}
+  try {
+    const file = Bun.file(REGISTRY_PATH)
+    if (await file.exists()) data = (await file.json()) as Registry
+  } catch {
+    data = {}
+  }
+  const merged = Array.from(new Set([...(data[ats] ?? []), ...slugs])).sort()
+  data[ats] = merged
+  data.updated = new Date().toISOString().slice(0, 10)
+  await Bun.write(REGISTRY_PATH, JSON.stringify(data, null, 2) + "\n")
+  return merged.length
+}
+
+/**
+ * Run `fn` over `items` with at most `limit` in flight. Sweeping 79 boards
+ * sequentially takes minutes; this brings it to seconds while staying polite
+ * enough not to trip rate limiting.
+ */
+export async function pool<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length)
+  let cursor = 0
+  const workers = Array.from({ length: Math.max(1, Math.min(limit, items.length)) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor++
+      results[index] = await fn(items[index]!)
+    }
+  })
+  await Promise.all(workers)
+  return results
 }

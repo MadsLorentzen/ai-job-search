@@ -195,6 +195,28 @@ export function matchesLocation(card: JobCard, location: string | undefined): bo
   return card.location.toLowerCase().includes(want)
 }
 
+const REMOTE_RE = /remote|anywhere|distributed/
+const US_RE = /\b(us|usa|u\.s\.|united states|america|americas|north america)\b/i
+
+/**
+ * Match US-eligible remote roles. Lever is better structured than Greenhouse
+ * here — it exposes `workplaceType` and an ISO-2 `country` — so this reads the
+ * fields rather than guessing from a free-text location where possible.
+ *
+ * Passes when the role reads as remote AND either names the US or declares no
+ * country other than US.
+ */
+export function matchesUsRemote(card: JobCard): boolean {
+  const loc = (card.location || "").toLowerCase()
+  const isRemote = (card.workplaceType || "").toLowerCase() === "remote" || REMOTE_RE.test(loc)
+  if (!isRemote) return false
+  // country is ISO-2 when present; anything non-US is disqualifying.
+  if (card.country && card.country.toUpperCase() !== "US") {
+    return US_RE.test(loc) // unless the location explicitly also lists the US
+  }
+  return true
+}
+
 /** Filter on Lever's own workplaceType field: remote | hybrid | onsite. */
 export function matchesWorkplace(card: JobCard, mode: string | undefined): boolean {
   if (!mode) return true
@@ -215,4 +237,75 @@ export function parseSites(value: string): string[] {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean)
+}
+
+// ---------------------------------------------------------------------------
+// Company registry — shared with greenhouse-search. Lever has no cross-company
+// search, so role-first search means sweeping every known site and filtering
+// titles locally.
+// ---------------------------------------------------------------------------
+
+import { join } from "path"
+
+// import.meta.dir is .agents/skills/<skill>/cli/src — four levels up is .agents/
+export const REGISTRY_PATH = join(
+  import.meta.dir,
+  "../../../../ats-registry/companies.json",
+)
+
+export interface Registry {
+  schema_version?: number
+  updated?: string
+  greenhouse?: string[]
+  lever?: string[]
+}
+
+/** Load the shared registry. Returns [] rather than throwing when absent. */
+export async function loadRegistry(ats: "greenhouse" | "lever"): Promise<string[]> {
+  try {
+    const file = Bun.file(REGISTRY_PATH)
+    if (!(await file.exists())) return []
+    const data = (await file.json()) as Registry
+    const list = data[ats]
+    return Array.isArray(list) ? list.filter((s) => typeof s === "string" && s.trim()) : []
+  } catch {
+    return []
+  }
+}
+
+/** Persist an updated slug list, preserving the other ATS's entries. */
+export async function saveRegistry(
+  ats: "greenhouse" | "lever",
+  slugs: string[],
+): Promise<number> {
+  let data: Registry = {}
+  try {
+    const file = Bun.file(REGISTRY_PATH)
+    if (await file.exists()) data = (await file.json()) as Registry
+  } catch {
+    data = {}
+  }
+  const merged = Array.from(new Set([...(data[ats] ?? []), ...slugs])).sort()
+  data[ats] = merged
+  data.updated = new Date().toISOString().slice(0, 10)
+  await Bun.write(REGISTRY_PATH, JSON.stringify(data, null, 2) + "\n")
+  return merged.length
+}
+
+/** Run `fn` over `items` with at most `limit` in flight. */
+export async function pool<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length)
+  let cursor = 0
+  const workers = Array.from({ length: Math.max(1, Math.min(limit, items.length)) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor++
+      results[index] = await fn(items[index]!)
+    }
+  })
+  await Promise.all(workers)
+  return results
 }

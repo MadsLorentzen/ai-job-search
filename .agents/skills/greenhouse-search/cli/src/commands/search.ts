@@ -4,7 +4,9 @@ import {
   parseJobs,
   matchesQuery,
   matchesLocation,
+  matchesUsRemote,
   withinJobAge,
+  pool,
   writeError,
   type JobCard,
   type GreenhouseListResponse,
@@ -14,9 +16,11 @@ export interface SearchOpts {
   boards: string[]
   query?: string
   location?: string
+  usRemote?: boolean
   jobage: number
   page: number
   limit?: number
+  concurrency: number
   format: "json" | "table" | "plain"
 }
 
@@ -53,21 +57,29 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
     const all: JobCard[] = []
     const boardErrors: Array<{ board: string; error: string }> = []
 
-    // One board can 404 (wrong token) or fail without killing the whole run.
-    for (const board of opts.boards) {
-      let response: GreenhouseListResponse | null
+    // Boards are fetched CONCURRENTLY — a registry sweep is ~79 boards, which
+    // sequentially would take minutes. One board can 404 (wrong token) or fail
+    // without killing the whole run.
+    const perBoard = await pool(opts.boards, opts.concurrency, async (board) => {
       try {
-        response = await jsonFetch<GreenhouseListResponse>(buildUrl(board))
+        const response = await jsonFetch<GreenhouseListResponse>(buildUrl(board))
+        if (!response) {
+          return { board, error: `no Greenhouse board found for "${board}"`, cards: [] as JobCard[] }
+        }
+        return { board, error: null, cards: parseJobs(response, board) }
       } catch (e) {
-        boardErrors.push({ board, error: e instanceof Error ? e.message : String(e) })
+        return { board, error: e instanceof Error ? e.message : String(e), cards: [] as JobCard[] }
+      }
+    })
+
+    for (const result of perBoard) {
+      if (result.error) {
+        boardErrors.push({ board: result.board, error: result.error })
         continue
       }
-      if (!response) {
-        boardErrors.push({ board, error: `no Greenhouse board found for "${board}"` })
-        continue
-      }
-      for (const card of parseJobs(response, board)) {
+      for (const card of result.cards) {
         if (!matchesQuery(card, opts.query)) continue
+        if (opts.usRemote && !matchesUsRemote(card)) continue
         if (!matchesLocation(card, opts.location)) continue
         if (!withinJobAge(card, opts.jobage, now)) continue
         all.push(card)
@@ -107,7 +119,9 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
               count: results.length,
               page: opts.page,
               matchedTotal: all.length,
-              boards: opts.boards,
+              boardsSearched: opts.boards.length,
+              // Full list omitted once it gets long (a registry sweep is ~79).
+              boards: opts.boards.length <= 12 ? opts.boards : undefined,
               queryFilteredClientSide: !!opts.query,
               ...(boardErrors.length ? { boardErrors } : {}),
             },

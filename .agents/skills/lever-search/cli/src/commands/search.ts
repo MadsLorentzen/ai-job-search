@@ -5,7 +5,9 @@ import {
   matchesQuery,
   matchesLocation,
   matchesWorkplace,
+  matchesUsRemote,
   withinJobAge,
+  pool,
   writeError,
   type JobCard,
   type RawLeverPosting,
@@ -18,9 +20,11 @@ export interface SearchOpts {
   team?: string
   commitment?: string
   remote?: string
+  usRemote?: boolean
   jobage: number
   page: number
   limit?: number
+  concurrency: number
   format: "json" | "table" | "plain"
 }
 
@@ -65,25 +69,31 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
     const all: JobCard[] = []
     const siteErrors: Array<{ site: string; error: string }> = []
 
-    for (const site of opts.sites) {
-      let response: RawLeverPosting[] | null
+    // Sites are fetched CONCURRENTLY so a registry sweep stays fast.
+    const perSite = await pool(opts.sites, opts.concurrency, async (site) => {
       try {
-        response = await jsonFetch<RawLeverPosting[]>(buildUrl(site, opts))
+        const response = await jsonFetch<RawLeverPosting[]>(buildUrl(site, opts))
+        if (!response) {
+          return { site, error: `no Lever posting site found for "${site}"`, cards: [] as JobCard[] }
+        }
+        if (!Array.isArray(response)) {
+          return { site, error: `unexpected response shape for "${site}"`, cards: [] as JobCard[] }
+        }
+        // A valid site with zero postings is not an error, just empty.
+        return { site, error: null, cards: parseJobs(response, site) }
       } catch (e) {
-        siteErrors.push({ site, error: e instanceof Error ? e.message : String(e) })
+        return { site, error: e instanceof Error ? e.message : String(e), cards: [] as JobCard[] }
+      }
+    })
+
+    for (const result of perSite) {
+      if (result.error) {
+        siteErrors.push({ site: result.site, error: result.error })
         continue
       }
-      if (!response) {
-        siteErrors.push({ site, error: `no Lever posting site found for "${site}"` })
-        continue
-      }
-      if (!Array.isArray(response)) {
-        siteErrors.push({ site, error: `unexpected response shape for "${site}"` })
-        continue
-      }
-      // A valid site with zero postings is not an error, just empty.
-      for (const card of parseJobs(response, site)) {
+      for (const card of result.cards) {
         if (!matchesQuery(card, opts.query)) continue
+        if (opts.usRemote && !matchesUsRemote(card)) continue
         if (!matchesLocation(card, opts.location)) continue
         if (!matchesWorkplace(card, opts.remote)) continue
         if (!withinJobAge(card, opts.jobage, now)) continue
@@ -122,7 +132,8 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
               count: results.length,
               page: opts.page,
               matchedTotal: all.length,
-              sites: opts.sites,
+              sitesSearched: opts.sites.length,
+              sites: opts.sites.length <= 12 ? opts.sites : undefined,
               queryFilteredClientSide: !!opts.query,
               ...(siteErrors.length ? { siteErrors } : {}),
             },

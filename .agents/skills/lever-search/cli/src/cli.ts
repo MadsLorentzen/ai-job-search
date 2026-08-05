@@ -7,7 +7,8 @@
 
 import { runSearch, type SearchOpts } from "./commands/search.js"
 import { runDetail, type DetailOpts } from "./commands/detail.js"
-import { parseSites } from "./helpers.js"
+import { runDiscover, type DiscoverOpts } from "./commands/discover.js"
+import { parseSites, loadRegistry } from "./helpers.js"
 
 interface Flags {
   _: string[]
@@ -40,19 +41,27 @@ function parseFlags(argv: string[]): Flags {
   return flags
 }
 
-const HELP = `lever-cli — search a company's Lever job postings (US + global)
+const HELP = `lever-cli — search Lever job postings, by role or by company
 
-Lever has NO cross-company search: you search one company's posting site at a
-time, by its slug (jobs.lever.co/<site>). Use themuse-search for open-ended
-discovery; use this to work a target-company list.
+Lever has NO cross-company search API. Role-first search is therefore done by
+sweeping a registry of known site slugs concurrently and filtering titles
+locally — that is what --registry does.
 
 USAGE
-  bun run src/cli.ts search --company <site>[,<site>...] [flags]
+  bun run src/cli.ts search --registry -q "<role>" [flags]        # role-first
+  bun run src/cli.ts search --company <site>[,<site>...] [flags]  # company-first
   bun run src/cli.ts detail <uuid|url> [--company <site>] [--format json|plain]
+  bun run src/cli.ts discover <company-name>... [--dry-run]       # grow the registry
 
 SEARCH FLAGS
-  --company, -c <list>    REQUIRED. Lever site slug(s), comma-separated.
+  --registry              Sweep every site in .agents/ats-registry/companies.json.
+                          Use INSTEAD of --company for role-first search.
+  --company, -c <list>    Lever site slug(s), comma-separated.
                           e.g. "palantir" or "palantir,plaid"
+                          One of --registry or --company is required.
+  --concurrency <n>       Parallel site fetches. Default 8, max 16.
+  --us-remote             Only US-eligible remote roles (reads workplaceType +
+                          the ISO-2 country field; excludes non-US remote).
   --query, -q <text>      Keywords. Filtered CLIENT-SIDE over the job title
                           (Lever has no keyword parameter).
   --location, -l <text>   Client-side location filter. "Remote" also matches on
@@ -67,6 +76,10 @@ SEARCH FLAGS
   --format <fmt>          json (default) | table | plain.
 
 EXAMPLES
+  # Role-first across every known site
+  bun run src/cli.ts search --registry -q "senior software engineer" -l "Remote" --format table
+  bun run src/cli.ts discover "Modern Treasury" Ramp --dry-run
+  # Company-first
   bun run src/cli.ts search -c palantir -q "engineer" --format table
   bun run src/cli.ts search -c palantir --team "Engineering" --remote remote --format table
   bun run src/cli.ts search -c "palantir,plaid" -q "data" --jobage 30 --format table
@@ -75,6 +88,13 @@ EXAMPLES
 Finding a site slug: open the company's careers page and look for
 jobs.lever.co/<slug> in the URL or the embedded iframe.
 `
+
+/** Bounded parallelism: fast registry sweeps without tripping rate limits. */
+function clampConcurrency(raw: string | boolean | string[] | undefined): number {
+  const n = typeof raw === "string" ? parseInt(raw, 10) : NaN
+  if (!Number.isFinite(n) || n <= 0) return 8
+  return Math.min(n, 16)
+}
 
 async function main(): Promise<number> {
   const argv = process.argv.slice(2)
@@ -97,14 +117,51 @@ async function main(): Promise<number> {
     return val
   }
 
+  if (cmd === "discover") {
+    const names = (flags._ as string[]).slice(1)
+    if (names.length === 0) {
+      process.stderr.write(
+        JSON.stringify({
+          error: "discover needs at least one company name, e.g. discover \"Modern Treasury\" Ramp",
+          code: "NO_CANDIDATES",
+        }) + "\n",
+      )
+      return 1
+    }
+    const dfmt = (flags.format as string) || "table"
+    const dopts: DiscoverOpts = {
+      candidates: names,
+      concurrency: clampConcurrency(flags.concurrency),
+      dryRun: flags["dry-run"] === true || flags.dryRun === true,
+      format: (["json", "table", "plain"].includes(dfmt) ? dfmt : "table") as DiscoverOpts["format"],
+    }
+    return runDiscover(dopts)
+  }
+
   if (cmd === "search") {
     const companyRaw = typeof flags.company === "string" ? flags.company : undefined
-    const sites = companyRaw ? parseSites(companyRaw) : []
+    let sites = companyRaw ? parseSites(companyRaw) : []
+
+    if (flags.registry === true) {
+      const fromRegistry = await loadRegistry("lever")
+      if (fromRegistry.length === 0) {
+        process.stderr.write(
+          JSON.stringify({
+            error:
+              "--registry was passed but the registry is empty or missing (.agents/ats-registry/companies.json). Seed it with the discover command, or pass --company instead.",
+            code: "EMPTY_REGISTRY",
+          }) + "\n",
+        )
+        return 1
+      }
+      sites = Array.from(new Set([...fromRegistry, ...sites]))
+    }
+
     if (sites.length === 0) {
       process.stderr.write(
         JSON.stringify({
           error:
-            'the --company/-c flag is required (a Lever site slug, e.g. -c palantir, or a comma-separated list). Lever has no cross-company search.',
+            'pass --registry for a role-first sweep of all known sites, or --company/-c with a Lever site slug (e.g. -c palantir). Lever has no cross-company search API.',
           code: "NO_COMPANY",
         }) + "\n",
       )
@@ -130,7 +187,7 @@ async function main(): Promise<number> {
       return 1
     }
 
-    for (const name of ["jobage", "page", "limit"]) {
+    for (const name of ["jobage", "page", "limit", "concurrency"]) {
       if (flags[name] !== undefined) {
         const v = parseIntFlag(name, flags[name])
         if (v === null) return 1
@@ -146,9 +203,11 @@ async function main(): Promise<number> {
       team: typeof flags.team === "string" ? flags.team : undefined,
       commitment: typeof flags.commitment === "string" ? flags.commitment : undefined,
       remote,
+      usRemote: flags["us-remote"] === true || flags.usRemote === true,
       jobage: flags.jobage ? parseInt(flags.jobage as string, 10) : 9999,
       page: flags.page ? Math.max(1, parseInt(flags.page as string, 10)) : 1,
       limit: flags.limit ? parseInt(flags.limit as string, 10) : undefined,
+      concurrency: clampConcurrency(flags.concurrency),
       format: (["json", "table", "plain"].includes(fmt) ? fmt : "json") as SearchOpts["format"],
     }
     return runSearch(opts)

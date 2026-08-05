@@ -2,14 +2,15 @@
 name: greenhouse-search
 version: 1.0.0
 description: >
-  Use this skill to search a SPECIFIC company's open roles when that company
-  hosts its careers page on Greenhouse — the most common ATS among US tech
-  companies. Best when the user names an employer or works from a target-company
-  list ("what's open at Stripe", "any data roles at Databricks", "check these
-  five companies"). Not for open-ended discovery — Greenhouse has no
-  cross-company search; use themuse-search for that. Trigger phrases: jobs at
+  Use this skill to search Greenhouse job boards — the most common ATS among US
+  tech companies — either BY ROLE across ~79 known company boards at once
+  (--registry, ~10,800 live postings, ~5s), or BY COMPANY when the user names an
+  employer. Reach for it for "senior backend roles at good companies", for a
+  target-company list, and as the highest-signal source for fintech since it hits
+  employers directly rather than via an aggregator. Trigger phrases: jobs at
   <company>, openings at <company>, <company> careers, <company> is hiring,
-  check <company> for roles, greenhouse, greenhouse board, ATS search.
+  senior engineer roles, backend roles, staff engineer, greenhouse, ATS search,
+  search company job boards.
 context: fork
 enabled: true  # set to false to keep this portal installed but have /scrape skip it
 allowed-tools: Bash(bun run .agents/skills/greenhouse-search/cli/src/cli.ts *)
@@ -25,15 +26,42 @@ no API key, and **zero runtime dependencies**.
 Greenhouse is the dominant ATS among US tech employers, so this covers a large
 share of the market — but **one company at a time**.
 
-## ⚠️ Scope: this is a target-company tool, not a search engine
+## Two ways to search: by role, or by company
 
-**Greenhouse has no cross-company search.** The API is addressed per company by
-its *board token* — the slug in `boards.greenhouse.io/<token>`. `--company` is
-therefore **required**, and `--query` is a **client-side** filter over job titles.
+**Greenhouse has no cross-company search API.** The API is addressed per company
+by its *board token* — the slug in `boards.greenhouse.io/<token>`.
 
-Pair it with `themuse-search` (open-ended discovery) and `lever-search` (the
-other common ATS). The workflow that pays off: build a list of employers you care
-about, then sweep them all in one call with a comma-separated `--company`.
+Role-first search is built on top of that limitation: `--registry` sweeps every
+board in `.agents/ats-registry/companies.json` **concurrently** and filters titles
+locally. At time of writing the registry holds **79 Greenhouse boards carrying
+~10,800 live postings**, and a full sweep takes about **5 seconds**.
+
+```bash
+# role-first — every known board
+search --registry -q "senior software engineer" -l "Remote"
+# company-first — a named target list
+search --company stripe,gusto,brex -q "engineer"
+```
+
+The two combine: passing both unions the registry with your explicit list.
+
+### ⚠️ Search role nouns, not language names
+
+`--query` matches the **job title only**, and titles almost never name a language.
+Measured against the registry, remote-filtered:
+
+| Query | Matches |
+|-------|---------|
+| `"senior software engineer"` | 179 |
+| `"staff engineer"` | 175 |
+| `"backend"` | 91 |
+| `"platform engineer"` | 84 |
+| `"payments"` | 16 |
+| `"golang"` | **1** |
+
+"Golang" returns almost nothing because companies title the role *Backend
+Engineer* and mention Go in the description — which the list endpoint does not
+return. Search the role, then read descriptions with `detail`.
 
 ### Finding a company's board token
 
@@ -51,7 +79,9 @@ bun run .agents/skills/greenhouse-search/cli/src/cli.ts search --company <token>
 ```
 
 Key flags:
-- `--company <list>` / `-c <list>` — **required.** One board token or a comma-separated list, e.g. `stripe` or `stripe,databricks,figma`. A token that doesn't resolve is reported in `meta.boardErrors` and the run continues with the rest.
+- `--registry` — sweep **every** board in the shared registry. This is what makes role-first search work. Use instead of (or alongside) `--company`.
+- `--company <list>` / `-c <list>` — one board token or a comma-separated list, e.g. `stripe` or `stripe,databricks,figma`. A token that doesn't resolve is reported in `meta.boardErrors` and the run continues with the rest. **One of `--registry` or `--company` is required.**
+- `--concurrency <n>` — parallel board fetches, default 8, capped at 16.
 - `--query <text>` / `-q <text>` — client-side keyword filter over the **job title**.
 - `--location <text>` / `-l <text>` — client-side location filter. `"Remote"` also matches `"US - Remote"`, `"US Remote"`, `"Anywhere"`, `"Distributed"`.
 - `--jobage <days>` — posted within N days (client-side, on `first_published`).
@@ -70,9 +100,30 @@ job URL that carries both (`https://boards.greenhouse.io/stripe/jobs/8023928`, o
 careers URL with `?gh_jid=`), or pass the bare id together with `--company`.
 Returns the full decoded description, department, office, and apply link.
 
+### Grow the registry
+
+```bash
+bun run .agents/skills/greenhouse-search/cli/src/cli.ts discover "Modern Treasury" Wise Ramp [--dry-run]
+```
+
+Converts each company name to a candidate slug (lowercase, punctuation stripped —
+roughly a 10-in-16 hit rate on well-known companies), probes it, and records the
+ones that resolve. A board that resolves but is **currently empty still counts**,
+so a company doesn't drop out during a hiring freeze. `--dry-run` reports without
+writing. Slugs already in the registry are skipped rather than re-probed.
+
+If a company resolves on neither Greenhouse nor Lever, it is likely on a third ATS
+— Ashby is the common one (Ramp, Deel and Rippling are all Ashby).
+
 ## Usage examples
 
 ```bash
+# ROLE-FIRST: senior backend roles across all 79 known boards, remote
+bun run .agents/skills/greenhouse-search/cli/src/cli.ts search --registry -q "senior software engineer" -l "Remote" --format table
+
+# Role-first, recent only
+bun run .agents/skills/greenhouse-search/cli/src/cli.ts search --registry -q "staff engineer" --jobage 14 --format table
+
 # Engineering roles at Stripe
 bun run .agents/skills/greenhouse-search/cli/src/cli.ts search -c stripe -q "engineer" --format table
 
