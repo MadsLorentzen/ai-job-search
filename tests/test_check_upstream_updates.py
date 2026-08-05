@@ -131,5 +131,33 @@ class UpstreamRemotePresentTests(UpstreamCheckerRepoFixture):
         self.assertIn("up to date with upstream/master", result.stdout)
 
 
+class UpstreamRefMissingFileTests(UpstreamCheckerRepoFixture):
+    """Simulates upstream renaming/deleting one framework file while the
+    fork still has its own copy: git show then fails, and the checker used
+    to swallow the error and report a clean '[OK]'."""
+
+    def setUp(self):
+        super().setUp()
+        self.add_remote("origin", FORK_URL)
+        self.add_remote("upstream", TEMPLATE_URL)
+
+        # Upstream drops AGENTS.md (rename/delete) in a new commit.
+        subprocess.run(["git", "rm", "-q", "AGENTS.md"], cwd=self.root, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-qm", "drop AGENTS.md"], cwd=self.root, check=True, capture_output=True)
+        self.materialize_remote_ref("upstream")
+
+        # The fork keeps its own copy locally, so only the upstream side
+        # lacks the file.
+        (self.root / "AGENTS.md").write_text(FRONTMATTER, encoding="utf-8")
+
+    def test_file_missing_upstream_is_reported_instead_of_silent_ok(self):
+        result = self.run_checker()
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("AGENTS.md", result.stdout)
+        self.assertNotIn("[OK] All framework files are up to date", result.stdout)
+        self.assertIn("[WARNING]", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

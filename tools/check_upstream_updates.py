@@ -113,6 +113,7 @@ def main() -> int:
     
     updates_available = []
     errors = []
+    missing_upstream = []
 
     for rel_path in FRAMEWORK_FILES:
         local_path = ROOT / rel_path
@@ -125,9 +126,16 @@ def main() -> int:
         local_ver = get_framework_version_from_text(local_text)
         
         # Get upstream version
-        rc, upstream_text, _ = run_git(["show", f"{ref}:{rel_path}"])
+        rc, upstream_text, git_err = run_git(["show", f"{ref}:{rel_path}"])
         if rc != 0:
-            # File might not exist upstream yet
+            # A file present locally but missing from the upstream ref means
+            # it was renamed or deleted upstream; any other git failure means
+            # the comparison is incomplete. Either way, never report a clean
+            # '[OK]' while silently skipping the file.
+            if "does not exist" in git_err or "exists on disk, but not in" in git_err:
+                missing_upstream.append(rel_path)
+            else:
+                errors.append(f"Failed to read upstream version of {rel_path}: {git_err.strip()}")
             continue
             
         upstream_ver = get_framework_version_from_text(upstream_text)
@@ -153,6 +161,12 @@ def main() -> int:
             print(f"  - {err}")
         print()
 
+    if missing_upstream:
+        print("Files present locally but missing from the upstream ref (possibly renamed or deleted upstream):")
+        for path in missing_upstream:
+            print(f"  - {path}")
+        print()
+
     if updates_available:
         print("[UPDATE] Upstream updates available for framework methodology files:")
         for up in updates_available:
@@ -162,7 +176,14 @@ def main() -> int:
         print("Review these changes to see if they fit your personalized fork!")
         return 0
     else:
-        print(f"[OK] All framework files are up to date with {ref}!")
+        if errors or missing_upstream:
+            print(
+                f"[WARNING] Framework check incomplete against {ref}: "
+                f"{len(errors)} configuration error(s), {len(missing_upstream)} file(s) missing upstream. "
+                "Review the messages above before assuming you are up to date."
+            )
+        else:
+            print(f"[OK] All framework files are up to date with {ref}!")
         return 0
 
 if __name__ == "__main__":
