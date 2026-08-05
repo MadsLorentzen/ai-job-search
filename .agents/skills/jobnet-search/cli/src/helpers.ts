@@ -1,4 +1,5 @@
 export const BASE_URL = "https://jobnet.dk/bff"
+export const USER_AGENT = "Mozilla/5.0 (compatible; jobnet-cli/1.0)"
 
 export async function apiFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
   let url = `${BASE_URL}${path}`
@@ -12,6 +13,7 @@ export async function apiFetch<T>(path: string, params?: Record<string, string>)
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const response = await fetch(url, {
       headers: {
+        "User-Agent": USER_AGENT,
         "x-csrf": "1",
       },
       signal: AbortSignal.timeout(15000),
