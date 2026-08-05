@@ -30,7 +30,7 @@ export const search = defineCommand({
     "suitable-for": option(z.union([z.string(), z.array(z.string())]).optional(), {
       description: "Suitable-for code (andet). Repeatable.",
     }),
-    company: option(z.coerce.number().optional(), {
+    company: option(z.coerce.number().int().min(1).optional(), {
       description: "Company ID (virk)",
     }),
     remote: option(z.string().optional(), {

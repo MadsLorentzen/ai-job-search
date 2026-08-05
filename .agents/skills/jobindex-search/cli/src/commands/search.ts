@@ -13,7 +13,7 @@ export const search = defineCommand({
     page: option(z.coerce.number().int().min(1).default(1), {
       description: "Page number (1-indexed)",
     }),
-    jobage: option(z.coerce.number().default(9999), {
+    jobage: option(z.coerce.number().int().min(1).default(9999), {
       description: "Max age of posting in days: 1, 7, 14, 30, or 9999 (all)",
     }),
     sort: option(z.string().default("score"), {

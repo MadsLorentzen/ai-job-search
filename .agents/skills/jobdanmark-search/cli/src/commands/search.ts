@@ -87,10 +87,10 @@ export const search = defineCommand({
     text: option(z.string().optional(), {
       description: "Free-text keyword search (job title, keyword)",
     }),
-    category: option(z.coerce.number().optional(), {
+    category: option(z.coerce.number().int().min(1).optional(), {
       description: "Category ID",
     }),
-    "jobtitle-id": option(z.coerce.number().optional(), {
+    "jobtitle-id": option(z.coerce.number().int().min(1).optional(), {
       description: "Job title ID from autocomplete results",
     }),
     municipality: option(z.string().optional(), {
