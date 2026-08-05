@@ -84,6 +84,11 @@ ALLOWED_IGNORE_NEGATIONS = {
     "!cv/main_example.tex",
     "!cover_letters/cover_example.tex",
     "!documents/**/.gitkeep",
+    # Root-scoped template for the .env that carries USAJOBS_API_KEY. Reviewed:
+    # it re-includes ONLY `/.env.example`, never `.env` or `.env.<anything-else>`,
+    # and deliberately not `**/.env.example`, so a stray template in a subfolder
+    # stays ignored. The real `.env` remains covered by `.env` / `**/.env`.
+    "!.env.example",
 }
 
 FORBIDDEN_SCRIPTS = {"preinstall", "install", "postinstall", "prepare", "prepack"}

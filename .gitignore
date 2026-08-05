@@ -2,6 +2,11 @@
 node_modules/
 bun.lock
 
+# Agent tooling state (oh-my-claudecode) — scratch state, never repo content.
+# Matched at any depth: it gets created in whichever directory a tool runs in.
+.omc/
+**/.omc/
+
 # Python
 __pycache__/
 *.pyc
@@ -17,6 +22,19 @@ venv/
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+
+# Secrets (never commit these)
+# Bun auto-loads .env from the directory you run `bun` in, which is how the
+# usajobs-search CLI receives USAJOBS_API_KEY / USAJOBS_EMAIL. Match at any
+# depth so a per-CLI .env is covered too.
+.env
+.env.*
+**/.env
+**/.env.*
+# Re-allow the committed template at the repo root only (negations must come
+# after the ignore rules). Deliberately NOT `!**/.env.example` — a stray
+# .env.example in a subfolder stays ignored.
+!.env.example
 
 # Personal data (never commit these)
 salary_data.json
