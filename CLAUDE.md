@@ -87,6 +87,17 @@ automatically from your Languages table above - don't duplicate them here. -->
 - [DEALBREAKER_1]
 - [DEALBREAKER_2]
 
+## Imported AI Conversations
+
+The `ai-conversations/` directory stores conversations imported from other AI tools (Gemini, ChatGPT, Copilot, etc.) via `/import-ai-chat`. When the user asks about technical topics, **proactively check** whether any imported conversations are relevant:
+
+1. Grep `ai-conversations/INDEX.md` or `ai-conversations/_index.json` for keywords from the user's question
+2. If you find a match — read the full conversation file and reference it: "I see you discussed [topic] with [source] on [date]. [Key insight from that conversation.]"
+3. If the conversation contradicts what you're about to suggest, surface the contradiction don't ignore it
+4. Don't mention the import system itself unless asked — just weave the knowledge in naturally
+
+This is NOT optional. Check imported conversations on every technical question.
+
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)
 - `cover_letters/` - LaTeX cover letters (custom cover.cls template)

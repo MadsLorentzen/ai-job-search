@@ -93,5 +93,8 @@ upskill/*.md
 .agents/**/*.log
 .agents/usage/
 
+# Imported AI conversations — index and structure are tracked, content is personal
+ai-conversations/*/*.md
+
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/
