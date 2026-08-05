@@ -21,6 +21,13 @@ per-file diff commands.
   during #275 (vetoes reported in console output but `language_gate: null` on every persisted
   entry). Mirrors the existing `gaps`/`strengths` pinning pattern. No behavior change.
 
+- **The jobnet and jobdanmark CLIs identify themselves on every API request** (#283) - their
+  `apiFetch`/`apiPost` wrappers now send an explicit `User-Agent` (`jobnet-cli/1.0`,
+  `jobdanmark-cli/1.0`) instead of Bun's anonymous default token, matching the honest
+  self-identification jobindex already uses on `htmlFetch`. The new `user-agent.test.ts`
+  suites assert the header on every request wrapper. No response behavior observed to
+  change.
+
 ### Fixed
 
 - **A `WebFetch` 403 is no longer treated as a dead posting** - `WebFetch` sends a bot user
