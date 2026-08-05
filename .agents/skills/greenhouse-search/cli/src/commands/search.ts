@@ -1,0 +1,135 @@
+import {
+  API_BASE,
+  jsonFetch,
+  parseJobs,
+  matchesQuery,
+  matchesLocation,
+  withinJobAge,
+  writeError,
+  type JobCard,
+  type GreenhouseListResponse,
+} from "../helpers.js"
+
+export interface SearchOpts {
+  boards: string[]
+  query?: string
+  location?: string
+  jobage: number
+  page: number
+  limit?: number
+  format: "json" | "table" | "plain"
+}
+
+const PAGE_SIZE = 25
+
+export function buildUrl(board: string): string {
+  return `${API_BASE}/${encodeURIComponent(board)}/jobs`
+}
+
+function renderTable(cards: JobCard[]): string {
+  if (cards.length === 0) return "No results."
+  const header =
+    "ID".padEnd(10) +
+    " " +
+    "TITLE".padEnd(44) +
+    " " +
+    "COMPANY".padEnd(20) +
+    " " +
+    "LOCATION".padEnd(26) +
+    " DATE"
+  const rows = cards.map((c) => {
+    const title = (c.title || "").slice(0, 44).padEnd(44)
+    const company = (c.company || "—").slice(0, 20).padEnd(20)
+    const loc = (c.location || "—").slice(0, 26).padEnd(26)
+    const date = (c.date || "—").slice(0, 10)
+    return `${c.id.padEnd(10)} ${title} ${company} ${loc} ${date}`
+  })
+  return [header, "-".repeat(header.length), ...rows].join("\n")
+}
+
+export async function runSearch(opts: SearchOpts): Promise<number> {
+  try {
+    const now = Date.now()
+    const all: JobCard[] = []
+    const boardErrors: Array<{ board: string; error: string }> = []
+
+    // One board can 404 (wrong token) or fail without killing the whole run.
+    for (const board of opts.boards) {
+      let response: GreenhouseListResponse | null
+      try {
+        response = await jsonFetch<GreenhouseListResponse>(buildUrl(board))
+      } catch (e) {
+        boardErrors.push({ board, error: e instanceof Error ? e.message : String(e) })
+        continue
+      }
+      if (!response) {
+        boardErrors.push({ board, error: `no Greenhouse board found for "${board}"` })
+        continue
+      }
+      for (const card of parseJobs(response, board)) {
+        if (!matchesQuery(card, opts.query)) continue
+        if (!matchesLocation(card, opts.location)) continue
+        if (!withinJobAge(card, opts.jobage, now)) continue
+        all.push(card)
+      }
+    }
+
+    // Newest first, undated last.
+    all.sort((a, b) => {
+      const ta = a.date ? Date.parse(a.date) : 0
+      const tb = b.date ? Date.parse(b.date) : 0
+      return tb - ta
+    })
+
+    // Greenhouse returns a whole board in one response, so paginate client-side.
+    const start = (opts.page - 1) * PAGE_SIZE
+    let results = all.slice(start, start + PAGE_SIZE)
+    if (opts.limit !== undefined && opts.limit >= 0) results = results.slice(0, opts.limit)
+
+    if (opts.format === "table") {
+      process.stdout.write(renderTable(results) + "\n")
+    } else if (opts.format === "plain") {
+      process.stdout.write(
+        (results.length === 0
+          ? "No results."
+          : results
+              .map(
+                (c) =>
+                  `${c.title}\n  ${c.company || "—"} · ${c.location || "—"} · ${c.date || "—"}\n  id: ${c.id} (board: ${c.board})\n  ${c.url}`,
+              )
+              .join("\n\n")) + "\n",
+      )
+    } else {
+      process.stdout.write(
+        JSON.stringify(
+          {
+            meta: {
+              count: results.length,
+              page: opts.page,
+              matchedTotal: all.length,
+              boards: opts.boards,
+              queryFilteredClientSide: !!opts.query,
+              ...(boardErrors.length ? { boardErrors } : {}),
+            },
+            results,
+          },
+          null,
+          2,
+        ) + "\n",
+      )
+    }
+
+    // Every board failed and none produced results — that is a real failure.
+    if (boardErrors.length === opts.boards.length && all.length === 0) {
+      writeError(
+        `all ${opts.boards.length} board(s) failed: ${boardErrors.map((b) => b.board).join(", ")}`,
+        "ALL_BOARDS_FAILED",
+      )
+      return 1
+    }
+    return 0
+  } catch (e) {
+    writeError(e instanceof Error ? e.message : String(e), "SEARCH_FAILED")
+    return 1
+  }
+}
