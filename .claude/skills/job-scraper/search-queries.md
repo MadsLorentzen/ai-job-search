@@ -4,7 +4,29 @@
 
 ## Installed portal CLIs (primary for `/scrape`)
 
-`/scrape` discovers every portal skill under `.agents/skills/*/SKILL.md` and runs its CLI first. Shipped country-agnostic CLIs include `linkedin-search` and `freehire-search`; Danish demos and any skill you add with `/add-portal` are included the same way. You do **not** need a matching `site:` line below for those CLIs to run.
+`/scrape` discovers every portal skill under `.agents/skills/*/SKILL.md` and runs its CLI first. You do **not** need a matching `site:` line below for those CLIs to run.
+
+**This fork is configured for the US market.** Active portals:
+
+| Portal | Role |
+|--------|------|
+| `themuse-search` | **Primary** cross-company US discovery (~400k postings) |
+| `linkedin-search` | Country-agnostic, pass a US location |
+| `greenhouse-search` | Target-company ATS — requires `--company <board-token>` |
+| `lever-search` | Target-company ATS — requires `--company <site-slug>` |
+| `weworkremotely-search` | Remote-only; per-category RSS feeds |
+| `remotive-search` | Remote-only; small supplementary feed (~32 jobs) |
+| `freehire-search` | Country-agnostic tech aggregator |
+| `usajobs-search` | Federal jobs — **`enabled: false`** until `USAJOBS_API_KEY`/`USAJOBS_EMAIL` are set |
+| `jobindex` / `jobnet` / `jobdanmark` / `jobbank` | Danish — **`enabled: false`**, skipped by `/scrape` |
+
+Note the two ATS portals (`greenhouse-search`, `lever-search`) have **no cross-company
+search** — they only run against an explicit `--company` list, so `/scrape` should
+pass one or skip them rather than calling them bare.
+
+**Deliberately absent:** Indeed, ZipRecruiter and SimplyHired block automated access
+(HTTP 401/403), and Dice's `robots.txt` disallows its job paths. Cover those through
+the WebSearch fallback below, not a CLI.
 
 The `site:` query templates in this file are the **WebSearch fallback** — for portals without a CLI, company career pages, or when a CLI fails.
 
