@@ -273,7 +273,15 @@ export async function loadRegistry(ats: "greenhouse" | "lever"): Promise<string[
   }
 }
 
-/** Persist an updated slug list, preserving the other ATS's entries. */
+/**
+ * Persist an updated slug list, preserving the other ATS's entries and any
+ * unknown keys.
+ *
+ * Not concurrency-safe: this is a read-modify-write with no file lock, so two
+ * `discover` runs started at the same moment could clobber each other's
+ * additions. Acceptable for a single-user CLI whose registry is tracked in git
+ * (recovery is a git checkout away); revisit if this ever runs unattended.
+ */
 export async function saveRegistry(
   ats: "greenhouse" | "lever",
   slugs: string[],

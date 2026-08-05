@@ -90,7 +90,7 @@ boards.greenhouse.io/<token> or job-boards.greenhouse.io/<token> in the URL or
 the embedded iframe.
 `
 
-/** Bounded parallelism: enough to make a 79-board sweep fast, polite enough not to trip limits. */
+/** Bounded parallelism: enough to make a full registry sweep fast, polite enough not to trip limits. */
 function clampConcurrency(raw: string | boolean | string[] | undefined): number {
   const n = typeof raw === "string" ? parseInt(raw, 10) : NaN
   if (!Number.isFinite(n) || n <= 0) return 8

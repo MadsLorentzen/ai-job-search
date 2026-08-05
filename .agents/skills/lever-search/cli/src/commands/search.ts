@@ -111,7 +111,7 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
     // Applied after a fixed slice it silently capped every result set at 25, so a
     // larger -n looked like the true total instead of a truncated view.
     const pageSize = opts.limit !== undefined && opts.limit > 0 ? opts.limit : PAGE_SIZE
-    const start = (opts.page - 1) * pageSize
+    const start = Math.max(0, (opts.page - 1) * pageSize)
     const results = all.slice(start, start + pageSize)
 
     if (opts.format === "table") {

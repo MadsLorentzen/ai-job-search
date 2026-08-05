@@ -3,7 +3,7 @@ name: greenhouse-search
 version: 1.0.0
 description: >
   Use this skill to search Greenhouse job boards — the most common ATS among US
-  tech companies — either BY ROLE across ~79 known company boards at once
+  tech companies — either BY ROLE across ~90 known company boards at once
   (--registry, ~10,800 live postings, ~5s), or BY COMPANY when the user names an
   employer. Reach for it for "senior backend roles at good companies", for a
   target-company list, and as the highest-signal source for fintech since it hits
@@ -33,7 +33,7 @@ by its *board token* — the slug in `boards.greenhouse.io/<token>`.
 
 Role-first search is built on top of that limitation: `--registry` sweeps every
 board in `.agents/ats-registry/companies.json` **concurrently** and filters titles
-locally. At time of writing the registry holds **79 Greenhouse boards carrying
+locally. At time of writing the registry holds **91 Greenhouse boards carrying
 ~10,800 live postings**, and a full sweep takes about **5 seconds**.
 
 ```bash
@@ -82,6 +82,7 @@ Key flags:
 - `--registry` — sweep **every** board in the shared registry. This is what makes role-first search work. Use instead of (or alongside) `--company`.
 - `--company <list>` / `-c <list>` — one board token or a comma-separated list, e.g. `stripe` or `stripe,databricks,figma`. A token that doesn't resolve is reported in `meta.boardErrors` and the run continues with the rest. **One of `--registry` or `--company` is required.**
 - `--concurrency <n>` — parallel board fetches, default 8, capped at 16.
+- `--us-remote` — **prefer this over `-l "Remote"` for a US search.** US remote is spelled at least four ways, so no single `-l` value catches them all, and bare `"Remote"` wrongly admits Remote Canada/Poland/Spain. Checks US signals (state names, `, XX` codes, US/USA/United States) *before* rejecting on a non-US country, so US places whose names contain a country — Indiana, New Mexico, Georgia, Brazil IN, Greece NY — are not silently dropped.
 - `--query <text>` / `-q <text>` — client-side keyword filter over the **job title**.
 - `--location <text>` / `-l <text>` — client-side location filter. `"Remote"` also matches `"US - Remote"`, `"US Remote"`, `"Anywhere"`, `"Distributed"`.
 - `--jobage <days>` — posted within N days (client-side, on `first_published`).
@@ -118,7 +119,7 @@ If a company resolves on neither Greenhouse nor Lever, it is likely on a third A
 ## Usage examples
 
 ```bash
-# ROLE-FIRST: senior backend roles across all 79 known boards, remote
+# ROLE-FIRST: senior backend roles across all 91 known boards, remote
 bun run .agents/skills/greenhouse-search/cli/src/cli.ts search --registry -q "senior software engineer" -l "Remote" --format table
 
 # Role-first, recent only

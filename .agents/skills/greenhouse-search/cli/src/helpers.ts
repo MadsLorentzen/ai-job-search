@@ -4,10 +4,10 @@
 // IMPORTANT DESIGN NOTE:
 // Greenhouse has NO cross-company search. The API is scoped to one company's
 // board at a time, addressed by its board token (the slug in the company's
-// job-board URL, e.g. `stripe` in boards.greenhouse.io/stripe). So this CLI
-// REQUIRES --company, accepts a comma-separated list, and filters keywords
-// CLIENT-SIDE. It is a "target company list" tool, not open-ended discovery —
-// use themuse-search for that.
+// job-board URL, e.g. `stripe` in boards.greenhouse.io/stripe). Role-first
+// search is built on top of that limitation: --registry sweeps every board in
+// the shared registry concurrently and filters keywords CLIENT-SIDE. Either
+// --registry or --company is required; there is no global search to fall back on.
 
 export const API_BASE = "https://boards-api.greenhouse.io/v1/boards"
 
@@ -182,42 +182,82 @@ export function matchesLocation(card: JobCard, location: string | undefined): bo
 }
 
 const REMOTE_RE = /remote|anywhere|distributed/
-/**
- * Countries and regions that, when named, mean the role is NOT US-eligible.
- * Deliberately explicit rather than "anything that isn't the US" — location
- * strings are unnormalized free text and an allowlist would drop valid US roles.
- */
+
+/** Country and region names that, standing alone, indicate a non-US role. */
 const NON_US_RE = new RegExp(
-  [
-    "canada","poland","spain","portugal","germany","france","netherlands","ireland","united kingdom",
-    "\\buk\\b","england","scotland","india","brazil","mexico","argentina","colombia","chile","japan",
-    "singapore","australia","new zealand","israel","south africa","nigeria","kenya","philippines",
-    "vietnam","indonesia","china","korea","taiwan","sweden","norway","denmark","finland","switzerland",
-    "austria","belgium","italy","greece","romania","bulgaria","serbia","croatia","czech","hungary",
-    "ukraine","turkey","\\buae\\b","dubai","emea","apac","latam","\\bemea\\b",
-  ].join("|"),
+  "\\b(" +
+    [
+      "canada","poland","spain","portugal","germany","france","netherlands","ireland",
+      "united kingdom","uk","england","scotland","wales","india","brazil","mexico","argentina",
+      "colombia","chile","japan","singapore","australia","new zealand","israel","south africa",
+      "nigeria","kenya","philippines","vietnam","indonesia","china","korea","taiwan","sweden",
+      "norway","denmark","finland","switzerland","austria","belgium","italy","greece","romania",
+      "bulgaria","serbia","croatia","czechia","czech republic","hungary","ukraine","turkey",
+      "uae","dubai","emea","apac","latam",
+    ].join("|") +
+    ")\\b",
   "i",
 )
-const US_RE = /\b(us|usa|u\.s\.|united states|america|americas|north america)\b/i
+
+const US_PHRASE_RE = /\b(us|u\.s\.|usa|u\.s\.a\.|united states|america|americas|north america|nationwide|anywhere in the us)\b/i
+
+/** Full US state / territory names. Case-insensitive; matched on word boundaries. */
+const US_STATE_NAMES = [
+  "alabama","alaska","arizona","arkansas","california","colorado","connecticut","delaware",
+  "florida","georgia","hawaii","idaho","illinois","indiana","iowa","kansas","kentucky","louisiana",
+  "maine","maryland","massachusetts","michigan","minnesota","mississippi","missouri","montana",
+  "nebraska","nevada","new hampshire","new jersey","new mexico","new york","north carolina",
+  "north dakota","ohio","oklahoma","oregon","pennsylvania","rhode island","south carolina",
+  "south dakota","tennessee","texas","utah","vermont","virginia","washington","west virginia",
+  "wisconsin","wyoming","district of columbia","puerto rico",
+]
+const US_STATE_NAME_RE = new RegExp("\\b(" + US_STATE_NAMES.join("|") + ")\\b", "i")
+
+/**
+ * Two-letter state codes, matched CASE-SENSITIVELY and only after a comma —
+ * i.e. the "Indianapolis, IN" shape. Matching these case-insensitively or
+ * without the comma would be a disaster: "Remote in Canada" contains a bare
+ * lowercase "in", which would read as Indiana and wrongly admit a Canada role.
+ */
+const US_STATE_CODE_RE =
+  /,\s*(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC|PR)\b/
 
 /**
  * Match US-eligible remote roles.
  *
- * Substring matching alone cannot do this: US remote roles are spelled at least
- * four ways ("Remote - US", "Remote US", "Remote - United States", "Remote, USA"),
- * so no single --location value catches them all, while plain "Remote" wrongly
- * admits "Remote Canada" / "Remote Poland" / "Remote Spain".
+ * Plain `--location Remote` cannot express this: US remote is spelled at least
+ * four ways ("Remote - US", "Remote US", "Remote - United States", "Remote, USA")
+ * so no single substring catches them all, while bare "Remote" wrongly admits
+ * "Remote Canada" / "Remote Poland" / "Remote Spain".
  *
- * Rule: must read as remote, AND must not name a non-US country — unless it also
- * explicitly names the US (multi-region postings like "Remote US; Remote Canada"
- * are genuinely open to US candidates).
+ * ORDER MATTERS. US indicators are checked BEFORE the non-US blocklist, because
+ * a blocklist over free text produces silent false negatives — the worst failure
+ * mode here, since a hidden job gives the user no signal at all. Real examples
+ * that a blocklist-first design got wrong:
+ *   "Remote - Indiana"          -> "india" matched inside "Indiana"
+ *   "Remote - Indianapolis, IN" -> same
+ *   "Remote - New Mexico"       -> "mexico" matched inside "New Mexico"
+ *   "Remote - Brazil, IN"       -> Brazil, Indiana is a real US town
+ *   "Remote - Greece, NY"       -> Greece, New York is a real US town
+ * Checking for a US state name or a ", XX" state code first resolves all of these,
+ * and also handles multi-region postings ("Remote US; Remote Canada") correctly.
  */
 export function matchesUsRemote(card: JobCard): boolean {
-  const have = (card.location || "").toLowerCase()
-  if (!have) return false
-  if (!REMOTE_RE.test(have)) return false
-  if (US_RE.test(have)) return true
-  return !NON_US_RE.test(have)
+  const raw = card.location || ""
+  if (!raw) return false
+  const lower = raw.toLowerCase()
+  if (!REMOTE_RE.test(lower)) return false
+
+  // 1. Any explicit US signal wins outright.
+  if (US_PHRASE_RE.test(lower)) return true
+  if (US_STATE_NAME_RE.test(lower)) return true
+  if (US_STATE_CODE_RE.test(raw)) return true
+
+  // 2. No US signal — reject if a non-US country/region is named.
+  if (NON_US_RE.test(lower)) return false
+
+  // 3. Unqualified remote ("Remote", "Anywhere") — assume eligible.
+  return true
 }
 
 export function withinJobAge(card: JobCard, days: number, now: number): boolean {
@@ -276,7 +316,15 @@ export async function loadRegistry(ats: "greenhouse" | "lever"): Promise<string[
   }
 }
 
-/** Persist an updated slug list back to the registry, preserving other keys. */
+/**
+ * Persist an updated slug list, preserving the other ATS's entries and any
+ * unknown keys.
+ *
+ * Not concurrency-safe: this is a read-modify-write with no file lock, so two
+ * `discover` runs started at the same moment could clobber each other's
+ * additions. Acceptable for a single-user CLI whose registry is tracked in git
+ * (recovery is a git checkout away); revisit if this ever runs unattended.
+ */
 export async function saveRegistry(
   ats: "greenhouse" | "lever",
   slugs: string[],
@@ -296,7 +344,7 @@ export async function saveRegistry(
 }
 
 /**
- * Run `fn` over `items` with at most `limit` in flight. Sweeping 79 boards
+ * Run `fn` over `items` with at most `limit` in flight. Sweeping the whole registry
  * sequentially takes minutes; this brings it to seconds while staying polite
  * enough not to trip rate limiting.
  */

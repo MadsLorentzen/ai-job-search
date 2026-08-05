@@ -128,6 +128,36 @@ describe("matchesUsRemote", () => {
     }
   })
 
+  // Regression: an earlier blocklist-first version matched country names as
+  // SUBSTRINGS of US place names and silently hid valid US jobs. A hidden job
+  // gives the user no signal at all, so these are the worst failures possible here.
+  test("does not mistake US place names for the countries they contain", () => {
+    const cases = [
+      "Remote - Indiana",            // "india" inside "Indiana"
+      "Remote - Indianapolis, IN",   // same
+      "Remote - New Mexico",         // "mexico" inside "New Mexico"
+      "Remote - Brazil, IN",         // Brazil, Indiana is a real US town
+      "Remote - Greece, NY",         // Greece, New York is a real US town
+      "Remote - Georgia",            // US state vs. the country
+      "Remote - Lebanon, NH",
+      "Remote - Peru, IN",
+    ]
+    for (const l of cases) expect(matchesUsRemote(mk(l))).toBe(true)
+  })
+
+  test("state codes are matched case-sensitively and only after a comma", () => {
+    // "Remote in Canada" contains a bare lowercase "in". Matching state codes
+    // case-insensitively or without the comma would read that as Indiana and
+    // wrongly admit a Canadian role.
+    expect(matchesUsRemote(mk("Remote in Canada"))).toBe(false)
+    expect(matchesUsRemote(mk("Remote work in Ireland"))).toBe(false)
+    expect(matchesUsRemote(mk("Remote - Des Moines, IA"))).toBe(true)
+  })
+
+  test("a named non-US city still fails even when the country is implied", () => {
+    expect(matchesUsRemote(mk("Remote - Mexico City"))).toBe(false)
+  })
+
   test("accepts a multi-region posting that includes the US", () => {
     // Genuinely open to US candidates, so it must not be dropped.
     expect(matchesUsRemote(mk("Remote US; Remote Canada"))).toBe(true)

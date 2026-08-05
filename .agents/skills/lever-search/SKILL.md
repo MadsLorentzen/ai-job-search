@@ -37,7 +37,7 @@ search --company palantir,plaid -q "engineer"                 # company-first
 
 Passing both unions the registry with your explicit list.
 
-Lever's share is much smaller than Greenhouse's (15 sites vs 79), so run
+Lever's share is much smaller than Greenhouse's (15 sites vs 91), so run
 `greenhouse-search --registry` first and treat this as the complement. A company
 is on one or the other, rarely both.
 
@@ -66,6 +66,7 @@ Key flags:
 - `--registry` — sweep **every** site in the shared registry (role-first search). Use instead of, or alongside, `--company`.
 - `--company <list>` / `-c <list>` — one site slug or a comma-separated list. A slug that doesn't resolve is reported in `meta.siteErrors` and the run continues. **One of `--registry` or `--company` is required.**
 - `--concurrency <n>` — parallel site fetches, default 8, capped at 16.
+- `--us-remote` — only US-eligible remote roles. Reads Lever's structured `workplaceType` and ISO-2 `country` fields rather than regex over free text, so it does not suffer the US-place-name collisions a location blocklist would.
 - `--query <text>` / `-q <text>` — client-side keyword filter over the **job title**.
 - `--location <text>` / `-l <text>` — client-side location filter. `"Remote"` also matches on Lever's `workplaceType` field, so a role tagged remote but located "New York, NY" is still found.
 - `--team <text>` — **server-side** filter, e.g. `"Engineering"`. Exact match.
