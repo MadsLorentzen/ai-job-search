@@ -174,7 +174,10 @@ function findJobPosting(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object") return null
 
   const record = value as Record<string, unknown>
-  if (record["@type"] === "JobPosting") return record
+  const type = record["@type"]
+  if (type === "JobPosting" || (Array.isArray(type) && type.includes("JobPosting"))) {
+    return record
+  }
 
   return findJobPosting(record["@graph"])
 }

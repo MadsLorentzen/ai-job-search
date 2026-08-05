@@ -37,4 +37,16 @@ describe("parseJobPostingJsonLd", () => {
   test("returns null when no JobPosting exists", () => {
     expect(parseJobPostingJsonLd(script('{"@graph":[{"@type":"WebPage"}]}'))).toBeNull()
   })
+
+  test("finds a JobPosting whose @type is an array (valid JSON-LD)", () => {
+    const html = script(
+      JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": ["JobPosting"],
+        title: "Data Engineer",
+      }),
+    )
+
+    expect(parseJobPostingJsonLd(html)?.title).toBe("Data Engineer")
+  })
 })
