@@ -62,7 +62,7 @@ Validate the cheap, local precondition before creating anything external. A run 
    | Company | rich text | |
    | Score | number | 0-100 from `rank_score` |
    | Verdict | select | Strong Fit / Good Fit / Moderate Fit / Weak Fit / Poor Fit |
-   | Status | select | ranked / drafted / applied / interview / offer / hired / rejected / no response / withdrawn / expired |
+   | Status | select | `ranked` / `drafted` / `applied` / `interview` / `offer` / `hired` / `rejected` / `no_response` / `offer_declined` / `withdrawn` / `expired` — canonical tracker spellings per **Tracker status vocabulary** in `/outcome`; Notion options grow to match as values appear |
    | Fit | select | high / medium / low (scraper quick-fit) |
    | Deadline | date | omit when unknown |
    | First seen | date | |

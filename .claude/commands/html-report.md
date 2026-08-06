@@ -27,7 +27,9 @@ Status normalisation — map tracker values to six canonical buckets before comp
 - `interview` → **Interview**
 - `offer` → **Offer**
 - `hired` → **Hired**
-- `rejected` / `no_response` / `no response` / `offer_declined` / `interview_only` / `withdrawn` → **Rejected/Closed**
+- `rejected` / `no_response` / `no response` / `offer_declined` / `offer declined` / `withdrawn` → **Rejected/Closed**
+
+   Accept both underscore and space spellings on read so that existing trackers written before the canonical spellings were locked work without migration. See **Tracker status vocabulary** in `/outcome` for the authoritative set.
 
 ---
 

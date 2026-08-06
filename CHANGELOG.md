@@ -13,6 +13,34 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Tracker status enum defined once; `offer declined`/`no response` now reach the correct
+  `/html-report` bucket and `/gmail-sync` correctly marks them final** (#298). The tracker
+  CSV `status` column had no single authoritative definition. Six command files restated it
+  independently with inconsistent spellings, producing two concrete bugs:
+
+  - `/outcome` Step 4 wrote `no response` and `offer declined` (with spaces). `/html-report`
+    Step 1 normalised only `no_response` / `offer_declined` (underscores), so any row written
+    with spaces matched no bucket and was silently dropped from the rejection-rate denominator.
+  - `/gmail-sync` Step 2 defined the "final" set with the space forms, so a row written with
+    underscores was never recognised as final and the sync kept chasing closed applications.
+  - `/html-report` included `interview_only` in the tracker bucket map; that value belongs to
+    the archive `outcome.md` `Status:` field, not the CSV `status` column.
+
+  Fix: a `## Tracker status vocabulary` block in `/outcome` (the only writer of the CSV)
+  now defines the canonical set once with underscore spellings. Every reader that makes
+  final/open decisions references that block or explicitly lists both forms as read-tolerance
+  for existing trackers. Readers accept `no response` and `offer declined` on read; `/outcome`
+  Step 4 now writes `no_response` and `offer_declined`. `/html-report`'s bucket map loses
+  `interview_only` and gains `offer declined` as a read-tolerance variant alongside the
+  canonical `offer_declined`. `/notion-sync` Step 3's Status select options now use the
+  canonical underscore spellings. Pinned by `tests/test_tracker_status_vocab.py`.
+
+  **Fork heads-up:** if your personalized `/outcome` adds `no response` or `offer declined`
+  (space forms) to the tracker write path, swap them for the underscore forms. Existing rows
+  keep working because every reader now accepts both spellings on read.
+
 ## [1.4.0] - 2026-08-07
 
 ### Added
