@@ -18,17 +18,18 @@ This repo is a flat-hunting workspace ("Wohnungsagent"). Claude acts as a renter
 ### Identity
 - **Name:** Dominik Böhm
 - **Current location:** Aachen
-- **Moving because:** New job opportunity at Delos Cloud GmbH in Walldorf - currently in the final (3rd) interview round, not yet offered. Anticipated start date: 01.08.2026
+- **Moving because:** Umzug nach Köln (rechtsrheinisch) — Städtewechsel, flexibler Wunschtermin
 - **Household:** single
 - **Pets:** none
 - **Smoker:** No
 - **Languages:** Deutsch (Muttersprache), Polnisch (Muttersprache), Englisch (C1)
 
 ### Employment & Income
-- **New role:** SRE (Site Reliability Engineer) at Delos Cloud GmbH - pending, no offer yet (3rd interview round); anticipated start 01.08.2026
-- **Employment type:** unknown until offer (typically unbefristet for SRE roles at this employer size)
-- **Net income (monthly):** ~2.600-2.750 € (estimated from 50.000-52.000 € brutto/Jahr, Steuerklasse 1, no children, no church tax - confirm once a payslip exists; anticipated, tied to the still-pending Delos Cloud role)
-- **Additional income/guarantor (if any):** none
+<!-- TODO(/setup): aktualisieren — Dom ist seit KISTERS-Ende (05/2026) zwischen Jobs. -->
+- **New role:** offen (aktuell zwischen Jobs seit 05/2026; letzter AG: KISTERS AG, Aachen)
+- **Employment type:** t.b.d.
+- **Net income (monthly):** t.b.d. — bitte via `/setup` mit aktuellem Nachweis füllen (ALG-Bescheid / Rücklagen / Bürgen)
+- **Additional income/guarantor (if any):** t.b.d.
 
 ### Creditworthiness
 - **Schufa-Auskunft available:** Yes - 08.06.2026, Score 801 ("Gut")
@@ -36,14 +37,19 @@ This repo is a flat-hunting workspace ("Wohnungsagent"). Claude acts as a renter
 - **Previous rental history:** 4 years at current address, no outstanding rent arrears
 
 ### Search Profile
-- **Target areas:** Karlsruhe, Heidelberg, Mannheim, Bruchsal (and well-connected towns in between, e.g. Sankt Leon-Rot, Wiesloch, Hockenheim, Schwetzingen)
-- **Workplace to commute to:** Walldorf
-- **Max commute:** 30 min by car
-- **Budget:** max. **1.400 € Warmmiete** (all-in, including heating/utilities)
-- **Rooms / size:** 1-2 Zimmer, ca. 40-60 m²
-- **Move-in date:** 01.08.2026
-- **Must-haves:** [e.g. "EBK (Einbauküche)", "balcony", "unfurnished"]
-- **Deal-breakers:** no WG, ground floor only if no elevator, no Kaution above 3 Nettokaltmieten, no furnished/timed short-term sublets (Zwischenmiete or any listing with a fixed end date, e.g. "available from ... until ...") - only unfurnished, unbefristet (unlimited-term) rentals
+- **Target areas:** **Köln rechtsrheinisch** — Stadtbezirke **Mülheim** (Bezirk 9), **Kalk** (Bezirk 8), **Porz** (Bezirk 7). PLZ-Whitelist: `50735, 51061, 51063, 51065, 51067, 51069, 51103, 51105, 51107, 51109, 51143, 51145, 51147, 51149`.
+- **Workplace to commute to:** —
+- **Max commute:** flexibel (kein aktueller Arbeitsort; ÖPNV-Anschluss Köln Hbf < 25 min ist ein Plus)
+- **Budget:** max. **1.200 € Warmmiete** (all-in, inkl. Heiz-/Nebenkosten)
+- **Rooms / size:** 1–3 Zimmer, ca. 30–70 m² (WG-Zimmer ab 15 m² zulässig)
+- **Move-in date:** flexibel / ASAP
+- **Must-haves:** **Balkon oder Loggia oder Dachterrasse** (nicht verhandelbar), unbefristet, unfurnished (teilmöbliert = OK wenn nur EBK)
+- **Deal-breakers:** Kaution > 3 Nettokaltmieten, befristete Zwischenmiete/Untermiete, vollmöbliert, Erdgeschoss ohne Balkon, laute Einflugschneise Flughafen Köln/Bonn (v. a. Porz-Süd: Wahn, Grengel, Libur)
+
+### Search Priorities (Präferenz-Kaskade)
+1. **Eigene Wohnung** (1–2 Zi, Balkon, ≤ 1.200 € Warm) — primär
+2. **WG-Zimmer** in geteilter Wohnung, **max. 3–4 Mitbewohner insgesamt**, eigenes Zimmer ≥ 15 m² — sekundär
+3. **Hausgemeinschaft / Cohousing** (mehrere Parteien in einem Haus, Gemeinschaftsräume) — nachrangig, nur wenn Perle
 
 ### What Excites You About a Listing
 <!-- What makes a listing worth writing to immediately -->
@@ -58,7 +64,7 @@ This repo is a flat-hunting workspace ("Wohnungsagent"). Claude acts as a renter
 
 ## Workflow for New Listings
 1. User provides a listing (URL or pasted text)
-2. **Always evaluate fit first**: price vs. budget, commute to Walldorf, location, size, deal-breakers. Present this assessment to the user before proceeding.
+2. **Always evaluate fit first**: price vs. budget, Lage (rechtsrheinisch? PLZ passt?), ÖPNV-Anschluss Hbf, size, must-have Balkon, deal-breakers. Present this assessment to the user before proceeding.
 3. If good fit: update `selbstauskunft/selbstauskunft_<address>.tex` if needed, and draft `anschreiben/anschreiben_<address>.tex`
 4. **Verify both documents** (see Verification Checklist below)
 5. Prepare viewing (Besichtigung) talking points and questions based on the listing details
@@ -72,13 +78,13 @@ After creating or updating a Selbstauskunft or Anschreiben, re-read the generate
 
 ### Factual accuracy
 - [ ] All claims match the actual renter profile (CLAUDE.md / `01-renter-profile.md`) - no fabricated income, employment, or household details
-- [ ] Employer name, job start date, and commute claims are correct
+- [ ] Employer name, job start date, and commute claims are correct (aktuell: zwischen Jobs — ehrlich benennen, nichts erfinden)
 - [ ] Contact details are correct
 - [ ] Any claim about the listing itself (layout, fittings, location) is taken directly from the listing text - never invented
 
 ### Targeting
 - [ ] The Anschreiben opens with or clearly references a specific detail from this listing (not a generic template fill)
-- [ ] The connection between the new job in Walldorf and the desired location/commute is stated naturally, not as a copy-paste line
+- [ ] Motivation für den Umzug nach Köln-rechtsrheinisch wird natürlich formuliert (kein Copy-Paste-Satz); wenn keine Job-Story: neutrale Wechsel-Motivation (Städtewechsel, Nähe zu Familie/Freunden, Rhein-Region), keine erfundenen Arbeitgeber
 - [ ] Deal-breakers and must-haves from the search profile are silently respected (do not mention ones that don't apply to this listing)
 
 ### Consistency

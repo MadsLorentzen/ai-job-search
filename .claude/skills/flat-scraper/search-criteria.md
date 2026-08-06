@@ -1,84 +1,115 @@
 # Search Criteria for Flat Scraper
 
-<!-- SETUP: Customize these based on your budget, commute tolerance, and must-haves -->
+<!-- Konfiguriert für: Köln rechtsrheinisch (Mülheim / Kalk / Porz), max 1.200 € Warmmiete, Balkon Pflicht -->
 
 ## Portals
 
 **Primary** (search first, every run):
-- **kleinanzeigen.de** - weakest anti-bot protection of the major portals, broad coverage including private landlords
-- **wg-gesucht.de** - good coverage for smaller flats and 1-2 Zimmer-Wohnungen, including some non-WG listings
+- **kleinanzeigen.de** — schwächster Anti-Bot-Schutz, breite Streuung inkl. privater Vermieter
+- **wg-gesucht.de** — beste Quelle für WG-Zimmer UND kleine 1-Zi-Wohnungen; gerade wichtig, weil WG jetzt Teil der Kaskade ist
 
 **Secondary** (search if time/budget allows):
-- **immowelt.de** - decent agency listing coverage
+- **immowelt.de** — anständige Makler-Coverage
+- **inberlin.de / kalaydo.de** — regionales Aachen/Rheinland-Portal, hat auch Köln-Angebote, oft unter dem Radar
 
 **Best-effort only** (do not retry aggressively if blocked):
-- **immoscout24.de** - largest portal but the strongest anti-bot/Cloudflare protection of the four; treat fetch failures here as expected, not a bug to work around
+- **immoscout24.de** — größtes Portal, stärkstes Cloudflare; Fehlschläge sind erwartbar, nicht umgehen
 
 ## Query Categories
 
-Each query should combine a portal site filter with a city/area term and the price ceiling where the site's search syntax supports it.
+Jede Query kombiniert Portal-Filter + Ort/Veedel + Preisdeckel (soweit die Portalsuche das unterstützt). Immer explizit rechtsrheinische Veedel benennen — "Köln" allein liefert zu viel linksrheinisches Rauschen.
 
-### Priority 1: Karlsruhe
-
-```
-site:kleinanzeigen.de Wohnung Karlsruhe Miete
-site:wg-gesucht.de Wohnung Karlsruhe
-site:immowelt.de Wohnung Karlsruhe miete
-```
-
-### Priority 2: Heidelberg
+### Priority 1: Mülheim (Bezirk 9) — urban, gut angebunden, im Trend
 
 ```
-site:kleinanzeigen.de Wohnung Heidelberg Miete
-site:wg-gesucht.de Wohnung Heidelberg
-site:immowelt.de Wohnung Heidelberg miete
+site:kleinanzeigen.de Wohnung Köln-Mülheim OR Buchforst OR Buchheim OR Holweide OR Dellbrück Miete
+site:wg-gesucht.de Köln Mülheim OR Buchforst OR Buchheim OR Holweide OR Dellbrück
+site:immowelt.de Wohnung Köln Mülheim miete
 ```
 
-### Priority 3: Mannheim
+Veedel im Bezirk: Mülheim, Buchforst, Buchheim, Holweide, Dellbrück, Höhenhaus, Dünnwald, Stammheim, Flittard.
+
+### Priority 2: Kalk (Bezirk 8) — günstiger, mehrsprachig, aufstrebend
 
 ```
-site:kleinanzeigen.de Wohnung Mannheim Miete
-site:wg-gesucht.de Wohnung Mannheim
-site:immowelt.de Wohnung Mannheim miete
+site:kleinanzeigen.de Wohnung Köln-Kalk OR Humboldt-Gremberg OR Vingst OR Höhenberg OR Ostheim OR Merheim Miete
+site:wg-gesucht.de Köln Kalk OR Humboldt OR Vingst OR Höhenberg OR Ostheim OR Merheim
+site:immowelt.de Wohnung Köln Kalk miete
 ```
 
-### Priority 4: Bruchsal (and the Walldorf corridor)
+Veedel im Bezirk: Kalk, Humboldt-Gremberg, Vingst, Höhenberg, Ostheim, Merheim, Neubrand, Rath/Heumar.
+
+### Priority 3: Porz (Bezirk 7) — stadtauswärts, größere Flächen möglich
 
 ```
-site:kleinanzeigen.de Wohnung Bruchsal Miete
-site:wg-gesucht.de Wohnung Bruchsal
-site:kleinanzeigen.de Wohnung Walldorf OR Sankt Leon-Rot OR Wiesloch OR Hockenheim OR Schwetzingen Miete
+site:kleinanzeigen.de Wohnung Köln-Porz OR Ensen OR Westhoven OR Poll OR Zündorf Miete
+site:wg-gesucht.de Köln Porz OR Ensen OR Westhoven OR Poll OR Zündorf
+site:immowelt.de Wohnung Köln Porz miete
 ```
 
-The corridor towns (Sankt Leon-Rot, Wiesloch, Hockenheim, Schwetzingen, Walldorf itself) are often the best commute-to-price trade-off and should always be included when running "broad" - they are smaller markets with less competition than the four named cities.
+⚠️ **Fluglärm-Filter für Porz:** Wahn, Grengel, Libur, Lind, Elsdorf-Süd sind im direkten Einflug-Korridor Flughafen Köln/Bonn — als Deal-Breaker markieren, nicht in Priority-3-Queries aufnehmen.
+
+Veedel im Bezirk (rein-nehmen): Porz-Zentrum, Ensen, Westhoven, Poll, Zündorf, Urbach, Eil, Gremberghoven. (Rausnehmen wg. Fluglärm: Wahn, Grengel, Libur, Lind.)
+
+### Priority 4: WG-spezifisch (für die Kaskaden-Stufe 2)
+
+```
+site:wg-gesucht.de WG-Zimmer Köln Mülheim OR Kalk OR Buchforst OR Ehrenfeld  # Ehrenfeld ist linksrheinisch, aber grenznah zu Mülheim — nur wenn Zusatz-Wunsch
+site:kleinanzeigen.de WG-Zimmer Köln rechtsrheinisch
+```
+
+Max Mitbewohner: **4 Personen insgesamt** (also 3 WG-Partner + Dom). Alles größer verwerfen.
 
 ## Budget Filter
 
-- **Hard ceiling: 1.400 € Warmmiete** (all-in, including heating/utilities)
-- If only Kaltmiete is listed, estimate Warmmiete as Kaltmiete + stated Nebenkosten, or Kaltmiete + ~2-2.50 €/m² if Nebenkosten aren't given - flag the estimate as such
-- Listings noticeably above budget can still be surfaced as "Medium/Low match - over budget" if the location/commute is exceptional, but never silently filtered in as if they fit
+- **Hard ceiling: 1.200 € Warmmiete** (all-in, inkl. Heiz-/Nebenkosten)
+- Für WG-Zimmer: derselbe Deckel, aber realistisch werden Zimmer meist 400–650 € liegen — Angebote unter 350 € doppelt auf Scam-Signale prüfen (siehe scam-check-Skill)
+- Nur Kaltmiete gelistet → Warmmiete schätzen als Kalt + Nebenkosten (angegeben), sonst + ~2,50 €/m². Schätzung immer als Schätzung ausweisen.
+- Angebote knapp über Budget dürfen als "Medium/Low match — over budget" auftauchen, wenn Lage/Balkon/Größe außergewöhnlich sind. Aber niemals stillschweigend als Treffer verbuchen.
 
-## Location Filter
+## Location Filter — der wichtigste Filter
 
-- **Target areas:** Karlsruhe, Heidelberg, Mannheim, Bruchsal
-- **Always-include corridor towns:** Sankt Leon-Rot, Wiesloch, Hockenheim, Schwetzingen, Walldorf
-- **Workplace to commute to:** Walldorf
-- **Max commute:** 30 min by car - estimate via WebSearch/WebFetch (Google Maps or VRN/KVV) per listing, do not guess
+**PLZ-Whitelist (harter Filter):**
+
+| Bezirk | PLZ |
+|---|---|
+| Mülheim | 51063, 51065, 51067, 51069 |
+| Buchforst / Buchheim | 51065 |
+| Holweide / Dellbrück / Höhenhaus / Dünnwald / Stammheim / Flittard | 51067, 51069, 51061 |
+| Kalk / Humboldt-Gremberg / Vingst / Höhenberg / Ostheim / Merheim / Rath | 51103, 51105, 51107, 51109 |
+| Porz (Zentrum + rein-nehmbare Veedel) | 51143, 51145, 51147, 51149 |
+| Poll (offiziell Porz, aber grenznah Deutz) | 50735 |
+
+Alles außerhalb dieser PLZ = **nicht anzeigen** (auch wenn Titel "Köln" enthält — der Titel lügt oft).
+
+**BBox (für Overpass/Map-Queries):** ungefähr `50.83, 6.97, 51.05, 7.15` (Süd-West-Ecke ↔ Nord-Ost-Ecke) — deckt alle drei Bezirke ab und schneidet Linksrheinisch weg.
+
+**Fluglärm-Ausschluss (Porz-Süd):** Listings in 51147/51149 mit Adresse in Wahn, Grengel, Libur, Lind, Elsdorf → Warnung setzen, nur zeigen wenn Wohnung Schallschutzfenster explizit nennt.
+
+## Must-have Filter
+
+- **Balkon / Loggia / Dachterrasse** — Pflicht. Listings ohne Balkon-Erwähnung: Warnung setzen, aber nicht auto-verwerfen (Immo-Inserate lassen das gerne weg — im Zweifel im Anschreiben nachfragen). Explizit "kein Balkon" / "ohne Balkon" → verwerfen.
+- Unbefristet, unfurnished bzw. maximal EBK-teilmöbliert (siehe Zwischenmiete-Ausschluss unten).
 
 ## Exclude: Furnished Short-Term Sublets (Zwischenmiete)
 
-Dominik needs a permanent, unfurnished, unbefristet (unlimited-term) home for his 01.08.2026 move - not a temporary sublet. **Skip and never present** any listing that:
+Dom will unbefristet wohnen, nicht Sublet-hoppen. **Skip and never present** Listings die:
 
-- Is described as fully furnished - "voll möbliert"/"vollständig möbliert"/"komplett möbliert"/"furnished"/"fully-furnished" (whole-apartment furniture, not just a fitted kitchen), OR
-- States a fixed availability window with both a start AND end date (e.g. "verfügbar ab 12.07. bis 07.09.2026", "available from 12th July until 7th September 2026", "Zwischenmiete", "Untermiete", "befristet auf X Monate")
+- Vollmöbliert sind — "voll möbliert" / "vollständig möbliert" / "komplett möbliert" / "furnished" / "fully-furnished" (ganze Wohnung, nicht nur EBK), ODER
+- Ein festes End-Datum haben (z. B. "verfügbar 12.07.–07.09.2026", "available from ... until ...", "Zwischenmiete", "Untermiete", "befristet auf X Monate")
 
-A listing with only a start date ("available from ...", "frei ab ...") and no end date is fine - that is a normal unlimited-term rental. **Do not treat "teilmöbliert" (partially furnished) as a reason to skip** - in this market it almost always just means a fitted kitchen (EBK), which is one of the must-haves, not a short-term sublet signal. The deal-breaker is specifically a stated **end date**, explicit Zwischenmiete/Untermiete/befristet framing, or a listing described as fully/completely furnished.
+Nur ein Startdatum ("ab 01.09.2026") ist okay — normaler unbefristeter Vertrag. **"Teilmöbliert" ist KEIN Ausschlussgrund** — heißt hier meist nur EBK, was sogar willkommen ist. Ausschluss greift nur bei explizitem End-Datum, Zwischenmiete-Wording oder "komplett möbliert".
 
 ## Date Filter
 
-Only include listings posted within the last 7 days. These portals move fast - a listing older than a week is often already taken even if still shown as active. If a posting date cannot be determined, include it but flag as "date unknown" and treat it as lower priority than dated listings.
+Nur Listings der letzten 7 Tage. Portale sind schnell — älter als eine Woche = meist schon weg, selbst wenn noch "aktiv". Wenn kein Datum ermittelbar: aufnehmen, aber flaggen als "Datum unbekannt" und niedriger priorisieren.
 
 ## Adapting Queries
 
-If the user specifies a focus city or town, run all portal queries for that location plus 2-3 custom queries (e.g. a specific street, a specific Stadtteil). For example:
-- "/scrape mannheim" -> Priority 3 queries + any Mannheim Stadtteil the user has mentioned as preferred (e.g. Neuostheim, Lindenhof)
+Wenn Dom eine Fokus-Region nennt ("/scrape mülheim"), alle Portale nur für die Bezirks-Queries laufen lassen + 2–3 Custom-Queries (bestimmte Straße, bestimmter Veedel). Beispiel:
+- "/scrape mülheim" → Priority 1 komplett + jedes Mülheim-Veedel das Dom als bevorzugt genannt hat (z. B. Buchforst, Buchheim für kurze S-Bahn nach Hbf)
+- "/scrape wg" → Priority 4 komplett + kurze Frage: "welcher Bezirk bevorzugt?"
+
+## Dry-Run-Semantik
+
+`/scrape` ist per Definition ein Dry-Run: sucht, dedupliziert, präsentiert Matches mit Fit-Rating. Nichts wird gesendet, keine Anschreiben gebaut. Erst `/apply <URL>` startet den Bewerbungs-Flow — und auch der endet mit "Du versendest selbst".

@@ -28,7 +28,7 @@ files ready    with fit ratings     + Anschreiben (LaTeX)
                                      (you send it yourself)
 ```
 
-This instance is configured for a specific search: **Karlsruhe, Heidelberg, Mannheim, Bruchsal** (and well-connected towns in between), **max. 1.400 € Warmmiete**, commuting to a new job in **Walldorf**. Change `CLAUDE.md` and `.claude/skills/flat-scraper/search-criteria.md` to point this at a different city, budget, or workplace.
+This instance is configured for a specific search: **Köln rechtsrheinisch** — Stadtbezirke **Mülheim / Kalk / Porz** (PLZ-Whitelist im Skill), **max. 1.200 € Warmmiete**, **Balkon Pflicht**, kein aktueller Arbeitsort (ÖPNV-Anschluss Köln Hbf ist ein Plus). Suchpräferenz-Kaskade: (1) eigene Wohnung → (2) WG-Zimmer (max 3–4 Mitbewohner) → (3) Hausgemeinschaft/Cohousing. Change `CLAUDE.md` and `.claude/skills/flat-scraper/search-criteria.md` to point this at a different city, budget, or workplace.
 
 ## What makes this different from a generic listing alert
 
