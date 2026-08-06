@@ -256,6 +256,12 @@ export function jobageToTPR(days: number): string | null {
   return `r${days * 86400}`
 }
 
+/** Convert a job-age in minutes to LinkedIn's f_TPR seconds value (sub-day precision). */
+export function minutesToTPR(minutes: number): string | null {
+  if (!minutes || minutes <= 0) return null
+  return `r${minutes * 60}`
+}
+
 /** Workplace-type flag: on-site=1, remote=2, hybrid=3. */
 export function workTypeFlag(mode: string | undefined): string | null {
   switch ((mode || "").toLowerCase()) {
