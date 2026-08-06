@@ -91,6 +91,29 @@ Alles außerhalb dieser PLZ = **nicht anzeigen** (auch wenn Titel "Köln" enthä
 - **Balkon / Loggia / Dachterrasse** — Pflicht. Listings ohne Balkon-Erwähnung: Warnung setzen, aber nicht auto-verwerfen (Immo-Inserate lassen das gerne weg — im Zweifel im Anschreiben nachfragen). Explizit "kein Balkon" / "ohne Balkon" → verwerfen.
 - Unbefristet, unfurnished bzw. maximal EBK-teilmöbliert (siehe Zwischenmiete-Ausschluss unten).
 
+## Exclude: Tauschwohnungen (Wohnungs-Swap)
+
+Auf Kleinanzeigen sind **~60 % der Kölner Miet-Treffer eigentlich Tauschangebote**, keine regulären Anmietungen. Immer verwerfen, wenn der Titel oder erste Beschreibungszeile eines der folgenden Signale enthält:
+
+- `TAUSCHWOHNUNG` (häufigstes Präfix bei Kleinanzeigen)
+- `Wohnungsswap` / `Wohnungstausch` / `zum Tausch` / `gegen … tauschen`
+- "Es handelt es sich hierbei um ein Tauschangebot" / "handelt sich hierbei um ein Tauschangebot" (Standardformel)
+- `(Anbieter-ID: …)` in Kombination mit den obigen Wortlauten
+
+Ausnahme: Wenn die Kachel explizit auch als **reguläre Anmietung** angeboten wird ("Tauschwohnung oder Direktmiete möglich") und Preis + Kaltmiete klar genannt sind, darf sie übernommen werden — aber mit `swap-fallback` markieren.
+
+## Exclude: WBS-Pflicht (ohne WBS im Dom-Profil)
+
+Listings mit **`WBS erforderlich`** / **`WBS 60+`** / **`Wohnberechtigungsschein nötig`** verwerfen, solange Dom keinen WBS hat. Wenn `01-renter-profile.md` später einen WBS einträgt: Regel deaktivieren.
+
+## Exclude: Gesuche (der Anbieter sucht, bietet nicht)
+
+In den Portalen tauchen "Gesuch"-Anzeigen gemischt mit Angeboten auf. Verwerfen wenn:
+
+- Kategorie/Label `Gesuch`
+- Titel: `Suche Wohnung …`, `Suche Nachmieter… gesucht (durch mich)`, `Suche langfristiges Zuhause`, `Suche Mietwohnung… (Belohnung|Prämie)`
+- Text-Signal: "zahle eine Prämie von €…0 bei Vermittlung" (der schreibt = will Vermittlung, ist selbst Suchender)
+
 ## Exclude: Furnished Short-Term Sublets (Zwischenmiete)
 
 Dom will unbefristet wohnen, nicht Sublet-hoppen. **Skip and never present** Listings die:

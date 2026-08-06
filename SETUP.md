@@ -60,9 +60,11 @@ All three paths produce the same result: fully populated profile files.
 ### What's already pre-filled
 
 This fork ships pre-configured for a specific search:
-- **Target areas:** Karlsruhe, Heidelberg, Mannheim, Bruchsal (and corridor towns: Sankt Leon-Rot, Wiesloch, Hockenheim, Schwetzingen, Walldorf)
-- **Budget:** 1.400 € Warmmiete (all-in)
-- **Workplace:** Walldorf
+- **Target areas:** Köln rechtsrheinisch — Stadtbezirke Mülheim (9) / Kalk (8) / Porz (7); PLZ-Whitelist im Skill
+- **Budget:** 1.200 € Warmmiete (all-in)
+- **Must-have:** Balkon / Loggia / Dachterrasse
+- **Workplace:** — (aktuell zwischen Jobs; ÖPNV-Anschluss Köln Hbf ist ein Plus)
+- **Search cascade:** (1) eigene Wohnung → (2) WG (max 3–4 Mitbewohner) → (3) Hausgemeinschaft / Cohousing
 - **Portal priority:** Kleinanzeigen + WG-Gesucht primary, Immowelt secondary, ImmoScout24 best-effort only
 
 `/setup` confirms these with you rather than re-deriving them from scratch. If you're repointing this fork at a different city, budget, or workplace, say so during setup and it'll update `CLAUDE.md` and `search-criteria.md` accordingly.
@@ -114,7 +116,7 @@ cd anschreiben && xelatex anschreiben_<address-slug>.tex && cd ..
 
 ## 5. Optional: recurring searches
 
-Listings in this price range near Heidelberg/Mannheim/Karlsruhe can disappear within hours. If you want `/scrape` to run on a timer rather than only on demand, use Claude Code's `/schedule` or `/loop` skills to re-invoke it periodically (e.g. every 30-60 minutes). This is opt-in and not configured by default — set it up explicitly if you want it.
+Listings in Köln rechtsrheinisch (Mülheim/Kalk/Porz) in this price range can disappear within hours — vor allem Angebote von Privat und Nachmieter-Deals. If you want `/scrape` to run on a timer rather than only on demand, use Claude Code's `/schedule` or `/loop` skills to re-invoke it periodically (e.g. every 30–60 minutes). This is opt-in and not configured by default — set it up explicitly if you want it.
 
 ## Troubleshooting
 
