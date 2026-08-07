@@ -44,9 +44,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Computer Vision (YOLO, OpenCV, SAM, tracking/segmentation), LLM/RAG/GraphRAG systems (LangGraph, Qdrant, Neo4j), Python/PyTorch, model deployment (TensorRT, Docker, FastAPI, NVIDIA Jetson)
+**Moderate match areas:** Backend/agentic systems engineering (Kubernetes, PostgreSQL, MCP), robotics integration (ROS, NATS), healthcare ML data pipelines
+**Weak match areas:** Large-scale distributed systems at production scale, people management, roles requiring years of professional (non-internship/non-student-team) experience
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -58,9 +58,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** Junior/entry-level Computer Vision Engineer, Junior AI/ML Engineer, Junior LLM/RAG Engineer roles
+**Moderate:** Applied ML Engineer, MLOps-adjacent roles, healthcare ML roles
+**Entry-level:** All roles - candidate is a fresh graduate (Jul 2026) with student-team and internship experience, not full-time industry experience. Weight postings realistically against "0-2 years experience" or "recent graduate" language rather than mid-level requirements.
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -91,19 +91,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Open to either Computer Vision or LLM/AI Engineering career paths - no strong preference yet, will let the strongest opportunities decide
+- Build toward more industry (non-student, non-internship) experience
+- Keep learning new, genuinely useful technical skills rather than repeating known ground
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: learning new and useful technologies/methods; hands-on engineering (perception, RAG/agentic systems, deployment)
+- Tasks that drain: [not yet established - ask if a pattern emerges across applications]
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Financial motivation is a priority right now - candidate wants to earn income to help support their family. Weight compensation and stability (permanent contract vs. further internship) more heavily than usual for a fresh graduate.
+- **Flexibility**: No schedule constraints noted; fully available immediately (finished BSc and left the student team as of Jul 2026).
+- **Professional development**: Prioritizes roles offering genuine new learning over roles that only repeat existing skills.
 
 ### 6. Salary Benchmark (Optional)
 

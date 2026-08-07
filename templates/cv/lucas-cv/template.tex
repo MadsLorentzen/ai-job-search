@@ -1,0 +1,112 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.98]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[top=0.82cm,bottom=0.82cm,left=1.12cm,right=1.12cm]{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{titlesec}
+
+\input{glyphtounicode}
+\pdfgentounicode=1
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\emergencystretch}{2em}
+\urlstyle{same}
+
+\definecolor{ink}{HTML}{161616}
+\definecolor{accent}{HTML}{17365D}
+\definecolor{muted}{HTML}{555555}
+
+\hypersetup{
+  colorlinks=true,
+  urlcolor=accent,
+  linkcolor=accent,
+  pdfauthor={[YOUR_NAME]},
+  pdftitle={[YOUR_NAME] - [ROLE_TYPE] CV}
+}
+
+\titleformat{\section}
+  {\large\bfseries\color{accent}}
+  {}{0pt}{}
+  [\vspace{-4pt}\color{accent}\rule{\linewidth}{0.45pt}]
+\titlespacing*{\section}{0pt}{5.0pt}{2.5pt}
+
+\setlist[itemize]{
+  leftmargin=1.15em,
+  itemsep=1.1pt,
+  topsep=1.5pt,
+  parsep=0pt,
+  partopsep=0pt
+}
+
+\newcommand{\entry}[4]{
+  \textbf{#1}\hfill{\small #2}\\[-1pt]
+  \textit{#3}\hfill{\small\textit{#4}}\par\vspace{-1.5pt}
+}
+
+\newcommand{\project}[3]{
+  \textbf{#1} \textbar\ {\small\color{muted}\textit{#2}}\\[-1.5pt]
+  #3\par\vspace{1pt}
+}
+
+\begin{document}
+
+{\fontsize{26.5pt}{28pt}\selectfont\bfseries\color{ink} [YOUR_NAME]}\par
+\vspace{1pt}
+{\fontsize{12.5pt}{14pt}\selectfont\bfseries\color{accent} [YOUR_HEADLINE]}\par
+\vspace{3pt}
+{\small
+[YOUR_CITY], [YOUR_COUNTRY] \textbar\ [YOUR_PHONE] \textbar\
+\href{mailto:[YOUR_EMAIL]}{[YOUR_EMAIL]}\\[-1pt]
+\href{[YOUR_LINKEDIN_URL]}{[YOUR_LINKEDIN_DISPLAY]} \textbar\
+\href{[YOUR_GITHUB_URL]}{[YOUR_GITHUB_DISPLAY]} \textbar\
+\href{[YOUR_WEBSITE_URL]}{[YOUR_WEBSITE_DISPLAY]}
+}
+
+\section{Summary}
+[PROFILE_STATEMENT - 2-3 sentences tailored to the target role]
+
+\section{Education}
+\entry{[DEGREE]}{[GRADUATION_DATE]}{[INSTITUTION]}{[LOCATION]}
+\textbf{Selected coursework:} [COURSEWORK_LIST].\\[-1pt]
+\textbf{Bachelor's thesis ([CREDITS] ECTS):} [THESIS_DESCRIPTION].\\[-1pt]
+\section{Activities \& Awards}
+\textbf{[AWARD_1_CATEGORY]:} [AWARD_1] \textbar\ \textbf{[AWARD_2_CATEGORY]:} [AWARD_2].
+
+\section{Skills}
+\textbf{[SKILL_CATEGORY_1]:} [SKILL_LIST_1]\\
+\textbf{[SKILL_CATEGORY_2]:} [SKILL_LIST_2]\\
+\textbf{[SKILL_CATEGORY_3]:} [SKILL_LIST_3]\\
+\textbf{[SKILL_CATEGORY_4]:} [SKILL_LIST_4]
+
+\section{Experience}
+\entry{[JOB_TITLE_1]}{[START_DATE_1] -- [END_DATE_1]}{[COMPANY_1]}{[LOCATION_1]}
+\begin{itemize}
+  \item [BULLET_1]
+  \item [BULLET_2]
+  \item [BULLET_3]
+\end{itemize}
+
+\entry{[JOB_TITLE_2]}{[START_DATE_2] -- [END_DATE_2]}{[COMPANY_2]}{[LOCATION_2]}
+{\small\color{muted}\textit{[OPTIONAL_CONTEXT_NOTE]}}\par\vspace{-1.5pt}
+\begin{itemize}
+  \item [BULLET_1]
+  \item [BULLET_2]
+\end{itemize}
+
+\section{Selected Projects}
+\project{\href{[PROJECT_1_URL]}{[PROJECT_1_NAME]}}{[PROJECT_1_STACK]}{[PROJECT_1_DESCRIPTION_WITH_METRICS]}
+
+\project{\href{[PROJECT_2_URL]}{[PROJECT_2_NAME]}}{[PROJECT_2_STACK]}{[PROJECT_2_DESCRIPTION_WITH_METRICS]}
+
+\section{Languages}
+[LANGUAGE_1] -- [PROFICIENCY_1] \textbar\ [LANGUAGE_2] -- [PROFICIENCY_2]
+
+\end{document}

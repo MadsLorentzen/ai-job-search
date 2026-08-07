@@ -39,6 +39,68 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
 
+## STAR Candidates (Complete Manually)
+
+### Sentinel Vision - real-time fall/worker-safety detection
+**Source:** CV (Selected Projects) - independent project
+**What happened:** Built a real-time fall-detection service combining pose estimation, multi-object tracking, selective segmentation and temporal modelling, achieving 0.90 macro-F1, 27.98 FPS and 49ms p95 latency on an RTX 2070.
+**Why it matters:** Answers questions on real-time systems design, model evaluation rigor, and performance/latency tradeoffs.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Airlock Agents - governed multi-agent backend
+**Source:** CV (Selected Projects) - independent project
+**What happened:** Engineered a production-oriented multi-agent backend with role-scoped tools, approval checkpoints, audit traces and regression gates over 541,909 retail transactions.
+**Why it matters:** Answers questions on backend/systems design beyond modeling, governance/safety design, and testing rigor for agentic systems.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Strata - clearance-aware GraphRAG retrieval
+**Source:** CV (Selected Projects) - independent project
+**What happened:** Applied clearance filters inside vector and graph retrieval before generation, combining dense and BM25 search, graph expansion and reranking, improving exact-ID recall from 0.79 to 1.00.
+**Why it matters:** Answers questions on RAG/retrieval system design, measurable improvement, and access-control/security-aware engineering.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### MicroPort CRM - clinical data normalization pipeline
+**Source:** LinkedIn / CV - MicroPort CRM internship
+**What happened:** Built an LLM/RAG pipeline to normalize heterogeneous clinical tables and map terminology across medical data sources, and developed a model to detect pacemaker-lead malfunctions.
+**Why it matters:** Answers questions on working in regulated/high-reliability domains, cross-functional healthcare collaboration, and applied LLM/RAG work outside a personal project.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Auria Technologies - Jetson Orin perception deployment
+**Source:** LinkedIn / CV - Auria Technologies (current role)
+**What happened:** Deployed real-time perception components (YOLO cone detection, structured pruning, TensorRT export) on NVIDIA Jetson Orin for an autonomous racing platform, in an international Agile team.
+**Why it matters:** Answers questions on embedded/edge deployment, team collaboration in Agile/Scrum, and hardware-constrained ML engineering.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Bachelor's thesis - partial observability RL benchmark
+**Source:** CV (Education) - thesis
+**What happened:** Built a reproducible multi-seed benchmark comparing PPO, A2C, DQN and RecurrentPPO under partial observability, including curriculum learning and intrinsic motivation; curriculum learning produced the most reliable gains.
+**Why it matters:** Answers questions on independent research capability, experiment design/rigor, and drawing conclusions from comparative results.
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
 ## Common Tough Questions
 
 ### "Why did you leave [previous company]?"

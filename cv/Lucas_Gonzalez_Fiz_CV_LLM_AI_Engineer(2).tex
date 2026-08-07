@@ -1,0 +1,115 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.98]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[top=0.82cm,bottom=0.82cm,left=1.12cm,right=1.12cm]{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{titlesec}
+
+\input{glyphtounicode}
+\pdfgentounicode=1
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\emergencystretch}{2em}
+\urlstyle{same}
+
+\definecolor{ink}{HTML}{161616}
+\definecolor{accent}{HTML}{17365D}
+\definecolor{muted}{HTML}{555555}
+
+\hypersetup{
+  colorlinks=true,
+  urlcolor=accent,
+  linkcolor=accent,
+  pdfauthor={Lucas Gonzalez Fiz},
+  pdftitle={Lucas Gonzalez Fiz - LLM AI Engineer CV}
+}
+
+\titleformat{\section}
+  {\large\bfseries\color{accent}}
+  {}{0pt}{}
+  [\vspace{-4pt}\color{accent}\rule{\linewidth}{0.45pt}]
+\titlespacing*{\section}{0pt}{5.8pt}{3pt}
+
+\setlist[itemize]{
+  leftmargin=1.15em,
+  itemsep=1.1pt,
+  topsep=1.5pt,
+  parsep=0pt,
+  partopsep=0pt
+}
+
+\newcommand{\entry}[4]{
+  \textbf{#1}\hfill{\small #2}\\[-1pt]
+  \textit{#3}\hfill{\small\textit{#4}}\par\vspace{-1.5pt}
+}
+
+\newcommand{\project}[3]{
+  \textbf{#1} \textbar\ {\small\color{muted}\textit{#2}}\\[-1.5pt]
+  #3\par\vspace{2pt}
+}
+
+\begin{document}
+
+{\fontsize{26.5pt}{28pt}\selectfont\bfseries\color{ink} Lucas Gonz\'alez Fiz}\par
+\vspace{1pt}
+{\fontsize{12.5pt}{14pt}\selectfont\bfseries\color{accent} AI Engineer | LLM, RAG \& Agentic Systems}\par
+\vspace{3pt}
+{\small
+Ourense, Spain \textbar\ +34 677 228 205 \textbar\
+\href{mailto:lucasglezfiz04@gmail.com}{lucasglezfiz04@gmail.com}\\[-1pt]
+\href{https://linkedin.com/in/lucas-gonzalez-fiz}{linkedin.com/in/lucas-gonzalez-fiz} \textbar\
+\href{https://github.com/LucachuTW}{github.com/LucachuTW} \textbar\
+\href{https://lucasfiz.dev}{lucasfiz.dev}
+}
+
+\section{Summary}
+AI Engineer focused on LLM applications, RAG, GraphRAG and governed agentic systems. Experienced in access-controlled retrieval, hybrid search, reranking, tool authorization, human approval workflows, evaluation gates and FastAPI-based deployment, with additional applied-ML experience in healthcare and computer vision.
+
+\section{Education}
+\entry{B.Sc. in Artificial Intelligence (240 ECTS)}{Graduated Jul 2026}{University of Vigo -- ESEI}{Ourense, Spain}
+\textbf{Selected coursework:} Natural Language Processing, Information Retrieval, Knowledge Representation, Semantic Web, Machine Learning I--II, Big Data and Distributed Systems.\\[-1pt]
+\textbf{Bachelor's thesis (12 ECTS):} Designed a reproducible multi-seed benchmark comparing PPO, A2C, DQN and RecurrentPPO in partially observable environments, with systematic experiment configuration and evaluation.\\[-1pt]
+\textbf{Academic focus:} Retrieval, language technologies, knowledge-based systems, machine learning evaluation and responsible AI.\\[-1pt]
+\section{Activities \& Awards}
+\textbf{Formula Student AI:} Silverstone competitor \textbar\ \textbf{HackUDC 2026:} Inditex Tech Challenge podium finisher.
+
+\section{Skills}
+\textbf{LLM \& Retrieval:} RAG, GraphRAG, LangGraph, MCP, Hugging Face, Qdrant, Neo4j, BM25, reranking\\
+\textbf{Agents \& Backend:} tool calling, approval workflows, authorization, auditability, FastAPI, PostgreSQL\\
+\textbf{ML \& Data:} Python, SQL, PyTorch, scikit-learn, embeddings, evaluation pipelines\\
+\textbf{Infrastructure:} Docker, Kubernetes, Linux, Git, Ollama, local model serving
+
+\section{Experience}
+\entry{AI Software Developer -- Autonomous Systems}{Nov 2024 -- Present}{Auria Formula Student AI Team}{Ourense, Spain}
+\begin{itemize}
+  \item Develop real-time perception software on a 1/10-scale autonomous racing platform for the Auria Formula Student AI team, working in an international Scrum environment.
+  \item Train and benchmark pretrained and scratch YOLO cone detectors, applying structured pruning and TensorRT-oriented export for embedded deployment.
+  \item Integrate camera and perception components into reproducible Linux, Docker and Git workflows, with ROS/NATS services prepared for NVIDIA Jetson deployment.
+\end{itemize}
+
+\entry{AI Engineer Intern}{Mar 2026 -- Jun 2026}{MicroPort CRM}{Ourense, Spain}
+{\small\color{muted}\textit{Contracted through Cardiovascular Gallega}}\par\vspace{-1.5pt}
+\begin{itemize}
+  \item Built an LLM/RAG pipeline to normalize heterogeneous clinical tables and map terminology across medical data sources, combining retrieval, prompting and validation stages.
+  \item Developed and evaluated a machine-learning model for detecting pacemaker-lead malfunctions to support clinical review workflows.
+\end{itemize}
+
+\section{Selected Projects}
+\project{\href{https://lucasfiz.dev/en/projects/airlock-agents}{Airlock Agents}}{LangGraph, MCP, PostgreSQL, Ollama, FastAPI, Kubernetes}{Built a governed multi-agent platform with role-scoped tools, read-only SQL access, durable human approval gates and end-to-end audit traces; added offline regression gates over documents and \textbf{541,909} retail transactions.}
+
+\project{\href{https://lucasfiz.dev/en/projects/strata}{Strata}}{GraphRAG, Qdrant, Neo4j, BGE-M3, Qwen3, LangGraph}{Applied clearance filters inside vector and graph retrieval before generation; combined dense and BM25 search, graph expansion and reranking, improving exact-ID recall from \textbf{0.79 to 1.00}.}
+
+\project{\href{https://lucasfiz.dev/en/projects/sentinel-vision}{Sentinel Vision}}{PyTorch, FastAPI, Docker, TensorRT}{Delivered an observable real-time inference service with explicit performance evaluation, API deployment and hardware-aware optimization, demonstrating end-to-end ML engineering beyond LLM applications.}
+
+\section{Languages}
+Spanish -- Native \textbar\ English -- B2 CEFR
+
+\end{document}

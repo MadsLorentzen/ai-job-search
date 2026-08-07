@@ -23,6 +23,7 @@ framework_version: 1.0.0
 - **[BEHAVIOR_1]:** [DESCRIPTION]
 - **[BEHAVIOR_2]:** [DESCRIPTION]
 - **[BEHAVIOR_3]:** [DESCRIPTION]
+- *[Inferred from LinkedIn About - review before relying on this]* Values the engineering discipline "around the model" - data pipelines, evaluation, latency, deployment, observability, failure modes and reproducibility. Suggests a rigor/reliability-oriented working style, well suited to teams that value traceability and documentation over move-fast-and-break-things.
 
 ## How You Work Best
 - [ENVIRONMENT_PREFERENCE_1]

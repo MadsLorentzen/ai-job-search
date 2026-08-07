@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Lucas González Fiz
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Lucas González Fiz, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,70 +10,56 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
-
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+- **Name:** Lucas González Fiz
+- **Location:** Ourense, Spain (fully open - prefers Ourense/Spain or remote, willing to relocate anywhere in the EU)
+- **Languages:** Spanish (Native), English (B2 CEFR)
+- **CV language:** English <!-- default; re-run /setup --section search to change -->
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Recently graduated (BSc, Jul 2026), immediately available. Previous role at Auria Technologies (student Formula Student AI team) concluded Jul 2026 when the competition season ended.
+- **LinkedIn headline:** "Junior AI Engineer | LLMs & Computer Vision & Deep Learning | BSc Artificial Intelligence @ UVigo"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **B.Sc. in Artificial Intelligence (240 ECTS)** (2022-2026) - University of Vigo -- ESEI, Ourense, Spain
+  - Thesis: "Partial Observability in Deep RL" - reproducible multi-seed benchmark comparing PPO, A2C, DQN and RecurrentPPO under partial observability, with curriculum learning and intrinsic motivation
+  - Topics: Computer Vision, Machine Learning I-II, NLP, Information Retrieval, Knowledge Representation, Semantic Web, Bio-inspired ML, Reactive Systems, Big Data and Distributed Systems
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **AI Engineer** (Nov 2024 - Jul 2026) - **Auria Technologies** (Ourense, Spain; student Formula Student AI team)
+  - Developed real-time perception software on a 1/10-scale autonomous racing platform in an international Agile/Scrum team
+  - Trained and benchmarked YOLO cone detectors, applying structured pruning and TensorRT-oriented export for embedded deployment
+  - Deployed perception components on NVIDIA Jetson Orin using reproducible Docker/Git workflows
+- **AI Intern** (Mar 2026 - Jun 2026) - **MicroPort CRM** (Ourense, Spain; contracted via Cardiovascular Gallega SL)
+  - Built an LLM/RAG pipeline to normalize heterogeneous clinical tables and map terminology across medical data sources
+  - Developed and evaluated a model for detecting pacemaker-lead malfunctions to support clinical review workflows
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
-
-### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- **Primary:** Python, PyTorch, Computer Vision (YOLO, OpenCV, SAM, tracking/segmentation), LLM/RAG/GraphRAG (LangGraph, Qdrant, Neo4j)
+- **Secondary:** scikit-learn, Stable-Baselines3, Hugging Face/Transformers, MCP, PostgreSQL, ROS/NATS
+- **Domain:** Autonomous systems/robotics perception, healthcare ML, governed agentic systems
+- **Software:** TensorRT, structured pruning, FastAPI, Docker, Kubernetes, NVIDIA Jetson, Linux, Git
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+<!-- None found in source documents -->
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- Formula Student AI - Silverstone competitor
+- HackUDC 2026 - Inditex Tech Challenge podium finisher
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- *[Inferred from LinkedIn About - review before relying on this]* Values engineering rigor around the model: data pipelines, evaluation, latency, deployment, observability, failure modes, reproducibility.
+- **Thrives in:** teams that value traceability and documentation over move-fast-and-break-things
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Earning income to help support family - financial motivation is a current priority
+- Learning new and genuinely useful technologies/methods, not repeating known ground
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- Any AI/ML role satisfies - open across Computer Vision, LLM/RAG, and general applied ML/AI Engineering, no sector preference
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+<!-- None specified yet - re-run /setup --section profile to add if any emerge -->
+- None identified yet
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

@@ -4,6 +4,19 @@ framework_version: 1.2.1
 
 # CV Templates and Tailoring Guide
 
+<!-- BEGIN ACTIVE-TEMPLATE (managed by /add-template - do not edit by hand) -->
+> **Active template override: `lucas-cv`**
+>
+> A custom template is active. Where this block conflicts with the stock guidance below, this block wins. Structural advice below (tailoring, page-budget, cutting rules) still applies, except the page limit, which this template overrides to 1 page.
+>
+> - **Template skeleton:** `templates/cv/lucas-cv/template.tex` — use this as the structural reference instead of the stock template
+> - **Manifest:** `templates/cv/lucas-cv/TEMPLATE.md` — read this for style rules and known pitfalls before drafting
+> - **Compile with:** `pdflatex` (not lualatex, which the stock guidance below names)
+> - **Fonts:** Helvetica via the `helvet` package (system/TeX-distribution font, no bundled files)
+> - **Page limit:** exactly 1 page
+> - **Output file:** unchanged (`cv/main_<company>_<role>.tex`); no class or font files to copy, the template only uses standard packages
+<!-- END ACTIVE-TEMPLATE -->
+
 <!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
 
 ## Template: LaTeX moderncv (Banking Style)
@@ -116,11 +129,11 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Computer Vision / Machine Learning Engineer roles:**
+> Computer Vision and Machine Learning engineer focused on real-time perception, model evaluation and NVIDIA deployment. Experience spans autonomous racing, healthcare ML and observable vision services, with hands-on work in YOLO training, structured pruning, tracking, segmentation, latency benchmarking and TensorRT export.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For LLM / AI Engineer roles:**
+> AI Engineer focused on LLM applications, RAG, GraphRAG and governed agentic systems. Experienced in access-controlled retrieval, hybrid search, reranking, tool authorization, human approval workflows, evaluation gates and FastAPI-based deployment, with additional applied-ML experience in healthcare and computer vision.
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 

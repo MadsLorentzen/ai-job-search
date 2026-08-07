@@ -10,66 +10,61 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Primary (Spain's largest general job boards - scaffold one with `/add-portal` for a CLI):
+- **InfoJobs** (infojobs.net) - Spain's largest general job board
+- **linkedin.com/jobs** - LinkedIn job listings (filter: Spain / EU); also covered by `linkedin-search` CLI
+- **Tecnoempleo** (tecnoempleo.com) - Spain's main IT/tech-focused job board (optional)
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for known target companies
 
 ## Query Categories
 
-Queries are grouped by priority. Each query should be combined with your location terms (e.g. your city, region, or metro area) where the site supports it.
+Queries are grouped by priority. Each query should be combined with your location terms (e.g. your city, region, or metro area) where the site supports it. The candidate is open to **any AI/ML role**, so priority here reflects search breadth, not preference strength.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: AI/ML Engineer (general)
 
-These match your strongest and most desired career direction.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
-```
-
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
+Broadest match - any AI/ML engineering role satisfies.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:infojobs.net "AI Engineer" OR "Machine Learning Engineer" España
+site:linkedin.com/jobs "AI Engineer" OR "ML Engineer" Spain
+site:tecnoempleo.com "inteligencia artificial" OR "machine learning" junior
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
-
-Adjacent roles you could pivot into.
+### Priority 2: Computer Vision
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
+site:infojobs.net "Computer Vision" OR "visión por computador" España
+site:linkedin.com/jobs "Computer Vision Engineer" Spain
+site:linkedin.com/jobs "YOLO" OR "PyTorch" "computer vision" Spain
 ```
 
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
+### Priority 3: LLM / RAG / Agentic Systems
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:infojobs.net "LLM" OR "RAG" ingeniero España
+site:linkedin.com/jobs "LLM Engineer" OR "RAG" Spain
+site:linkedin.com/jobs "LangGraph" OR "agentic" Spain
+```
+
+### Priority 4: Broader Technical / Applied ML
+
+Wider net for general technical roles that could still be a fit.
+
+```
+site:infojobs.net "Python" desarrollador España
+site:linkedin.com/jobs "Python developer" OR "backend" "machine learning" Spain
+site:tecnoempleo.com "Python" "FastAPI" OR "Docker" junior
 ```
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+Candidate is fully open on location - prefers Ourense/Spain or remote, but willing to relocate anywhere in the EU. Define acceptable areas:
+- Ourense and Galicia (ideal - home region)
+- Rest of Spain, remote within Spain (acceptable)
+- Anywhere in the EU, including relocation (acceptable)
+- Outside the EU (too far, unless remote and visa-free)
 
 ## Date Filter
 
