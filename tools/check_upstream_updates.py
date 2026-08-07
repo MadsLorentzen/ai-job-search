@@ -28,13 +28,21 @@ FRAMEWORK_FILES = [
     ".claude/skills/job-application-assistant/05-cv-templates.md",
     ".claude/skills/job-application-assistant/06-cover-letter-templates.md",
     ".claude/skills/job-application-assistant/07-interview-prep.md",
+    ".claude/skills/job-application-assistant/08-application-forms.md",
+    ".claude/skills/job-application-assistant/09-web-research.md",
     ".claude/skills/job-application-assistant/SKILL.md",
     "AGENTS.md",
 ]
 
+UPSTREAM_REPO_SLUG = "MadsLorentzen/ai-job-search"
+
 def run_git(args: list[str]) -> tuple[int, str, str]:
     res = subprocess.run(["git"] + args, cwd=str(ROOT), capture_output=True, text=True)
     return res.returncode, res.stdout, res.stderr
+
+def get_remote_url(remote_name: str) -> str:
+    rc, stdout, _ = run_git(["remote", "get-url", remote_name])
+    return stdout.strip() if rc == 0 else ""
 
 def get_framework_version_from_text(text: str) -> str | None:
     if not text.startswith("---\n"):
@@ -75,6 +83,19 @@ def main() -> int:
             print("Error: No git remotes found.")
             return 1
 
+    # A fork's own 'origin' can never reveal upstream updates: warn so the
+    # user is not misled by the final '[OK]' line below. (Direct clones of
+    # the template repo have origin == the upstream repo, so no warning.)
+    # GitHub serves repo paths case-insensitively, so compare lowercased.
+    if remote != args.remote and UPSTREAM_REPO_SLUG.lower() not in get_remote_url(remote).lower():
+        print(
+            f"Warning: Remote '{remote}' does not point to the ai-job-search "
+            f"template repo ({UPSTREAM_REPO_SLUG}), so this check compares your "
+            f"fork against itself and will never report upstream updates. "
+            f"Add the template repo as a remote to track upstream changes, e.g.:\n"
+            f"  git remote add upstream https://github.com/{UPSTREAM_REPO_SLUG}.git"
+        )
+
     if not args.no_fetch:
         print(f"Fetching latest from remote '{remote}'...")
         rc, _, stderr = run_git(["fetch", remote])
@@ -93,6 +114,7 @@ def main() -> int:
     
     updates_available = []
     errors = []
+    missing_upstream = []
 
     for rel_path in FRAMEWORK_FILES:
         local_path = ROOT / rel_path
@@ -105,9 +127,16 @@ def main() -> int:
         local_ver = get_framework_version_from_text(local_text)
         
         # Get upstream version
-        rc, upstream_text, _ = run_git(["show", f"{ref}:{rel_path}"])
+        rc, upstream_text, git_err = run_git(["show", f"{ref}:{rel_path}"])
         if rc != 0:
-            # File might not exist upstream yet
+            # A file present locally but missing from the upstream ref means
+            # it was renamed or deleted upstream; any other git failure means
+            # the comparison is incomplete. Either way, never report a clean
+            # '[OK]' while silently skipping the file.
+            if "does not exist" in git_err or "exists on disk, but not in" in git_err:
+                missing_upstream.append(rel_path)
+            else:
+                errors.append(f"Failed to read upstream version of {rel_path}: {git_err.strip()}")
             continue
             
         upstream_ver = get_framework_version_from_text(upstream_text)
@@ -133,6 +162,12 @@ def main() -> int:
             print(f"  - {err}")
         print()
 
+    if missing_upstream:
+        print("Files present locally but missing from the upstream ref (possibly renamed or deleted upstream):")
+        for path in missing_upstream:
+            print(f"  - {path}")
+        print()
+
     if updates_available:
         print("[UPDATE] Upstream updates available for framework methodology files:")
         for up in updates_available:
@@ -142,7 +177,14 @@ def main() -> int:
         print("Review these changes to see if they fit your personalized fork!")
         return 0
     else:
-        print("[OK] All framework files are up to date with upstream!")
+        if errors or missing_upstream:
+            print(
+                f"[WARNING] Framework check incomplete against {ref}: "
+                f"{len(errors)} configuration error(s), {len(missing_upstream)} file(s) missing upstream. "
+                "Review the messages above before assuming you are up to date."
+            )
+        else:
+            print(f"[OK] All framework files are up to date with {ref}!")
         return 0
 
 if __name__ == "__main__":

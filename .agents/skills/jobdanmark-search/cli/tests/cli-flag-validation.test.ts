@@ -4,7 +4,9 @@ import { runCLI } from "./helpers";
 // All cases fail schema validation (or the required-flag guard) before any
 // network request, so the suite is network-free. Regression context: a bare
 // z.coerce.number() accepted --limit=-1, and slice(0, -1) then silently
-// dropped the last result instead of erroring.
+// dropped the last result instead of erroring. Filter flags (--category,
+// --jobtitle-id) also accepted negative and fractional values that were
+// sent raw to the portal.
 
 function expectValidationError(result: { exitCode: number; stdout: string; stderr: string }, option: string) {
   expect(result.exitCode).toBe(1);
@@ -25,6 +27,18 @@ describe("Jobdanmark CLI flag validation", () => {
   test("search --page=0 is rejected on the 1-indexed portal", async () => {
     const result = await runCLI(["search", "--page=0"]);
     expectValidationError(result, "page");
+  });
+
+  test("search --category=-1 is rejected", async () => {
+    const result = await runCLI(["search", "--category=-1"]);
+    expectValidationError(result, "category");
+    expect(JSON.parse(result.stderr).error.message).toContain("greater than or equal to 1");
+  });
+
+  test("search --jobtitle-id=1.5 is rejected as non-integer", async () => {
+    const result = await runCLI(["search", "--jobtitle-id=1.5"]);
+    expectValidationError(result, "jobtitle-id");
+    expect(JSON.parse(result.stderr).error.message).toContain("Expected integer");
   });
 
   test("search --limit=1.5 is rejected as non-integer", async () => {

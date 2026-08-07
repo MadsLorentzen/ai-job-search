@@ -93,7 +93,7 @@ describe("normalizeSlug", () => {
     expect(normalizeSlug("golang-zensar-2bxu6dxm")).toBe("golang-zensar-2bxu6dxm");
   });
   test("extracts the slug from a /jobs/<slug> URL", () => {
-    expect(normalizeSlug("https://freehire.dev/jobs/golang-zensar-2bxu6dxm")).toBe("golang-zensar-2bxu6dxm");
+    expect(normalizeSlug("https://freehire.me/jobs/golang-zensar-2bxu6dxm")).toBe("golang-zensar-2bxu6dxm");
   });
   test("rejects a non-slug string", () => {
     expect(normalizeSlug("not a slug!")).toBeNull();

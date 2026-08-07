@@ -4,7 +4,8 @@ import { runCLI } from "./helpers";
 // All cases fail schema validation (or the required-flag guard) before any
 // network request, so the suite is network-free. Regression context: a bare
 // z.coerce.number() accepted --limit=-1, and slice(0, -1) then silently
-// dropped the last result instead of erroring.
+// dropped the last result instead of erroring. Filter flags (--jobage) also
+// accepted negative and fractional values that were sent raw to the portal.
 
 function expectValidationError(result: { exitCode: number; stdout: string; stderr: string }, option: string) {
   expect(result.exitCode).toBe(1);
@@ -36,6 +37,18 @@ describe("Jobindex CLI flag validation", () => {
   test("--page=0 is rejected on the 1-indexed portal", async () => {
     const result = await runCLI(["search", "--query", "test", "--page=0"]);
     expectValidationError(result, "page");
+  });
+
+  test("--jobage=-5 is rejected", async () => {
+    const result = await runCLI(["search", "--query", "test", "--jobage=-5"]);
+    expectValidationError(result, "jobage");
+    expect(JSON.parse(result.stderr).error.message).toContain("greater than or equal to 1");
+  });
+
+  test("--jobage=1.5 is rejected as non-integer", async () => {
+    const result = await runCLI(["search", "--query", "test", "--jobage=1.5"]);
+    expectValidationError(result, "jobage");
+    expect(JSON.parse(result.stderr).error.message).toContain("Expected integer");
   });
 
   test("valid numeric flags pass schema validation (proven offline via the required-flag guard)", async () => {

@@ -1,5 +1,5 @@
 ---
-framework_version: 1.0.0
+framework_version: 1.1.1
 ---
 
 # Candidate Profile
@@ -15,9 +15,19 @@ framework_version: 1.0.0
 - **LinkedIn:** https://linkedin.com/in/lucas-gonzalez-fiz
 - **GitHub:** https://github.com/LucachuTW
 - **Website:** https://lucasfiz.dev
-- **Languages:** Spanish (Native), English (B2 CEFR)
 - **Status:** Recently graduated (BSc, Jul 2026), immediately available. Previous role at Auria Technologies (student Formula Student AI team) concluded Jul 2026 when the competition season ended.
 - **Constraints:** Fully open. Prefers Ourense/Spain or remote, but willing to relocate anywhere in the EU.
+
+### Languages
+<!-- Every language you can work in professionally, with your honest level. Used by the
+Language Gate in 04-job-evaluation.md and by job-scraper/search-queries.md's query-language
+generation. Omit any language you don't actually work in - an undeclared language is treated as
+a hard no, not a gap to smooth over. -->
+
+| Language | Level | Notes |
+|----------|-------|-------|
+| Spanish | Native | |
+| English | B2 CEFR | |
 
 ## Education
 

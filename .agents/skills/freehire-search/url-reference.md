@@ -1,8 +1,8 @@
-# freehire.dev API reference
+# freehire.me API reference
 
 The endpoints, parameters, and response shapes this skill depends on. This is the
 file to update if the freehire API changes. Base URL defaults to
-`https://freehire.dev` and is overridable via the `FREEHIRE_API_URL` env var.
+`https://freehire.me` and is overridable via the `FREEHIRE_API_URL` env var.
 
 ## Authentication
 
@@ -14,7 +14,8 @@ Verified against the live API:
 
 | Endpoint | Status |
 |----------|--------|
-| `GET /api/v1/jobs/search` | 200 |
+| `GET /api/v1/agent/jobs/search` | 200 |
+| `GET /api/v1/jobs/search` | 200 (the web variant; not used by this skill) |
 | `GET /api/v1/jobs/facets` | 200 |
 | `GET /api/v1/jobs/{slug}` | 200 |
 | `GET /api/v1/auth/me` | 401 (auth required — not used here) |
@@ -26,10 +27,37 @@ array in `data` and pagination in `meta` (`{ total, limit, offset }`); a single
 item puts the object in `data`. Errors are `{ "error": "<message>" }` with a 4xx/5xx
 status (e.g. 404 → `{ "error": "not found" }`).
 
+## `GET /api/v1/agent/jobs/search`
+
+The endpoint the skill's `search` command uses. Full-text + facet search over open
+jobs, returning `data: [job, …]` with `meta.total` = the estimated match count.
+
+It runs the **same query** as the web-facing `/api/v1/jobs/search` — same `q`, same
+facets, same ranking, same pagination guard (`offset + limit ≤ 10000`) — and differs
+in one respect: asked to, it replaces the search index's truncated `description`
+preview with the posting's **full** description read from the database. That is what
+lets a search of N roles stay one request instead of N + 1.
+
+Two extra parameters control it:
+
+| Param | Maps to CLI flag | Notes |
+|-------|------------------|-------|
+| `include_description` | (always `true`) | Without it the endpoint serves the index preview, same as the web search. |
+| `description_format` | `--description-format` | `markdown` (the skill's default), `text`, or `html`. **An unrecognized value is not an error** — the API falls back to `html`, so the CLI validates the flag itself. |
+
+Hydration is best-effort per hit: a result whose row has vanished from the database
+(the index lagging a just-removed job) keeps the preview rather than being dropped,
+so `description` is a full text in practice but never guaranteed to be.
+
+A `404` from this path means the instance predates the endpoint (a self-hosted
+freehire behind `FREEHIRE_API_URL`), not a missing job; the CLI reports it as an
+error naming the path rather than as an empty result set.
+
 ## `GET /api/v1/jobs/search`
 
-Full-text + facet search over open jobs. Returns `data: [job, …]` with
-`meta.total` = the total match count.
+The web variant of the same search — identical query surface, but `description` is
+always the index's truncated preview. The skill does not call it; it is listed here
+because the shared parameters below are documented against both.
 
 Query parameters used by the skill:
 
@@ -66,7 +94,8 @@ bounded server-side (`offset + limit ≤ 10000`).
   "company": "Zensar",
   "company_slug": "zensar",
   "location": "India",                       // free-text ATS location
-  "description": "<ul><li>…</li></ul>",      // HTML; the skill strips it for detail
+  "description": "- …",                      // agent search: full text in the requested
+                                             // format; elsewhere HTML, stripped client-side
   "skills": ["go", "kubernetes", …],         // dictionary facet (top-level)
   "work_mode": "remote",                     // may be absent
   "regions": ["apac"],                       // dictionary/hybrid facet
@@ -105,8 +134,10 @@ points users to (`?q=<role>` scopes the counts). Example:
 ## Parsing notes
 
 - The response is JSON, so there is no HTML card parsing (unlike the scraping
-  portals). The only markup handling is stripping the `description`'s HTML into
-  readable text (`cleanHtml` in `cli/src/helpers.ts`).
+  portals). The only markup handling left client-side is `detail`'s: `/jobs/{slug}`
+  serves HTML, which `cleanHtml` (`cli/src/helpers.ts`) strips into readable text.
+  Search descriptions arrive already rendered by the API and are passed through
+  verbatim — stripping them again would undo the Markdown structure.
 - Fetch uses a browser-ish User-Agent, `Accept: application/json`, and exponential
   backoff with jitter on 429/5xx (max 6 retries). A connection error (API
   unreachable) fails fast with a clear message — no retry, since it is not

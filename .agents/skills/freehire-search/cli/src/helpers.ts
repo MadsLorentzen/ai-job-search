@@ -1,10 +1,10 @@
-// Data source: the freehire.dev public REST API (JSON, `{data, meta}` envelope).
+// Data source: the freehire.me public REST API (JSON, `{data, meta}` envelope).
 // Reads are unauthenticated — no API key, the same bar as linkedin-search — and
 // unlike the HTML-scraping portals there is no markup to parse: we fetch JSON and
 // reshape it into the portal-skill contract's result fields. The base URL is
 // swappable via FREEHIRE_API_URL for self-hosting.
 
-export const DEFAULT_BASE_URL = "https://freehire.dev"
+export const DEFAULT_BASE_URL = "https://freehire.me"
 
 /** API base URL: FREEHIRE_API_URL (for a self-hosted instance) or the default. */
 export function baseUrl(): string {
@@ -16,7 +16,7 @@ export function writeError(error: string, code: string): void {
   process.stderr.write(JSON.stringify({ error, code }) + "\n")
 }
 
-const UA = "freehire-search-skill/1.0 (+https://freehire.dev)"
+const UA = "freehire-search-skill/1.0 (+https://freehire.me)"
 
 /** The shared API response envelope: {data, meta, error}. */
 export interface Envelope<T> {
@@ -114,6 +114,10 @@ export interface FreehireJob {
  * A search result in the portal-skill contract shape. `id` is the public_slug
  * (what `detail <slug>` consumes) and `date` is the posting date; missing values
  * are `null`, never omitted. The extra facet fields are a permitted superset.
+ *
+ * `description` is the posting's full text in the format the search asked the API
+ * for — the agent search endpoint hydrates it server-side, so it arrives already
+ * rendered and is passed through verbatim rather than run through `cleanHtml`.
  */
 export interface JobResult {
   id: string
@@ -127,6 +131,7 @@ export interface JobResult {
   regions: string[]
   countries: string[]
   skills: string[]
+  description: string | null
 }
 
 /** A job detail: the search result plus the cleaned description and enrichment. */
@@ -153,6 +158,7 @@ export function toResult(j: FreehireJob): JobResult {
     regions: j.regions,
     countries: j.countries,
     skills: j.skills,
+    description: j.description || null,
   }
 }
 

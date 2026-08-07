@@ -21,7 +21,8 @@ Read in parallel:
 
 2. **`documents/applications/*/outcome.md`** — for each resolved application, read the outcome file to get the exact interview stages reached (the checkboxes) and any notes. Merge this into the matching tracker row by company+role fuzzy match (lowercase, ignore punctuation). If an archive exists for a row but there is no match, attach it as extra context anyway.
 
-Status normalisation — map tracker values to five canonical buckets before computing stats:
+Status normalisation — map tracker values to six canonical buckets before computing stats:
+- `drafted` → **Drafted** (documents written by `/apply`, not yet submitted)
 - `applied` → **Active** (resume submitted, no further signal)
 - `interview` → **Interview**
 - `offer` → **Offer**
@@ -34,10 +35,12 @@ Status normalisation — map tracker values to five canonical buckets before com
 
 From the normalised data compute:
 
+**Drafted rows are excluded from every statistic below** — they were never submitted. Report the Drafted count on its own, and include it only in the status breakdown.
+
 - **Total applications**
 - **By status bucket:** count per bucket
 - **By sector:** count per unique sector value
-- **By channel:** online vs referral vs other
+- **By channel:** portal vs online vs referral vs other
 - **By year/season:** group by the `date` field (which may be a year like `2025` or a full date)
 - **Funnel rates:** what % progressed past resume screen (reached Interview or beyond)
 - **Rejection rate:** Rejected/Closed ÷ Total with a resolved status (exclude Active)
@@ -55,10 +58,10 @@ Write a single self-contained HTML file. All CSS is inline in a `<style>` block.
 ```
 ┌─────────────────────────────────────────────┐
 │  🔍 Job Search Dashboard    Generated: DATE  │
-├──────┬──────┬──────┬──────┬──────────────────┤
-│Total │Active│Inter-│Offer │Rejected/Closed   │  ← stat cards
-│  N   │  N   │view N│  N   │       N          │
-├──────┴──────┴──────┴──────┴──────────────────┤
+├──────┬──────┬──────┬──────┬──────┬───────────┤
+│Sent  │Draft │Active│Inter-│Offer │Rejected/  │  ← stat cards
+│  N   │  N   │  N   │view N│  N   │Closed   N │
+├──────┴──────┴──────┴──────┴──────┴───────────┤
 │  Status breakdown (doughnut) │ By sector (bar)│  ← charts row
 ├─────────────────────────────────────────────  ┤
 │  By channel (bar)  │  Funnel (horizontal bar) │  ← charts row
@@ -72,6 +75,7 @@ Write a single self-contained HTML file. All CSS is inline in a `<style>` block.
 ### Design spec
 
 - **Colour palette:** CSS custom properties. Status colours:
+  - Drafted: `#64748b` (slate)
   - Active: `#3b82f6` (blue)
   - Interview: `#f59e0b` (amber)
   - Offer: `#8b5cf6` (purple)
@@ -118,11 +122,11 @@ Then present:
 > Open it in any browser — no server needed.
 >
 > **Summary:**
-> - Total applications: N
+> - Applications sent: N · drafted, not yet sent: N
 > - Active: N · Interview: N · Hired: N · Rejected/Closed: N
 > - Funnel: N% progressed past resume screen
 >
-> Re-run `/html-report` any time after adding new entries via `/outcome` to refresh the dashboard.
+> Re-run `/html-report` any time after adding new entries via `/apply` or `/outcome` to refresh the dashboard.
 
 ---
 

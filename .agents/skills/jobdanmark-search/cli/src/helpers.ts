@@ -1,4 +1,5 @@
 export const BASE_URL = "https://jobdanmark.dk"
+export const USER_AGENT = "Mozilla/5.0 (compatible; jobdanmark-cli/1.0)"
 
 export async function apiFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
   let url = `${BASE_URL}${path}`
@@ -10,7 +11,10 @@ export async function apiFetch<T>(path: string, params?: Record<string, string>)
   const maxRetries = 6
   let delay = 500
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const response = await fetch(url, { signal: AbortSignal.timeout(15000) })
+    const response = await fetch(url, {
+      headers: { "User-Agent": USER_AGENT },
+      signal: AbortSignal.timeout(15000),
+    })
     if (response.status === 429 || response.status >= 500) {
       if (attempt === maxRetries) {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`)
@@ -38,6 +42,7 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "User-Agent": USER_AGENT,
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(15000),

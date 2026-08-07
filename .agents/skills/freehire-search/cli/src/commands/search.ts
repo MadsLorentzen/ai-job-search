@@ -1,11 +1,23 @@
 import { apiGet, toResult, writeError, type FreehireJob, type JobResult } from "../helpers.js"
 
+// The agent variant of the job search: the same query, ranking, and facets as the
+// web's /jobs/search, but each hit carries the posting's full description instead
+// of the search index's truncated preview — so a run reads every result without a
+// follow-up `detail` per hit.
+const SEARCH_PATH = "/api/v1/agent/jobs/search"
+
+/** How the API renders each result's full description. */
+export type DescriptionFormat = "markdown" | "text" | "html"
+
+export const DESCRIPTION_FORMATS: DescriptionFormat[] = ["markdown", "text", "html"]
+
 export interface SearchOpts {
   query?: string
   jobage: number
   page: number
   limit: number
   format: "json" | "table" | "plain"
+  descriptionFormat: DescriptionFormat
   // Facet filters (already parsed into value lists; empty means unset).
   regions: string[]
   countries: string[]
@@ -25,6 +37,10 @@ function buildQuery(opts: SearchOpts): URLSearchParams {
   p.set("limit", String(opts.limit))
   p.set("offset", String((opts.page - 1) * opts.limit))
   p.set("semantic_ratio", "0") // keyword search; the semantic index is opt-in
+  // The agent endpoint serves the index's truncated preview unless asked to
+  // rehydrate each hit from the database, so both params travel together.
+  p.set("include_description", "true")
+  p.set("description_format", opts.descriptionFormat)
   if (opts.jobage > 0 && opts.jobage < 9999) p.set("posted_within_days", String(opts.jobage))
   if (opts.workMode) p.set("work_mode", opts.workMode)
   if (opts.company) p.set("company_slug", opts.company)
@@ -90,11 +106,19 @@ function renderPlain(rows: JobResult[]): string {
 
 export async function runSearch(opts: SearchOpts): Promise<number> {
   try {
-    const env = await apiGet<FreehireJob[]>(`/api/v1/jobs/search?${buildQuery(opts).toString()}`)
-    // The search endpoint returns an envelope; a null (404) is treated as empty.
-    const jobs = env?.data ?? []
-    const rows = jobs.map(toResult)
-    const total = env?.meta?.total ?? rows.length
+    const env = await apiGet<FreehireJob[]>(`${SEARCH_PATH}?${buildQuery(opts).toString()}`)
+    // A 404 here is a missing endpoint, not a missing job: a freehire instance
+    // older than the agent search surface answers that way, and reporting it as
+    // an empty result set would hide the misconfiguration behind plausible output.
+    if (!env) {
+      writeError(
+        `${SEARCH_PATH} not found — this freehire instance predates the agent search endpoint; upgrade it or unset FREEHIRE_API_URL to use the hosted API`,
+        "SEARCH_FAILED",
+      )
+      return 1
+    }
+    const rows = (env.data ?? []).map(toResult)
+    const total = env.meta?.total ?? rows.length
 
     if (opts.format === "table") {
       process.stdout.write(renderTable(rows) + "\n")

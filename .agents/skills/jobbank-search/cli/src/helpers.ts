@@ -2,8 +2,7 @@ import { parse as parseHtml } from "node-html-parser"
 
 export const BASE_URL = "https://jobbank.dk"
 
-export const USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+export const USER_AGENT = "Mozilla/5.0 (compatible; jobbank-cli/1.0)"
 
 export function writeError(error: string, code: string): void {
   process.stderr.write(JSON.stringify({ error, code }) + "\n")

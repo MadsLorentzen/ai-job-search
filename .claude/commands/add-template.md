@@ -1,6 +1,6 @@
 # /add-template - Register a Custom CV or Cover Letter Template
 
-You are helping the user register their own LaTeX template with the AI Job Search framework. The framework ships with moderncv (banking style) for CVs and a custom `cover.cls` for cover letters. This command lets the user swap in their own template: store the template files, capture usage instructions (compile engine, fonts, style rules, page limits), verify the template compiles, and wire it into the `/apply` workflow so every future application uses it.
+You are helping the user register their own CV or cover letter template with the AI Job Search framework — LaTeX, Typst, or any other toolchain that compiles to PDF from the command line. The framework ships with moderncv (banking style) for CVs and a custom `cover.cls` for cover letters. This command lets the user swap in their own template: store the template files, capture usage instructions (source extension, compile command, fonts, style rules, page limits), verify the template compiles, and wire it into the `/apply` workflow so every future application uses it.
 
 `$ARGUMENTS` may contain a subcommand, a file path, or nothing.
 
@@ -22,9 +22,9 @@ Use Glob with `templates/**/TEMPLATE.md` to find registered templates. For each,
 ```
 ## Registered Templates
 
-| Name | Type | Engine | Fonts | Active |
-|------|------|--------|-------|--------|
-| <name> | CV / Cover letter | lualatex/xelatex/pdflatex | <main font> | yes/no |
+| Name | Type | Source | Toolchain | Fonts | Active |
+|------|------|--------|-----------|-------|--------|
+| <name> | CV / Cover letter | .tex/.typ/... | lualatex/typst/... | <main font> | yes/no |
 ```
 
 A template is **active** if `05-cv-templates.md` (CV) or `06-cover-letter-templates.md` (cover letter) contains an `ACTIVE-TEMPLATE` managed block naming it. If no custom templates exist, say so and explain that `/add-template` registers one. Stop here.
@@ -39,14 +39,16 @@ If `$ARGUMENTS` contains `--use <name>`:
 4. If more than one manifest matches, stop and list the matching manifest paths. Ask the user to rename one of the templates; activation must be unambiguous.
 5. Read the matching `TEMPLATE.md` and extract:
    - **Type:** `CV` or `Cover letter`
-   - **Engine:** `lualatex`, `xelatex`, or `pdflatex`
+   - **Source extension:** e.g. `.tex`, `.typ`
+   - **Compile command:** the full declared command
+   - **Engine/toolchain:** e.g. `lualatex`, `typst` (display label)
    - **Page limit:** `<N> page(s)`
    - **Fonts:** the full font summary line
-6. Derive the template folder from the manifest path and verify `template.tex` exists in the same folder. If it is missing, stop with an error; the template registration is incomplete.
+6. Derive the template folder from the manifest path and verify `template<source-extension>` exists in the same folder. If it is missing, stop with an error; the template registration is incomplete.
 7. Derive `<type>` for Step 5 from the manifest path:
    - `templates/cv/<name>/TEMPLATE.md` -> `cv`
    - `templates/cover_letters/<name>/TEMPLATE.md` -> `cover_letters`
-8. Continue to Step 5 using the resolved `<name>`, `<type>`, `<engine>`, font summary, page limit, template skeleton path, and manifest path. Do not re-run Steps 1-4; `--use` switches an already-registered template.
+8. Continue to Step 5 using the resolved `<name>`, `<type>`, `<source-extension>`, `<compile-command>`, engine/toolchain label, font summary, page limit, template skeleton path, and manifest path. Do not re-run Steps 1-4; `--use` switches an already-registered template.
 
 ---
 
@@ -56,28 +58,32 @@ Ask the user (skip anything already answered by `$ARGUMENTS`):
 
 1. **Type:** Is this a **CV** template or a **cover letter** template?
 2. **Source:** Where is the template? Accept any of:
-   - A path or @-mention of a `.tex` file (plus optional `.cls`/`.sty` files)
-   - Pasted LaTeX content
-   - A directory containing the template and its assets (class files, fonts, images)
+   - A path or @-mention of a source file in any toolchain (`.tex` plus optional `.cls`/`.sty`, `.typ` plus optional local packages, or another compile-to-PDF format)
+   - Pasted template content
+   - A directory containing the template and its assets (class/package files, fonts, images)
 
-Read every provided file. If the template references a document class or package that is not part of standard TeX distributions (e.g. a custom `.cls`), confirm the user has the file and ask for it if missing — the template cannot compile without it.
+Read every provided file. If the template references an include the declared toolchain doesn't ship by default — a custom `.cls`/`.sty` not part of standard TeX distributions, a Typst package imported via a local `#import`, or an equivalent for another toolchain — confirm the user has the file and ask for it if missing — the template cannot compile without it.
 
 ---
 
 ## Step 2: Capture Template Instructions
 
-Interview the user for the metadata that `/apply` needs to use the template correctly. Infer as much as possible from the LaTeX source first (documentclass, `\fontspec` calls, geometry, colors) and present your inferences for confirmation rather than asking blind questions.
+Interview the user for the metadata that `/apply` needs to use the template correctly. Infer as much as possible from the source first (LaTeX: documentclass, `\fontspec` calls, geometry, colors; Typst: `#set`/`#show` rules, `#import`s; other toolchains: whatever the format exposes) and present your inferences for confirmation rather than asking blind questions.
 
 Collect:
 
 1. **Name** - short kebab-case identifier (e.g. `awesome-cv`, `classic-serif`). Must not collide with an existing folder in `templates/`.
-2. **Compile engine** - `lualatex`, `xelatex`, or `pdflatex`. If the source uses `fontspec` or loads font files by path, it requires `xelatex` or `lualatex`; tell the user this rather than letting them pick `pdflatex`.
-3. **Fonts** - which font(s) the template uses and where they come from:
-   - **Bundled font files** (`.ttf`/`.otf` shipped with the template): copy them into the template folder in Step 3 and record the relative `Path` used in `\fontspec` calls.
-   - **System / TeX-distribution fonts**: record the font name and note that the user's machine must have it installed.
-4. **Style rules** - anything the drafter must preserve when filling the template: color scheme, section order, heading style, spacing conventions, bullet formatting, date format.
-5. **Page limit** - hard page count for the compiled PDF. Default: **2 pages** for a CV, **1 page** for a cover letter. `/apply`'s compile-and-inspect loop enforces this.
-6. **Known pitfalls** (optional) - macros that break with certain content (like the stock template's `\lettercontent{}`/`itemize` interaction), characters that need escaping, sections that must not be reordered.
+2. **Source extension** - the main file's extension (`.tex`, `.typ`, ...), inferred from the provided source file.
+3. **Compile command** - the full command `/apply` and Step 4's test compile will run, using `<file>` (no extension) as the placeholder for the output basename:
+   - **`.tex` source**: infer the engine the same way as before - if the source uses `fontspec` or loads font files by path, it requires `xelatex` or `lualatex`; tell the user this rather than letting them pick `pdflatex`. Render as `lualatex -interaction=nonstopmode <file>.tex` (or the appropriate engine).
+   - **`.typ` source**: default to `typst compile <file>.typ <file>.pdf` - Typst has a single binary, no engine choice.
+   - **Anything else**: no built-in guidance; ask the user for the exact compile command.
+4. **Fonts** - which font(s) the template uses and where they come from:
+   - **Bundled font files** (`.ttf`/`.otf` shipped with the template): copy them into the template folder in Step 3 and record the relative path used to load them (LaTeX `\fontspec` `Path`, Typst `#import`/font path, or equivalent).
+   - **System / distribution fonts**: record the font name and note that the user's machine must have it installed.
+5. **Style rules** - anything the drafter must preserve when filling the template: color scheme, section order, heading style, spacing conventions, bullet formatting, date format.
+6. **Page limit** - hard page count for the compiled PDF. Default: **2 pages** for a CV, **1 page** for a cover letter. `/apply`'s compile-and-inspect loop enforces this.
+7. **Known pitfalls** (optional) - macros/rules that break with certain content (like the stock template's `\lettercontent{}`/`itemize` interaction), characters that need escaping, sections that must not be reordered.
 
 ---
 
@@ -90,23 +96,24 @@ Create the template folder:
 
 Write into it:
 
-1. **`template.tex`** - the template skeleton. Replace all personal data in the source with `[PLACEHOLDER]` tokens (`[YOUR_NAME]`, `[YOUR_EMAIL]`, `[YOUR_PHONE]`, `[YOUR_LINKEDIN_URL]`, ...) so the template is shareable and profile-agnostic. Keep the structure, preamble, and styling exactly as provided.
-2. **Class/style files** - copy any `.cls`/`.sty` files alongside `template.tex`.
-3. **`fonts/`** - copy bundled font files here, preserving any directory layout the `\fontspec` `Path` options expect. Adjust `Path` values in `template.tex` to be relative to the template folder.
+1. **`template<source-extension>`** (e.g. `template.tex`, `template.typ`) - the template skeleton. Replace all personal data in the source with `[PLACEHOLDER]` tokens (`[YOUR_NAME]`, `[YOUR_EMAIL]`, `[YOUR_PHONE]`, `[YOUR_LINKEDIN_URL]`, ...) so the template is shareable and profile-agnostic. Keep the structure, preamble, and styling exactly as provided.
+2. **Class/style/package files** - copy any companion files (`.cls`/`.sty` for LaTeX, local Typst packages, or equivalents) alongside the skeleton.
+3. **`fonts/`** - copy bundled font files here, preserving any directory layout the toolchain's font-loading mechanism expects (LaTeX `\fontspec` `Path`, Typst font path, ...). Adjust those path values in the skeleton to be relative to the template folder.
 4. **`TEMPLATE.md`** - the manifest. Use exactly this format:
 
 ```markdown
 # Template: <name>
 
 - **Type:** CV | Cover letter
-- **Engine:** lualatex | xelatex | pdflatex
+- **Source extension:** .tex | .typ | ...
+- **Engine/toolchain:** lualatex | xelatex | pdflatex | typst | <other> (display label only)
 - **Page limit:** <N> page(s)
 - **Fonts:** <main font> (<bundled in fonts/ | system font - must be installed>)
-- **Class/packages:** <documentclass and any non-standard packages, or "standard">
+- **Class/packages:** <documentclass/imports and any non-standard packages, or "standard">
 
 ## Compile command
 
-    cd <output dir> && <engine> -interaction=nonstopmode <file>.tex
+    cd <output dir> && <the full declared command, e.g. lualatex -interaction=nonstopmode <file>.tex or typst compile <file>.typ <file>.pdf>
 
 ## Style rules
 
@@ -122,16 +129,16 @@ Write into it:
 
 ## Step 4: Verify the Template Compiles (MANDATORY)
 
-Never register a template without a successful test compile. LaTeX templates that "look fine" routinely fail on missing fonts, missing classes, or engine mismatches.
+Never register a template without a successful test compile. Templates that "look fine" routinely fail on missing fonts, missing classes/packages, or a wrong compile command.
 
-1. Copy `template.tex` to a scratch file in the same folder (e.g. `_compile_test.tex`) and fill every `[PLACEHOLDER]` with realistic dummy data (name, contact line, one education entry, one job entry with 3 bullets — enough content to exercise the layout).
-2. Compile with the declared engine:
+1. Copy `template<source-extension>` to a scratch file in the same folder (e.g. `_compile_test.tex` or `_compile_test.typ`) and fill every `[PLACEHOLDER]` with realistic dummy data (name, contact line, one education entry, one job entry with 3 bullets — enough content to exercise the layout).
+2. Compile with the declared compile command, substituting `_compile_test` for `<file>`:
    ```bash
-   cd templates/<type>/<name> && <engine> -interaction=nonstopmode _compile_test.tex
+   cd templates/<type>/<name> && <declared compile command with <file> -> _compile_test>
    ```
-3. If the compile fails: show the user the relevant error lines, diagnose (missing font file, wrong engine, missing class), fix what you can (e.g. font `Path` values), and re-compile. If the fix needs input only the user has (a missing font file, a license-restricted class), ask for it and wait.
-4. On success, Read the PDF and confirm the layout renders sensibly (no overlapping text, fonts loaded, page count plausible for dummy content). Record any surprises in the manifest's "Known pitfalls".
-5. Delete the scratch files and generated artifacts for the test compile: `_compile_test.tex`, `_compile_test.pdf`, `_compile_test.aux`, `_compile_test.log`, `_compile_test.out`, `_compile_test.fls`, `_compile_test.fdb_latexmk`, `_compile_test.synctex.gz`, and any other `_compile_test.*` byproducts.
+3. If the compile fails: show the user the relevant error lines, diagnose (missing font file, wrong engine/command, missing class or package), fix what you can (e.g. font path values), and re-compile. If the fix needs input only the user has (a missing font file, a license-restricted class), ask for it and wait.
+4. On success, confirm a PDF was produced and Read it to check the layout renders sensibly (no overlapping text, fonts loaded, page count matches the declared page limit for the dummy content). Record any surprises in the manifest's "Known pitfalls".
+5. Delete the scratch source file, the scratch PDF, and any other intermediate files the compile command produced (LaTeX toolchains typically leave `_compile_test.aux`/`.log`/`.out`/`.fls`/`.fdb_latexmk`/`.synctex.gz`; other toolchains may leave nothing beyond the PDF — check what actually landed in the folder and remove all `_compile_test.*` byproducts).
 
 Do not proceed to Step 5 until the test compile passes.
 
@@ -139,7 +146,7 @@ Do not proceed to Step 5 until the test compile passes.
 
 ## Step 5: Activate the Template
 
-Activation wires the template into `/apply` by adding a **managed block** to the top of the relevant guidance file — `05-cv-templates.md` for CVs, `06-cover-letter-templates.md` for cover letters. `/apply` reads these files in its drafting step, so the block is all it takes.
+Activation wires the template into `/apply` by adding a **managed block** to the top of the relevant guidance file — `05-cv-templates.md` for CVs, `06-cover-letter-templates.md` for cover letters. `/apply` reads these files in both its drafting step and its compile step, so the block is all it takes.
 
 If Step 5 was reached from Switch Mode, use the template metadata resolved from `TEMPLATE.md`. If Step 5 was reached after registering a new template, use the metadata collected and verified in Steps 2-4.
 
@@ -151,12 +158,13 @@ Insert (or replace, if one exists) this block immediately after the file's H1 ti
 >
 > A custom template is active. Where this block conflicts with the stock guidance below, this block wins. Structural advice below (tailoring, page-budget, cutting rules) still applies.
 >
-> - **Template skeleton:** `templates/<type>/<name>/template.tex` — use this as the structural reference instead of the stock template
+> - **Template skeleton:** `templates/<type>/<name>/template<source-extension>` — use this as the structural reference instead of the stock template
 > - **Manifest:** `templates/<type>/<name>/TEMPLATE.md` — read this for style rules and known pitfalls before drafting
-> - **Compile with:** `<engine>` (not the engine named in the stock guidance below)
-> - **Fonts:** <font summary, including any Path note for bundled fonts>
+> - **Source extension:** `<source-extension>` (not `.tex` unless the template's own toolchain is LaTeX)
+> - **Compile command:** `<the full declared command>` (not the command named in the stock guidance below — `/apply`'s compile step must use this instead)
+> - **Fonts:** <font summary, including any path note for bundled fonts>
 > - **Page limit:** exactly <N> page(s)
-> - **Output file:** unchanged (`cv/main_<company>_<role>.tex` / `cover_letters/cover_<company>_<role>.tex`); copy any class/font files the template needs into the output directory, or reference them by relative path
+> - **Output file:** `cv/main_<company>_<role><source-extension>` / `cover_letters/cover_<company>_<role><source-extension>`; copy any class/package/font files the template needs into the output directory, or reference them by relative path
 <!-- END ACTIVE-TEMPLATE -->
 ```
 
@@ -174,8 +182,8 @@ Present a summary:
 
 > **Template `<name>` registered and activated.**
 >
-> - Files: `templates/<type>/<name>/` (skeleton, manifest<, class files><, fonts>)
-> - Test compile: passed with `<engine>` (<N> page(s))
+> - Files: `templates/<type>/<name>/` (skeleton, manifest<, class/package files><, fonts>)
+> - Test compile: passed with `<compile command>` (<N> page(s))
 > - `/apply` will now draft <CVs | cover letters> from this template.
 >
 > Useful follow-ups:

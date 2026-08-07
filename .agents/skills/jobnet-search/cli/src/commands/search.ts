@@ -155,7 +155,7 @@ export const search = defineCommand({
     "postal-code": option(z.string().optional(), {
       description: "Postal code for radius search",
     }),
-    radius: option(z.coerce.number().default(50), {
+    radius: option(z.coerce.number().int().min(1).default(50), {
       description: "Radius in km from postal code",
     }),
     "occupation-area": option(z.string().optional(), {
