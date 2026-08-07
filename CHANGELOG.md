@@ -45,6 +45,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **A `.env` was committable** (`.gitignore`, `tools/security_guards.py`). `/add-portal`
+  can generate a skill for a portal that only returns usable content through a paid
+  fetching service, and such a skill reads an API token from the environment - but
+  nothing stopped the `.env` holding that token from being committed. No shipped portal
+  needs a credential, so upstream never hit this; a fork whose generated portals do hit
+  it immediately. `.env` and `.env.*` are now ignored and pinned in
+  `REQUIRED_IGNORE_RULES`, so the guard fails if the rule is ever dropped.
+
 - **The robots gate did not fail closed** (`tools/robots_check.py`, #277). Found by an
   adversarial review run over the merged file, not by inspection. Both cases are pinned
   in `tests/test_robots_check.py` as FAIL-OPEN REGRESSIONs:
