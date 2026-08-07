@@ -31,6 +31,13 @@ Follow these steps **in order**.
    ```
    date,company,sector,role,role_type,channel,status,contact_person,fit_rating,notes,cv_file,cover_letter_file,source
    ```
+2. **With an argument:** match rows case-insensitively on company (and role, if given). One match → proceed. Several → list them and ask. None → the application was made outside the workflow; collect company, role, date applied, channel, and posting URL from the user and add a tracker row.
+3. **Without an argument:** list all rows whose status is not final (see **Tracker status vocabulary** below) as a numbered table (company, role, date applied, current status, days quiet, follow-ups sent) and ask which to update. The two derived columns come straight from existing data: **days quiet** counts from the row's `date` or the latest dated entry in `notes`, whichever is more recent; **follow-ups sent** counts the `followed up YYYY-MM-DD` markers in `notes`. If any open row is 10+ days quiet with fewer than two follow-ups sent, add one line under the table: "Some of these have gone quiet - want a follow-up draft? (Step 2b)". If every row is resolved, say so and stop.
+
+   **`drafted` rows are listed but never counted as quiet** - nothing was sent, so nobody is late replying. List them under their own heading ("Drafted, not yet submitted"), leave **days quiet** and **follow-ups sent** blank, and keep them out of the follow-up offer above.
+4. Derive the archive folder name: `documents/applications/<company>_<role>/` - lowercase, underscores for spaces (the convention documented in `documents/README.md`). Check whether the folder and an `outcome.md` already exist - if so, you are updating, not creating.
+
+---
 
 ## Tracker status vocabulary
 
@@ -38,22 +45,15 @@ Canonical spellings for the tracker CSV `status` column (underscores, never spac
 
 `drafted` | `applied` | `interview` | `offer` | `hired` | `rejected` | `no_response` | `offer_declined` | `withdrawn`
 
-- **Open** (application still active): `drafted`, `applied`, `interview`, `offer`
 - **Final** (application closed): `hired`, `rejected`, `no_response`, `offer_declined`, `withdrawn`
+- **Open**: everything else, `drafted` included — a row is active until its status is one of the **Final** values.
 - **`drafted`** is open but distinct — nothing was sent, so no follow-up is ever due.
-
-Readers must also accept the legacy space spellings `no response` and `offer declined` on
-read, so that existing trackers keep working without a migration. Never write them.
+- Readers must also accept the legacy space spellings `no response` and `offer declined` on read, so that existing trackers keep working without a migration. Never write them — they are the same values as `no_response` and `offer_declined`, not separate statuses, equally **Final**, and every rule that names one applies to the other.
 
 > Distinct from the archive `Status:` enum in `documents/README.md`
 > (`in_progress` | `hired` | `offer_declined` | `rejected` | `no_response` | `interview_only`),
 > which describes the per-application `outcome.md` file, not this column. The two enums
 > are never written to the same field.
-2. **With an argument:** match rows case-insensitively on company (and role, if given). One match → proceed. Several → list them and ask. None → the application was made outside the workflow; collect company, role, date applied, channel, and posting URL from the user and add a tracker row.
-3. **Without an argument:** list all rows whose status is not final (see **Tracker status vocabulary** above) as a numbered table (company, role, date applied, current status, days quiet, follow-ups sent) and ask which to update. The two derived columns come straight from existing data: **days quiet** counts from the row's `date` or the latest dated entry in `notes`, whichever is more recent; **follow-ups sent** counts the `followed up YYYY-MM-DD` markers in `notes`. If any open row is 10+ days quiet with fewer than two follow-ups sent, add one line under the table: "Some of these have gone quiet - want a follow-up draft? (Step 2b)". If every row is resolved, say so and stop.
-
-   **`drafted` rows are listed but never counted as quiet** - nothing was sent, so nobody is late replying. List them under their own heading ("Drafted, not yet submitted"), leave **days quiet** and **follow-ups sent** blank, and keep them out of the follow-up offer above.
-4. Derive the archive folder name: `documents/applications/<company>_<role>/` - lowercase, underscores for spaces (the convention documented in `documents/README.md`). Check whether the folder and an `outcome.md` already exist - if so, you are updating, not creating.
 
 ---
 

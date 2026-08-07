@@ -13,7 +13,7 @@ Follow these steps **in order**.
 `$ARGUMENTS` may contain a company name (optionally with a role), e.g. `/interview acme`.
 
 - **With an argument:** match against `job_search_tracker.csv` rows (case-insensitive on company, then role). One match → proceed. Several → list and ask. None → this application isn't tracked; suggest `/outcome <company>` to register it first, or accept the posting and role details directly if the user wants to prep anyway.
-- **Without an argument:** list tracker rows whose status suggests a live process (`interview`, `offer`, or recently `applied`) and ask which one. If the tracker is empty, ask for the company, role, and posting.
+- **Without an argument:** list tracker rows whose status suggests a live process — an open status per the **Tracker status vocabulary** in `/outcome` (`interview`, `offer`, or recently `applied`; `drafted` is open but nothing was sent, so it never qualifies) — and ask which one. If the tracker is empty, ask for the company, role, and posting.
 
 v1 preps for a **specific application**. Generic no-target practice is out of scope - if asked, prep against a real tracked application instead.
 

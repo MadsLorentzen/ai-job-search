@@ -29,17 +29,23 @@ per-file diff commands.
     the archive `outcome.md` `Status:` field, not the CSV `status` column.
 
   Fix: a `## Tracker status vocabulary` block in `/outcome` (the only writer of the CSV)
-  now defines the canonical set once with underscore spellings. Every reader that makes
-  final/open decisions references that block or explicitly lists both forms as read-tolerance
-  for existing trackers. Readers accept `no response` and `offer declined` on read; `/outcome`
-  Step 4 now writes `no_response` and `offer_declined`. `/html-report`'s bucket map loses
-  `interview_only` and gains `offer declined` as a read-tolerance variant alongside the
-  canonical `offer_declined`. `/notion-sync` Step 3's Status select options now use the
-  canonical underscore spellings. Pinned by `tests/test_tracker_status_vocab.py`.
+  now defines the canonical set once with underscore spellings and the **Final** set by
+  explicit list — everything else, `drafted` included, is **Open**. The legacy space
+  spellings are the same values, not separate statuses: equally **Final**, and every rule
+  that names one form applies to the other — readers must accept them on read, and never
+  write them. Every reader that makes final/open decisions references that block (`/apply`
+  Step 6b, `/interview` Step 0, `/gmail-sync` Step 2, `/html-report` Step 1, `/notion-sync`
+  Steps 3-4). `/outcome` Step 4 writes `no_response` / `offer_declined`; `/notion-sync`
+  normalises both forms to the canonical spellings before setting the Status property;
+  `/html-report`'s bucket map loses `interview_only`, keeps both spellings, and gains a
+  case-insensitive catch-all that maps unrecognised values to **Rejected/Closed** and names
+  them once in the status breakdown. Pinned by `tests/test_tracker_status_vocab.py`.
 
   **Fork heads-up:** if your personalized `/outcome` adds `no response` or `offer declined`
   (space forms) to the tracker write path, swap them for the underscore forms. Existing rows
-  keep working because every reader now accepts both spellings on read.
+  keep working because every reader now accepts both spellings on read. If your Notion
+  database already carries space-form Status options, they simply go unused — Notion never
+  auto-removes select options.
 
 ## [1.4.0] - 2026-08-07
 

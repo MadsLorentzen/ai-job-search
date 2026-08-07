@@ -90,6 +90,8 @@ For each job in the sync set:
 3. **Match** → update **properties only**: Status, Score, Verdict, Deadline, Ranked, Applied on, Channel, CV file, Cover letter. Properties are the always-current surface (bodies are write-once), so tracker updates recorded by `/outcome` reach the destination exclusively through them. Do not touch the page body - the user may have added their own notes there, and clobbering them breaks trust in the whole view. (`--rebuild` is the sole exception.)
 4. Never delete or archive pages, even for jobs that turned `expired` - set Status to `expired` instead. Rows the user added to the database by hand (no `Key` value) are invisible to this command.
 
+**Normalise the Status value before writing.** The tracker may hold legacy space spellings (`no response`, `offer declined`) from before the canonical forms were locked. Map them to `no_response` / `offer_declined` per the **Tracker status vocabulary** in `/outcome` before setting Status on create or update - never push a space form to Notion, which would auto-create a separate select option per unique string. Pre-existing space-form options in an existing database simply go unused; Notion never auto-removes select options.
+
 Batch politely: if the MCP server rate-limits, back off and continue; report any page that failed rather than retrying indefinitely.
 
 ---

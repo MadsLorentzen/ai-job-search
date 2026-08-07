@@ -319,7 +319,7 @@ Do this before the optional offer below, and before ending the turn for any othe
    ```
    date,company,sector,role,role_type,channel,status,contact_person,fit_rating,notes,cv_file,cover_letter_file,source
    ```
-2. Match existing rows case-insensitively on company and role. **On no match, or when every match holds a final status, append a new row. On a match that is still open, update it.** When you append alongside a final row, say so — the earlier application to that role keeps its own row and its own outcome.
+2. Match existing rows case-insensitively on company and role. **On no match, or when every match holds a final status, append a new row. On a match that is still open, update it.** "Final" and "open" are defined by the **Tracker status vocabulary** in `/outcome` — the legacy space spellings `no response` / `offer declined` count as final, so a closed application never gets its row overwritten. When you append alongside a final row, say so — the earlier application to that role keeps its own row and its own outcome.
 3. Values for a new row:
 
    | Column | Value |

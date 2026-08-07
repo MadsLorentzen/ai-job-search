@@ -12,6 +12,20 @@ These tests pin the two concrete bugs that opened #298:
 2. `interview_only` was listed as a tracker bucket value in /html-report, but
    it belongs to the archive outcome.md Status: enum, never the CSV column.
 
+They also pin the review findings on the fix itself:
+
+3. The space spellings are the same statuses as the underscore forms (equally
+   Final), so a reader applying the lists literally cannot land on "not Final,
+   not Open, undefined" - which would otherwise misroute a closed application
+   in /apply's append-vs-update decision.
+4. The vocabulary block must not split Step 1's numbered list: section-scoped
+   reads of Step 1 must still see items 2-4.
+5. /html-report's bucket map needs a catch-all so no tracker value drops out of
+   the stats silently, and /notion-sync must normalise space forms before
+   writing Status (Notion auto-creates a select option per unique string).
+6. /apply and /interview make status decisions and must anchor them to the
+   block, not restate an ad-hoc set.
+
 They follow the CASES-table pattern from test_apply_records_application.py so
 that adding a new reader is a one-line addition to READER_CASES.
 """
@@ -76,6 +90,58 @@ class VocabularyBlockExists(unittest.TestCase):
             "so readers know to accept it on read",
         )
 
+    def test_vocabulary_block_states_equivalence_of_space_forms(self):
+        """The space spellings are the same statuses as the underscore forms, not
+        separate values. Without this, a reader applying the Open/Final lists
+        literally lands on "not Final, not Open, undefined" for `offer declined`,
+        and /apply Step 6b would take the update branch for a closed application
+        instead of appending a fresh row - losing the earlier document trail."""
+        vocab = section(OUTCOME, VOCAB_ANCHOR)
+        self.assertIn(
+            "same values",
+            vocab,
+            "The vocabulary block must state that the space spellings are the same "
+            "values as the canonical underscore forms",
+        )
+        self.assertIn(
+            "not separate statuses",
+            vocab,
+            "The vocabulary block must state that the space spellings are not "
+            "separate statuses",
+        )
+        self.assertIn(
+            "equally",
+            vocab,
+            "The vocabulary block must state that the space spellings are equally "
+            "Final, so finality decisions cover them",
+        )
+
+    def test_vocabulary_block_defines_open_by_exclusion(self):
+        """Open is derived by exclusion from the one explicit Final list, so a new
+        status needs updating in a single place and unknown values stay open until
+        declared final."""
+        vocab = section(OUTCOME, VOCAB_ANCHOR)
+        self.assertIn(
+            "everything else",
+            vocab,
+            "The vocabulary block must define Open as everything not in the Final "
+            "list, not as a second explicit list that can drift",
+        )
+
+    def test_step1_section_contains_all_items(self):
+        """The vocabulary block must live as its own section below Step 1's closing
+        ---, not between Step 1's numbered items. A block inside the list truncates
+        section-scoped reads of Step 1 to item 1, and a future test scoped to Step 1
+        would pass against a stub."""
+        step1 = section(OUTCOME, "## Step 1: Load State and Identify the Application")
+        for needle in ("With an argument", "Without an argument", "Derive the archive"):
+            self.assertIn(
+                needle,
+                step1,
+                f"Step 1's numbered list must be intact - '{needle}' must sit inside "
+                "Step 1, not under the vocabulary heading",
+            )
+
     def test_outcome_step4_writes_underscore_forms(self):
         """The writer must use canonical underscore spellings, never space forms."""
         step4 = section(OUTCOME, "## Step 4: Update the Tracker")
@@ -98,29 +164,46 @@ class ReadersBucketMap(unittest.TestCase):
 
     def test_html_report_bucket_includes_space_and_underscore_forms(self):
         """Read-tolerance: both spellings must reach the Rejected/Closed bucket."""
-        text = HTML_REPORT.read_text(encoding="utf-8")
-        # The bucket line must carry both spelling variants so no tracker row
-        # written by the old /outcome (space form) is silently dropped.
+        # Scope to the bucket-map section, not the whole file, so the assertion
+        # proves the mapping exists where stats are computed - a stray mention
+        # anywhere else in the file would otherwise satisfy it.
+        step1 = section(HTML_REPORT, "## Step 1: Collect Data")
         self.assertIn(
             "no response",
-            text,
+            step1,
             "/html-report must accept the legacy 'no response' (space) form so that "
             "existing trackers are not silently excluded from stats",
         )
         self.assertIn(
             "no_response",
-            text,
+            step1,
             "/html-report must accept the canonical 'no_response' (underscore) form",
         )
         self.assertIn(
             "offer declined",
-            text,
+            step1,
             "/html-report must accept the legacy 'offer declined' (space) form",
         )
         self.assertIn(
             "offer_declined",
-            text,
+            step1,
             "/html-report must accept the canonical 'offer_declined' (underscore) form",
+        )
+
+    def test_html_report_bucket_map_has_catch_all(self):
+        """No tracker value may drop out of the stats silently: unrecognised values
+        fall to Rejected/Closed and are named once in the status breakdown."""
+        step1 = section(HTML_REPORT, "## Step 1: Collect Data")
+        self.assertIn(
+            "anything else",
+            step1,
+            "The bucket map must have a catch-all line for unrecognised tracker values",
+        )
+        self.assertIn(
+            "unrecognised",
+            step1,
+            "The catch-all must name the unrecognised value once so the drop is "
+            "visible instead of silent",
         )
 
     def test_html_report_bucket_does_not_contain_interview_only(self):
@@ -148,6 +231,30 @@ class ReadersBucketMap(unittest.TestCase):
             step2_text,
             "/gmail-sync Step 2 must reference the /outcome vocabulary block "
             "instead of restating the final-status set with its own spellings",
+        )
+        self.assertNotIn(
+            "no response",
+            step2_text,
+            "/gmail-sync Step 2 must not restate the space spellings locally - "
+            "the vocabulary block is the single source for what counts as final, "
+            "and a second local list is what drifted in #298",
+        )
+
+    def test_notion_sync_normalises_status_before_write(self):
+        """Step 4 must map legacy space spellings to canonical before setting
+        Status. Notion auto-creates a select option per unique string, so pushing
+        a space form would give an existing database two options for one status
+        and split closed applications across two filter buckets."""
+        step4_text = section(NOTION_SYNC, "## Step 4: Upsert Database Rows")
+        self.assertIn(
+            "never push a space form",
+            step4_text,
+            "/notion-sync Step 4 must never write a space-form status to Notion",
+        )
+        self.assertIn(
+            "Tracker status vocabulary",
+            step4_text,
+            "/notion-sync Step 4 must map space forms per the /outcome vocabulary block",
         )
 
     def test_notion_sync_uses_underscore_status_spellings(self):
@@ -211,6 +318,23 @@ class ReaderCases(unittest.TestCase):
             "Skip `drafted` rows here",
             "the staleness check must skip drafted rows — nothing was sent, "
             "so nobody is late replying",
+        ),
+        # /apply's append-vs-update decision anchors to the vocabulary
+        (
+            APPLY,
+            "### Step 6b: Record the Application",
+            "Tracker status vocabulary",
+            "apply.md Step 6b must anchor its final-status decision to the /outcome "
+            "vocabulary block — a closed application must never be treated as open "
+            "and get its row updated instead of appended",
+        ),
+        # /interview's live-process set anchors to the vocabulary
+        (
+            INTERVIEW,
+            "## Step 0: Parse Input",
+            "Tracker status vocabulary",
+            "interview.md Step 0 must anchor its live-process statuses to the "
+            "/outcome vocabulary block instead of restating an ad-hoc set",
         ),
     ]
 
