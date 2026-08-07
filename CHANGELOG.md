@@ -34,6 +34,16 @@ per-file diff commands.
 
 ### Changed
 
+- **`/add-portal` now specifies how a generated skill handles an API token** - the command
+  could already scaffold a skill for a portal reachable only through a paid fetching
+  service, but said nothing about the credential such a skill needs. It now checks for that
+  case during reconnaissance and raises the per-call cost with the user *before*
+  scaffolding; the portal-skill contract requires the token to come from a
+  `<SERVICE>_API_TOKEN` environment variable (never a CLI flag, never a fixture) and to
+  fail with `MISSING_CREDENTIALS` when unset; and such a skill's `SKILL.md` must carry a
+  Setup section naming the service, the variable, and the billing. Spec only - no shipped
+  portal needs a credential, so no existing skill changes.
+
 - **The four Danish demo portals now ship disabled** (#288) - `jobindex-search`,
   `jobbank-search`, `jobdanmark-search`, and `jobnet-search` default to `enabled: false`,
   and `/setup`'s job-portals question now acts on the answer: it flips them to
