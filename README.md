@@ -4,6 +4,25 @@
 
 # AI Job Search
 
+## French fork / Codex
+
+This repository is the `profirst30/ai-job-search-fr` fork. The French,
+agent-neutral MVP lives in `ai_job_search_fr/` and is usable with Codex without
+requiring Claude commands:
+
+```bash
+python -m ai_job_search_fr init
+python -m ai_job_search_fr build-profile documents/cv/mon-cv.pdf
+python -m ai_job_search_fr import-opportunity --text "..."
+python -m ai_job_search_fr deduplicate && python -m ai_job_search_fr rank
+```
+
+Read [`README_FR.md`](README_FR.md), [`docs/installation.md`](docs/installation.md)
+and [`docs/PRD_VERSION_FRANCAISE.md`](docs/PRD_VERSION_FRANCAISE.md). The local
+layer preserves sources, does not invent profile facts, and never sends an
+application automatically. The upstream Claude workflow below remains
+available for compatibility.
+
 *The job search that runs on your machine.*
 
 <p align="center">

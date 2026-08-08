@@ -1,0 +1,59 @@
+schema_version: 1
+identity:
+  name: "Alex Exemple"
+  contact:
+    email: alex@example.invalid
+    phone: null
+    location: Poitiers
+  status: déclarée
+  provenance:
+    - entretien-guidé
+education:
+  - name: "Master Management et transformation numérique"
+    institution: "Université Exemple"
+    status: à_confirmer
+    provenance:
+      - cv-anonyme.md
+experiences:
+  - title: "Projet d'automatisation"
+    description: "Prototype de reporting avec Python"
+    results: "Prototype livré"
+    status: vérifiée
+    provenance:
+      - portfolio-anonyme.md
+projects: []
+skills:
+  - name: Python
+    context: "Automatisation et analyse de données"
+    status: vérifiée
+    provenance:
+      - portfolio-anonyme.md
+languages:
+  - name: français
+    level: C2
+    status: déclarée
+    provenance:
+      - entretien-guidé
+search:
+  mode: alternance
+  target_titles: ["chef de projet digital"]
+  target_families: ["gestion de projet", "transformation numérique"]
+  sectors: ["logiciel", "industrie"]
+  accepted_contracts: [apprentissage, professionnalisation]
+  refused_contracts: []
+  locations: [Poitiers, Grenoble]
+  mobility: "déplacements régionaux"
+  remote_preference: hybride
+  elimination_criteria: []
+  preferences: ["mission orientée automatisation"]
+  alternance:
+    alternance_type: indifférent
+    school: "Université Exemple"
+    level: "Master"
+    start_date: "2026-09-01"
+    schedule: "3 jours entreprise / 2 jours école"
+generation_policy:
+  allowed_statuses: [vérifiée, déclarée]
+  forbidden_statuses: [interdite, à_confirmer]
+  language: français
+  template_path: templates/cv/francais_one_page.tex

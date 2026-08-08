@@ -1,0 +1,7 @@
+{
+  "repository": "profirst30/ai-job-search-fr",
+  "ref": "master",
+  "commit": "e09d3eb37b11a5bfbb63dae3c3c502a108b23f3c",
+  "retrieved_at": "2026-08-08",
+  "note": "Base du fork distant utilisée pour l'implémentation du PRD français."
+}

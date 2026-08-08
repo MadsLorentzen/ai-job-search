@@ -1,0 +1,19 @@
+{
+  "resultats": [
+    {
+      "id": "FT-FIXTURE-001",
+      "intitule": "Assistant·e chef de projet digital en alternance",
+      "description": "Contribuer au cadrage et au suivi de projets digitaux. Compétences: Python, gestion de projet, analyse.",
+      "dateCreation": "2026-08-01T10:00:00Z",
+      "dateFin": "2026-09-30T23:59:59Z",
+      "entreprise": {"nom": "Entreprise Exemple", "url": "https://example.invalid"},
+      "lieu": {"libelle": "Poitiers (86)"},
+      "typeContrat": "APP",
+      "typeContratLibelle": "Contrat d'apprentissage",
+      "experienceLibelle": "Débutant accepté",
+      "qualificationLibelle": "Bac+4",
+      "competences": [{"libelle": "Python"}, {"libelle": "Gestion de projet"}],
+      "origineOffre": {"urlOrigine": "https://candidat.francetravail.fr/offres/recherche/detail/FT-FIXTURE-001"}
+    }
+  ]
+}

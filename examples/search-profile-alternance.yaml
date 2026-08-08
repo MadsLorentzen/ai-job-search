@@ -1,0 +1,23 @@
+mode: alternance
+target_titles:
+  - chef de projet digital
+target_families:
+  - transformation numérique
+accepted_contracts:
+  - apprentissage
+  - professionnalisation
+refused_contracts: []
+available_from: "2026-09-01"
+locations: [Poitiers, Grenoble]
+mobility: régionale
+remote_preference: hybride
+missions_wanted: [automatisation, gestion de projet]
+missions_refused: []
+elimination_criteria: []
+preferences: ["rythme compatible avec l'école"]
+alternance:
+  alternance_type: indifférent
+  school: "Université Exemple"
+  level: Master
+  duration: "12 mois"
+  schedule: "3 jours entreprise / 2 jours école"

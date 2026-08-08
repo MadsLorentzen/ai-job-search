@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-job-search-fr"
+version = "0.1.0"
+description = "Copilote local-first de recherche d'emploi en France"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [{name = "profirst30"}]
+dependencies = []
+
+[project.optional-dependencies]
+documents = ["PyYAML>=6.0", "pypdf>=4.0"]
+xlsx = ["openpyxl>=3.1"]
+dev = ["pytest>=7.0", "ruff>=0.5"]
+
+[project.scripts]
+ai-job-search-fr = "ai_job_search_fr.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["ai_job_search_fr*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

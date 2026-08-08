@@ -92,6 +92,17 @@ reports/
 # Upskill reports (personal output)
 upskill/*.md
 
+# French fork local-first data (keep schemas and synthetic fixtures tracked)
+candidate-profile.yaml
+search-profile.yaml
+scoring.json
+data/opportunities/*.json
+data/companies/*.json
+data/applications/**
+documents/imported/**
+documents/import-journal.json
+remote-fork/
+
 # Agent skills: track the source, ignore only deps and logs.
 # (A blanket `.agents/` ignore silently drops the job-search CLI skills from the repo.)
 .agents/**/node_modules/

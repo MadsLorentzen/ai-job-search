@@ -1,0 +1,4 @@
+title: Tracker des candidatures
+schema_version: 1
+statuses: [repérée, à_qualifier, prioritaire, à_candidater, candidature_envoyée, relance_due, entretien, test, offre_reçue, refus, retirée, sans_réponse, embauche]
+required_columns: [opportunity_id, company, role, status, last_event_at]

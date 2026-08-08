@@ -1,0 +1,13 @@
+title: Profil de recherche français
+schema_version: 1
+type: object
+required: [mode]
+properties:
+  mode: {type: string, enum: [alternance, stage, premier_emploi, cdd, cdi, vie, freelance, autre]}
+  target_titles: {type: array, items: {type: string}}
+  target_families: {type: array, items: {type: string}}
+  accepted_contracts: {type: array, items: {type: string}}
+  refused_contracts: {type: array, items: {type: string}}
+  elimination_criteria: {type: array, items: {type: string}}
+  preferences: {type: array, items: {type: string}}
+  alternance: {type: [object, 'null']}

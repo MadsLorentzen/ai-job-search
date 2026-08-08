@@ -1,0 +1,17 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: Profil candidat français
+schema_version: 1
+type: object
+required: [identity, education, experiences, projects, skills, search]
+properties:
+  identity: {type: object}
+  education: {type: array}
+  experiences: {type: array}
+  projects: {type: array}
+  skills: {type: array}
+  languages: {type: array}
+  search: {type: object}
+  generation_policy: {type: object}
+additionalProperties: true
+x-evidence-statuses: [vérifiée, déclarée, à_confirmer, interdite]
+x-rule: Chaque élément réutilisable porte provenance et status.

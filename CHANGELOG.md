@@ -13,6 +13,13 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Added
+
+- **French local-first MVP:** canonical profile/search/opportunity schemas, safe
+  document and tracker imports, France Travail connector with offline fixture,
+  explainable ranking, spontaneous applications, document review, follow-ups,
+  interview packs, skill-gap analysis and offline HTML reports.
+
 ### Fixed
 
 - **Tracker status enum defined once; `offer declined`/`no response` now reach the correct

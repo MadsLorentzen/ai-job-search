@@ -1,0 +1,23 @@
+title: Schéma commun d'opportunité
+schema_version: 1
+type: object
+required: [id, source, title, spontaneous, status, sources]
+properties:
+  id: {type: string}
+  source: {type: [string, 'null']}
+  source_id: {type: [string, 'null']}
+  source_url: {type: [string, 'null'], format: uri}
+  canonical_url: {type: [string, 'null'], format: uri}
+  title: {type: [string, 'null']}
+  company: {type: [string, 'null']}
+  location: {type: [string, 'null']}
+  contract_type: {type: [string, 'null']}
+  job_search_mode: {type: [string, 'null']}
+  alternance_type: {type: [string, 'null']}
+  description_raw: {type: [string, 'null']}
+  required_skills: {type: array, items: {type: string}}
+  preferred_skills: {type: array, items: {type: string}}
+  spontaneous: {type: boolean}
+  status: {type: string, enum: [active, probablement_active, à_vérifier, expirée, inaccessible]}
+  sources: {type: array}
+additionalProperties: true
