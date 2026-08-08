@@ -15,6 +15,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/apply` archives the job posting while it still holds it** (#306). `/apply` drafted two
+  documents and a tracker row from the full posting, then let the text die with the session;
+  `/outcome` Step 3.2 tried to recover it by re-fetching a `source` URL the spec itself expects
+  to be dead, and a posting pasted from an email or a PDF had no `source` to re-fetch at all.
+  Step 6b item 7 now writes the posting verbatim to
+  `documents/applications/<company>_<role>/job_posting.md`, never a re-fetch or a
+  reconstruction from memory; an existing file is left alone (a re-application to the same
+  company and role keeps the earlier posting) and named in the report. Step 0 and the `/scrape`
+  path (`job-application-assistant` SKILL.md Step 1) retain the full posting text, not a
+  summary. Pinned by `tests/test_apply_records_application.py`.
+
 - **Tracker status enum defined once; `offer declined`/`no response` now reach the correct
   `/html-report` bucket and `/gmail-sync` correctly marks them final** (#298). The tracker
   CSV `status` column had no single authoritative definition. Six command files restated it
