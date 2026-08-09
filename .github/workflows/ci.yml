@@ -150,19 +150,33 @@ jobs:
             --contains 'your.email@example.com' \
             --contains 'Dear [Hiring Manager / Team]'
 
+  discover-clis:
+    # The matrix is discovered, not hardcoded, so a portal CLI added in a fork
+    # (the /add-portal path) gets typechecked and tested without the fork
+    # having to edit this workflow - the same reason security-guards globs
+    # .agents/**/package.json instead of naming the shipped portals.
+    name: Discover portal CLIs
+    runs-on: ubuntu-latest
+    outputs:
+      tools: ${{ steps.list.outputs.tools }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - id: list
+        run: |
+          tools=$(find .agents/skills -mindepth 3 -maxdepth 3 -path '*/cli/package.json' \
+            | cut -d/ -f3 | sort | jq -R . | jq -cs .)
+          echo "Discovered portal CLIs: $tools"
+          echo "tools=$tools" >> "$GITHUB_OUTPUT"
+
   cli-checks:
     name: CLI checks ${{ matrix.tool }}
+    needs: discover-clis
+    if: needs.discover-clis.outputs.tools != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        tool:
-          - freehire-search
-          - jobbank-search
-          - jobdanmark-search
-          - jobindex-search
-          - jobnet-search
-          - linkedin-search
+        tool: ${{ fromJSON(needs.discover-clis.outputs.tools) }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2

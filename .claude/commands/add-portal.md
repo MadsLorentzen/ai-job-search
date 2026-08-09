@@ -127,6 +127,7 @@ Do not proceed to Step 5 until search, detail, and tests all pass.
    ```
    (Skip if the skill is zero-dependency and they don't care about typecheck types.)
 3. Note that the skill auto-triggers from its `SKILL.md` description - no other wiring is needed.
+4. CI coverage is also automatic: the `cli-checks` job discovers every `.agents/skills/*/cli/package.json`, so the new CLI's `typecheck` and `test` scripts run on every push to the fork without editing the workflow.
 
 ---
 
