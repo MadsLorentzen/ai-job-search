@@ -1,10 +1,10 @@
-# Job Application Assistant for [YOUR_NAME]
+# Job Application Assistant for Song LIN
 
 <!-- SETUP: This file is populated by running /setup -->
 <!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Song LIN, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -16,76 +16,96 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 <!-- This section is auto-populated by /setup. You can also fill it in manually. -->
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
+- **Name:** Song LIN
+- **Location:** Frankfurt am Main, Germany (Berberitzenweg 14, 60435 Frankfurt (M))
 - **Languages:**
   | Language | Level |
   |----------|-------|
-  | [LANGUAGE] | [LEVEL] |
-  <!-- Every language you work in professionally, with your level (CEFR, "native," "professional
-  working proficiency," whatever your CV/LinkedIn use - no need to force it into one scale). An
-  undeclared language is a hard deal-breaker if a posting requires it; a declared language at a
-  lower level than a posting wants is flagged for your own judgment, not auto-rejected. See
-  04-job-evaluation.md's Language Gate. -->
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+  | German | Fluent (verhandlungssicher, Wort und Schrift) |
+  | English | Fluent (verhandlungssicher, Wort und Schrift) |
+  | Chinese | Native (Muttersprache) |
+  <!-- Cover letters always match each posting's language. The CV-language setting below governs the CV only. -->
+- **CV language:** German
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Employed (Technical Lead of Data Analytics, Continental Teves AG & Co. oHG)
+- **LinkedIn headline:** "Song LIN - Technical Lead Data Analytics | SAP HANA/BW, ABAP OO, UI5, AI/GenAI, MLOps"
 
 ### Education
 <!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **Informatik mit Ergänzung Mathematik (Statistik)** (2010-2013) - Karlsruher Institut für Technologie (KIT)
+  - Topics: Informatik, Statistik, Datenanalyse, Mustererkennung
+  - Abschlussnote: "Gut"
 
 ### Professional Experience
 <!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Technical Lead of Data Analytics** (01.2016 - present) - **Continental Teves AG & Co. oHG** (Frankfurt)
+  - Technical lead of Data Analytics function; leads a small team while remaining hands-on as IC
+  - Bridges technical and business stakeholders (Quality Controlling, SCM, CDP)
+  - Aumovio SE assignment (08.2021-present): Data Engineering competency area lead (team of 6, ~€0.7M budget), DevOps/MLOps, GenAI on AWS/Azure/GCP + Palantir Foundry (Ontology, AIP), Infrastructure-as-Code (-60% prep time), Kubernetes/Docker/Hadoop
+  - Continental AG (01.2016-07.2021): native SAP HANA & SAP BW on HANA, PAL, UI5 & ABAP OO apps, IDOCs/RFC/Webservices, rollouts/migrations
+- **Kundenberatung / Consulting** (04.2014 - 12.2015) - **Accenture** (Kronberg)
+  - SAP HANA digital-transformation engagements across industries (Deutsche Bank, Coca Cola, RWE, CMA)
+- **Data Scientist & Mitbegründer (co-founder)** (11.2013 - 03.2014) - **Sun Elektro Trading GmbH** (Karlsruhe)
+  - Built analytics stack; RFM/RFD/RFE/RFM-I customer scoring, segmentation, SVD complaint analysis
+- **Data Scientist & Research Fellow** (03.2010 - 12.2013) - **KIT** (Karlsruhe)
+  - Advanced statistical analysis, data mining, 2D/3D image pattern recognition, multi-dimensional optimization
+- **Data Mining Engineer** (11.2007 - 12.2009) - **Siemens AG** (Karlsruhe)
+  - Predictive prevention of power-plant failures via data mining; warning/reporting; data visualization
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** SAP HANA (native), SAP BW on HANA, ABAP OO, SAP UI5, IDOCs/RFC/Webservices, Python, R, SQL
+- **Secondary:** KNIME, PHP, JavaScript, .NET, Langchain, NLP, SAP Analytics Cloud (learning), Webdynpro (learning), SAP PS (learning)
+- **Domain:** Quality Controlling & Analytics, Supply Chain Management (SCM), Customer Demand Planning (CDP), data warehousing/planning/reporting, predictive maintenance
+- **Software:** AWS/Azure/GCP, Palantir Foundry (Ontology, AIP), Kubernetes, Docker, Hadoop, Jenkins, GitHub Actions, Infrastructure-as-Code, HPC, Virtual Forge Code Scan, Oracle Peoplesoft (HR systems)
+
+### Business Domain Know-How
+- **Quality, SCM, CDP**: built and operated SAP HANA/BW analytics for the Quality function (Continental); SAP HANA digital-transformation for SCM (Coca Cola); customer scoring/segmentation analytics (Sun Elektro) transferable to CDP.
+- **Cross-IT network at Aumovio**: very good network to the other IT teams at Aumovio SE; cross-IT coordination is a recurring strength.
 
 ### Certifications
 <!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- **SAP expert Level 1 & 2** - with Delivery of Assets/Excellence award
+- **10 openSAP certificates** - Text Analysis, UI5, IoT, Cloud Platform, Enterprise Solutions for SAP HANA
+- **ITIL v3**
+- **Professional Scrum Master**
 
 ### Publications
 <!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- (No peer-reviewed publications listed on source CV. Session Chairman, ICCM 2011 - see Awards.)
 
 ### Awards
 <!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- **SAP expert Level 1 & 2** - Delivery of Assets/Excellence award
+- **Session Chairman** - 18th International Conference on Composite Materials (ICCM), Jeju Island, Korea (08.2011)
 
 ### Behavioral Profile
 <!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- **Steady technical leader** - thrives in large-enterprise, structured, cross-functional environments
+- **Hands-on IC + small-team lead** - bridges technical and business; explains complex things simply
+- **Data-driven** - "see the numbers first"; trusts evidence over gut
+- **Strengths:** SAP BW/HANA delivery, technical-business bridging, sub-project leadership in rollouts/migrations, cross-IT network at Aumovio, structured eigenverantwortlich working style
+- **Growth areas:** endless meetings (energy drain - frame as preference for decision-oriented meetings + async docs); Webdynpro/SAP Analytics Cloud/PS module (honest gaps - frame as hohe Lernbereitschaft backed by 10 openSAP certs and SAP expert L1+L2)
+- **Thrives in:** large German enterprises with structured processes, bounded autonomy, data-based steering
 
 ### What Excites You
 <!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Structured build-and-deliver in SAP BW/HANA analytics with measurable outcomes
+- Sub-project leadership in international rollouts/migrations/change-request projects
+- Bridging technical and business to reach a measurable result
+- Data-driven performance tuning and cross-IT coordination with a real network
+- Directional growth toward AI/GenAI + analytics leadership while keeping SAP depth as core
 
 ### Target Sectors
 <!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- Automotive/industrial large enterprise (Continental/Aumovio model): SAP BW analytics, AI/GenAI, MLOps
+- SAP analytics delivery in large German enterprises across functions (Quality, SCM, CDP, HR, Finance)
 
 ### Deal-breakers
 <!-- Hard constraints on job search. Language requirements are handled separately and
 automatically from your Languages table above - don't duplicate them here. -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Pure people-management tracks with no hands-on IC work
+- Fully unstructured "research anything" roles with no clear scope or process
+- Roles requiring relocation out of Rhein-Main without remote option (discuss case-by-case)
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

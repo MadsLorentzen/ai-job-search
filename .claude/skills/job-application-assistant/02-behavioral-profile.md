@@ -8,47 +8,56 @@ framework_version: 1.0.0
 <!-- You can use results from PI, DISC, Myers-Briggs, StrengthsFinder, or a self-assessment -->
 
 ## Overview
-[YOUR_NAME]'s behavioral assessment identifies them as a **[PROFILE_TYPE]** pattern. [1-2 SENTENCE_SUMMARY].
+Song LIN's behavioral assessment identifies them as a **steady technical leader** pattern. A hands-on lead who bridges deep engineering and business stakeholders, motivated by measurable outcomes and clear structures.
 
 ## Core Behavioral Drives
 
 | Drive | Level | Meaning |
 |-------|-------|---------|
-| [DRIVE_1] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_2] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_3] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_4] | [LEVEL] | [DESCRIPTION] |
+| Structure & predictability | High | Thrives in well-organized, structured enterprises; values clear processes and roles |
+| Technical depth | High | Stays hands-on as an IC while leading; credibility comes from doing the work |
+| Stakeholder bridging | High | Connects technical and business worlds; explains complex things simply |
+| Data-driven decision-making | High | Wants to see the numbers before committing; trusts evidence over gut |
+| Autonomy within structure | Moderate-high | Leads small teams and initiatives; prefers bounded independence over open-ended ambiguity |
 
 ## Strongest Behaviors
-- **[BEHAVIOR_1]:** [DESCRIPTION]
-- **[BEHAVIOR_2]:** [DESCRIPTION]
-- **[BEHAVIOR_3]:** [DESCRIPTION]
+- **Bridges technical and business**: routinely translates Quality, SCM, and CDP stakeholder needs into SAP HANA/BW and analytics solutions, and explains technical possibilities back to non-technical audiences simply.
+- **Leads small teams while staying hands-on**: technical lead who still builds; "leading a small team and hands-on as IC" is the default operating mode.
+- **Data-driven**: decisions are grounded in numbers, performance tuning, and measurable outcomes.
+- **Cross-IT networker**: maintains a very good network to the other IT teams at Aumovio; cross-team coordination is a recurring strength.
+- **Structured and eigenverantwortlich**: works in a structured, analytical, and self-responsible way; thrives in exactly the environment the JD describes.
 
 ## How You Work Best
-- [ENVIRONMENT_PREFERENCE_1]
-- [ENVIRONMENT_PREFERENCE_2]
-- [ENVIRONMENT_PREFERENCE_3]
+- Large enterprises with structured processes and cross-functional teams (current fit: Continental/Aumovio).
+- Well-defined roles and responsibilities, where sub-project leadership and IC work can coexist.
+- Environments that value data and measurable performance over gut-driven decisions.
+- Settings where the technical-business bridge role is explicitly needed (rollouts, migrations, analytics advisory).
 
 ## Growth Areas (frame positively in applications)
-- **[AREA_1]:** [HOW_TO_FRAME_IT_POSITIVELY]
-- **[AREA_2]:** [HOW_TO_FRAME_IT_POSITIVELY]
+- **Meeting overhead**: endless meetings are energy-draining; when framing for a role, emphasize preference for well-prepared, decision-oriented meetings and asynchronous documentation. Do not present as anti-collaboration.
+- **Adjacent SAP modules (PS) and tools (Webdynpro, SAP Analytics Cloud)**: honest gaps; frame as high learning willingness ("hohe Lernbereitschaft"), backed by a track record of rapid openSAP/SAP skill acquisition (10 openSAP certs).
 
 ## Mapping to Job Posting Language
 
 When a job posting mentions these keywords, it's a **strong behavioral fit**:
-- [KEYWORD_OR_PHRASE_THAT_MATCHES_YOUR_STYLE]
-- [ANOTHER_KEYWORD]
+- "strukturierte, analytische und eigenverantwortliche Arbeitsweise"
+- "Team- und Kundenorientierung", "Zusammenarbeit, Kommunikation und Teamarbeit"
+- "Beratung interner Fachbereiche", " fachliche und technische Koordination"
+- "Teilprojektleitung", "Rollout-, Migrations- und Change-Request-Projekten"
+- "Performance", "Effizienz", "Qualitätsaspekte"
 
 When a job posting mentions these, flag as **potential friction** (not deal-breaker):
-- [KEYWORD_OR_PHRASE_THAT_MIGHT_CLASH]
-- [ANOTHER_KEYWORD]
+- Roles dominated by unstructured meetings and consensus-by-committee without clear decisions.
+- Heavy operational/incident work with little build or design room (you lead and build, not only maintain).
+- Fully open-ended "research anything" autonomy with no structure; you prefer bounded, structured scope.
 
 ## Management Style Preferences
-- [WHAT_MANAGEMENT_STYLE_WORKS_FOR_YOU]
-- [WHAT_DOESN'T_WORK]
+- Works best under managers who set clear scope and goals, then trust technical leads to deliver.
+- Prefers informed steering over micromanagement; data-based check-ins over status-theater meetings.
+- Values leaders who protect deep-work time and keep meetings decision-oriented.
 
 ## Using This in Applications
-- **Cover letters:** [HOW_TO_WEAVE_IN_BEHAVIORAL_STRENGTHS]
-- **CV:** [WHAT_TO_EMPHASIZE]
-- **Interviews:** [WHAT_STAR_EXAMPLES_TO_USE]
-- **Don't overstate:** [WHAT_NOT_TO_CLAIM]
+- **Cover letters**: lead with the technical-business bridge and structured, data-driven delivery; reference cross-IT coordination as a concrete strength rather than a soft skill claim.
+- **CV**: emphasize sub-project leadership, hands-on IC delivery, and measurable performance tuning outcomes.
+- **Interviews**: use STAR examples that show you leading a small team to a measurable result (see 07-interview-prep.md).
+- **Don't overstate**: do not claim Webdynpro/SAP Analytics Cloud depth (learning only) or PS module depth; frame as high learnability with a proven SAP learning record.

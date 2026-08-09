@@ -1,0 +1,10 @@
+\usepackage[backend=biber,style=ieee,sorting=ydnt,defernumbers=true]{biblatex}
+%% For removing numbering entirely when using a numeric style
+\setlength{\bibhang}{1.25em}
+\DeclareFieldFormat{labelnumberwidth}{\makebox[\bibhang][l]{\itemmarker}}
+\setlength{\biblabelsep}{0pt}
+\defbibheading{pubtype}{\cvsubsection{#1}}
+\renewcommand{\bibsetup}{\vspace*{-\baselineskip}}
+\AtEveryBibitem{%
+  \iffieldundef{doi}{}{\clearfield{url}}%
+}

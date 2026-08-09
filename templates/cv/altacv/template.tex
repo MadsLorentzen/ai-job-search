@@ -1,0 +1,135 @@
+%%%%%%%%%%%%%%%%%
+% AltaCV CV template skeleton (profile-agnostic placeholder version)
+% Based on altacv.cls v1.7.4 by LianTze Lim. Compiles with LuaLaTeX (this skeleton) or XeLaTeX.
+%%%%%%%%%%%%%%%%
+
+\documentclass[10pt,a4paper,withhyper]{altacv}
+
+% Page layout
+\geometry{left=1.25cm,right=1.25cm,top=1.5cm,bottom=1.5cm,columnsep=1.2cm}
+
+% Two-column layout
+\usepackage{paracol}
+
+% Fonts: requires xelatex or lualatex. System fonts: Roboto Slab (serif), Lato (sans).
+\iftutex
+  \setmainfont{Roboto Slab}
+  \setsansfont{Lato}
+  \renewcommand{\familydefault}{\sfdefault}
+\else
+  \usepackage[rm]{roboto}
+  \usepackage[defaultsans]{lato}
+  \renewcommand{\familydefault}{\sfdefault}
+\fi
+
+% Colours
+\definecolor{SlateGrey}{HTML}{2E2E2E}
+\definecolor{LightGrey}{HTML}{666666}
+\definecolor{DarkPastelRed}{HTML}{450808}
+\definecolor{PastelRed}{HTML}{8F0D0D}
+\definecolor{GoldenEarth}{HTML}{E7D192}
+\colorlet{name}{black}
+\colorlet{tagline}{PastelRed}
+\colorlet{heading}{DarkPastelRed}
+\colorlet{headingrule}{GoldenEarth}
+\colorlet{subheading}{PastelRed}
+\colorlet{accent}{PastelRed}
+\colorlet{emphasis}{SlateGrey}
+\colorlet{body}{LightGrey}
+
+\renewcommand{\namefont}{\Huge\rmfamily\bfseries}
+\renewcommand{\personalinfofont}{\footnotesize}
+\renewcommand{\cvsectionfont}{\LARGE\rmfamily\bfseries}
+\renewcommand{\cvsubsectionfont}{\large\bfseries}
+
+\renewcommand{\cvItemMarker}{{\small\textbullet}}
+\renewcommand{\cvRatingMarker}{\faCircle}
+
+\begin{document}
+\name{[YOUR_NAME]}
+\tagline{[YOUR_TAGLINE]}
+% No photo asset shipped; keep the photo line commented out unless you provide one.
+% \photoR{2.8cm}{[PHOTO_FILE]}
+
+\personalinfo{%
+  \email{[YOUR_EMAIL]}
+  \phone{[YOUR_PHONE]}
+  \mailaddress{[YOUR_ADDRESS]}
+  \location{[YOUR_CITY], [YOUR_COUNTRY]}
+  \linkedin{[YOUR_LINKEDIN_ID]}
+  \github{[YOUR_GITHUB_ID]}
+}
+
+\makecvheader
+
+\columnratio{0.6}
+\begin{paracol}{2}
+
+\cvsection{Experience}
+
+\cvevent{[JOB_TITLE_1]}{[COMPANY_1]}{[START_MON YYYY] -- Ongoing}{[CITY]}
+\begin{itemize}
+\item [Achievement or responsibility 1]
+\item [Achievement or responsibility 2]
+\item [Achievement or responsibility 3]
+\end{itemize}
+
+\divider
+
+\cvevent{[JOB_TITLE_2]}{[COMPANY_2]}{[START_MON YYYY] -- [END_MON YYYY]}{[CITY]}
+\begin{itemize}
+\item [Achievement or responsibility 1]
+\item [Achievement or responsibility 2]
+\end{itemize}
+
+\medskip
+
+\cvsection{Education}
+
+\cvevent{[Degree] in [Field]}{[Institution]}{[YYYY] -- [YYYY]}{[City]}
+Key topics: [topics].
+
+\medskip
+
+\cvsection{Certifications \& Awards}
+\begin{itemize}
+\item \textbf{[Cert/Award 1]} -- [issuer/event] ([year])
+\item \textbf{[Cert/Award 2]} -- [issuer/event] ([year])
+\end{itemize}
+
+\switchcolumn
+
+\cvsection{Profile}
+
+\begin{quote}
+``[3-5 line profile statement tailored to the role.]''
+\end{quote}
+
+\cvsection{Core Competencies}
+
+\cvtag{[Skill 1]}
+\cvtag{[Skill 2]}\\
+\cvtag{[Skill 3]}
+\cvtag{[Skill 4]}\\
+\cvtag{[Skill 5]}
+\cvtag{[Skill 6]}
+
+\medskip
+
+\cvsection{Languages}
+
+\cvskill{[Language 1]}{5}
+\divider
+\cvskill{[Language 2]}{4}
+\divider
+\cvskill{[Language 3]}{4.5}
+
+\medskip
+
+\cvsection{Referees}
+
+\cvref{[Name]}{[Organization]}{[email]}{[Address Line 1\\Address Line 2]}
+
+\end{paracol}
+
+\end{document}

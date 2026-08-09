@@ -14,30 +14,62 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 ## Ready-Made STAR Examples
 
-<!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
+<!-- Populated by /setup from your actual experience. Aim for 4-6 covering different competencies. -->
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 1. Continental SAP BW/HANA rollout delivery (Technical leadership + sub-project lead)
+**S:** Continental AG Quality Controlling & Analytics needed native SAP HANA / SAP BW on HANA adapted and extended for data management, planning, and reporting across a rollout/migration/change-request context.
+**T:** [FILL] Your responsibility as developer and sub-project lead - which rollout/migration scope did you own, which business area (Quality/SCM/CDP), what was the deadline or stakeholder set?
+**A:** [FILL] What you specifically did - native SAP HANA + BW on HANA development, ABAP OO, SAP UI5 apps, IDOCs/RFC/Webservices interfaces, PAL applications; how you coordinated the sub-project and external partners.
+**R:** [FILL] Outcome - measurable (performance tuning %, reporting adoption, project delivered on time, number of Fachbereiche onboarded). Be concrete with numbers.
+**Use for:** "Teilprojektleitung", "Rollout/Migration", "Beratung interner Fachbereiche", "describe a complex SAP delivery you led"
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 2. Aumovio Data Engineering / MLOps competency area lead (Leading a team + hands-on IC + AI/cloud)
+**S:** Aumovio SE AI needed a Data Engineering Competency Area stood up with DevOps/MLOps and an IT-infrastructure project covering AWS Admin, HPC, and CI/CD.
+**T:** [FILL] Your role as technical lead - what did you own (competency area setup, infra project leadership, GenAI app delivery)? Size of team/area?
+**A:** [FILL] What you did - technical leadership of the competency area, DevOps and MLOps setup, AWS/HPC/CI-CD operations, GenAI apps on AWS/Azure/GCP, Infrastructure-as-Code for AI projects, leveraging your network to the other IT teams at Aumovio.
+**R:** [FILL] Outcome - measurable (AI projects shipped, infra uptime, cycle-time reduction, cross-IT coordination outcomes).
+**Use for:** "Technical leadership", "MLOps", "cloud", "how you lead a small team hands-on", "cross-team coordination"
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 3. Bridging technical and business: SAP reporting that stakeholders actually used (Communication + business alignment)
+**S:** Business stakeholders in Quality/SCM needed analytics they could use; the technical side had the SAP HANA/BW capability but needed translation.
+**T:** [FILL] Your responsibility to bridge - which Fachbereich, what was the gap between what they asked for and what they needed?
+**A:** [FILL] How you explained technical possibilities simply, considered performance/usability/efficiency/quality per the JD's framing, and delivered a reporting/analytics solution they adopted.
+**R:** [FILL] Outcome - adoption, decision quality, stakeholder feedback; a measurable performance or efficiency gain.
+**Use for:** "Beratung interner Fachbereiche", "explain complex things simply", "cross-functional collaboration", "Performance/Benutzerfreundlichkeit/Effizienz"
+
+### 4. Predictive maintenance at Siemens (Data mining / measurable engineering outcome)
+**S:** Siemens AG Energy Generation needed predictive prevention of power-plant failures.
+**T:** [FILL] Your responsibility within the data-mining work for failure prediction.
+**A:** [FILL] Data-mining algorithms you built, warning/reporting on plant status indicators, data visualization and graphical analysis.
+**R:** [FILL] Outcome - measurable (failures prevented/flagged, warning lead time, reporting adoption).
+**Use for:** "data-driven decisions", "predictive analytics", "measurable outcome", "explain a time data changed an engineering decision"
+
+### 5. Co-founding Sun Elektro: customer scoring & segmentation analytics (Entrepreneurship + analytics)
+**S:** As co-founder of Sun Elektro Trading, the business needed analytics to drive product selection and customer strategy.
+**T:** [FILL] Your responsibility - building the analytics from scratch as co-founder and data scientist.
+**A:** [FILL] Analytics-capable website, data cleansing/preparation, RFM/RFD/RFE/RFM-I customer scoring, customer segmentation by purchasing activity, SVD-based complaint analysis.
+**R:** [FILL] Outcome - measurable (customer strategy impact, scoring adoption, complaint-analysis insight quality).
+**Use for:** "initiative", "entrepreneurship", "analytics end-to-end", "building something from zero"
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
+
+## STAR Candidates (Complete Manually)
+
+<!-- Stubs below: structured placeholders flagged by /setup Path A. Each needs your
+Situation/Task/Action/Result details (above the stubs are the same examples expanded as far as
+the source documents allow - fill the [FILL] lines in those before you use them in interviews). -->
+
+The five examples above are stubs: the Situation lines are grounded in the CV, but Task/Action/Result need your specific details (numbers, owners, deadlines, outcomes) before they are interview-ready. Complete the [FILL] lines, or replace them, before using these examples.
+
+### 6. Data/AI platform & GenAI delivery at Aumovio (Cloud + MLOps + new stack)
+**Source:** English R&D resumes (documents/cv) + candidate confirmation - Aumovio AI
+**What happened:** Built and lead the Data Engineering competency area (team of 6, ~€0.7M budget), operating a Kubernetes/Docker/Hadoop platform and shipping GenAI apps on AWS/Azure/GCP and Palantir Foundry (Ontology, AIP); introduced Infrastructure-as-Code, cutting environment/data prep time ~60%.
+**Why it matters:** "technical leadership", "MLOps/cloud", "lead a small team hands-on", "introduce a new process or tool", "modern AI/GenAI delivery"
+**S/T/A/R stub:**
+- Situation: [FILL - Aumovio AI context and why a Data Engineering competency area / platform was needed]
+- Task: [FILL - what you owned: competency area, AWS/HPC/CI-CD infra project, platform operations]
+- Action: [FILL - DevOps/MLOps setup, IaC introduction, K8s/Docker/Hadoop platform, GenAI on cloud + Palantir Foundry]
+- Result: [FILL - keep only the confirmed metrics: team of 6, ~€0.7M budget, ~60% IaC prep-time reduction]
 
 ## Common Tough Questions
 

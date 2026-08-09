@@ -123,6 +123,35 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 | `\closing{text}` | Closing line |
 | `\signature{name}` | Printed name below signature |
 
+## Patterns Observed in Past Applications
+
+<!-- Populated by /setup Path A from cover_letter.tex files. Inferred/recurrent patterns only. -->
+
+No archived cover letters yet. The pattern below is the recommended German starting structure for SAP BW / Analytics Cloud roles, derived from the candidate profile (not from a past draft), for the Frankfurt IT Specialist Project/System target role:
+
+### Opening pattern (German, SSt SAP BW)
+- Line 1: role and intent - "Bewerbung als IT Specialist Project/System (m/w/divers) am Standort Frankfurt."
+- Lines 2-3: immediate connection - link SAP HANA/BW + ABAP OO/UI5 + SAP interface tech experience to the posting's required BW/Analytics Cloud/ABAP OO/UI5 work; mention Quality Controlling/SCM business framing.
+- Specificity: reference the posting's rollout/migration/change-request scope directly, not a generic SAP intro.
+
+### Bullet structure (German)
+- 3-5 bullets, each starting with a bold category label.
+- Lead with the strongest direct hits: **SAP BW on HANA / native SAP HANA**, **ABAP OO & SAP UI5**, **Schnittstellen (IDOCs, RFC, Webservices)**, **Teilprojektleitung in Rollout/Migration**, **Performance-Tuning & Reporting**.
+- Each bullet pairs the capability with a concrete Continental/Aumovio outcome or business framing (Quality/SCM/CDP). Avoid bare "Kenntnisse in X" claims; tie to delivery.
+
+### Motivation / why-this-company placement
+- First section after opening: why *this* role and employer, in the posting's language, referencing its SAP BW/Analytics Cloud scope and the structured, eigenverantwortlich environment the candidate thrives in.
+
+### Closing (German)
+- Forward-looking, confident, no over-enthusiasm: "Ich freue mich auf die Gelegenheit, meine Erfahrungen in einem persönlichen Gespräch vorzustellen."
+- Salutation: "Mit freundlichen Grüßen" (or "Mit freundlichen Gruessen" if avoiding the Eszett in a charset-restricted toolchain).
+
+### Recurring phrases to reuse (German)
+- "verhandlungssichere Deutsch- und Englischkenntnisse in Wort und Schrift" (matches the JD's exact wording - use literally).
+- "strukturierte, analytische und eigenverantwortliche Arbeitsweise" (matches the JD's required working style - use literally).
+- "Teilprojektleitung in internationalen Rollout-, Migrations- und Change-Request-Projekten" (matches the JD; backed by Continental track record).
+- "hohe Lernbereitschaft" for Webdynpro / SAP Analytics Cloud / PS module gaps (frames the honest gaps the way the JD invites).
+
 ## Tailoring Guidelines
 
 ### Salutation

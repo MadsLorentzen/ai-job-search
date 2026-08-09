@@ -1,0 +1,11 @@
+% When using APA6 if you need more author names to be listed
+% because you're e.g. the 12th author, add apamaxprtauth=12
+\usepackage[backend=biber,style=apa6,sorting=ydnt]{biblatex}
+\defbibheading{pubtype}{\cvsubsection{#1}}
+\renewcommand{\bibsetup}{\vspace*{-\baselineskip}}
+\AtEveryBibitem{%
+  \makebox[\bibhang][l]{\itemmarker}%
+  \iffieldundef{doi}{}{\clearfield{url}}%
+}
+\setlength{\bibitemsep}{0.25\baselineskip}
+\setlength{\bibhang}{1.25em}

@@ -4,6 +4,20 @@ framework_version: 1.4.0
 
 # CV Templates and Tailoring Guide
 
+<!-- BEGIN ACTIVE-TEMPLATE (managed by /add-template - do not edit by hand) -->
+> **Active template override: `altacv`**
+>
+> A custom template is active. Where this block conflicts with the stock guidance below, this block wins. Structural advice below (tailoring, page-budget, cutting rules) still applies.
+>
+> - **Template skeleton:** `templates/cv/altacv/template.tex` — use this as the structural reference instead of the stock moderncv template
+> - **Manifest:** `templates/cv/altacv/TEMPLATE.md` — read this for style rules and known pitfalls before drafting
+> - **Source extension:** `.tex`
+> - **Compile command:** `cd cv && lualatex -interaction=nonstopmode <file>.tex` (not the command named in the stock guidance below — `/apply`'s compile step must use this instead; the output directory needs `altacv.cls` and `pdfa.xmpi` copied alongside the source file)
+> - **Fonts:** Lato (sans, system font) + Roboto Slab (serif, system font). Both available as system TrueType fonts on this machine; no bundled fonts needed.
+> - **Page limit:** exactly 2 pages
+> - **Output file:** `cv/main_<company>_<role>.tex`; copy `templates/cv/altacv/altacv.cls` and `templates/cv/altacv/pdfa.xmpi` into the `cv/` output directory when drafting
+<!-- END ACTIVE-TEMPLATE -->
+
 <!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
 
 ## Template: LaTeX moderncv (Banking Style)
@@ -116,13 +130,26 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For SAP BW / SAP Analytics Cloud technical roles (Primary direction, German):**
+> SAP-BW- und Analytics-Experte mit sehr guten Kenntnissen in nativem SAP HANA, SAP BW on HANA, ABAP OO, SAP UI5 sowie den Schnittstellentechnologien IDOC, RFC und Webservices. Langjährige Erfahrung in Datenmanagement, Planung, Reporting und PAL-Anwendungen im Umfeld von Quality Controlling, SCM und Customer Demand Planning bei Continental/Aumovio. Technische Leitung kleiner Teams und Teilprojektleitung in internationalen Rollout-, Migrations- und Change-Request-Projekten. Verhandlungssichere Deutsch- und Englischkenntnisse in Wort und Schrift.
 
-Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
+**For Data Engineering / MLOps Lead roles (Secondary direction, German):**
+> Technical Lead Data Engineering mit Schwerpunkt DevOps und MLOps. Aufbau und Leitung der Competency Area Data Engineering bei Aumovio, inklusive IT-Infrastrukturprojekten für AWS Admin, HPC und CI/CD. Entwicklung von GenAI-Apps auf AWS, Azure und GCP sowie Einführung von Infrastructure-as-Code in KI-Projekten. Sehr gute Kenntnisse in Python, R, SQL, Jenkins und GitHub Actions; starkes Netzwerk in die weiteren IT-Teams von Aumovio.
+
+**For SAP HANA Consultant / Beratung roles (Tertiary direction, German):**
+> SAP-HANA-Berater mit sehr guten Kenntnissen in nativem SAP HANA, SAP BW on HANA, ABAP OO und SAP UI5. Beratung interner Fachbereiche in technischen und funktionalen Fragestellungen zu Datenmanagement, Planung, Reporting und PAL-Anwendungen. Erfahrung in Rollout-, Migrations- und Change-Request-Projekten bei Continental, Accenture, Coca Cola und CMA; fundiertes Verständnis von SAP CO, HCM, BW und FI. SAP expert Level 1 & 2, 10 openSAP-Zertifikate, ITIL v3 und Professional Scrum Master.
+
+**For Data Engineering / MLOps Lead roles (English / international):** *[Synthesized from documents/cv resumes; unverified metrics removed]*
+> Technical Lead of Data Engineering with a strong DevOps/MLOps focus. Built and lead the Data Engineering competency area at Aumovio SE (team of six, ~€0.7M budget), running IT-infrastructure projects across AWS, HPC, and CI/CD. Develop GenAI applications on AWS, Azure, GCP, and Palantir Foundry (Ontology, AIP); introduced Infrastructure-as-Code for AI projects, cutting setup time by 60%. Deep SAP HANA/BW background (native HANA, ABAP OO, UI5) plus Python, R, SQL, Kubernetes, Docker, and Hadoop. Fluent German and English.
+
+**For AI / GenAI Engineer roles (English / international):** *[Synthesized from documents/cv resumes; unverified metrics removed]*
+> Technical lead building GenAI applications across AWS, Azure, GCP, and Palantir Foundry (Ontology, AIP), grounded in strong MLOps and Infrastructure-as-Code practice. Lead a team of six in Aumovio's AI unit, bridging deep SAP HANA/BW analytics with modern AI: LLM apps (Langchain), NLP, and data platforms (Kubernetes, Docker, Hadoop). Ten openSAP certifications, SAP expert Level 1 & 2. Fluent German and English, native Chinese.
+
+**For Forward Deployed / client-facing Analytics Engineer roles (English / international):** *[Synthesized from documents/cv resumes; unverified metrics removed]*
+> Analytics engineer who owns the full path from business problem to production: translates Quality/SCM/CDP stakeholder needs into SAP HANA/BW and AI solutions, builds them hands-on, and operates the result. Lead data engineering at Aumovio (team of six, ~€0.7M); delivered SAP HANA transformation projects for Continental, Accenture, Coca Cola, and Deutsche Bank. Strong SAP stack plus GenAI on multi-cloud and Palantir Foundry. Fluent German and English.
+
+Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A.
 
 ### Core Competencies / Skills Section (Best Practice)
 Reorder and emphasize based on the role. Use bold category labels.

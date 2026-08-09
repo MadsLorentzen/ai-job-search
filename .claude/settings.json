@@ -5,7 +5,12 @@
       "Bash(bun run:*)",
       "Bash(python salary_lookup.py:*)",
       "Bash(python3 salary_lookup.py:*)",
-      "Bash(pdftotext:*)"
+      "Bash(pdftotext:*)",
+      "Bash(pdftotext -layout Song_Lin_CV_.pdf -)",
+      "Edit(/.claude/skills/job-application-assistant/**)",
+      "Bash(grep -iE \"error|! |undefined|fatal\" /tmp/cvbuild.log | head -30)",
+      "Read(//tmp/**)",
+      "Bash(tail -40 /tmp/cvbuild.log)"
     ]
   }
 }

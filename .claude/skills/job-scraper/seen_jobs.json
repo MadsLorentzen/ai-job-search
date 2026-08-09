@@ -1,0 +1,914 @@
+{
+  "seen": {
+    "https://de.linkedin.com/jobs/view/senior-sap-bw-inhouse-consultant-m-w-d-at-bauhaus-deutschland-4344881951": {
+      "title": "Senior SAP BW Inhouse Consultant (m/w/d)",
+      "company": "BAUHAUS Deutschland",
+      "location": "Mannheim, Baden-Württemberg, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-sap-bw-inhouse-consultant-m-w-d-at-bauhaus-deutschland-4344881951",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/senior-consultant-in-sap-data-analytics-all-genders-at-mhp-%E2%80%93-a-porsche-company-4370994855": {
+      "title": "(Senior) Consultant in SAP Data Analytics (all genders)",
+      "company": "MHP – A Porsche Company",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-consultant-in-sap-data-analytics-all-genders-at-mhp-%E2%80%93-a-porsche-company-4370994855",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/sap-data-analytics-senior-consultant-w-m-x-at-ntt-data-europe-latam-4445037348": {
+      "title": "SAP Data & Analytics (Senior) Consultant (w/m/x)",
+      "company": "NTT DATA Europe & Latam",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/sap-data-analytics-senior-consultant-w-m-x-at-ntt-data-europe-latam-4445037348",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/senior-manager-sap-analytics-m-w-d-in-frankfurt-main-at-deloitte-4378689356": {
+      "title": "(Senior) Manager SAP Analytics (m/w/d) in Frankfurt (Main)",
+      "company": "Deloitte",
+      "location": "Frankfurt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-manager-sap-analytics-m-w-d-in-frankfurt-main-at-deloitte-4378689356",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/sap-consultant-bdc-business-data-cloud-all-genders-at-tata-consultancy-services-4421434115": {
+      "title": "SAP Consultant BDC (Business Data Cloud) (all genders)",
+      "company": "Tata Consultancy Services",
+      "location": "Frankfurt Rhine-Main Metropolitan Area",
+      "url": "https://de.linkedin.com/jobs/view/sap-consultant-bdc-business-data-cloud-all-genders-at-tata-consultancy-services-4421434115",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/sap-bank-analyzer-entwickler-m-w-d-at-dz-privatbank-ag-4369926289": {
+      "title": "SAP Bank Analyzer-Entwickler (m|w|d)",
+      "company": "DZ PRIVATBANK AG",
+      "location": "Frankfurt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/sap-bank-analyzer-entwickler-m-w-d-at-dz-privatbank-ag-4369926289",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/lead-expert-saspf-erp-m-w-d-at-bwi-gmbh-4417385739": {
+      "title": "Lead Expert SASPF ERP (m/w/d)",
+      "company": "BWI GmbH",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/lead-expert-saspf-erp-m-w-d-at-bwi-gmbh-4417385739",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/senior-sap-analytics-consultant-ams-at-btc-business-technology-consulting-ag-4446361289": {
+      "title": "Senior SAP Analytics Consultant * - AMS",
+      "company": "BTC - Business Technology Consulting AG",
+      "location": "Neu-Isenburg, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-sap-analytics-consultant-ams-at-btc-business-technology-consulting-ag-4446361289",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/senior-berater-in-sap-bi-mit-fokus-sac-reporting-at-btc-business-technology-consulting-ag-4446345772": {
+      "title": "Senior Berater *in SAP BI mit Fokus SAC Reporting",
+      "company": "BTC - Business Technology Consulting AG",
+      "location": "Neu-Isenburg, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-berater-in-sap-bi-mit-fokus-sac-reporting-at-btc-business-technology-consulting-ag-4446345772",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/sap-analytical-banking-%E2%80%93-senior-business-consultant-bis-senior-manager-banking-all-genders-at-msg-for-banking-ag-4444551704": {
+      "title": "SAP Analytical Banking – Senior Business Consultant bis Senior Manager / Banking (all genders)",
+      "company": "msg for banking ag",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/sap-analytical-banking-%E2%80%93-senior-business-consultant-bis-senior-manager-banking-all-genders-at-msg-for-banking-ag-4444551704",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/senior-consultant-sap-enterprise-planning-and-analytics-all-genders-at-mhp-%E2%80%93-a-porsche-company-4370997730": {
+      "title": "(Senior) Consultant SAP Enterprise Planning and Analytics (all genders)",
+      "company": "MHP – A Porsche Company",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-consultant-sap-enterprise-planning-and-analytics-all-genders-at-mhp-%E2%80%93-a-porsche-company-4370997730",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/senior-manager-sap-analytics-cloud-datasphere-m-w-d-at-bearingpoint-4438640201": {
+      "title": "(Senior) Manager | SAP Analytics Cloud / Datasphere (m/w/d)",
+      "company": "BearingPoint",
+      "location": "Frankfurt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-manager-sap-analytics-cloud-datasphere-m-w-d-at-bearingpoint-4438640201",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/sap-analytics-cloud-inhouse-specialist-m-w-d-at-union-investment-4435812053": {
+      "title": "SAP Analytics Cloud Inhouse Specialist (m/w/d)",
+      "company": "Union Investment",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/sap-analytics-cloud-inhouse-specialist-m-w-d-at-union-investment-4435812053",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/consultant-sap-analytics-cloud-sac-fokus-planning-at-btc-business-technology-consulting-ag-4446352490": {
+      "title": "Consultant* SAP Analytics Cloud (SAC), Fokus Planning",
+      "company": "BTC - Business Technology Consulting AG",
+      "location": "Neu-Isenburg, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/consultant-sap-analytics-cloud-sac-fokus-planning-at-btc-business-technology-consulting-ag-4446352490",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/senior-consultant-sap-analytics-cloud-datasphere-m-w-d-at-bearingpoint-4436400026": {
+      "title": "(Senior) Consultant | SAP Analytics Cloud / Datasphere (m/w/d)",
+      "company": "BearingPoint",
+      "location": "Frankfurt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-consultant-sap-analytics-cloud-datasphere-m-w-d-at-bearingpoint-4436400026",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/sap-technology-architect-all-genders-at-mhp-%E2%80%93-a-porsche-company-4371014053": {
+      "title": "SAP Technology Architect (all genders)",
+      "company": "MHP – A Porsche Company",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/sap-technology-architect-all-genders-at-mhp-%E2%80%93-a-porsche-company-4371014053",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/technical-consultant-hcm-integration-m-w-d-in-frankfurt-main-at-deloitte-4361521795": {
+      "title": "Technical Consultant - HCM Integration (m/w/d) in Frankfurt (Main)",
+      "company": "Deloitte",
+      "location": "Frankfurt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/technical-consultant-hcm-integration-m-w-d-in-frankfurt-main-at-deloitte-4361521795",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/consultant-enterprise-solutions-%E2%80%93-sap-focus-all-genders-bcg-platinion-at-bcg-platinion-4427275687": {
+      "title": "Consultant Enterprise Solutions – SAP focus (all genders) - BCG Platinion",
+      "company": "BCG Platinion",
+      "location": "Frankfurt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/consultant-enterprise-solutions-%E2%80%93-sap-focus-all-genders-bcg-platinion-at-bcg-platinion-4427275687",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/consultant-sap-btp-agentic-ai-all-genders-%E2%80%93-bcg-platinion-at-bcg-platinion-4427261808": {
+      "title": "Consultant SAP BTP & Agentic AI (all genders) – BCG Platinion",
+      "company": "BCG Platinion",
+      "location": "Frankfurt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/consultant-sap-btp-agentic-ai-all-genders-%E2%80%93-bcg-platinion-at-bcg-platinion-4427261808",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/sap-integration-consultant-m-w-d-at-bauhaus-deutschland-4399625296": {
+      "title": "SAP Integration Consultant (m/w/d)",
+      "company": "BAUHAUS Deutschland",
+      "location": "Mannheim, Baden-Württemberg, Germany",
+      "url": "https://de.linkedin.com/jobs/view/sap-integration-consultant-m-w-d-at-bauhaus-deutschland-4399625296",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/sap-basis-administration-consultant-all-genders-at-accenture-dach-4328079645": {
+      "title": "SAP Basis Administration Consultant (all genders)",
+      "company": "Accenture DACH",
+      "location": "Kronberg, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/sap-basis-administration-consultant-all-genders-at-accenture-dach-4328079645",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/sr-integration-consultant-at-omp-4437401503": {
+      "title": "(Sr.) Integration Consultant",
+      "company": "OMP",
+      "location": "Mannheim, Baden-Württemberg, Germany",
+      "url": "https://de.linkedin.com/jobs/view/sr-integration-consultant-at-omp-4437401503",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/senior-it-consultant-f%C3%BCr-sap-m-w-d-at-johanniter-unfall-hilfe-e-v-4446803968": {
+      "title": "Senior IT-Consultant für SAP (m/w/d)",
+      "company": "Johanniter-Unfall-Hilfe e.V.",
+      "location": "Butzbach, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-it-consultant-f%C3%BCr-sap-m-w-d-at-johanniter-unfall-hilfe-e-v-4446803968",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/sap-developer-w-m-d-at-k%C3%B6rber-supply-chain-3542226860": {
+      "title": "SAP Developer (w/m/d)",
+      "company": "Körber Supply Chain",
+      "location": "Bad Nauheim, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/sap-developer-w-m-d-at-k%C3%B6rber-supply-chain-3542226860",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/data-engineer-m-w-d-at-xxxldigital-%E2%80%93-part-of-xxxl-group-4435685749": {
+      "title": "Data Engineer (m/w/d)",
+      "company": "XXXLdigital – Part of XXXL Group",
+      "location": "Montabaur, Rhineland-Palatinate, Germany",
+      "url": "https://de.linkedin.com/jobs/view/data-engineer-m-w-d-at-xxxldigital-%E2%80%93-part-of-xxxl-group-4435685749",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/data-engineer-w-m-d-at-siemens-4447148990": {
+      "title": "Data Engineer (w/m/d)",
+      "company": "Siemens",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/data-engineer-w-m-d-at-siemens-4447148990",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/data-engineer-customer-m-f-d-at-bauhaus-deutschland-4430004558": {
+      "title": "Data Engineer - Customer (m/f/d)",
+      "company": "BAUHAUS Deutschland",
+      "location": "Mannheim, Baden-Württemberg, Germany",
+      "url": "https://de.linkedin.com/jobs/view/data-engineer-customer-m-f-d-at-bauhaus-deutschland-4430004558",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/ai-data-engineer-at-daw-se-4441072132": {
+      "title": "AI Data Engineer*",
+      "company": "DAW SE",
+      "location": "Ober-Ramstadt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/ai-data-engineer-at-daw-se-4441072132",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/data-engineer-m-w-d-at-controlware-4438898914": {
+      "title": "Data Engineer (m/w/d)",
+      "company": "Controlware",
+      "location": "Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/data-engineer-m-w-d-at-controlware-4438898914",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/data-engineer-databricks-gn-at-blackbull-international-gmbh-4442372368": {
+      "title": "Data Engineer - Databricks (gn)",
+      "company": "BLACKBULL INTERNATIONAL GmbH",
+      "location": "Frankfurt Rhine-Main Metropolitan Area",
+      "url": "https://de.linkedin.com/jobs/view/data-engineer-databricks-gn-at-blackbull-international-gmbh-4442372368",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/data-engineer-all-genders-in-frankfurt-at-instaffo-4377464821": {
+      "title": "Data Engineer (all genders) in Frankfurt",
+      "company": "Instaffo",
+      "location": "Frankfurt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/data-engineer-all-genders-in-frankfurt-at-instaffo-4377464821",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/backend-data-engineer-f-m-d-at-hyundai-autoever-europe-gmbh-4443687791": {
+      "title": "Backend Data Engineer (f/m/d)",
+      "company": "Hyundai AutoEver Europe GmbH",
+      "location": "Offenbach, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/backend-data-engineer-f-m-d-at-hyundai-autoever-europe-gmbh-4443687791",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/data-engineer-m-w-d-at-cgi-4446382502": {
+      "title": "Data Engineer (m/w/d)",
+      "company": "CGI",
+      "location": "Eschborn, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/data-engineer-m-w-d-at-cgi-4446382502",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/data-engineer-digital-health-excellence-center-w-m-d-at-ey-4385080626": {
+      "title": "Data Engineer - Digital Health Excellence Center (w/m/d)",
+      "company": "EY",
+      "location": "Eschborn, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/data-engineer-digital-health-excellence-center-w-m-d-at-ey-4385080626",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/ai-infrastructure-architect-all-genders-at-accenture-dach-4444000286": {
+      "title": "AI Infrastructure Architect (All Genders)",
+      "company": "Accenture DACH",
+      "location": "Kronberg, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/ai-infrastructure-architect-all-genders-at-accenture-dach-4444000286",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/it-operations-ai-engineer-m-f-d-at-terma-group-4437801345": {
+      "title": "IT Operations AI Engineer (m/f/d)",
+      "company": "Terma Group",
+      "location": "Darmstadt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/it-operations-ai-engineer-m-f-d-at-terma-group-4437801345",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/platform-engineer-at-exaloan-ag-4447351646": {
+      "title": "Platform Engineer",
+      "company": "Exaloan AG",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/platform-engineer-at-exaloan-ag-4447351646",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/senior-ml-infrastructure-engineer-at-natural-intelligence-nisys-gmbh-4448974017": {
+      "title": "Senior ML Infrastructure Engineer",
+      "company": "Natural Intelligence (NISYS GmbH)",
+      "location": "Frankfurt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-ml-infrastructure-engineer-at-natural-intelligence-nisys-gmbh-4448974017",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/senior-ai-generative-ai-engineer-all-genders-at-mhp-%E2%80%93-a-porsche-company-4449020791": {
+      "title": "(Senior) AI & Generative AI Engineer (all genders)",
+      "company": "MHP – A Porsche Company",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/senior-ai-generative-ai-engineer-all-genders-at-mhp-%E2%80%93-a-porsche-company-4449020791",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/ai-engineer-m-w-d-at-michael-page-4445970268": {
+      "title": "AI Engineer (m/w/d)",
+      "company": "Michael Page",
+      "location": "Frankfurt am Main, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/ai-engineer-m-w-d-at-michael-page-4445970268",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/ai-deep-learning-specialist-at-kipoly-4445652745": {
+      "title": "AI / Deep Learning Specialist",
+      "company": "Kipoly",
+      "location": "Frankfurt, Hesse, Germany",
+      "url": "https://de.linkedin.com/jobs/view/ai-deep-learning-specialist-at-kipoly-4445652745",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/ai-devops-engineer-m-w-d-at-materna-4443966959": {
+      "title": "AI DevOps Engineer (m/w/d)",
+      "company": "Materna",
+      "location": "Frankfurt Rhine-Main Metropolitan Area",
+      "url": "https://de.linkedin.com/jobs/view/ai-devops-engineer-m-w-d-at-materna-4443966959",
+      "first_seen": "2026-08-05",
+      "fit": "high",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://de.linkedin.com/jobs/view/software-developer-computer-scientist-m-f-d-specialised-in-ai-and-machine-learning-at-max-planck-society-4445568696": {
+      "title": "Software Developer / Computer Scientist (m/f/d) specialised in AI and Machine Learning",
+      "company": "Max Planck Society",
+      "location": "Heidelberg, Baden-Württemberg, Germany",
+      "url": "https://de.linkedin.com/jobs/view/software-developer-computer-scientist-m-f-d-specialised-in-ai-and-machine-learning-at-max-planck-society-4445568696",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "linkedin-search"
+    },
+    "https://portal.emagine.org/jobs/178164/sap-bw-experte-in-teilzeit-m-w-d?utm_source=freehire.me": {
+      "title": "SAP BW Experte in Teilzeit (m/w/d)",
+      "company": "emagine",
+      "location": "Munich, Germany",
+      "url": "https://portal.emagine.org/jobs/178164/sap-bw-experte-in-teilzeit-m-w-d?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitsagentur.de/jobsuche/jobdetail/19143-0066381603-S?utm_source=freehire.me": {
+      "title": "SAP BW (m/w/d) | SAP Developer / Consultant für Analytics, SAC & Business Data Cloud  (ID: 225/26)",
+      "company": "Universitätsklinikum Saarland Dezernat I - Personal",
+      "location": "Homburg, Saar, Saarland, Deutschland",
+      "url": "https://www.arbeitsagentur.de/jobsuche/jobdetail/19143-0066381603-S?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.smartrecruiters.com/Vattenfall/744000139295651-sap-bw-developer?utm_source=freehire.me": {
+      "title": "SAP BW Developer",
+      "company": "Vattenfall",
+      "location": "Berlin, BE, de",
+      "url": "https://jobs.smartrecruiters.com/Vattenfall/744000139295651-sap-bw-developer?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitsagentur.de/jobsuche/jobdetail/19143-0066381878-S?utm_source=freehire.me": {
+      "title": "Teamsprecher SAP BW (m/w/d) (ID: 226/26)",
+      "company": "Universitätsklinikum Saarland Dezernat I - Personal",
+      "location": "Homburg, Saar, Saarland, Deutschland",
+      "url": "https://www.arbeitsagentur.de/jobsuche/jobdetail/19143-0066381878-S?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitsagentur.de/jobsuche/jobdetail/10001-1003483937-S?utm_source=freehire.me": {
+      "title": "IT Produkt- und Applikationsmanager SAP BW (w/m/d)",
+      "company": "Bw Bekleidungsmanagement GmbH",
+      "location": "Köln, Nordrhein-Westfalen, Deutschland",
+      "url": "https://www.arbeitsagentur.de/jobsuche/jobdetail/10001-1003483937-S?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.smartrecruiters.com/Bertelsmann-Jobs/744000140636450-zukunftsgestaltender-business-intelligence-consultant-im-bereich-finance-controlling-m-w-d-?utm_source=freehire.me": {
+      "title": "Zukunftsgestaltender Business Intelligence Consultant im Bereich Finance & Controlling (m/w/d)",
+      "company": "Bertelsmann-Jobs",
+      "location": "Rheda-Wiedenbrück, de",
+      "url": "https://jobs.smartrecruiters.com/Bertelsmann-Jobs/744000140636450-zukunftsgestaltender-business-intelligence-consultant-im-bereich-finance-controlling-m-w-d-?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitsagentur.de/jobsuche/jobdetail/18072-44345663-729-S?utm_source=freehire.me": {
+      "title": "IT Consultant Analytics (m/w/d)",
+      "company": "Hochland Deutschland GmbH",
+      "location": "Heimenkirch, Bayern, Deutschland",
+      "url": "https://www.arbeitsagentur.de/jobsuche/jobdetail/18072-44345663-729-S?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitsagentur.de/jobsuche/jobdetail/10001-1003463043-S?utm_source=freehire.me": {
+      "title": "B115-C10 \tReporting Services Specialist (m/w/d)",
+      "company": "Jan Schreiner Private Arbeitsvermittlung Arbitex",
+      "location": "Heilbronn, Neckar, Baden-Württemberg, Deutschland",
+      "url": "https://www.arbeitsagentur.de/jobsuche/jobdetail/10001-1003463043-S?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitsagentur.de/jobsuche/jobdetail/10001-1003478933-S?utm_source=freehire.me": {
+      "title": "SAP Data & Analytics Consultant (m/w/d) | Fokus BW & Enterprise Data Platforms",
+      "company": "Halbauer GmbH",
+      "location": "Heilbronn, Neckar, Baden-Württemberg, Deutschland",
+      "url": "https://www.arbeitsagentur.de/jobsuche/jobdetail/10001-1003478933-S?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitsagentur.de/jobsuche/jobdetail/19913-3023681785535201-S?utm_source=freehire.me": {
+      "title": "NTT DATA Deutschland SE: SAP S/4HANA Finance & Controlling Senior / Lead Consultant (w/m/x)",
+      "company": "NTT DATA Deutschland SE",
+      "location": "Berlin, Berlin, Deutschland",
+      "url": "https://www.arbeitsagentur.de/jobsuche/jobdetail/19913-3023681785535201-S?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://ksb.wd3.myworkdayjobs.com/KSB_ExternalCareerSite/job/Frankenthal/Praktikum-Abschlussarbeit-Simulationsmodell-mit-Matlab-SimFluids_JR_22331?utm_source=freehire.me": {
+      "title": "Praktikum Erstellung digitaler Schulungen",
+      "company": "ksb",
+      "location": "Frankenthal",
+      "url": "https://ksb.wd3.myworkdayjobs.com/KSB_ExternalCareerSite/job/Frankenthal/Praktikum-Abschlussarbeit-Simulationsmodell-mit-Matlab-SimFluids_JR_22331?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitsagentur.de/jobsuche/jobdetail/10001-1003435863-S?utm_source=freehire.me": {
+      "title": "Specialist People Analytics (m/w/d)",
+      "company": "Diehl Metering GmbH",
+      "location": "Nürnberg, Mittelfranken, Bayern, Deutschland",
+      "url": "https://www.arbeitsagentur.de/jobsuche/jobdetail/10001-1003435863-S?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.smartrecruiters.com/BoschGroup/744000141665749-kaufmann-kauffrau-im-projektcontrolling-w-m-div-befristet-fur-12-monate?utm_source=freehire.me": {
+      "title": "Kaufmann/ Kauffrau im Projektcontrolling (w/m/div.) - befristet für 12 Monate",
+      "company": "Bosch Group",
+      "location": "Berlin, BE, de",
+      "url": "https://jobs.smartrecruiters.com/BoschGroup/744000141665749-kaufmann-kauffrau-im-projektcontrolling-w-m-div-befristet-fur-12-monate?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.smartrecruiters.com/RobertBoschKrankenhausGmbH/744000140827419-mitarbeiter-m-w-d-betriebsorganisation-?utm_source=freehire.me": {
+      "title": "Mitarbeiter (m/w/d) Betriebsorganisation",
+      "company": "Robert Bosch Hospital",
+      "location": "Stuttgart, BW, de",
+      "url": "https://jobs.smartrecruiters.com/RobertBoschKrankenhausGmbH/744000140827419-mitarbeiter-m-w-d-betriebsorganisation-?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.smartrecruiters.com/SopraSteria1/744000140686459-program-project-controller-d-m-w-26137-?utm_source=freehire.me": {
+      "title": "Program & Project Controller (d/m/w) [26137]",
+      "company": "SopraSteria1",
+      "location": "Ulm, BW, de",
+      "url": "https://jobs.smartrecruiters.com/SopraSteria1/744000140686459-program-project-controller-d-m-w-26137-?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.smartrecruiters.com/BayWaAG/744000141450769-verkaufsberater-m-w-d-im-innendienst?utm_source=freehire.me": {
+      "title": "Verkaufsberater (m/w/d) im Innendienst",
+      "company": "BayWaAG",
+      "location": "Ravensburg, BW, de",
+      "url": "https://jobs.smartrecruiters.com/BayWaAG/744000141450769-verkaufsberater-m-w-d-im-innendienst?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.smartrecruiters.com/BoschGroup/744000141415000-pflichtpraktikum-im-strategischen-einkauf-fur-drehteile-w-m-div-?utm_source=freehire.me": {
+      "title": "Pflichtpraktikum im strategischen Einkauf für Drehteile (w/m/div.)",
+      "company": "Bosch Group",
+      "location": "Stuttgart, BW, de",
+      "url": "https://jobs.smartrecruiters.com/BoschGroup/744000141415000-pflichtpraktikum-im-strategischen-einkauf-fur-drehteile-w-m-div-?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.smartrecruiters.com/BoschGroup/744000141415039-mandatory-internship-in-the-strategic-purchasing-for-turned-parts?utm_source=freehire.me": {
+      "title": "Mandatory Internship in the Strategic Purchasing for Turned Parts",
+      "company": "Bosch Group",
+      "location": "Stuttgart, BW, de",
+      "url": "https://jobs.smartrecruiters.com/BoschGroup/744000141415039-mandatory-internship-in-the-strategic-purchasing-for-turned-parts?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.smartrecruiters.com/BoschGroup/744000141239799-werkstudent-fur-produktdatenmanagement-w-m-div-?utm_source=freehire.me": {
+      "title": "Werkstudent für Produktdatenmanagement (w/m/div.)",
+      "company": "Bosch Group",
+      "location": "Wernau (Neckar), BW, de",
+      "url": "https://jobs.smartrecruiters.com/BoschGroup/744000141239799-werkstudent-fur-produktdatenmanagement-w-m-div-?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://careers.exyte.net/global/en/job/EGQEGGGLOBAL24148EXTERNALENGLOBAL?utm_source=freehire.me": {
+      "title": "Intern, HR Transformation (m/f/d)",
+      "company": "Exyte",
+      "location": "Stuttgart, DE-BW",
+      "url": "https://careers.exyte.net/global/en/job/EGQEGGGLOBAL24148EXTERNALENGLOBAL?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobicy.com/jobs/148667-senior-ml-engineer-token-factory?utm_source=freehire.me": {
+      "title": "Senior ML Engineer (Token Factory)",
+      "company": "Nebius",
+      "location": "Czechia,  Europe,  Germany,  Israel,  Netherlands,  UK",
+      "url": "https://jobicy.com/jobs/148667-senior-ml-engineer-token-factory?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/sensmore/machine-learning-engineer-berlin-350296?utm_source=freehire.me": {
+      "title": "Machine Learning Engineer",
+      "company": "Sensmore",
+      "location": "Berlin Office",
+      "url": "https://www.arbeitnow.com/jobs/companies/sensmore/machine-learning-engineer-berlin-350296?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://job-boards.eu.greenhouse.io/tripledotstudios/jobs/4929477101?utm_source=freehire.me": {
+      "title": "Senior Machine Learning Engineer",
+      "company": "Triple dot studios",
+      "location": "Berlin",
+      "url": "https://job-boards.eu.greenhouse.io/tripledotstudios/jobs/4929477101?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/omnisent/ml-engineer-munich-243364?utm_source=freehire.me": {
+      "title": "ML ENGINEER (f/m/d)",
+      "company": "Omnisent",
+      "location": "Munich",
+      "url": "https://www.arbeitnow.com/jobs/companies/omnisent/ml-engineer-munich-243364?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/sunday-natural/ai-ml-engineer-all-genders-berlin-23246?utm_source=freehire.me": {
+      "title": "AI/ML Engineer (all genders)",
+      "company": "Sunday Natural",
+      "location": "Berlin",
+      "url": "https://www.arbeitnow.com/jobs/companies/sunday-natural/ai-ml-engineer-all-genders-berlin-23246?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://powertofly.com/jobs/detail/2571360?utm_source=freehire.me": {
+      "title": "Senior Scientist II, Pharmaceutical Development – Thermodynamics & AI/ML Applications (all genders) (fulltime, regular)",
+      "company": "AbbVie",
+      "location": "Ludwigshafen Am Rhein, Rheinland-Pfalz, Germany",
+      "url": "https://powertofly.com/jobs/detail/2571360?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.ashbyhq.com/cuspai/6d9b9d92-942c-4d89-a672-65611b62ae46?utm_source=freehire.me": {
+      "title": "Technical Program Manager (AI/ML)",
+      "company": "cuspai",
+      "location": "Berlin, DE",
+      "url": "https://jobs.ashbyhq.com/cuspai/6d9b9d92-942c-4d89-a672-65611b62ae46?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.smartrecruiters.com/BoschGroup/744000141467579-master-thesis-physically-informed-machine-learning-based-system-identification-in-mems-gyroscopes?utm_source=freehire.me": {
+      "title": "Master Thesis Physically Informed Machine Learning Based System Identification in MEMS Gyroscopes",
+      "company": "Bosch Group",
+      "location": "Reutlingen, BW, de",
+      "url": "https://jobs.smartrecruiters.com/BoschGroup/744000141467579-master-thesis-physically-informed-machine-learning-based-system-identification-in-mems-gyroscopes?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/eorbit-gmbh/ml-engineer-ai-operations-research-all-genders-leipzig-398998?utm_source=freehire.me": {
+      "title": "ML Engineer — AI & Operations Research (all genders)",
+      "company": "Eorbit Gmbh",
+      "location": "Leipzig",
+      "url": "https://www.arbeitnow.com/jobs/companies/eorbit-gmbh/ml-engineer-ai-operations-research-all-genders-leipzig-398998?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://careers.nebius.com/?gh_jid=4523348101&utm_source=freehire.me": {
+      "title": "AI/ML Specialist Solutions Architect",
+      "company": "Nebius",
+      "location": "Amsterdam, Netherlands; Finland; France; Germany; Netherlands; Remote - Europe; Spain; Sweden; United Kingdom",
+      "url": "https://careers.nebius.com/?gh_jid=4523348101&utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/headborneai/senior-ml-ai-engineer-jena-348851?utm_source=freehire.me": {
+      "title": "Senior ML/AI Engineer",
+      "company": "Headborneai",
+      "location": "Jena",
+      "url": "https://www.arbeitnow.com/jobs/companies/headborneai/senior-ml-ai-engineer-jena-348851?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://jobs.ashbyhq.com/bjakcareer/2fddb7f2-3231-4c6f-b21c-3d69c3f353a7?utm_source=freehire.me": {
+      "title": "Senior Machine Learning Engineer",
+      "company": "bjakcareer",
+      "location": "United States",
+      "url": "https://jobs.ashbyhq.com/bjakcareer/2fddb7f2-3231-4c6f-b21c-3d69c3f353a7?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/stackadapt/applied-machine-learning-scientist-188372?utm_source=freehire.me": {
+      "title": "Applied Machine Learning Scientist",
+      "company": "Stackadapt",
+      "location": "",
+      "url": "https://www.arbeitnow.com/jobs/companies/stackadapt/applied-machine-learning-scientist-188372?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/clera/ml-engineer-agents-reasoning-berlin-153674?utm_source=freehire.me": {
+      "title": "ML Engineer, Agents & Reasoning",
+      "company": "Clera",
+      "location": "Berlin",
+      "url": "https://www.arbeitnow.com/jobs/companies/clera/ml-engineer-agents-reasoning-berlin-153674?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/wayve/machine-learning-engineer-adas-125792?utm_source=freehire.me": {
+      "title": "Machine Learning Engineer, ADAS",
+      "company": "Wayve",
+      "location": "",
+      "url": "https://www.arbeitnow.com/jobs/companies/wayve/machine-learning-engineer-adas-125792?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/wayve/machine-learning-engineer-82085?utm_source=freehire.me": {
+      "title": "Machine Learning Engineer",
+      "company": "Wayve",
+      "location": "",
+      "url": "https://www.arbeitnow.com/jobs/companies/wayve/machine-learning-engineer-82085?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/adjoe/senior-mlops-engineer-hamburg-253494?utm_source=freehire.me": {
+      "title": "Senior MLOps Engineer (f/m/d)",
+      "company": "adjoe",
+      "location": "Hamburg",
+      "url": "https://www.arbeitnow.com/jobs/companies/adjoe/senior-mlops-engineer-hamburg-253494?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://justjoin.it/job-offer/andersen-ml-mlops-engineer-in-germany-munich-ai?utm_source=freehire.me": {
+      "title": "ML/MLOps Engineer in Germany",
+      "company": "Andersen",
+      "location": "Munich",
+      "url": "https://justjoin.it/job-offer/andersen-ml-mlops-engineer-in-germany-munich-ai?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://twentyfour-industries.jobs.personio.com/job/2734831?utm_source=freehire.me": {
+      "title": "Computer Vision Engineer",
+      "company": "twentyfour-industries",
+      "location": "Munich",
+      "url": "https://twentyfour-industries.jobs.personio.com/job/2734831?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/clera/ai-engineer-model-training-deployment-munich-54331?utm_source=freehire.me": {
+      "title": "AI Engineer – Model Training & Deployment",
+      "company": "Clera",
+      "location": "Munich",
+      "url": "https://www.arbeitnow.com/jobs/companies/clera/ai-engineer-model-training-deployment-munich-54331?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://himalayas.app/companies/virtual7-gmbh/jobs/ai-solution-architect-m-w-d-3198392509?utm_source=freehire.me": {
+      "title": "AI Solution Architect (m/w/d)",
+      "company": "virtual7 GmbH",
+      "location": "Germany",
+      "url": "https://himalayas.app/companies/virtual7-gmbh/jobs/ai-solution-architect-m-w-d-3198392509?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "medium",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitsagentur.de/jobsuche/jobdetail/18121-0066448093-S?utm_source=freehire.me": {
+      "title": "Data & AI Architect (m/w/d)",
+      "company": "RENK GmbH",
+      "location": "Augsburg, Bayern, Bayern, Deutschland",
+      "url": "https://www.arbeitsagentur.de/jobsuche/jobdetail/18121-0066448093-S?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://caci.wd1.myworkdayjobs.com/External/job/Stuttgart-Germany/AI-ML-Engineer---SOCEUR_329767?utm_source=freehire.me": {
+      "title": "AI/ML Engineer - SOCEUR",
+      "company": "CACI",
+      "location": "Stuttgart, Germany",
+      "url": "https://caci.wd1.myworkdayjobs.com/External/job/Stuttgart-Germany/AI-ML-Engineer---SOCEUR_329767?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitsagentur.de/jobsuche/jobdetail/12362-TR-293639_618471LS-S?utm_source=freehire.me": {
+      "title": "AI Plattform Engineer (m/w/d)",
+      "company": "Brunel GmbH NL München",
+      "location": "Taufkirchen, Kreis Mühldorf am Inn, Bayern, Deutschland",
+      "url": "https://www.arbeitsagentur.de/jobsuche/jobdetail/12362-TR-293639_618471LS-S?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/kayak/senior-ml-ops-engineer-berlin-17463?utm_source=freehire.me": {
+      "title": "Senior ML Ops Engineer",
+      "company": "Kayak",
+      "location": "Berlin Office",
+      "url": "https://www.arbeitnow.com/jobs/companies/kayak/senior-ml-ops-engineer-berlin-17463?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/robco/devops-engineer-munich-106788?utm_source=freehire.me": {
+      "title": "DevOps Engineer",
+      "company": "RobCo",
+      "location": "Munich",
+      "url": "https://www.arbeitnow.com/jobs/companies/robco/devops-engineer-munich-106788?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://job-boards.greenhouse.io/getyourguide/jobs/7594703?utm_source=freehire.me": {
+      "title": "Senior ML Ops Engineer, AI Platform Team",
+      "company": "GetYourGuide",
+      "location": "Berlin",
+      "url": "https://job-boards.greenhouse.io/getyourguide/jobs/7594703?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    },
+    "https://www.arbeitnow.com/jobs/companies/batch-robotics-gmbh/senior-machine-learning-engineer-robot-learning-munich-424832?utm_source=freehire.me": {
+      "title": "(Senior) Machine Learning Engineer, Robot Learning (m/f/d)",
+      "company": "Batch Robotics GmbH",
+      "location": "Munich",
+      "url": "https://www.arbeitnow.com/jobs/companies/batch-robotics-gmbh/senior-machine-learning-engineer-robot-learning-munich-424832?utm_source=freehire.me",
+      "first_seen": "2026-08-05",
+      "fit": "low",
+      "status": "new",
+      "portal": "freehire-search"
+    }
+  }
+}

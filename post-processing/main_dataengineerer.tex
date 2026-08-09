@@ -1,0 +1,220 @@
+% a mashup of hipstercv, friggeri and twenty cv
+% https://www.latextemplates.com/template/twenty-seconds-resumecv
+% https://www.latextemplates.com/template/friggeri-resume-cv
+
+\documentclass[lighthipster]{simplehipstercv}
+% available options are: darkhipster, lighthipster, pastel, allblack, grey, verylight, withoutsidebar
+% withoutsidebar
+\usepackage[utf8]{inputenc}
+\usepackage[default]{raleway}
+\usepackage[margin=1cm, a4paper]{geometry}
+\usepackage{eso-pic}
+
+% Left sidebar band on EVERY page (paracol balancing stops it early
+% on the last page otherwise). Same grey as lighthipster's pane.
+% Width must equal the paracol pane: 1cm margin + 0.23*(\textwidth-1.5cm columnsep) + 0.5*1.5cm
+\definecolor{leftpanelbg}{rgb}{0.9,0.9,0.9}
+\newlength{\leftbandwidth}
+\setlength{\leftbandwidth}{\dimexpr 1cm + 0.23\textwidth - 0.345cm + 0.75cm\relax}
+\AddToShipoutPictureBG{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[leftpanelbg] (current page.north west) rectangle
+      ([xshift=\leftbandwidth]current page.south west);
+  \end{tikzpicture}%
+}
+
+
+%------------------------------------------------------------------ Variablen
+
+\newlength{\rightcolwidth}
+\newlength{\leftcolwidth}
+\setlength{\leftcolwidth}{0.23\textwidth}
+\setlength{\rightcolwidth}{0.75\textwidth}
+
+%------------------------------------------------------------------
+\title{Lebenslauf}
+\author{\LaTeX{} Song LIn}
+\date{August 2026}
+
+\pagestyle{empty}
+\begin{document}
+
+
+\thispagestyle{empty}
+%-------------------------------------------------------------
+
+\section*{Lebenslauf}
+
+\simpleheader{headercolour}{Song}{Lin}{Technical Lead \& Data Architect}{white}
+
+
+
+%------------------------------------------------
+
+% this has to be here so the paracols starts..
+\subsection*{}
+\vspace{4em}
+
+\setlength{\columnsep}{1.5cm}
+\columnratio{0.23}[0.75]
+\begin{paracol}{2}
+\hbadness5000
+%\backgroundcolor{c[1]}[rgb]{1,1,0.8} % cream yellow for column-1 %\backgroundcolor{g}[rgb]{0.8,1,1} % \backgroundcolor{l}[rgb]{0,0,0.7} % dark blue for left margin
+
+\paracolbackgroundoptions
+
+% 0.9,0.9,0.9 -- 0.8,0.8,0.8
+
+
+\footnotesize
+{\setasidefontcolour
+\flushright
+\begin{center}
+    \roundpic{photo.jpg}
+\end{center}
+
+\bg{cvgreen}{white}{Zusammenfassung}\\[0.5em]
+
+{\footnotesize
+\lorem}
+\bigskip
+
+
+\bg{cvgreen}{white}{Schwerpunkte} \\[0.5em]
+
+~•~ Datenmodellierung \\ ~•~ ETL- \& ELT-Datenpipelines \\ ~•~ Big Data Architekturen \\ ~•~ Datenbankarchitekturen \\ ~•~ Cloud-Datenarchitekturen \\ ~•~ Data-Lineage-System \\ ~•~ Metadatenmanagement
+
+
+\bigskip
+
+
+\bg{cvgreen}{white}{Weiterbildung} \\[0.5em]
+
+{\footnotesize Google DeepMind: Train Small Language Model; Vertex AI; DataOps \& DevOps \& MLOps}
+
+\bigskip
+
+
+\vspace{4em}
+
+\infobubble{\faAt}{cvgreen}{white}{song.lin@outlook.de}
+\infobubble{\faGithub}{cvgreen}{white}{\href{https://github.com/caca888/MLportfolio}{Demo on Github}}
+
+
+\phantom{turn the page}
+
+\phantom{turn the page}
+}
+%-----------------------------------------------------------
+\switchcolumn
+
+\small
+\section*{Berufserfahrung}
+
+\begin{tabular}{r| p{0.5\textwidth} c}
+    \cvevent{01.2016--heute}{Senior Data Engineer \& Tech Lead}{Continental AG / Aumovio SE}{Frankfurt (M) \color{cvred}}{\begin{itemize}
+    \item Entwicklung skalierbarer Datenmodelle und End-to-End-Datenpipelines in Projekten von BI, Web, Automotive und LLM Apps.
+    \item Aufbau eines Petabyte-großen Data-Lineage-Systems für KI-Daten im autonomen Fahren.
+    \item Design von ETL/ELT-Pipelines sowie Integration relationaler, NoSQL-, Graph- und Vektordatenbanken.
+    \item Entwicklung graphbasierter Lösungen für Risiko-Monitoring und Beratung zu modernen Datenarchitekturen.
+    \item Bereitstellung eines cybersecurity-konformen ETL-Services mit 5\,\% geringeren Data-Engineering-Kosten.
+    \item Leitung der Competency Area Data Engineering (6 Mitarbeitende, 0{,}7 Mio.\ EUR Budget) für Cloud-, DevOps- und MLOps-Plattformen auf AWS, Azure und GCP.
+\end{itemize}}{aumovio_norm.png} \\
+    \cvevent{04.2014--12.2015}{SAP-HANA- / Data-Consulting}{Accenture}{Kronberg \color{cvred}}{\begin{itemize}
+    \item Beratung und Umsetzung von SAP-HANA-Lösungen für Datenmanagement, Planung und Reporting in internationalen Projekten (u. a. Coca Cola, RWE, CMA, Deutsche Bank).
+    \item Aufbau konsistenter Datenmodelle und Performance-Tuning in SAP-HANA-Plattformen; Umsetzung von Datenmigrationen im internationalen Kundenumfeld.
+\end{itemize}}{ACN_BIG_norm.png} \\
+\cvevent{11.2013--03.2014}{Data Scientist \& Mitbegründer}{Sun Elektro Trading GmbH}{Karlsruhe \color{cvred}}{\begin{itemize}
+    \item Datenbereinigung und -aufbereitung; Entwicklung von Kunden-Scoring- und Segmentierungsmodellen.
+    \item Aufbau einer analytikfähigen Datenbasis für Reporting und Analyse.
+\end{itemize}}{sun_norm.png} \\
+\cvevent{03.2010--12.2013}{Data Scientist \& Research Fellow}{Karlsruher Institut für Technologie (KIT)}{Karlsruhe \color{cvred}}{\begin{itemize}
+    \item Fortgeschrittene statistische Analyse und Data-Mining-Algorithmen; mehrdimensionale Optimierungsprobleme.
+\end{itemize}}{kit_norm.png} \\
+\cvevent{11.2007--12.2009}{Werkstudent - Engergy Geeneration}{Siemens AG}{Karlsruhe \color{cvred}}{\begin{itemize}
+    \item Predictive Maintenance in der Energieerzeugung: Mit Data-Mining und der Auswertung von Sensordaten Kraftwerksausfälle vorausgesagt und vermieden; Warnmeldungen und Reporting zum Anlagenstatus.
+    \item Aufbereitung, grafische Analyse und Visualisierung von Prozess- und Sensordaten zur Überwachung von Kraftwerksanlagen.
+\end{itemize}}{siemens_norm.png}
+\end{tabular}
+\vspace{3em}
+
+
+\section*{Ausbildung}
+\begin{tabular}{r p{0.45\textwidth} c}
+    \cvdegree{05.2003 -- 02.2010}{Dipl.-Inform. mit Ergänzung Mathematik (Statistik)}{Karlsruher Institut für Technologie (KIT)}{ \color{headerblue}}{Schwerpunkt: Datenanalyse, Mustererkennung, Statistik}{kit_norm.png} \\
+\end{tabular}
+\vspace{3em}
+%\begin{minipage}[t]{0.5\textwidth}
+
+\section*{Kenntnisse}
+\begin{tabular}{l @{\hspace{0.3em}}l}
+     \bg{skilllabelcolour}{iconcolour}{GenAI, Agent} &  \barrule{0.35}{0.5em}{cvpurple}\\
+     \bg{skilllabelcolour}{iconcolour}{AWS, Azure, GCP, SAP HANA} & \barrule{0.4}{0.5em}{cvgreen} \\
+     \bg{skilllabelcolour}{iconcolour}{DevOps, MLOps} & \barrule{0.4}{0.5em}{cvpurple} \\
+     \bg{skilllabelcolour}{iconcolour}{Python, SQL, Spark, Rust} & \barrule{0.4}{0.5em}{cvgreen} \\
+     \bg{skilllabelcolour}{iconcolour}{Terraform, Databricks, Jenkins} & \barrule{0.35}{0.5em}{cvpurple} \\
+\end{tabular}
+
+%\end{minipage}
+
+\section*{Highlights}
+\begin{tabular}{l | p{0.6\textwidth} l}
+    \cvevent{}{Aufbau eines Petabyte-großen Data-Lineage-Systems}{Aumovio SE}{Frankfurt \color{cvred}}{Konzipierte und entwickelte ein skalierbares Data-Lineage-System, das den effizienten Zugriff auf umfangreiche Datenbestände für KI-Anwendungen im autonomen Fahren ermöglicht.}{} \\
+    \cvevent{}{Data-Engineering-Service bei Continental}{Continental AG}{Frankfurt  \color{cvred}}{Einführung eines compliance- und cybersecurity-konformen ETL-Services mit 5 \% geringeren Data-Engineering-Kosten.}{} \\
+\cvevent{}{Infrastructure-as-Code-Transformation}{Aumovio SE}{Frankfurt \color{cvred}}{Einführung von Infrastructure-as-Code für Cloud-, DevOps- und MLOps-Plattformen -- 60 \% weniger Vorbereitungszeit für Umgebungen.}{} 
+\end{tabular}
+
+
+%\begin{minipage}[t]{0.3\textwidth}
+\section*{Zertifikate}
+\begin{tabular}{>{\footnotesize\bfseries}p{0.1\textwidth}  >{\footnotesize}p{0.3\textwidth}}
+    SAP & Delivery of Assets/Excellence Award \\
+    SAP & 10 openSAP-Zertifikate \\
+    PM & ITIL v3; Professional Scrum Master (PSM) \\
+    PM & Führen ohne Vorgesetztenfunktion \\
+    RUST & Large Language Model Operations
+\end{tabular}
+\bigskip
+
+\section*{Auszeichnungen}
+\begin{tabular}{>{\footnotesize\bfseries}p{0.1\textwidth}  >{\footnotesize}p{0.5\textwidth}}
+    ICCM & Session Chairman, 18th International Conference on Composite Materials (ICCM), Jeju Island, Korea (08.2011)
+\end{tabular}
+\bigskip
+
+\section*{Sprachen}
+\begin{tabular}{p{0.15\textwidth}|r p{0.1\textwidth} >{\footnotesize}p{0.4\textwidth}}
+\textbf{Englisch} & Verhandlungssicher & \pictofraction{\faCircle}{cvgreen}{3}{black!30}{1}{\tiny} \\
+\textbf{Deutsch} & Verhandlungssicher & \pictofraction{\faCircle}{cvgreen}{3}{black!30}{1}{\tiny} \\
+\textbf{Chinesisch}  & {\phantom{x}\footnotesize Muttersprach} & 
+\pgfmathparse{4 - 1}\foreach \n in {0,...,\pgfmathresult}{\icon{\faCircle}{cvgreen}{\tiny}}
+\end{tabular}
+\bigskip
+
+%\end{minipage}\hfill
+%\begin{minipage}[t]{0.3\textwidth}
+\section*{Publikationen}
+\begin{tabular}{>{\footnotesize\bfseries}p{0.15\textwidth} >{\footnotesize}p{0.5\textwidth}}
+    automotiveIT (2025) & https://www.automotiveit.eu/new-work/speedmasters-of-software/897894, \href{https://www.automotiveit.eu/new-work/speedmasters-of-software/897894}{Speed Master of Software} \\
+    AAM 84 (2014) & Micromechanical estimate of the elastic properties of the coherent domains in pyrolytic carbon, p133-148 \\
+    JAMM 93 (2013) & Homogenization of the elastic properties of pyrolytic carbon based on an image processing technique, p313-328
+\end{tabular}
+
+\bigskip
+
+%\end{minipage}
+
+
+%----------------------------------------------------------------------------------------
+%	FINAL FOOTER (pinned to bottom of the last page via overlay)
+%----------------------------------------------------------------------------------------
+\end{paracol}
+\newlength{\footerxshift}
+\setlength{\footerxshift}{\dimexpr 1cm + 0.23\textwidth + \columnsep + 0.5\rightcolwidth - 0.5\paperwidth\relax}
+\tikz[remember picture,overlay]{%
+  \node[anchor=south, yshift=0.8cm, text width=\rightcolwidth, align=center] at ([xshift=\footerxshift]current page.south)
+  {\fontfamily{\sfdefault}\selectfont \color{black!70}
+  {\small Song Lin \icon{\faEnvelopeO}{cvgreen}{} Berberitzenweg 14 \icon{\faMapMarker}{cvgreen}{} 60435 Frankfurt am Main \icon{\faPhone}{cvgreen}{} 01736535634 \newline\icon{\faAt}{cvgreen}{} \protect\url{song.lin@outlook.de}}};%
+}
+
+\end{document}

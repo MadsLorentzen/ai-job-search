@@ -1,0 +1,92 @@
+<?xpacket begin='' id='W5M0MpCehiHzreSzNTczkc9d' ?> 
+
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 4.0-c316 44.253921, Sun Oct 01 2006 17:14:39"> 
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"> 
+  <rdf:Description rdf:about="" 
+   xmlns:pdfaExtension="http://www.aiim.org/pdfa/ns/extension/" 
+   xmlns:pdfaSchema="http://www.aiim.org/pdfa/ns/schema#" 
+   xmlns:pdfaProperty="http://www.aiim.org/pdfa/ns/property#" 
+    > 
+   <pdfaExtension:schemas> 
+   <rdf:Bag> 
+     <rdf:li rdf:parseType="Resource"> 
+       <pdfaSchema:namespaceURI>http://ns.adobe.com/pdfx/1.3/</pdfaSchema:namespaceURI> 
+       <pdfaSchema:prefix>pdfx</pdfaSchema:prefix> 
+       <pdfaSchema:schema>PDF/X Schema</pdfaSchema:schema> 
+       <pdfaSchema:property><rdf:Seq> 
+          <rdf:li rdf:parseType="Resource"> 
+            <pdfaProperty:category>external</pdfaProperty:category> 
+            <pdfaProperty:description>URL to an online version or preprint</pdfaProperty:description> 
+            <pdfaProperty:name>AuthoritativeDomain</pdfaProperty:name> 
+            <pdfaProperty:valueType>Text</pdfaProperty:valueType> 
+          </rdf:li></rdf:Seq> 
+       </pdfaSchema:property> 
+   </rdf:li> 
+   <rdf:li rdf:parseType="Resource"> 
+      <pdfaSchema:namespaceURI>http://www.aiim.org/pdfua/ns/id/</pdfaSchema:namespaceURI> 
+      <pdfaSchema:prefix>pdfuaid</pdfaSchema:prefix> 
+      <pdfaSchema:schema>PDF/UA ID Schema</pdfaSchema:schema> 
+      <pdfaSchema:property><rdf:Seq> 
+         <rdf:li rdf:parseType="Resource"> 
+            <pdfaProperty:category>internal</pdfaProperty:category> 
+            <pdfaProperty:description>Part of PDF/UA standard</pdfaProperty:description> 
+            <pdfaProperty:name>part</pdfaProperty:name> 
+            <pdfaProperty:valueType>Integer</pdfaProperty:valueType> 
+         </rdf:li></rdf:Seq> 
+      </pdfaSchema:property> 
+   </rdf:li> 
+   <rdf:li rdf:parseType="Resource"> 
+      <pdfaSchema:schema>PRISM metadata</pdfaSchema:schema> 
+      <pdfaSchema:namespaceURI>http://prismstandard.org/namespaces/basic/2.2/</pdfaSchema:namespaceURI> 
+      <pdfaSchema:prefix>prism</pdfaSchema:prefix> 
+      <pdfaSchema:property><rdf:Seq> 
+        <rdf:li rdf:parseType="Resource">
+            <pdfaProperty:name>aggregationType</pdfaProperty:name>
+            <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+            <pdfaProperty:category>external</pdfaProperty:category>
+            <pdfaProperty:description>The type of publication. If defined, must be one of book, catalog, feed, journal, magazine, manual, newsletter, pamphlet.</pdfaProperty:description>
+      </rdf:li> 
+   <rdf:li rdf:parseType="Resource">
+    <pdfaProperty:name>url</pdfaProperty:name>
+    <pdfaProperty:valueType>URL</pdfaProperty:valueType>
+    <pdfaProperty:category>external</pdfaProperty:category>
+    <pdfaProperty:description>URL for the article or unit of content</pdfaProperty:description>
+  </rdf:li> 
+      </rdf:Seq></pdfaSchema:property> 
+   </rdf:li> 
+   </rdf:Bag> 
+   </pdfaExtension:schemas> 
+  </rdf:Description> 
+  <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/"> 
+   <pdf:Producer>LuaTeX</pdf:Producer> 
+  </rdf:Description> 
+  <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"> 
+   <dc:format>application/pdf</dc:format> 
+  </rdf:Description> 
+  <rdf:Description rdf:about="" xmlns:prism="http://prismstandard.org/namespaces/basic/2.2/"> 
+  </rdf:Description> 
+  <rdf:Description rdf:about="" xmlns:pdfx="http://ns.adobe.com/pdfx/1.3/"> 
+  </rdf:Description> 
+  <rdf:Description rdf:about="" xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"> 
+   <pdfaid:part>1</pdfaid:part> 
+   <pdfaid:conformance>B</pdfaid:conformance> 
+  </rdf:Description> 
+  <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/"> 
+   <xmp:CreatorTool>LaTeX with hyperref</xmp:CreatorTool> 
+   <xmp:ModifyDate>2026-08-04T22:35:36+02:00</xmp:ModifyDate> 
+   <xmp:CreateDate>2026-08-04T22:35:36+02:00</xmp:CreateDate> 
+   <xmp:MetadataDate>2026-08-04T22:35:36+02:00</xmp:MetadataDate> 
+  </rdf:Description> 
+  <rdf:Description rdf:about="" xmlns:xmpRights = "http://ns.adobe.com/xap/1.0/rights/"> 
+  </rdf:Description> 
+  <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"> 
+   <xmpMM:DocumentID>uuid:E9B2A87B-C1AC-9541-64B5-306F1DA14DCE</xmpMM:DocumentID> 
+   <xmpMM:InstanceID>uuid:AD90C6EB-3D2D-9800-66DB-9E2C399DECFF</xmpMM:InstanceID> 
+  </rdf:Description> 
+ </rdf:RDF> 
+</x:xmpmeta> 
+                                                                                                                                
+                                                                                                                                
+                                                                                                                                
+                                                                                                                                
+<?xpacket end='w'?> 

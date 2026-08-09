@@ -1,0 +1,72 @@
+\documentclass[10pt,a4paper,withhyper]{altacv}
+\geometry{left=1.25cm,right=1.25cm,top=1.5cm,bottom=1.5cm,columnsep=1.2cm}
+\usepackage{paracol}
+\iftutex
+  \setmainfont{Roboto Slab}
+  \setsansfont{Lato}
+  \renewcommand{\familydefault}{\sfdefault}
+\fi
+\definecolor{SlateGrey}{HTML}{2E2E2E}
+\definecolor{LightGrey}{HTML}{666666}
+\definecolor{DarkPastelRed}{HTML}{450808}
+\definecolor{PastelRed}{HTML}{8F0D0D}
+\definecolor{GoldenEarth}{HTML}{E7D192}
+\colorlet{name}{black}\colorlet{tagline}{PastelRed}\colorlet{heading}{DarkPastelRed}\colorlet{headingrule}{GoldenEarth}\colorlet{subheading}{PastelRed}\colorlet{accent}{PastelRed}\colorlet{emphasis}{SlateGrey}\colorlet{body}{LightGrey}
+\renewcommand{\namefont}{\Huge\rmfamily\bfseries}
+\renewcommand{\personalinfofont}{\footnotesize}
+\renewcommand{\cvsectionfont}{\LARGE\rmfamily\bfseries}
+\renewcommand{\cvsubsectionfont}{\large\bfseries}
+\renewcommand{\cvItemMarker}{{\small\textbullet}}
+\renewcommand{\cvRatingMarker}{\faCircle}
+\begin{document}
+\name{Song LIN}
+\tagline{Technical Lead Data Analytics}
+\personalinfo{%
+  \email{Song.lin@outlook.de}
+  \phone{+49 1736535634}
+  \mailaddress{Berberitzenweg 14, 60435 Frankfurt am Main}
+  \location{Frankfurt, Germany}
+  \linkedin{song-lin-887590234}
+  \github{caca888}
+}
+\makecvheader
+\columnratio{0.6}
+\begin{paracol}{2}
+\cvsection{Experience}
+\cvevent{Technical Lead of Data Analytics}{Continental}{Jan 2016 -- Ongoing}{Frankfurt}
+\begin{itemize}
+\item Lead a small team while staying hands-on as IC.
+\item Bridged technical and business stakeholders in Quality, SCM, CDP.
+\item Sub-project lead in rollout and migration projects.
+\end{itemize}
+\divider
+\cvevent{Consultant}{Accenture}{Apr 2014 -- Dec 2015}{Kronberg}
+\begin{itemize}
+\item SAP HANA digital transformation across industries.
+\end{itemize}
+\medskip
+\cvsection{Education}
+\cvevent{Informatik (Statistik)}{KIT}{2010 -- 2013}{Karlsruhe}
+Abschlussnote: Gut.
+\medskip
+\cvsection{Certifications}
+\begin{itemize}
+\item \textbf{SAP expert L1+L2} -- award (2020)
+\end{itemize}
+\medskip
+\switchcolumn
+\cvsection{Profile}
+\begin{quote}``SAP-BW-Experte mit sehr guten Kenntnissen in nativem SAP HANA, ABAP OO und SAP UI5.''\end{quote}
+\cvsection{Core Competencies}
+\cvtag{SAP HANA}\cvtag{SAP BW}\\
+\cvtag{ABAP OO}\cvtag{SAP UI5}
+\medskip
+\cvsection{Languages}
+\cvskill{German}{5}\divider
+\cvskill{English}{5}\divider
+\cvskill{Chinese}{5}
+\medskip
+\cvsection{Referees}
+\cvref{Available}{upon request}{ref@example.com}{n/a}
+\end{paracol}
+\end{document}

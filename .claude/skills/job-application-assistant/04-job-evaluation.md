@@ -30,6 +30,12 @@ If the candidate's permit also constrains *hours* or *start date* (a student vis
 
 A role that fails this gate is not scored and not drafted. Everything below applies only to roles that pass it.
 
+## Calibration from Past Applications
+
+<!-- Populated by /setup Path A from job_posting.md + outcome.md pairs. Update as applications accrue. -->
+
+- **Frankfurt IT Specialist Project/System (SAP BW / Analytics Cloud, ABAP OO, UI5, Webdynpro) - confirmed strong-fit signal (2026-08).** Role type: SAP BW/analytics technical specialist + sub-project lead in rollout/migrations. Sector: large German enterprise. This is the candidate's strongest, most direct direction: native SAP HANA/BW, ABAP OO, UI5, IDOCs/RFC, BW/CO grounding, and verhandlungssichere German + English. Language Gate: PASS (German + English both fluent, clears the "verhandlungssicher" bar). Honest gaps surfaced as FLAG-not-FAIL: Webdynpro (learning), SAP Analytics Cloud (learning), PS module (high learnability). The candidate's rapid SAP certification record (10 openSAP certs, SAP expert Level 1 & 2) is the evidence to rebut those gaps.
+
 ## Language Gate — run before scoring
 
 No dimension or gate anywhere in this framework currently checks a posting's language requirements against what the candidate actually speaks - it is not one of the five Scoring Dimensions below, not a field `/scrape` or `/rank` track, and not something `/apply`'s language detection (Step 1, which already extracts a posting's required language generically) has anywhere to report to. This gate adds that check, structured the same way as the Eligibility Gate above: read the posting, classify against profile data, and treat a hard mismatch as FAIL before scoring.
@@ -60,9 +66,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** SAP HANA (native) + SAP BW on HANA, ABAP/OO, SAP UI5, SAP interface tech (IDOCs, RFC, Webservices), SAP module grounding (CO, HCM, BW, FI), data warehousing/planning/reporting, PAL applications, sub-project leadership in rollout/migration/change-request projects, DevOps/MLOps, Python/R/SQL, AWS/Azure/GCP.
+**Moderate match areas:** SAP Analytics Cloud (learning, fast ramp via 10 openSAP certs), Webdynpro (learning), SAP PS module (high learnability), GenAI app development (hands-on at Aumovio: LLM apps, NLP), Kubernetes/Docker/Hadoop platform operations, Palantir Foundry (Ontology, AIP), Infrastructure-as-Code, .NET.
+**Weak match areas:** Non-SAP enterprise stacks the candidate has not worked in; pure frontend frameworks outside SAP UI5; deep certified PS/CO specialism requiring senior functional consultant depth.
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -74,9 +80,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** SAP BW/HANA analytics delivery in large German enterprises (Continental/Aumovio Quality Controlling & Analytics), SAP interface development (IDOCs/RFC/Webservices, ABAP OO, UI5), data warehousing/planning/reporting, sub-project leadership in international rollouts/migrations.
+**Moderate:** Data engineering/MLOps technical lead (Aumovio AI), GenAI on multi-cloud, SCM analytics (Coca Cola), smart-app solution design (RWE), HR systems advisory (Deutsche Bank).
+**Entry-level:** Pure frontend web development outside SAP UI5; non-SAP ERP functional consulting.
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -107,19 +113,21 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Stay in technical leadership of SAP BW / analytics delivery in a large German enterprise (immediate direction; the Frankfurt IT Specialist Project/System role is a strong-fit example).
+- Continue building the bridge between SAP analytics and AI/GenAI (Aumovio direction): MLOps, GenAI apps on multi-cloud.
+- Keep hands-on IC depth while leading a small team; avoid pure-people-management tracks.
+- Build on Quality Controlling, SCM, and CDP business know-how as a differentiator beyond pure technical delivery.
+- Stay in or near Frankfurt am Main / Rhein-Main.
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
-- Non-task factors: leadership style, department culture, company values, degree of autonomy
+- Tasks that energize: structured build-and-deliver work in SAP BW/HANA analytics; sub-project leadership in rollouts/migrations; explaining technical options simply to business stakeholders; data-driven performance tuning; cross-IT coordination with a real network; bridging technical and business to reach a measurable outcome.
+- Tasks that drain: endless, decision-free meetings; pure incident/maintenance queues with no build room; micromanaged environments; roles where the technical-business bridge is not valued.
+- Non-task factors: leadership style, department culture, company values, degree of autonomy — a structured, eigenverantwortlich environment with bounded autonomy and data-based steering is the sweet spot.
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: currently employed at Continental; change is deliberate, not forced.
+- **Flexibility**: prefers Rhein-Main commute; open-by-case to relocation/remote.
+- **Professional development**: directional toward AI/GenAI + analytics leadership while keeping SAP depth as the core credential.
 
 ### 6. Salary Benchmark (Optional)
 

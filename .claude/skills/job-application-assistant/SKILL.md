@@ -3,7 +3,8 @@ name: job-application-assistant
 description: >
   Assists with job applications: evaluating job postings, tailoring CVs, writing cover letters,
   and preparing for interviews. Triggers on keywords like: job posting, job application, CV,
-  cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling
+  cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling,
+  smart analyze, smart-analyze, business problems, interview pitch, SMART goals, /smart-analyze
 allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Edit, Write, AskUserQuestion
 framework_version: 1.1.0
 ---
@@ -43,6 +44,17 @@ When the user provides a job posting (URL or text), follow this workflow:
 - Identify role-specific talking points
 - Draft questions the candidate should ask the interviewer
 
+### Step 5: Smart Analyze (Business-Problem Deep Dive) — standalone, can run independently
+When the user invokes `/smart-analyze` or asks to analyze a job description for business problems:
+- Read `09-smart-analyze.md` for the full framework
+- Accept a job description via paste, URL, or from the current context
+- If no job description is present, ask the user for one before proceeding
+- Identify the top 3 business problems the employer actually cares about (ranked by importance)
+- For each problem, define 3 SMART goals (9 total) with interview pitches
+- Ground every pitch in the candidate's actual experience from `01-candidate-profile.md`
+- Present results in the structured markdown format defined in `09-smart-analyze.md`
+- Output language must match the job posting language
+
 ---
 
 ## Reference Files
@@ -57,6 +69,7 @@ When the user provides a job posting (URL or text), follow this workflow:
 | `06-cover-letter-templates.md` | LaTeX cover letter structure and tailoring rules |
 | `07-interview-prep.md` | STAR examples, tough questions, roleplay guidelines |
 | `08-application-forms.md` | Portal free-text fields: self-introduction, project entries, character-limited pitches |
+| `09-smart-analyze.md` | Business-problem analysis: top 3 employer pain points with SMART goals and interview pitches |
 
 ---
 
@@ -67,4 +80,5 @@ The user may also ask for individual steps without the full workflow:
 - "Write a CV for [company]" - Step 2 only
 - "Write a cover letter for [role] at [company]" - Step 3 only
 - "Help me prepare for an interview at [company]" - Step 4 only
+- "/smart-analyze" or "Analyze this job description" - Business-problem analysis with SMART goals and interview pitches (see `09-smart-analyze.md`)
 - "What jobs should I look for?" - Career strategy discussion using profile + evaluation framework

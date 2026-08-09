@@ -1,4 +1,4 @@
-%% Example CV - [YOUR_NAME]
+%% Example CV - Song LIN
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
@@ -13,29 +13,30 @@
 % Force both first and last name AND section headings to render in moderncv
 % blue (color1). Default banking on lualatex+MiKTeX leaves these black, which
 % looks inconsistent with the rest of the blue accent scheme.
-\renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
+% On some TeX Live installs \firstnamestyle is not yet defined at preamble
+% time, so guard the overrides with \providecommand and \renewcommand via
+% \MakeRobust to avoid a fatal "undefined" error. Safe no-op if already defined.
+\makeatletter
+\@ifundefined{firstnamestyle}{}{%
+\renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}}
+\@ifundefined{lastnamestyle}{}{%
+\renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}}
+\@ifundefined{sectionstyle}{}{%
+\renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}}
+\makeatother
 
 \usepackage[utf8]{inputenc}
-\usepackage{hyperref}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
-    pdfpagemode=FullScreen,
-}
+% moderncv loads hyperref itself; set PDF metadata after \begin{document}.
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
+\usepackage{needspace}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Song}{LIN}
+\address{Berberitzenweg 14, 60435 Frankfurt am Main, Germany}{}{}
+\phone[mobile]{+49 1736535634}
+\email{Song.lin@outlook.de}
+\extrainfo{\href{https://www.linkedin.com/in/song-lin-887590234/}{LinkedIn}, \href{https://github.com/caca888/MLportfolio}{GitHub}}
 
 \begin{document}
 
@@ -46,25 +47,25 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{SAP-BW- und Analytics-Experte mit sehr guten Kenntnissen in nativem SAP HANA, SAP BW on HANA, ABAP OO, SAP UI5 sowie den Schnittstellentechnologien IDOC, RFC und Webservices. Langjährige Erfahrung in Datenmanagement, Planung, Reporting und PAL-Anwendungen im Umfeld von Quality Controlling, SCM und Customer Demand Planning bei Continental/Aumovio. Technische Leitung kleiner Teams und Teilprojektleitung in internationalen Rollout-, Migrations- und Change-Request-Projekten. Verhandlungssichere Deutsch- und Englischkenntnisse in Wort und Schrift.}
 
 % ============================================================
 %     CORE COMPETENCIES
 % ============================================================
 
-\section{Core Competencies}
+\section{Kernkompetenzen}
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{SAP BW \& HANA}: Native SAP HANA, SAP BW on HANA, SAP Analytics Cloud (im Aufbau), PAL-Anwendungen, Datenmanagement, Planung, Reporting.
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{SAP Entwicklung}: ABAP OO, SAP UI5, Webdynpro (im Aufbau), Schnittstellen via IDOCs, RFC und Webservices; SAP-Module CO, HCM, BW, FI (Grundkenntnis), PS (im Aufbau).
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Data Engineering \& MLOps}: DevOps und MLOps, CI/CD (Jenkins, GitHub Actions), AWS/Azure/GCP, Palantir Foundry (Ontology, AIP), Kubernetes, Docker, Hadoop, Infrastructure-as-Code in KI-Projekten, HPC, NLP.
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Programmieren \& Analytics}: Python, R, SQL, KNIME, PHP, JavaScript, .NET, Langchain; fortgeschrittene statistische Analyse und Data-Mining-Algorithmen.
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Domäne \& Business}: Quality Controlling \& Analytics, Supply Chain Management (SCM), Customer Demand Planning (CDP), Predictive Maintenance; starkes Netzwerk in die weiteren IT-Teams von Aumovio.
 
 \end{itemize}
 
@@ -72,36 +73,62 @@
 %     PROFESSIONAL EXPERIENCE
 % ============================================================
 
-\section{Professional Experience}
+\section{Berufserfahrung}
 \vspace{3pt}
 \begin{itemize}
 
+\needspace{5\baselineskip}
 % --- Most Recent Role ---
-\item{\cventry{[YYYY-Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{01.2016-present}{Technical Lead of Data Analytics}{Continental Teves AG \& Co. oHG}{Frankfurt am Main}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+    \item Technische Leitung der Data-Analytics-Funktion; Leitung eines Teams von 6 Entwicklern (Budget ca. 0,7 Mio. €) bei gleichzeitiger eigener aktiver Entwicklung (Hands-on IC); Coaching und Mentoring sowie Third-Level-Production-Support.
+    \item Brücke zwischen Technik und Fachbereich: Übersetzung von Anforderungen aus Quality Controlling, SCM und Customer Demand Planning in SAP-HANA/BW- und Analytics-Lösungen.
+    \item Teilprojektleitung in internationalen Rollout-, Migrations- und Change-Request-Projekten; fachliche und technische Koordination externer Partner.
+    \item Aufbau und Leitung der Competency Area Data Engineering bei Aumovio SE (08.2021-heute): DevOps/MLOps, GenAI-Apps auf AWS/Azure/GCP und Palantir Foundry (Ontology, AIP), Plattformbetrieb mit Kubernetes, Docker und Hadoop; Infrastructure-as-Code für KI-Projekte (Vorbereitungszeit um 60 \% reduziert).
+    \item Bei Continental AG (01.2016-07.2021): Weiterentwicklung von nativem SAP HANA und SAP BW on HANA als globales Template für Rollouts und Migrationen; SAP UI5- und ABAP-OO-Apps, IDOCs/RFC/Webservices.
 \end{itemize}}}
 
 \vspace{3pt}
 
+\needspace{5\baselineskip}
 % --- Previous Role ---
-\item{\cventry{[YYYY-YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{04.2014-12.2015}{Kundenberatung / Consulting}{Accenture}{Kronberg}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+    \item Beratung und Delivery von SAP-HANA-Digitalisierungsvorhaben über mehrere Branchen und Länder.
+    \item Deutsche Bank, HR Systems, Frankfurt (04.2014-06.2015): SAP HCM + Oracle Peoplesoft, Teamleitung HR-Berichtswesen und Datenmigration, Risikoanalyse via Virtual Forge Code Scan.
+    \item Coca Cola, SCM, Atlanta (06.2015-10.2015): Performance-Tuning und Entwicklung einer SAP-HANA-Plattform für Supply Chain.
+    \item RWE, Innovation \& Research, Dortmund (05.2015-08.2015): Solution Designer und Entwickler einer Smart-House-App.
+    \item CMA, Financial Management, Marseille (08.2015-12.2015): Beratung und Abwicklung einer SAP-HANA-Transformationsplattform.
 \end{itemize}}}
 
 \vspace{3pt}
 
+\needspace{5\baselineskip}
 % --- Earlier Role ---
-\item{\cventry{[YYYY-YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{11.2013-03.2014}{Data Scientist \& Mitbegründer (Co-founder)}{Sun Elektro Trading GmbH}{Karlsruhe}{}{\vspace{1pt}
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+    \item Aufbau der Analytics-Foundation als Mitgründer: analytikfähige Webseite, Datenbereinigung und -aufbereitung.
+    \item Kundenscoring mittels RFM/RFD/RFE/RFM-I und Kundensegmentierung nach Kaufaktivität.
+    \item Auswertung und Analyse von Kundenreklamen mittels SVD; strategische Unterstützung bei Produktauswahl.
+\end{itemize}}}
+
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+% --- Research / earlier role ---
+\item{\cventry{03.2010-12.2013}{Data Scientist \& Research Fellow}{Karlsruher Institut für Technologie (KIT), ITM}{Karlsruhe}{}{\vspace{1pt}
+\begin{itemize}
+    \item Fortgeschrittene statistische Analyse und Data-Mining-Algorithmen.
+    \item Datenverarbeitung und Mustererkennung an 2D-mikroskopischen und 3D-CT-Aufnahmen; mehrdimensionale Optimierungsprobleme.
+\end{itemize}}}
+
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+\item{\cventry{11.2007-12.2009}{Data Mining Engineer}{Siemens AG, Energy Generation}{Karlsruhe}{}{\vspace{1pt}
+\begin{itemize}
+    \item Predictive Prevention von Kraftwerksausfällen mittels Data-Mining-Algorithmen; Warning und Reporting von Statusanzeigen der Kraftwerke.
+    \item Datenvisualisierung und graphische Auswertung.
 \end{itemize}}}
 
 \end{itemize}
@@ -110,18 +137,13 @@
 %     EDUCATION
 % ============================================================
 
-\section{Education}
+\section{Ausbildung}
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY-YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
-
-\vspace{3pt}
-
-\item{\cventry{[YYYY-YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
+\needspace{5\baselineskip}
+\item{\cventry{2010-2013}{Informatik mit Ergänzung Mathematik (Statistik)}{Karlsruher Institut für Technologie (KIT)}{Karlsruhe}{}{\vspace{1pt}
+Thesis: ``Statistische Analyse und Datenanalyse.'' Abschlussnote: Gut. Informatik, Statistik, Datenanalyse, Mustererkennung.
 }}
 
 \end{itemize}
@@ -130,40 +152,42 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 %     LANGUAGES
 % ============================================================
 
-\section{Languages}
+\section{Sprachen}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
+\item Deutsch (verhandlungssicher, Wort und Schrift), Englisch (verhandlungssicher, Wort und Schrift), Chinesisch (Muttersprache).
 \end{itemize}
 
 % ============================================================
-%     PUBLICATIONS (optional)
+%     CERTIFICATIONS
 % ============================================================
 
-\section{Publications}
+\section{Zertifikate}
 \vspace{1pt}
 \begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
+\item{\textbf{SAP expert Level 1 \& 2} -- mit Delivery of Assets/Excellence Award.}
+\item{\textbf{10 openSAP-Zertifikate} -- Text Analysis, UI5, IoT, Cloud Platform, Enterprise Solutions for SAP HANA.}
+\item{\textbf{ITIL v3} und \textbf{Professional Scrum Master}.}
 \end{itemize}
 
 % ============================================================
 %     HONORS AND AWARDS (optional)
 % ============================================================
 
-\section{Honors and Awards}
+\section{Ehrungen und Auszeichnungen}
 \vspace{1pt}
 \begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item{\textbf{Session Chairman} -- 18th International Conference on Composite Materials (ICCM), Jeju Island, Korea (08.2011).}
 \end{itemize}
 
 % ============================================================
 %     REFERENCES
 % ============================================================
 
-\section{References}
+\section{Referenzen}
 \vspace{1pt}
 \begin{itemize}
-\item{Available upon request.}
+\item{Verfügbar auf Anfrage.}
 \end{itemize}
 
 \end{document}

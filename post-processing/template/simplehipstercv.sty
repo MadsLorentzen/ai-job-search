@@ -1,0 +1,210 @@
+
+\usepackage[T1]{fontenc}
+
+\usepackage{fontawesome}
+\usepackage{hyperref}
+\setlength{\parindent}{0cm}
+\usepackage{paracol}
+\usepackage{ifthen}
+
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{smartdiagram}
+\usepackage{float}
+
+\usepackage{array}
+%\setlength\extrarowheight{1.5em} % adds some spacing between the lines of the CV's tabulars
+% not used here as not to interfer with other tables
+\usetikzlibrary{decorations.text}
+\usetikzlibrary{fadings}
+\usetikzlibrary{calc}
+
+\usetikzlibrary{shapes.misc,positioning}
+\usetikzlibrary{arrows}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{backgrounds} 
+\usetikzlibrary{shadings}
+\usetikzlibrary{calendar} 
+\usetikzlibrary{er}
+\usetikzlibrary{patterns} % horizontal lines, vertical lines, north east lines, north west lines, grid, crosshatch, dots, crosshatch dots, fivepointed stars, sixpointed stars, bricks
+\usetikzlibrary{shapes} 
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{decorations}
+\usetikzlibrary{topaths}
+
+\usepackage{graphicx}
+%\usepackage[usenames, dvipsnames]{color} 
+% https://de.sharelatex.com/learn/Using_colours_in_LaTeX#!#Reference_guide z.B. \color{RubineRed}
+%\usepackage{xcolor}
+
+
+% avoid line overflow
+\setlength{\emergencystretch}{2pt}
+%---------------------------------------------------------------------------------
+
+\usepackage{titlesec} % Allows creating custom \sections
+
+% Format of the section titles
+\titleformat{\section}{
+\scshape\Large\raggedright}{}{0em}{}[\titlerule] % smallcaps, Large, continuous line - looks better if two columns, might look a bit too dramatic if just one ;) 
+\titlespacing{\section}{0pt}{12pt}{5pt} % Spacing around titles {<left spacing>}{<before spacing>}{<after spacing>}
+%----------------------------------------------------
+
+ \newcommand{\cvkeyword}[3]{
+ \colorbox{#2}{\textcolor{#3}{#1}} \phantom{}%
+ }
+ 
+%------------------------
+\newcommand{\cvtag}[1]{% from alta-cv: https://www.overleaf.com/latex/templates/altacv-template/trgqjpwnmtgv
+  \tikz[baseline]\node[draw=black!40,rounded corners,inner sep=0.4em]{\color{black!50}#1};
+}
+
+
+%------------------- ICON Cross
+
+\newcommand{\iconcross}[7]{%
+\begin{tikzpicture}%
+\draw[ultra thick,draw=#2] (-2,-2) -- (2,2);%
+\draw[ultra thick, draw=#2] (-2,2) -- (2,-2);%
+\node[above=0.5em,text=#3] at (0,1) {#1 #4};%
+\node[below=0.5em,text=#3] at (0,-1) {#1 #5};%
+\node[right=0.5em,text=#3] at (1,0) {#1 #6};%
+\node[left=0.5em,text=#3] at (-1,0) {#1 #7};%
+\end{tikzpicture}%
+}
+ 
+
+\usepackage{smartdiagram}
+%-----------------------------------------------------
+% set smartdiagram colours, from: https://github.com/Johayon/Data-Scientist-Resume-LaTeX/blob/master/twentysecondcv.cls
+
+
+%-------------------------------------------------------
+\smartdiagramset{
+    bubble center node font = \footnotesize,
+    bubble node font = \footnotesize,
+    % specifies the minimum size of the bubble center node
+    bubble center node size = 0.5cm,
+    %  specifies the minimum size of the bubbles
+    bubble node size = 0.5cm,
+    % specifies which is the distance among the bubble center node and the other bubbles
+    distance center/other bubbles = 0.3cm,
+    % sets the distance from the text to the border of the bubble center node
+    distance text center bubble = 0.5cm,
+    % set center bubble color
+    bubble center node color = pblue,
+    % define the list of colors usable in the diagram
+    set color list = {materialcyan, orange, green, materialorange, materialteal, materialamber, materialindigo, materialgreen, materiallime},
+    % sets the opacity at which the bubbles are shown
+    bubble fill opacity = 0.6,
+    % sets the opacity at which the bubble text is shown
+    bubble text opacity = 1,
+    description title text width=0.5cm,
+    description title width=0.5cm,
+    description width=5cm,
+    description text width=5cm,
+    descriptive items y sep =1.25,
+    back arrow distance = 0,
+    back arrow disabled = true,
+    border color = white
+}
+%-------------------------------
+\newcommand{\lorem}{Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus.} % Dummy text
+
+%--------------------------------------------------- pictures
+\newcommand{\roundpic}[1]{\begin{figure}[H]\tikz  \draw [path picture={ \node at (path picture bounding box.center){\includegraphics[height=3.5cm]{#1}} ;}] (0,2) circle (1.7) ;\end{figure}}
+
+\newcommand{\squarepic}[1]{\begin{figure}[H]\tikz  \draw [path picture={ \node at (path picture bounding box.center){\includegraphics[height=4cm]{#1}} ;}] (0,0) - - (-2,2) - - (0,4) - - (2,2) - - cycle ;\end{figure}}
+
+
+%------------------------------------ pictoFraction
+\newcommand{\icon}[3]{\phantom{x}{#3\color{#2}#1}\phantom{x}}
+%------------------- pictogram Fraction: pictoFraction
+\newcommand{\pictofraction}[6]{%
+\pgfmathparse{#3 - 1}\foreach \n in {0,...,\pgfmathresult}{\icon{#1}{#2}{#6}}%
+\pgfmathparse{#5 - 1}\foreach \n in {0,...,\pgfmathresult}{\icon{#1}{#4}{#6}}%
+}
+
+
+
+%----------------------------------------------------- font highlighting / boxes with background color 
+\newcommand{\bg}[3]{\colorbox{#1}{\bfseries\color{#2}#3}}
+\newcommand{\bgupper}[3]{\colorbox{#1}{\color{#2}\huge\bfseries\MakeUppercase{#3}}}
+
+%------------------------- Bubble Diagram
+\newcommand{\bubblediagram}[1]{\smartdiagram[bubble diagram]{#1}}
+
+
+\newcommand{\skillbubble}[2]{%
+\begin{tikzpicture}%
+\draw[draw=none,fill=#1] (0,0) circle (0.#2);%
+\end{tikzpicture}%
+}
+
+\newcommand{\hobbyicon}[5]{%
+\begin{tikzpicture}%
+\draw[draw=none,fill=#3] (0,0) circle (0.5);%
+\node[](icon) at (0,0) {#4#1};%
+\node[below=#5,align=center] at (icon) {#2};%
+\end{tikzpicture}
+}
+
+
+
+%-------------------------------------------- rules / separators
+
+\newcommand{\dashrule}[2]{\begin{figure}[H]\begin{minipage}[t]{#1\textwidth}\tikz \draw[loosely dashed,#2] (0pt,0pt) -- (\textwidth,0pt);\end{minipage}\end{figure}}
+
+\newcommand{\dotrule}[2]{\begin{figure}[H]\begin{minipage}[t]{#1\textwidth}\tikz \draw[loosely dotted, ultra thick,#2] (0,0) -- (\textwidth,0);\end{minipage}\end{figure}}
+
+
+%-------------------------------------------------------
+
+
+
+
+\newcommand{\event}[5]{%
+{%
+\draw[draw=black, line width=0.2em,anchor=west] (0,#1) -- (#5,#1);%
+\node[fill=#2,right,inner sep=0.5em] 	at (#5,#1) {\textbf{#3}~~#4 };%
+} % startpunkt #1. Farbe #2, Detaildatum #3, Beschreibung #4, Entfernung von Timeline #5
+}
+
+%---------------------------------------------------------
+\newcommand{\barrule}[3]{\hspace{0.5em}
+{\color{#3}\rule[\baselineskip]{#1\textwidth}{#2}}\vspace{0.5em}
+}
+
+\newcommand{\cvevent}[6]{{#1} & \textbf{#2}\newline\textsc{#3} $\cdot$ {#4 ~\faMapMarker}\newline{\color{black!70}\footnotesize #5}\vspace{1.5em} & \if\relax\detokenize{#6}\relax\else\raisebox{-0.7\height}{\includegraphics[width=2cm, height=0.5cm, keepaspectratio]{#6}}\fi}
+
+\newcommand{\cvdegree}[6]{{#1} & \textbf{#2}\newline\textsc{#3} $\cdot$ {#4 {\phantom{i}\footnotesize ~\faUniversity}}\newline{\color{black!70}\scriptsize #5}\vspace{0.5em} & \raisebox{-0.7\height}{\includegraphics[height=0.5cm]{#6}}}
+
+
+
+
+
+
+
+
+% -----------------------------------------------------------------------------------
+
+\newcommand{\simpleheader}[5]{
+\tikz[remember picture,overlay] {%
+\node[rectangle, fill=#1, anchor=north, minimum width=\paperwidth, minimum height=3.5cm](header) at (current page.north){};%
+\node[draw=none, align=left](name) at (header) {%
+{\Huge \color{#5} #2 \textbf{#3} }%
+};%
+\node[draw=none, below](description) at (name.south) {\color{white}#4};% 
+}\vspace{-0.7cm}%
+}
+
+
+\newcommand{\infobubble}[4]{
+\scalebox{1.3}{
+\begin{tikzpicture}
+\draw[draw=#2,fill=#2] (0,0) circle (0.2cm);
+\node[] at (0,0) {\color{#3}\textbf{#1}};
+\node[right=0.2cm] at (0,0) {\texttt{#4}};
+\end{tikzpicture}
+}
+}
