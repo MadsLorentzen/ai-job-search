@@ -38,7 +38,10 @@ per-file diff commands.
   could already scaffold a skill for a portal reachable only through a paid fetching
   service, but said nothing about the credential such a skill needs. It now checks for that
   case during reconnaissance and raises the per-call cost with the user *before*
-  scaffolding; the portal-skill contract requires the token to come from a
+  scaffolding. That check is explicitly subordinate to the `robots.txt`/terms decision
+  in Step 2.4 - a paid fetching service never launders a refusal, and the credential
+  path exists only for portals whose `robots.txt` permits access but whose bot
+  protection blocks ordinary fetches. The portal-skill contract requires the token to come from a
   `<SERVICE>_API_TOKEN` environment variable (never a CLI flag, never a fixture) and to
   fail with `MISSING_CREDENTIALS` when unset; and such a skill's `SKILL.md` must carry a
   Setup section naming the service, the variable, and the billing. Spec only - no shipped
