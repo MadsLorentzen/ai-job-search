@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for 彭坤杰
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for 彭坤杰, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,70 +10,85 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
-
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+- **Name:** 彭坤杰
+- **Location:** 恩施，湖北 / 上海（上海财经大学在读）
+- **Languages:** 中文（母语），English（CET-6，可借助工具阅读英文技术资料）
+- **CV language:** 中文 <!-- 中文市场，CV默认使用中文；英语职位可切换为英文 -->
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** 即将入学硕士研究生（数字经济专硕，2026年9月入学）；可立即投入实习
+- **LinkedIn headline:** "上海财经大学数字经济专硕 | 经济学与数据科学交叉背景 | Python数据分析与量化研究"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **数字经济专业硕士** (2026.09–2028.06预计) - 上海财经大学（拟入学）
+  - 方向：数字经济、金融科技、产业与公司研究
+- **数据科学与大数据技术（第二学士学位）** (2025.09–2026.05) - 中国农业大学
+  - 重点：Python、数据分析、机器学习方法
+- **经济学学士** (2021.09–2025.06) - 贵州财经大学
+  - GPA 3.89，排名 1/125
+  - 核心课程：金融学、会计学、计量经济学、产业经济学、区域经济学、中级微观/宏观经济学
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **财务部助理** (2025.03–2025.09) - **恩施鑫达客运有限公司**（湖北恩施）
+  - 负责日常收入核定、财务报表编写和基础数据整理
+  - 熟悉经营数据口径核对、表格整理和文档规范要求
+  - 与交通运输行业数据跟踪具有相关性
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Python数据分析（pandas/numpy/matplotlib/scikit-learn/LightGBM），经济学研究方法（OLS/面板回归/指标体系），金融数据处理与量化回测
+- **Secondary:** SQL基础，机器学习基础（回归/分类/集成学习），财务报表分析，金融数据终端（iFind/Wind/Choice）
+- **Domain:** 经济学研究，金融数据分析，行业研究，数字经济
+- **Software:** Excel/PPT/Word，AKShare，VS Code，Claude Code（AI辅助编程与文档撰写）
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- CET-6（大学英语六级）
+- 暂无其他专业认证（可在学习过程中补充：CFA一级、FRM、Python相关认证等）
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- 彭坤杰等. 少数民族青年生育意愿的影响因素及稳定路径研究——基于贵州省88个区县的生育意愿调查. 中文普刊.
+- 彭坤杰等. 以塘约经验探讨解决"三农"问题的新模式. 中文普刊.
+- 彭坤杰等. 农村合作经济新模式塘约经验探讨. 中文普刊.
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- 国家奖学金
+- 贵州省"三好学生"；贵州省"优秀毕业生"
+- 高教社杯全国大学生数学建模竞赛国家级二等奖
+- 全国大学生数学竞赛（非数学类）省级一等奖×2
+- 全国大学生能源经济学术创意大赛省级一等奖
+- 国家级大学生创新创业训练计划项目结项（负责人）
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- **高度自律与执行力** - GPA 3.89排名1/125，在学术、竞赛、科研多维度均取得突出成绩
+- **系统性思维与方法论严谨** - 量化项目全流程搭建，对分析结果如实复盘而非夸大
+- **主动拓展能力边界** - 经济学本科后主动修读数据科学二学位，自学量化金融与机器学习
+- **Strengths:** 快速学习、方法论严谨、独立执行、研究写作
+- **Growth areas:** 行业实战经验积累中、深度学习的实践经验有限、英语口语可进一步提升
+- **Thrives in:** 结构化交付环境、研究驱动的工作、导师指导+独立执行、工具赋能
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- 用数据和分析方法解决真实的经济与商业问题
+- 学习并应用AI/量化工具提升研究效率
+- 在数字经济与金融科技的交叉领域建立专业壁垒
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- **金融/证券行业:** 券商研究所（行业研究/宏观研究）、基金公司（量化研究/数据分析）、银行（金融科技/数据分析）
+- **科技/互联网:** 金融科技公司（蚂蚁集团/微众银行）、互联网大厂（数据分析/商业分析/战略分析）
+- **咨询/研究机构:** 经济咨询、管理咨询、智库研究
+- **实体企业:** 上市公司战略研究/行业分析部门
+
+### Priority Target Companies
+- **券商/基金:** 中金公司、华泰证券
+- **互联网/金融科技:** 蚂蚁集团、字节跳动、腾讯、阿里巴巴、美团
+- **其他:** 所有有数据分析/研究类实习岗位的公司
+
+### Side Gigs (also open to)
+- 家教（学科辅导）、考研辅导类兼职
 
 ### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- 不设置排除条件，各类岗位均可考虑
+
+### Salary Expectations
+- 实习日薪100元以上即可，优先考虑待遇更好的机会，不设硬性门槛
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

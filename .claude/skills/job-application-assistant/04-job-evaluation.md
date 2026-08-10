@@ -4,31 +4,14 @@ framework_version: 1.1.0
 
 # Job Evaluation Framework
 
-<!-- SETUP: Skill match areas and career goals are personalized by running /setup -->
-
 ## Eligibility Gate — run before scoring
 
-If the candidate is not a citizen or permanent resident of the country they are applying in, run this first. It is a hard filter, not a scoring dimension, and it is separate from work-permit *timing*: timing asks "can they work the required hours yet?", eligibility asks "are they permitted to hold this job at all?". A candidate can pass timing and still be categorically excluded.
+彭坤杰为中国公民，在国内市场申请实习和正式岗位，通常不存在工作权问题。如申请海外或外企岗位，按需检查签证/许可要求。
 
-Read the posting's eligibility / work rights / "who can apply" section **verbatim** and classify:
-
-| Posting wording | Verdict |
-|-----------------|---------|
-| Names a **citizenship or permanent-residency requirement** ("must be a citizen of X", "permanent resident", "PR required", "full working rights" where the employer means citizen/PR) | **FAIL — hard stop.** Do not score, do not draft. Quote the exact wording back to the user. |
-| Requires a **security clearance** at any level | **FAIL** in most countries, since clearance is normally gated on citizenship. Verify the specific scheme rather than assuming. |
-| **Explicitly names** the candidate's permit class, or says "international applicants welcome", "visa holders considered", "we sponsor" | **PASS** — verified acceptance. Worth noting as a positive in the application. |
-| **Silent** on citizenship or residency | **PROCEED, but mark unverified.** Check the employer's own careers or international-applicant page before drafting. |
-
-**Two rules that are easy to get wrong:**
-
-1. **Silence is not permission.** Large graduate programs frequently gate eligibility on their own website rather than in the job ad. Highest-risk categories: professional-services firms, government and defence, banking, telecommunications, and anything touching critical infrastructure.
-2. **A company-wide "we accept international applicants" statement is not role-level permission.** The common pattern is a general welcome followed by a *named list* of the specific programs or service lines it covers. Confirm the **specific posting or stream** appears on that list before drafting.
-
-**Report an eligibility failure to the user with the quoted source** rather than silently dropping the role. They may know something about their own status that the profile does not record.
-
-If the candidate's permit also constrains *hours* or *start date* (a student visa with a term-time cap, a permit that begins on graduation), record that as a second gate under this section during `/setup`, with the specific dates. Do not merge it with the eligibility question above — they fail for different reasons and need different answers.
-
-A role that fails this gate is not scored and not drafted. Everything below applies only to roles that pass it.
+**实习时间约束：** 
+- 2026年9月入学后，研究生在读期间可实习，需确保实习时间与学业兼容
+- 当前（2026年7月–8月）为入学前暑假，可全职实习
+- 长期实习安排：可保证至少3个月，能及时响应常规周/月度任务
 
 ## Scoring Dimensions
 
@@ -44,9 +27,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Python数据分析（pandas/numpy/matplotlib/sklearn）、经济学研究方法（OLS/面板回归/指标体系）、金融数据处理（多因子模型/回测）、Excel/PPT、研究写作
+**Moderate match areas:** SQL基础、机器学习基础（回归/分类/集成学习/LightGBM）、财务报表分析、金融数据终端（iFind/Wind/Choice）
+**Weak match areas:** 深度学习（TensorFlow/PyTorch）、大数据工程（Spark/Hadoop）、生产级软件开发（CI/CD、Docker、云平台）、NLP/CV等专业AI领域
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -58,9 +41,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** 经济学研究（论文发表+竞赛获奖）、金融数据分析（量化回测项目）、研究支持类工作
+**Moderate:** 财务数据处理（财务部助理经验）、机器学习应用（练习项目+竞赛）、项目协调（大创负责人）
+**Entry-level:** 实习岗位（研究助理/数据分析/行业研究）、初级分析师、量化研究实习
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -72,13 +55,14 @@ Does the role and company culture match the behavioral profile?
 | 40-59 | Some friction areas |
 | 0-39 | Significant culture mismatch |
 
-**Red flags to research:** Department disorganization, work dominated by maintenance over development, poor chemistry with leadership, culture mismatches. Check reviews, media coverage, LinkedIn connections, and network contacts for insider perspective.
+**Red flags to research:** 无硬性排除条件——各类岗位均可考虑。但仍建议关注：部门组织混乱、过度加班文化影响学业、薪资显著低于市场水平（日薪<100元需特别评估）
 
 ### 4. Location & Logistics (Pass/Fail + Notes)
-- Within commute range: PASS
-- Remote with occasional office: PASS
-- Requires relocation: FAIL (deal-breaker)
-- Frequent international travel: FLAG (discuss with user)
+- 上海线下实习：PASS（在读地）
+- 北京/深圳线下实习：PASS（愿意前往）
+- 远程实习：PASS
+- 需长期驻场外地：FLAG（需与学业协调）
+- 海外岗位：按签证要求评估
 
 ### 5. Career Alignment & Motivation (0-100)
 Does this role advance career goals and contain tasks that energize?
@@ -91,19 +75,20 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- 短期（实习阶段）：积累行业研究/数据分析实战经验，熟悉金融机构或企业研究团队的工作规范
+- 中期（硕士在读）：在数字经济、金融科技或产业研究方向建立专业深度
+- 长期：结合经济学理论功底与数据分析能力，成为产业/金融领域的专业研究人员
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
-- Non-task factors: leadership style, department culture, company values, degree of autonomy
+- Tasks that energize: 数据分析与建模、研究报告撰写、方法论设计与验证、使用AI工具提升工作效率、从数据中挖掘可行动的洞察
+- Tasks that drain: 纯行政事务（无分析内容）、重复性的数据录入、缺乏反馈和成长的岗位
+- Non-task factors: 偏好尊重员工学习时间的雇主、重视方法论的团队文化、有导师或资深同事可以学习
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: 在读学生，实习日薪100元以上即可，优先选待遇更好的机会但不设硬性门槛
+- **Flexibility**: 2026年9月起需兼顾硕士学业，偏好支持弹性工作安排的雇主
+- **Professional development**: 优先考虑能接触真实业务、学习行业规范、积累可迁移技能的岗位
+- **Side gigs**: 也开放家教、考研辅导类兼职机会
 
 ### 6. Salary Benchmark (Optional)
 
@@ -113,17 +98,6 @@ python salary_lookup.py "<Company Name>" --json
 ```
 
 If a city is known from the posting, add `--city "<City>"` to narrow results.
-
-Present findings as:
-```
-### Salary Benchmark
-| Metric | Value |
-|--------|-------|
-| [Category] index | XX.X (+/-X.X% vs baseline) |
-| Overall index | XX.X (+/-X.X% vs baseline) |
-```
-
-Interpret results relative to the baseline defined in the data file's metadata. For index-based data, higher typically means above-market compensation.
 
 If the salary tool is not configured, skip this section.
 
@@ -157,8 +131,8 @@ Present the evaluation as:
 
 ### Company Research Checklist
 - [ ] Checked company website (mission, values, recent news)
-- [ ] Checked review sites (Glassdoor, Jobindex, etc.)
-- [ ] Checked LinkedIn for team size, recent hires, connections
+- [ ] Checked review sites (Glassdoor, 看准网, 脉脉, etc.)
+- [ ] Checked LinkedIn/脉脉 for team size, recent hires, connections
 - [ ] Checked media for restructuring, growth, or workplace issues
 - [ ] Identified network contacts who may know the team/manager
 ```

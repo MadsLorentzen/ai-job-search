@@ -4,61 +4,71 @@ framework_version: 1.0.0
 
 # Candidate Profile
 
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all sections will be filled with your actual information -->
-
 ## Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_ADDRESS]
-- **Phone:** [YOUR_PHONE]
-- **Email:** [YOUR_EMAIL]
-- **LinkedIn:** [YOUR_LINKEDIN_URL]
-- **GitHub:** [YOUR_GITHUB_URL]
-- **Languages:** [YOUR_LANGUAGES with proficiency levels]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **Constraints:** [YOUR_COMMUTE_OR_LOCATION_CONSTRAINTS]
+- **Name:** 彭坤杰
+- **Location:** 恩施，湖北 / 上海（上海财经大学在读）
+- **Phone:** 15971778877
+- **Email:** 2512635967@qq.com
+- **LinkedIn:** 暂不提供
+- **GitHub:** https://github.com/JiemsLBJ（目前无公开项目，后续会补充）
+- **Languages:** 中文（母语），English（CET-6，可借助工具阅读英文技术资料）
+- **CV language:** 中文 <!-- 中文市场，CV默认使用中文；英语职位可切换为英文 -->
+- **Status:** 即将入学硕士研究生（数字经济专硕，2026年9月入学）；可立即投入实习
+- **Constraints:** 可上海/北京/深圳线下实习，或远程实习；可保证至少3个月，及时响应
+- **薪资期望:** 实习日薪100元以上即可，优先考虑待遇更好的机会，不设硬性门槛
 
 ## Education
 
 | Degree | Period | Institution | Key Topics |
 |--------|--------|-------------|------------|
-| [DEGREE] | [YEARS] | [INSTITUTION] | [TOPICS] |
+| 数字经济专业硕士（拟入学） | 2026.09–2028.06（预计） | 上海财经大学 | 数字经济、金融科技、产业与公司研究 |
+| 数据科学与大数据技术（第二学士学位） | 2025.09–2026.05 | 中国农业大学 | Python、数据分析、机器学习方法 |
+| 经济学学士 | 2021.09–2025.06 | 贵州财经大学 | GPA 3.89，排名 1/125；金融学、会计学、计量经济学、产业经济学、区域经济学、中级微观/宏观经济学 |
 
 ## Professional Experience
 
-### [JOB_TITLE] - [COMPANY] ([START] - [END])
-[LOCATION]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_1]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_2]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_3]
-
-<!-- Add more roles as needed -->
+### 财务部助理 - 恩施鑫达客运有限公司（2025.03–2025.09）
+湖北恩施
+- 负责日常收入核定、财务报表编写和基础数据整理
+- 熟悉经营数据口径核对、表格整理和文档规范要求
+- 该经历与交通运输行业数据跟踪具有一定相关性
 
 ## Independent Projects
-<!-- Projects outside of employment: freelance, open source, personal -->
-- **[PROJECT_NAME]**: [DESCRIPTION]
+
+- **A股量化多因子策略回测系统**（2026.05–至今）：基于AKShare、pandas、numpy、scikit-learn、LightGBM、matplotlib搭建数据获取→特征工程→模型训练→回测评估→图表输出全流程。完成动量、波动率、均线、量价等19个因子构造，进行截面排名、组合构建、PNL曲线、参数热力图、逐年收益和水下曲线展示。项目结论保持审慎——已验证当前策略Alpha不显著，基于数据结果如实复盘。
+- **机器学习建模练习（回归/分类/集成学习）**（2026.06–至今）：完成加州房价线性回归、Ames房价预测、MNIST图像分类、学生健康状态预测等练习项目，覆盖缺失值处理、特征工程、交叉验证、模型比较与可视化输出。
 
 ## Technical Skills
 
-### Programming & ML
-- **[LANGUAGE]** ([PROFICIENCY]): [FRAMEWORKS_AND_LIBRARIES]
-- [OTHER_SKILLS]
+### Programming & Data
+- **Python**（基础扎实）：pandas、numpy、matplotlib、scikit-learn、LightGBM（AI辅助编程可显著提升效率）
+- **SQL**（了解）：基础查询与数据提取
 
 ### Domain Expertise
-- [DOMAIN_1]
-- [DOMAIN_2]
+- 经济学研究：OLS回归、面板固定效应、指标体系构建、描述统计与数据可视化
+- 金融数据分析：多因子模型、回测框架、金融数据终端（iFind/同花顺、Wind/Choice可快速上手）
+- 行业研究：公司公告检索、财务数据整理、财报点评底稿
 
 ### Software & Tools
-- [TOOL_LIST]
+- **Office**: Excel（数据整理/公式/基础统计/报表口径核对）、PowerPoint（汇报材料排版与图表呈现）、Word（纪要/报告排版）
+- **金融终端**: iFind、同花顺、Wind、Choice（可快速学习）
+- **AI工具**: Claude Code / AI辅助编程（熟练使用AI工具提升数据分析与文档撰写效率）
 
 ## Publications
-<!-- List peer-reviewed publications, if any -->
-1. [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL]. [DOI_LINK]
+1. 彭坤杰等. 少数民族青年生育意愿的影响因素及稳定路径研究——基于贵州省88个区县的生育意愿调查. 中文普刊.
+2. 彭坤杰等. 以塘约经验探讨解决"三农"问题的新模式. 中文普刊.
+3. 彭坤杰等. 农村合作经济新模式塘约经验探讨. 中文普刊.
+4. 能源经济竞赛论文《省域新型城镇化与绿色发展耦合协调研究》——省级一等奖，使用指标体系、耦合协调度模型与面板回归。
 
 ## Awards
-- [AWARD] - [EVENT] ([YEAR])
+- 国家奖学金
+- 贵州省"三好学生"；贵州省"优秀毕业生"
+- 高教社杯全国大学生数学建模竞赛国家级二等奖
+- 全国大学生数学竞赛（非数学类）省级一等奖×2
+- 全国大学生能源经济学术创意大赛省级一等奖
+- 国家级大学生创新创业训练计划项目结项（负责人）
 
 ## References
-- [NAME], [TITLE], [COMPANY] ([EMAIL], [PHONE])
+- 暂时没有，后续需要时再补充（本科导师可能可以作为推荐人）
 
 More references available upon request.

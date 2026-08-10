@@ -4,51 +4,58 @@ framework_version: 1.0.0
 
 # Behavioral Profile
 
-<!-- SETUP: This file is populated by running /setup -->
-<!-- You can use results from PI, DISC, Myers-Briggs, StrengthsFinder, or a self-assessment -->
+<!-- 本文件由 /setup Path A 生成。行为特征部分从CV中推断，标注 [Inferred] 的条目建议在面试前自行审视确认。 -->
 
 ## Overview
-[YOUR_NAME]'s behavioral assessment identifies them as a **[PROFILE_TYPE]** pattern. [1-2 SENTENCE_SUMMARY].
+彭坤杰的学术与项目经历显示其为 **目标导向、高度自律的研究型学习者**。以年级第1（1/125）的GPA完成经济学本科，主动修读数据科学第二学士学位以补充技术能力，并在量化金融项目中展现系统性的方法论思维——从数据获取到回测评估的全流程构建能力。在团队项目中担任负责人角色，体现项目管理和交付能力。
 
 ## Core Behavioral Drives
 
 | Drive | Level | Meaning |
 |-------|-------|---------|
-| [DRIVE_1] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_2] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_3] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_4] | [LEVEL] | [DESCRIPTION] |
+| 追求卓越 (Achievement) | 很高 | GPA排名1/125、国家奖学金、多项国家级/省级竞赛获奖——持续在竞争环境中取得顶尖成绩 |
+| 自主学习 (Autonomy/Learning) | 高 | 主动修读第二学士学位拓展技能边界；独立搭建量化回测系统；利用AI工具加速学习与开发 |
+| 方法论严谨 (Methodical) | 高 | 量化项目中对Alpha不显著的结论如实复盘而非夸大；研究中使用规范计量方法；注重数据质量与流程 |
+| 交付导向 (Delivery) | 高 | 大创项目负责人推进选题到结题全流程；竞赛论文限时高质量交付；能适应高频细致的研究支持工作 |
 
 ## Strongest Behaviors
-- **[BEHAVIOR_1]:** [DESCRIPTION]
-- **[BEHAVIOR_2]:** [DESCRIPTION]
-- **[BEHAVIOR_3]:** [DESCRIPTION]
+- **高度自律与执行力:** GPA 3.89排名1/125，在多个维度（学术、竞赛、科研）均取得突出成绩，能在限时交付压力下保持产出质量。 *[Inferred from CV - review before relying on this]*
+- **系统性思维:** 量化回测项目中从数据获取→特征工程→模型训练→回测评估全流程搭建，体现端到端的系统性思考能力。 *[Inferred from CV]*
+- **主动拓展能力边界:** 经济学本科后修读数据科学二学位、自学量化金融和机器学习，体现出强烈的自我驱动力和跨领域学习意愿。 *[Inferred from CV]*
+- **团队领导与协作:** 大创项目负责人经历——统筹选题、分工、进度推进和报告交付；在多篇合作论文中担任第一作者。 *[Inferred from CV]*
 
 ## How You Work Best
-- [ENVIRONMENT_PREFERENCE_1]
-- [ENVIRONMENT_PREFERENCE_2]
-- [ENVIRONMENT_PREFERENCE_3]
+- **结构化交付环境:** 明确的交付物要求、规范的工作底稿和清晰的截止日期
+- **研究驱动的工作:** 需要资料检索、逻辑梳理、数据分析和规范化写作的任务
+- **导师指导 + 独立执行:** 在有经验的团队中学习行业规范，同时独立完成分析任务
+- **工具赋能:** 愿意并善于使用AI工具（如Claude Code）提升数据分析、代码编写和文档产出的效率
 
 ## Growth Areas (frame positively in applications)
-- **[AREA_1]:** [HOW_TO_FRAME_IT_POSITIVELY]
-- **[AREA_2]:** [HOW_TO_FRAME_IT_POSITIVELY]
+- **行业实战经验:** 目前以学术项目和练习项目为主，正在通过实习积累行业实际工作经验——可强调学习速度快、方法论基础扎实、能快速上手行业规范。 *[Inferred from CV]*
+- **深度学习/高级ML:** 当前ML经验集中在传统机器学习（回归、分类、集成学习），深度学习和大规模数据处理经验有限——可强调基础扎实、愿意在工作中学习。 *[Inferred from CV]*
+- **从研究成果到业务价值的转化:** 有较强学术研究和竞赛经验，需要培养将分析结果转化为可执行业务建议的能力——可在实习中重点锻炼。
 
 ## Mapping to Job Posting Language
 
 When a job posting mentions these keywords, it's a **strong behavioral fit**:
-- [KEYWORD_OR_PHRASE_THAT_MATCHES_YOUR_STYLE]
-- [ANOTHER_KEYWORD]
+- 自律 / 自驱 / 主动学习 / 快速学习
+- 方法论 / 严谨 / 数据驱动
+- 限时交付 / 高频 / 细致
+- 团队协作 / 项目管理 / 独立承担
 
 When a job posting mentions these, flag as **potential friction** (not deal-breaker):
-- [KEYWORD_OR_PHRASE_THAT_MIGHT_CLASH]
-- [ANOTHER_KEYWORD]
+- 3年以上全职工作经验（需要评估实习+项目经验能否替代）
+- 深度学习框架（TensorFlow/PyTorch）——当前非主要技能
+- 独立承担客户沟通或商务角色——经验有限
 
 ## Management Style Preferences
-- [WHAT_MANAGEMENT_STYLE_WORKS_FOR_YOU]
-- [WHAT_DOESN'T_WORK]
+- 偏好提供清晰方向和行业规范的导师型管理者
+- 重视反馈循环——定期的工作回顾和改进建议
+- 希望有独立执行的空间，同时也愿意在团队中协作学习
+- 不适应纯执行、无解释的指令式管理
 
 ## Using This in Applications
-- **Cover letters:** [HOW_TO_WEAVE_IN_BEHAVIORAL_STRENGTHS]
-- **CV:** [WHAT_TO_EMPHASIZE]
-- **Interviews:** [WHAT_STAR_EXAMPLES_TO_USE]
-- **Don't overstate:** [WHAT_NOT_TO_CLAIM]
+- **Cover letters:** 强调自律性、快速学习能力和方法论严谨性——用GPA排名、跨领域学习经历和项目全流程能力作为佐证
+- **CV:** 突出竞赛获奖、项目产出和量化成果，将学术成就作为执行力和智力投入的证据
+- **Interviews:** 用量化回测项目的"如实复盘Alpha不显著"作为方法论诚实的STAR案例；用大创负责人经历作为项目管理的STAR案例
+- **Don't overstate:** 不声称拥有全职工作经验或深度学习专长；不夸大ML项目的商业应用价值
