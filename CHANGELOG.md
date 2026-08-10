@@ -13,6 +13,23 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Added
+
+- **`security_guards.py` now holds `.claude/settings.json` hooks to an allowlist** - the
+  guard read `permissions.allow` and nothing else, so a `hooks` block in the same file
+  passed silently. A hook is strictly more dangerous than a pre-approved permission: a
+  permission pre-approves something Claude *may* choose to do, while a hook runs
+  unconditionally when its event fires, with no prompt and no model decision in between.
+  This is not hypothetical - it is the vector the Shai-Hulud worm used in its August 2026
+  wave, planting a `SessionStart` hook in `.claude/settings.json` that executed on session
+  start ([JFrog research](https://research.jfrog.com/post/shai-hulud-is-back-august/)).
+  For a template thousands of people are invited to fork, that is the riskiest key in the
+  file the guard already parses. `ALLOWED_HOOKS` ships empty (the template has no hooks),
+  the check runs *before* the permissions shape guards so a malformed permissions block
+  cannot return early and skip it, and unrecognised hook layouts fail closed rather than
+  being skipped. Eight new `HookGuardTests` cases; 14 of the suite's 26 tests fail against
+  the unpatched guard.
+
 ### Changed
 
 - **CI discovers portal CLIs instead of hardcoding them** (#310). The `cli-checks` matrix
