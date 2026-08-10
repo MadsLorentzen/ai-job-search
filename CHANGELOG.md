@@ -61,6 +61,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **Dropped the phantom `evaluated` value from `seen_jobs.json`'s status vocabulary** (#315).
+  The schema block in the job-scraper skill documented `new/skipped/evaluated/ranked/expired`,
+  but `evaluated` has had no writer and no reader since the initial release - `new`/`skipped`
+  come from `/scrape`, `ranked`/`expired` from `/rank`, and nothing ever set or selected
+  `evaluated`. Post-#269 the tracker owns all lifecycle state after drafting, so the value had
+  no future role either; it is now removed rather than wired up. `/rank` Step 1's `--all`
+  wording ("all non-applied entries") leaned on an `applied` status the schema deliberately
+  lacks and now names what it means: entries of any status, minus the tracker exclusion set.
+  Forks that wrote their own tooling against the documented vocabulary should note the value
+  was never produced by any shipped command.
+
 - **`/apply` archives the job posting while it still holds it** (#306). `/apply` drafted two
   documents and a tracker row from the full posting, then let the text die with the session;
   `/outcome` Step 3.2 tried to recover it by re-fetching a `source` URL the spec itself expects
