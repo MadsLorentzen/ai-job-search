@@ -61,6 +61,20 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/upskill` reports are now gitignored at the path the skill actually writes them to.**
+  The ignore rule `upskill/*.md` is rooted (a middle slash anchors a gitignore pattern to the
+  repo root), but `/upskill` is a *skill*, and skills resolve bare relative paths against
+  their own directory - the same observed behavior the `**/job_scraper/*` rules exist for.
+  A report written to `.claude/skills/upskill/upskill/report-*.md` was therefore not ignored
+  (`git check-ignore` confirms it on the unpatched tree), and an upskill report is the
+  candidate's skill gaps and weaknesses measured against named employers - among the most
+  sensitive files the workflow generates. The obvious widening, `**/upskill/*.md`, would have
+  ignored the template's own `.claude/skills/upskill/SKILL.md` (the skill directory shares
+  the name), so the new rule pins the report-file prefix instead: `**/upskill/report-*.md`.
+  Added to `.gitignore` and `security_guards.py`'s `REQUIRED_IGNORE_RULES`, with a
+  `check-ignore`-based test pinning both properties - reports ignored at both depths,
+  `SKILL.md` still tracked - which presence checks alone cannot see.
+
 - **Dropped the phantom `evaluated` value from `seen_jobs.json`'s status vocabulary** (#315).
   The schema block in the job-scraper skill documented `new/skipped/evaluated/ranked/expired`,
   but `evaluated` has had no writer and no reader since the initial release - `new`/`skipped`

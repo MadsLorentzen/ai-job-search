@@ -73,6 +73,13 @@ REQUIRED_IGNORE_RULES = [
     "gmail_sync/",
     "reports/",
     "upskill/*.md",
+    # Depth-independent twin of the rule above. The upskill *skill* resolves
+    # `upskill/` relative to its own directory - the same observed behavior
+    # the **/job_scraper rules exist for - so reports can land at
+    # .claude/skills/upskill/upskill/*.md where the rooted rule cannot see
+    # them. `**/upskill/*.md` would also ignore the skill's own SKILL.md
+    # (the directory shares the name), so the report-file prefix is pinned.
+    "**/upskill/report-*.md",
     # Not personal data but the same failure mode: /add-portal can generate a
     # skill for a portal that only returns usable content through a paid
     # fetching service, and that skill reads an API token from the environment.

@@ -244,7 +244,7 @@ class GitignoreGuardTests(GuardRepoFixture):
     def test_generated_report_rules_are_required(self):
         # Reports are generated from the user's tracker and application archive,
         # so losing these ignore rules can expose personal job-search history.
-        sensitive_outputs = ["reports/", "upskill/*.md"]
+        sensitive_outputs = ["reports/", "upskill/*.md", "**/upskill/report-*.md"]
         remaining = [
             rule
             for rule in security_guards.REQUIRED_IGNORE_RULES
@@ -257,6 +257,45 @@ class GitignoreGuardTests(GuardRepoFixture):
         self.assertEqual(result.returncode, 1)
         self.assertIn("reports/", result.stdout)
         self.assertIn("upskill/*.md", result.stdout)
+        self.assertIn("**/upskill/report-*.md", result.stdout)
+
+
+class GitignorePatternBehaviorTests(unittest.TestCase):
+    """Pin the match semantics of the shipped .gitignore for upskill reports.
+
+    The upskill skill resolves `upskill/` relative to its own directory (the
+    same observed behavior the **/job_scraper rules exist for), so a report
+    must be ignored at that depth too. The skill's own SKILL.md lives in a
+    directory that shares the `upskill` name, so a broad `**/upskill/*.md`
+    would ignore the template's own skill file - this pins that it stays
+    tracked. Guard presence checks cannot see either property; only real
+    check-ignore semantics can.
+    """
+
+    def test_upskill_reports_ignored_at_depth_but_skill_md_stays_tracked(self):
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+        subprocess.run(
+            ["git", "init", "-q", str(root)], check=True, capture_output=True
+        )
+        shutil.copy(REPO_ROOT / ".gitignore", root / ".gitignore")
+        cases = {
+            "upskill/report-2026-08-11.md": True,
+            ".claude/skills/upskill/upskill/report-2026-08-11.md": True,
+            ".claude/skills/upskill/upskill/report-2026-08-11-acme-engineer.md": True,
+            ".claude/skills/upskill/SKILL.md": False,
+        }
+        for path, expect_ignored in cases.items():
+            with self.subTest(path=path):
+                result = subprocess.run(
+                    ["git", "-C", str(root), "check-ignore", "-q", path],
+                    capture_output=True,
+                )
+                self.assertEqual(
+                    result.returncode == 0,
+                    expect_ignored,
+                    f"{path}: expected ignored={expect_ignored}",
+                )
 
 
 class GitignoreNegationTests(GuardRepoFixture):
