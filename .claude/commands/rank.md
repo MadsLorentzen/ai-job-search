@@ -90,6 +90,12 @@ Store both arrays **verbatim** as the agent returned them (1-3 bullets each) - n
 
 Do not modify `job_search_tracker.csv` - that file records applications, and `/rank` never applies. Re-running `/rank` is idempotent: already-`ranked` jobs are skipped unless `--all` re-scores them.
 
+After writing `seen_jobs.json`, regenerate the CSV export so it reflects the new scores immediately:
+```bash
+bun run job_scraper/export_csv.js
+```
+Run this even when `/rank` scored zero new jobs this call (e.g. everything was already ranked) - it's cheap and idempotent, and it's the only thing keeping `seen_jobs.csv` in sync with the JSON between runs.
+
 ---
 
 ## Step 5: Present the Shortlist

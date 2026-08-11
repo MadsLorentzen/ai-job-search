@@ -88,12 +88,15 @@ Use the site-specific query strings from `search-queries.md` directly as WebSear
 For each promising result from Step 1:
 
 **From CLI results:** Search output already includes title, company, location, date,
-and URL. For jobs worth a deeper look, fetch full detail with that portal's `detail`
-command (see its SKILL.md — do not guess flags) to extract **key requirements**,
-**application deadline**, and a brief description snippet.
+and URL. **Keep the raw `location` string** (e.g. "Berlin, Germany", "London, England,
+United Kingdom") — Step 4 persists it verbatim as `location_text`. For jobs worth a
+deeper look, fetch full detail with that portal's `detail` command (see its SKILL.md —
+do not guess flags) to extract **key requirements**, **application deadline**, and a
+brief description snippet.
 
 **From WebSearch results:** Use `WebFetch` on the posting URL and extract the same
-fields manually. If it returns HTTP 403, retry with browser headers via curl per
+fields manually, including a location string for `location_text`. If it returns HTTP
+403, retry with browser headers via curl per
 `.claude/skills/job-application-assistant/09-web-research.md` before giving up — most
 bank and corporate sites reject WebFetch's user agent while serving browsers normally.
 
@@ -137,17 +140,24 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
       "first_seen": "YYYY-MM-DD",
       "fit": "high/medium/low",
       "status": "new/skipped/evaluated/ranked/expired",
-      "portal": "<source portal skill, e.g. jobindex-search>"
+      "portal": "<source portal skill, e.g. jobindex-search>",
+      "location_text": "<raw location string from the search result, e.g. 'Berlin, Germany'>"
     }
   }
 }
 ```
 
-The `portal` field records which CLI skill produced the job (results are already tagged per portal in Step 1b - persist that tag here). Entries written before this field existed lack it; the health check (Step 4.75) attributes those by matching the URL's domain against each portal's base URL, so do not backfill.
+The `portal` field records which CLI skill produced the job (results are already tagged per portal in Step 1b - persist that tag here). Entries written before this field existed lack it; the health check (Step 4.75) attributes those by matching the URL's domain against each portal's base URL, so do not backfill. `location_text` is the human-readable location as the portal/WebSearch reported it — it feeds the CSV export below and the eventual `/rank` location gate's market inference, and is likewise not backfilled for pre-existing entries that lack it.
 
 `/rank` extends this schema additively: ranked entries also carry `rank_score` (0–100 overall score), `rank_verdict` (fit band, e.g. "strong fit"), `rank_date` (ISO date of ranking), and `strengths`/`gaps` (1-3 verbatim bullets each, copied from the scoring agent's findings). The `status` field is set to `"ranked"`. Do not drop any of these fields when re-writing entries. Entries ranked before `strengths`/`gaps` existed simply lack them; readers tolerate their absence and never backfill by guessing.
 
 2. Only present jobs NOT already in the seen list or tracker.
+
+3. Regenerate the Excel-readable export so it never drifts out of sync with the JSON:
+```bash
+bun run job_scraper/export_csv.js
+```
+This rewrites `job_scraper/seen_jobs.csv` from the current `seen_jobs.json` in one shot — always run it after writing to `seen_jobs.json` in this step, even if nothing new was found (idempotent, and cheap).
 
 ### Step 4.5: Generate Referral Contact Links (High & Medium Fit Only)
 
