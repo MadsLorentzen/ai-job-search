@@ -8,6 +8,26 @@
 
 const JSON_PATH = new URL("./seen_jobs.json", import.meta.url)
 const CSV_PATH = new URL("./seen_jobs.csv", import.meta.url)
+const CLAUDE_MD_PATH = new URL("../CLAUDE.md", import.meta.url)
+
+/**
+ * The UK sponsorship flag is more useful with the candidate's actual visa deadline in it,
+ * but that deadline is personal data and must never be hardcoded into this committed script
+ * (it would ship the date to a public fork). Instead, read it at runtime from the user's own
+ * local CLAUDE.md ("visa expires <Month> <Year>", set by /setup) — CLAUDE.md holds the real
+ * fact and isn't itself pushed with that fact filled in, so this keeps the script generic
+ * while the locally-generated CSV stays fully specific. Falls back to a generic message when
+ * CLAUDE.md is missing, unmodified, or phrased differently (e.g. a fork with no UK search).
+ */
+async function readVisaDeadline() {
+  try {
+    const text = await Bun.file(CLAUDE_MD_PATH).text()
+    const match = text.match(/visa expires\s+([A-Za-z]+ \d{4})/i)
+    return match ? match[1] : null
+  } catch {
+    return null
+  }
+}
 
 const HEADER = [
   "Rank Score",
@@ -43,7 +63,7 @@ function inferMarket(locationText) {
   return null
 }
 
-function visaFlagStatus(entry) {
+function visaFlagStatus(entry, visaDeadline) {
   if (entry.status === "expired") return `EXPIRED — ${entry.gaps?.[0] ?? "posting unretrievable"}`
   if (entry.status !== "ranked") return "Not yet ranked"
 
@@ -52,7 +72,10 @@ function visaFlagStatus(entry) {
 
   if (market === "DE") return "PASS (Independent relocation)"
   if (market === "UK") {
-    if (gate === "FLAG") return "FLAG: Verify Active UK Sponsor Licence (check your own visa timeline)"
+    if (gate === "FLAG") {
+      const deadline = visaDeadline ? `Visa Expiry ${visaDeadline}` : "check your own visa timeline"
+      return `FLAG: Verify Active UK Sponsor Licence (${deadline})`
+    }
     if (gate === "FAIL") {
       const reason = (entry.gaps?.find((g) => /sponsor|relocat|commut/i.test(g)) ?? "Sponsorship/commute not viable")
         .replace(/^location fail:\s*/i, "")
@@ -67,6 +90,7 @@ function visaFlagStatus(entry) {
 
 async function main() {
   const data = JSON.parse(await Bun.file(JSON_PATH).text())
+  const visaDeadline = await readVisaDeadline()
   const rows = [HEADER]
 
   for (const entry of Object.values(data.seen)) {
@@ -77,7 +101,7 @@ async function main() {
       entry.company ?? "",
       entry.location_text ?? "(unrecorded)",
       entry.language_gate ?? "",
-      visaFlagStatus(entry),
+      visaFlagStatus(entry, visaDeadline),
       entry.portal ?? "",
       entry.first_seen ?? "",
       entry.url ?? "",
