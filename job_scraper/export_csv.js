@@ -3,12 +3,100 @@
 // Run by /scrape (end of Step 4) and /rank (end of Step 4) so the CSV never
 // drifts out of sync with the JSON — see those skills for the call site.
 //
-// Columns: Rank Score, Verdict, Job Title, Company, Location Context,
-// Language Gate, Visa Flag / Status, Portal Source, First Seen Date, Source URL.
+// Columns: Rank Score, Verdict, Job Title, Company, Application Status,
+// Location Context, Language Gate, Visa Flag / Status, Portal Source,
+// First Seen Date, Source URL.
 
 const JSON_PATH = new URL("./seen_jobs.json", import.meta.url)
 const CSV_PATH = new URL("./seen_jobs.csv", import.meta.url)
 const CLAUDE_MD_PATH = new URL("../CLAUDE.md", import.meta.url)
+const TRACKER_PATH = new URL("../job_search_tracker.csv", import.meta.url)
+
+/**
+ * Minimal RFC4180-ish CSV line parser — only what's needed to read back the tracker's
+ * own csvEscape-style quoting (quotes doubled, fields with commas/newlines wrapped).
+ * No external dependency, matching this repo's zero-dependency tooling convention.
+ */
+function parseCsvLine(line) {
+  const fields = []
+  let cur = ""
+  let inQuotes = false
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i]
+    if (inQuotes) {
+      if (c === '"' && line[i + 1] === '"') {
+        cur += '"'
+        i++
+      } else if (c === '"') {
+        inQuotes = false
+      } else {
+        cur += c
+      }
+    } else if (c === '"') {
+      inQuotes = true
+    } else if (c === ",") {
+      fields.push(cur)
+      cur = ""
+    } else {
+      cur += c
+    }
+  }
+  fields.push(cur)
+  return fields
+}
+
+/**
+ * `/apply`'s tracker is the single source of truth for "have I applied to this" - this
+ * script never writes to it, only reads it, to build a company+role lookup for the
+ * Application Status column. Matches /apply Step 6b's own rule: case-insensitive on
+ * company and role. Returns an empty map (not an error) when the tracker doesn't exist
+ * yet - a fresh clone with no applications is a valid state, not a failure.
+ */
+async function readTrackerStatus() {
+  const statusByKey = new Map()
+  let text
+  try {
+    text = await Bun.file(TRACKER_PATH).text()
+  } catch {
+    return statusByKey
+  }
+  const lines = text.split(/\r?\n/).filter((l) => l.length > 0)
+  if (lines.length < 2) return statusByKey
+  const header = parseCsvLine(lines[0]).map((h) => h.trim().toLowerCase())
+  const companyIdx = header.indexOf("company")
+  const roleIdx = header.indexOf("role")
+  const statusIdx = header.indexOf("status")
+  if (companyIdx === -1 || roleIdx === -1 || statusIdx === -1) return statusByKey
+  for (const line of lines.slice(1)) {
+    const fields = parseCsvLine(line)
+    const company = (fields[companyIdx] ?? "").trim().toLowerCase()
+    const role = normalizeRole((fields[roleIdx] ?? "").trim().toLowerCase())
+    const status = (fields[statusIdx] ?? "").trim()
+    if (!company || !role) continue
+    statusByKey.set(`${company}|${role}`, status)
+  }
+  return statusByKey
+}
+
+/**
+ * German-market postings routinely carry a gender-marker suffix - (m/w/d), (m/f/d),
+ * (w/m/d), (f/m/d), and their asterisk/slash variants - that the scraped title keeps
+ * but a tracker row written by hand or trimmed during /apply may drop (or vice versa).
+ * Stripping it before matching avoids false "Not applied" negatives on an otherwise
+ * identical role/company pair.
+ */
+function normalizeRole(role) {
+  return role
+    .replace(/[\s([]*[mwfd]\s*[/*]\s*[mwfd]\s*(?:[/*]\s*[mwfd]\s*)?\)?\s*$/i, "")
+    .trim()
+}
+
+function applicationStatus(entry, trackerStatusByKey) {
+  const company = (entry.company ?? "").trim().toLowerCase()
+  const role = normalizeRole((entry.title ?? "").trim().toLowerCase())
+  const status = trackerStatusByKey.get(`${company}|${role}`)
+  return status ? status.charAt(0).toUpperCase() + status.slice(1) : "Not applied"
+}
 
 /**
  * The UK sponsorship flag is more useful with the candidate's actual visa deadline in it,
@@ -34,6 +122,7 @@ const HEADER = [
   "Verdict",
   "Job Title",
   "Company",
+  "Application Status",
   "Location Context",
   "Language Gate",
   "Visa Flag / Status",
@@ -91,6 +180,7 @@ function visaFlagStatus(entry, visaDeadline) {
 async function main() {
   const data = JSON.parse(await Bun.file(JSON_PATH).text())
   const visaDeadline = await readVisaDeadline()
+  const trackerStatusByKey = await readTrackerStatus()
   const rows = [HEADER]
 
   for (const entry of Object.values(data.seen)) {
@@ -99,6 +189,7 @@ async function main() {
       entry.rank_verdict ?? "",
       entry.title ?? "",
       entry.company ?? "",
+      applicationStatus(entry, trackerStatusByKey),
       entry.location_text ?? "(unrecorded)",
       entry.language_gate ?? "",
       visaFlagStatus(entry, visaDeadline),
