@@ -15,6 +15,19 @@ per-file diff commands.
 
 ### Added
 
+- **Commit-level upstream triage for forks** (#305). A new `tools/upstream_triage.py` walks the
+  commits a fork is behind upstream and sorts them into "worth reviewing" vs "probably skip":
+  cherry-picks already applied drop off on their own (matched by `git patch-id`, so ported work
+  needs no bookkeeping), commits that only touch files the fork removed are set aside, and SHAs in
+  a flat `.github/upstream-wontport.txt` stop resurfacing. It's the commit-history companion to
+  `check_upstream_updates.py`'s version stamps - the two cross-reference each other in their output.
+  Report-only by design: it prints ready-to-run `git cherry-pick` lines but never merges, pushes, or
+  opens a PR, because on a fork "applies cleanly" isn't "correct". A `.github/workflows/upstream-watch.yml`
+  runs it weekly into a rolling issue, guarded to no-op on the upstream template (pinned by a test) and
+  scoped to the built-in `GITHUB_TOKEN` so it can never write outside its own fork. SETUP.md 8
+  introduces both tools side by side. Offline tests cover patch-id matching, relevance filtering, the
+  won't-port list, and the workflow guard. Thanks @anjolok1997.
+
 - **`security_guards.py` now holds `.claude/settings.json` hooks to an allowlist** - the
   guard read `permissions.allow` and nothing else, so a `hooks` block in the same file
   passed silently. A hook is strictly more dangerous than a pre-approved permission: a
