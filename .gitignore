@@ -106,3 +106,7 @@ upskill/*.md
 
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/
+
+
+#Ignore insiders AI rules
+.github\instructions\codacy.instructions.md
