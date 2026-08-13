@@ -5,6 +5,7 @@ properties of the real repo, testing the things CI would catch if the
 command file or gitignore rule were wrong.
 """
 
+import re
 import subprocess
 import sys
 import unittest
@@ -40,6 +41,38 @@ class HtmlReportCommandFileTests(unittest.TestCase):
     def test_command_file_is_non_empty(self):
         text = COMMAND_FILE.read_text(encoding="utf-8").strip()
         self.assertGreater(len(text), 100, "Command file appears suspiciously short")
+
+
+class HtmlReportTrackerFieldTests(unittest.TestCase):
+    """The dashboard is a consumer of every tracker column: the Step 1 field
+    enumeration and the Step 3 table columns must stay in phase with the
+    canonical 14-column header (apply.md /outcome.md Step 1.1), so a future
+    column addition cannot silently vanish from the dashboard the way
+    `deadline` did."""
+
+    CANONICAL_HEADER = [
+        "date", "company", "sector", "role", "role_type", "channel",
+        "status", "contact_person", "fit_rating", "notes", "cv_file",
+        "cover_letter_file", "source", "deadline",
+    ]
+
+    def test_step1_parses_every_canonical_tracker_column(self):
+        text = COMMAND_FILE.read_text(encoding="utf-8")
+        match = re.search(
+            r"Parse every row into a record with fields:\n\s+((?:`[^`]+`,?\s*)+)",
+            text,
+        )
+        self.assertIsNotNone(match, "Step 1 field enumeration not found")
+        fields = [f.strip() for f in re.findall(r"`([^`]+)`", match.group(1))]
+        self.assertEqual(fields, self.CANONICAL_HEADER)
+
+    def test_step3_table_columns_include_deadline(self):
+        text = COMMAND_FILE.read_text(encoding="utf-8")
+        match = re.search(r"### Table: columns to include\n\n(.+)\n", text)
+        self.assertIsNotNone(match, "Step 3 table column list not found")
+        line = match.group(1)
+        self.assertIn("`Deadline`", line, "Step 3 table must offer a Deadline column")
+        self.assertIn("`Date`", line, "Step 3 table must keep the Date column")
 
 
 class HtmlReportGitignoreTests(unittest.TestCase):

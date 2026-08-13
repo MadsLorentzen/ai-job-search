@@ -23,6 +23,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **The `/html-report` dashboard now reads and renders the tracker's `deadline`** (follow-up to
+  #319). The tracker gained a fourteenth `deadline` column and every other consumer (`/outcome`,
+  `/upskill`, `/notion-sync`) was updated to know it, but the dashboard's Step 1 field
+  enumeration and Step 3 table columns still listed the original thirteen - the one surface
+  where the column could not be seen at all, so a `drafted` application's clock stayed invisible
+  in the report that reviews the pipeline end to end. The Step 1 enumeration now matches the
+  canonical 14-column header and the applications table can show a `Deadline` column, subject to
+  the existing empty-column rule. Pinned by `tests/test_html_report_command.py` so a future
+  column addition cannot silently vanish from the dashboard again.
+
 - **Application deadlines are written down at every moment the framework provably holds them**
   (#319). `/scrape` fetched the deadline and rendered it in a table, `/rank` turned it into the 🔥
   urgency marker and the expiry check, and nothing stored it - so the marker fired exactly once,
