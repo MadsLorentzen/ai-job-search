@@ -11,6 +11,32 @@ prefer updating to a tagged release over pulling raw `master` (see
 files a release touched; `python3 tools/check_upstream_updates.py` lists them with
 per-file diff commands.
 
+## [Unreleased]
+
+### Added
+
+- **The application deadline is recorded, not rendered once and discarded** (#319) - `/scrape`
+  extracted it in its detail fetch and rendered it in the results table, `/rank` turned it into the
+  🔥 urgency marker and the expiry check, and nothing wrote it down. The marker could therefore fire
+  exactly once, in the terminal table of the run that computed it: a later run skips already-`ranked`
+  jobs, and `--all` re-fetches the posting to recompute a date the framework had already produced.
+  A `drafted` row was worse off still - days quiet, the 10-day follow-up threshold and
+  `/gmail-sync`'s 30-day staleness flag all exclude drafted rows, correctly, because nobody is late
+  replying to something that was never sent, which leaves the deadline as the only clock that
+  applies to such a row and left that clock unrecorded. `deadline` is now a **base field** of
+  `seen_jobs.json`, written when a job is first seen and refreshed by `/rank` Step 4; `/rank` Step 3
+  reads the stored value back with no fetch and sweeps already-`ranked` entries it did not re-score,
+  expiring the passed ones and listing the near ones under **Closing soon** - the first thing that
+  enforces the scraper's "Only open positions" rule after the moment of fetching. The tracker CSV
+  gains a fourteenth column, `deadline`, **appended after `source`**, so an existing thirteen-column
+  tracker reads as a row with an empty trailing field rather than one whose every value has shifted
+  by a position. `/apply` Step 0 extracts it and Step 6b writes it, `/html-report` parses it and
+  treats a thirteen-field row as empty, and `/outcome`'s open-pipeline table shows it with 🔥 within
+  7 days and ⚠ once passed, on `/rank`'s threshold, while drafted rows stay out of the follow-up
+  offer exactly as before. No backfill: a missing key means the entry predates the field, `null`
+  means the posting stated none, and neither is ever guessed at. Pinned by
+  `tests/test_rank_command.py` and `tests/test_apply_records_application.py`.
+
 ## [1.5.0] - 2026-08-12
 
 ### Added
