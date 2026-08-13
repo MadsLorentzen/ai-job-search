@@ -11,6 +11,20 @@ prefer updating to a tagged release over pulling raw `master` (see
 files a release touched; `python3 tools/check_upstream_updates.py` lists them with
 per-file diff commands.
 
+## [Unreleased]
+
+### Fixed
+
+- **`convert_salary_excel.py` no longer misreads whole-thousands cells from a Danish-locale
+  export** - a cell like `60.000` (thousands separator, no decimal comma) was handed to
+  `float()` and silently written as `60.0`, a 1000x-wrong salary in `salary_data.json` that
+  then rendered with a meaningless `vs baseline` percentage in `/apply`. The comma-side
+  mirror (`1,234`) was already guarded as ambiguous and skipped; the dot side had no guard,
+  and tests only pinned the both-separators form (`1.234,5`). `\d+\.\d{3}` is now rejected
+  the same way, so the shared never-guess policy applies to both separators and the rows in
+  between (e.g. `60.000,50`, `108,5`) keep parsing exactly as before. Pinned by
+  `tests/test_convert_salary_excel.py`.
+
 ## [1.5.0] - 2026-08-12
 
 ### Added
