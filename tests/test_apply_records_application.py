@@ -35,7 +35,7 @@ SCRAPER = REPO / ".claude" / "skills" / "job-scraper" / "SKILL.md"
 
 TRACKER_HEADER = (
     "date,company,sector,role,role_type,channel,status,contact_person,"
-    "fit_rating,notes,cv_file,cover_letter_file,source"
+    "fit_rating,notes,cv_file,cover_letter_file,source,deadline"
 )
 
 
@@ -67,13 +67,44 @@ class ApplyRecordsApplication(unittest.TestCase):
             )
 
     def test_tracker_header_matches_outcome(self):
-        """Byte-identical, or the two commands create incompatible CSVs."""
+        """Byte-identical, or the two commands create incompatible CSVs.
+
+        The equality check below is load-bearing, not decoration. `assertIn`
+        alone cannot see an *additive* drift: a thirteen-column header is a
+        substring of a fourteen-column one, so appending a column to `/apply`
+        and forgetting `/outcome` passed this test cleanly until it was added.
+        """
         self.assertIn(TRACKER_HEADER, OUTCOME.read_text(encoding="utf-8"))
         self.assertIn(
             TRACKER_HEADER,
             self.step_6b,
             "Step 6b's header drifted from outcome.md's - whichever command ran "
             "first would decide the schema",
+        )
+        for name, text in (("outcome.md", OUTCOME.read_text(encoding="utf-8")),
+                           ("apply.md Step 6b", self.step_6b)):
+            header = next(
+                (ln.strip() for ln in text.splitlines() if ln.strip().startswith("date,company,")),
+                None,
+            )
+            self.assertEqual(
+                header,
+                TRACKER_HEADER,
+                f"{name}'s header line is not exactly the canonical header - a column "
+                "appended to one file and not the other leaves both containing the "
+                "shorter header as a substring, which assertIn alone cannot catch",
+            )
+
+    def test_deadline_is_appended_last(self):
+        """Appended after `source`, never inserted.
+
+        An existing thirteen-column tracker then reads as a row with an empty
+        trailing field. Inserted anywhere else, every value in every existing
+        row is silently re-labelled by one position.
+        """
+        self.assertTrue(
+            TRACKER_HEADER.endswith(",source,deadline"),
+            "deadline must stay the last column, directly after source",
         )
 
     def test_step_runs_before_the_optional_offer_that_ends_the_turn(self):
@@ -245,6 +276,38 @@ class ApplyArchivesThePosting(unittest.TestCase):
     ]
 
     def test_posting_is_archived_where_every_reader_looks(self):
+        for path, heading, needle, why in self.CASES:
+            with self.subTest(file=path.name, rule=needle):
+                self.assertIn(needle, section(path, heading), why)
+
+
+class DeadlineTravelsWithTheApplication(unittest.TestCase):
+    """The deadline is extracted, ranked on, and now recorded, or it dies with
+    the run that fetched it.
+
+    One case per hop. Step 0 is the only moment `/apply` provably holds the
+    posting, the same argument that put the posting archive there in #307, and
+    the value table is what stops the new column being written empty forever.
+    """
+
+    CASES = [
+        (APPLY, "## Step 0: Parse Input", "**application deadline**",
+         "extracted later, the value is a guess or a re-fetch of a URL the spec "
+         "itself expects to be dead - and a pasted posting has no URL at all"),
+        (APPLY, "### Step 6b: Record the Application", "| `deadline` |",
+         "the column would exist in the header with no rule saying what goes in "
+         "it, so every row /apply writes leaves it empty"),
+        (APPLY, "### Step 6b: Record the Application", "leave an existing deadline alone",
+         "a re-draft from a posting that no longer states a deadline would erase "
+         "the date the first run captured"),
+        (HTML_REPORT, "## Step 1: Collect Data", "`deadline`",
+         "the parser's field list is the column's only reader-side contract"),
+        (HTML_REPORT, "## Step 1: Collect Data", "thirteen fields",
+         "a row written before the column existed must read as empty, never be "
+         "dropped and never have a deadline inferred from its date"),
+    ]
+
+    def test_deadline_is_recorded_and_read_everywhere(self):
         for path, heading, needle, why in self.CASES:
             with self.subTest(file=path.name, rule=needle):
                 self.assertIn(needle, section(path, heading), why)
