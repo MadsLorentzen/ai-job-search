@@ -35,7 +35,7 @@ SCRAPER = REPO / ".claude" / "skills" / "job-scraper" / "SKILL.md"
 
 TRACKER_HEADER = (
     "date,company,sector,role,role_type,channel,status,contact_person,"
-    "fit_rating,notes,cv_file,cover_letter_file,source"
+    "fit_rating,notes,cv_file,cover_letter_file,source,deadline"
 )
 
 
@@ -74,6 +74,16 @@ class ApplyRecordsApplication(unittest.TestCase):
             self.step_6b,
             "Step 6b's header drifted from outcome.md's - whichever command ran "
             "first would decide the schema",
+        )
+
+    def test_tracker_header_ends_with_deadline(self):
+        """/apply appends rows with one field per header column, so inserting
+        `deadline` anywhere but the end shifts every value in every existing
+        row by one position."""
+        self.assertTrue(
+            TRACKER_HEADER.endswith(",deadline"),
+            "deadline must be the last column - a mid-header insert shifts every "
+            "existing row's values by one position",
         )
 
     def test_step_runs_before_the_optional_offer_that_ends_the_turn(self):
@@ -248,6 +258,56 @@ class ApplyArchivesThePosting(unittest.TestCase):
         for path, heading, needle, why in self.CASES:
             with self.subTest(file=path.name, rule=needle):
                 self.assertIn(needle, section(path, heading), why)
+
+
+class DeadlineSurvivesEveryWrite(unittest.TestCase):
+    """#319: the deadline is carried through the whole pipeline and never dropped.
+
+    The header migration must be header-line-only (inserting it mid-column
+    shifts every value of every existing row), and every path that rewrites
+    a tracker row (/outcome Step 4, /gmail-sync Step 7a) must preserve
+    fields it does not parse - the deadline is the first such field.
+    """
+
+    CASES = [
+        (APPLY, "### Step 6b: Record the Application", "append `,deadline` to the header line only",
+         "a mid-header insert shifts every existing row's values by one position"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application",
+         "append `,deadline` to the header line only",
+         "the two commands must migrate identically, or whichever runs first sets the schema"),
+        (APPLY, "## Step 0: Parse Input", "application deadline",
+         "Step 6b's value is supposed to come from Step 0's extraction, so the extraction "
+         "must be stated where the posting text is still held in full"),
+        (APPLY, "### Step 6b: Record the Application", "Never guess one",
+         "the deadline must stay empty when the posting states none - a guessed date is "
+         "the urgency clock firing on a date nobody set"),
+        (APPLY, "### Step 6b: Record the Application", "leave an existing deadline alone",
+         "absence is not a correction: a run that extracted no deadline must not blank "
+         "the one /apply already wrote"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application", "Deadline urgency",
+         "a drafted row has nothing applied so the quiet clock must not run on it - the "
+         "deadline is the only clock that applies, and it must not be omitted"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application", "never chased",
+         "surfacing the deadline must not drag drafted rows into the follow-up offer"),
+        (OUTCOME, "## Step 4: Update the Tracker", "preserve every other field of the row",
+         "a status update that rewrites the row would blank the deadline column"),
+        (GMAIL_SYNC, "### Step 7a: Write Approved Updates", "preserve every other field",
+         "the sync path rewrites the row too - it must carry the same preservation rule"),
+        (NOTION_SYNC, None, "**Deadline precedence: the tracker wins too**",
+         "the tracker's deadline (written from the posting the application was actually "
+         "built on) must override the scraper's stored value"),
+        (NOTION_SYNC, None, "tracker `deadline` column",
+         "the Deadine property must name the tracker column as its source"),
+        (SKILL, "### Step 3b: Record the Application", "`deadline` is the application deadline",
+         "the /scrape path reaches Step 3b without running /apply Step 0, so it must "
+         "still be told what the field is and where it comes from"),
+    ]
+
+    def test_deadline_survives_every_write(self):
+        for path, heading, needle, why in self.CASES:
+            with self.subTest(file=path.name, rule=needle):
+                haystack = section(path, heading) if heading else path.read_text(encoding="utf-8")
+                self.assertIn(needle, haystack, why)
 
 
 if __name__ == "__main__":

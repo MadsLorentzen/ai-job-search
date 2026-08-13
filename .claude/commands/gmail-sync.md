@@ -124,7 +124,7 @@ Approving the whole batch in one reply is expected UX - the requirement is that 
 
 For every row the user approved:
 
-1. **Tracker (`job_search_tracker.csv`):** update the matched row's `status` column per the Step 5 table, and append to `notes`: `<date> gmail-sync: <signal> ("<email subject>")`. Never restructure the CSV, reorder rows, or touch unrelated rows - same rule `/outcome` follows.
+1. **Tracker (`job_search_tracker.csv`):** update the matched row's `status` column per the Step 5 table, and append to `notes`: `<date> gmail-sync: <signal> ("<email subject>")`. Never restructure the CSV, reorder rows, or touch unrelated rows - same rule `/outcome` follows. The rewrite touches only `status`, `notes` (and `date` when the drafted-rule below fires): preserve every other field of the row, parsed or not, so the `deadline` column written by `/apply` Step 6b - or any column added in the future - is never blanked by a status sync.
 
    **If the matched row was still `drafted`,** also set `date` to the email's date. The employer replying proves the user submitted by hand without running `/outcome`, so the drafting date now in that column is wrong. The email's date is an upper bound on the real submission date, tight for an ack and loose for a rejection weeks later, which is why Step 6 shows it and lets the user supply the actual date instead.
 2. **`outcome.md`:** tick the relevant stage checkbox (adding the date in parentheses) or update `Status`/`Date resolved` per the table. Append a dated entry to `## Notes`, never overwrite existing Notes history:

@@ -78,6 +78,30 @@ class RankCommandSpec(unittest.TestCase):
             "schema note must say old entries lacking strengths/gaps are tolerated, never backfilled",
         )
 
+    def test_job_scraper_schema_carries_deadline(self):
+        """Pins the base field in the seen_jobs.json structure block and the
+        never-infer note. Step 2's detail fetch already extracts the deadline, so
+        /scrape writes it at first sight instead of leaving it to /rank (#319).
+        """
+        text = SCRAPER_SKILL.read_text(encoding="utf-8")
+        self.assertIn(
+            '"deadline": "YYYY-MM-DD" | null',
+            text,
+            "the seen_jobs.json structure block must carry the deadline field, "
+            "or every later run has no stored value to re-derive urgency from",
+        )
+        self.assertIn(
+            "never infer a deadline",
+            text,
+            "the schema note must forbid guessing a deadline from null or from a missing key",
+        )
+        self.assertIn(
+            "base field rather than a `/rank` extension",
+            text,
+            "the note must say the deadline is written when the job is first seen, "
+            "not only when /rank re-scores it",
+        )
+
     def test_step2_schema_includes_language_gate_fields(self):
         sections = _sections(COMMAND.read_text(encoding="utf-8"))
         step2 = sections.get("Step 2: Batch-Fetch and Score", "")
@@ -125,6 +149,68 @@ class RankCommandSpec(unittest.TestCase):
             "as important to persist as the score itself",
             step4,
             "Step 4 must call out that the veto fields (location/language_gate/language_note) are not optional extras",
+        )
+
+    def test_step4_persists_deadline(self):
+        """Sibling of test_step4_persists_language_gate_and_language_note: the deadline was
+        computed in Step 2 and acted on in Step 3, but never written to seen_jobs.json, so
+        the urgency marker fired exactly once and a later run had to re-fetch the posting to
+        recover the date (#319). Pins the persistence in the Step 4 field list.
+        """
+        sections = _sections(COMMAND.read_text(encoding="utf-8"))
+        step4 = sections.get("Step 4: Update State", "")
+        self.assertIn('"deadline"', step4, "Step 4 must persist the deadline into seen_jobs.json")
+        self.assertIn(
+            "from the same Step 2 JSON",
+            step4,
+            "Step 4 must source the persisted deadline from the scoring agent's JSON, not from a guess",
+        )
+        self.assertIn(
+            "absence is not a correction",
+            step4,
+            "Step 4 must keep an existing stored deadline when the agent returned null, "
+            "so a fresh run never blanks a date the scraper already recorded",
+        )
+
+    def test_step3_reads_stored_deadline_without_fetch(self):
+        """Persisting alone does not re-fire the marker: Step 3 must read the stored
+        deadline back so urgency is re-derived on every run without re-reading the
+        posting (which is the dead-URL source the field exists to replace).
+        """
+        sections = _sections(COMMAND.read_text(encoding="utf-8"))
+        step3 = sections.get("Step 3: Aggregate and Rank", "")
+        self.assertIn(
+            "stored `deadline`",
+            step3,
+            "Step 3 must take the deadline from seen_jobs.json for a job that already carries one",
+        )
+        self.assertIn(
+            "costs no fetch",
+            step3,
+            "Step 3 must state that the stored value costs no fetch - that is the entire point of persisting it",
+        )
+
+    def test_step3_documents_expiry_sweep_over_ranked_entries(self):
+        """Rule 6: entries this run did not re-score still get their stored deadline checked,
+        enforcing the only-open-positions rule beyond the moment of fetching.
+        """
+        sections = _sections(COMMAND.read_text(encoding="utf-8"))
+        step3 = sections.get("Step 3: Aggregate and Rank", "")
+        self.assertIn(
+            "Expiry sweep",
+            step3,
+            "Step 3 must document a sweep over already-ranked entries this run did not re-score",
+        )
+        self.assertIn(
+            "date comparison against values already on disk",
+            step3,
+            "the sweep must be a pure on-disk comparison - no fetch, no agent",
+        )
+        step5 = sections.get("Job Ranking - YYYY-MM-DD", "")
+        self.assertIn(
+            "Closing soon",
+            step5,
+            "Step 5's template must name the Closing soon heading rule 6 lists under",
         )
 
     def test_step5_documents_language_flag_marker(self):

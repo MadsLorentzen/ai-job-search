@@ -53,6 +53,18 @@ class UpskillSkillSpec(unittest.TestCase):
             "Step 2 must document the graceful-degradation clause for entries scored before gaps existed",
         )
 
+    def test_step2_column_list_keeps_in_phase_with_tracker_header(self):
+        """/upskill reads the tracker, so its enumeration of the columns must
+        match the header /apply writes - the deadline column (#319) is the
+        first column to be added since the list was written."""
+        sections = _sections(SKILL.read_text(encoding="utf-8"))
+        step2 = sections.get("Step 2: Load Data", "")
+        self.assertIn(
+            "source, deadline",
+            step2,
+            "Step 2's column list lost the deadline column the tracker header now ends with",
+        )
+
     def test_step3_documents_dedupe_and_gap_precedence(self):
         sections = _sections(SKILL.read_text(encoding="utf-8"))
         step3 = sections.get("Step 3: Pass 1 — Hard Skill Diff", "")

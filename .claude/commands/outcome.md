@@ -29,12 +29,15 @@ Follow these steps **in order**.
 
 1. Read `job_search_tracker.csv`. If it does not exist, create it with the standard header:
    ```
-   date,company,sector,role,role_type,channel,status,contact_person,fit_rating,notes,cv_file,cover_letter_file,source
+   date,company,sector,role,role_type,channel,status,contact_person,fit_rating,notes,cv_file,cover_letter_file,source,deadline
    ```
+   **If the file exists and its header does not end in `,deadline`, append `,deadline` to the header line only** - no data row is touched. Legacy rows then read as an empty deadline.
 2. **With an argument:** match rows case-insensitively on company (and role, if given). One match → proceed. Several → list them and ask. None → the application was made outside the workflow; collect company, role, date applied, channel, and posting URL from the user and add a tracker row.
-3. **Without an argument:** list all rows whose status is not final (see **Tracker status vocabulary** below) as a numbered table (company, role, date applied, current status, days quiet, follow-ups sent) and ask which to update. The two derived columns come straight from existing data: **days quiet** counts from the row's `date` or the latest dated entry in `notes`, whichever is more recent; **follow-ups sent** counts the `followed up YYYY-MM-DD` markers in `notes`. If any open row is 10+ days quiet with fewer than two follow-ups sent, add one line under the table: "Some of these have gone quiet - want a follow-up draft? (Step 2b)". If every row is resolved, say so and stop.
+3. **Without an argument:** list all rows whose status is not final (see **Tracker status vocabulary** below) as a numbered table (company, role, date applied, current status, deadline, days quiet, follow-ups sent) and ask which to update. The two derived columns come straight from existing data: **days quiet** counts from the row's `date` or the latest dated entry in `notes`, whichever is more recent; **follow-ups sent** counts the `followed up YYYY-MM-DD` markers in `notes`. If any open row is 10+ days quiet with fewer than two follow-ups sent, add one line under the table: "Some of these have gone quiet - want a follow-up draft? (Step 2b)". If every row is resolved, say so and stop.
 
    **`drafted` rows are listed but never counted as quiet** - nothing was sent, so nobody is late replying. List them under their own heading ("Drafted, not yet submitted"), leave **days quiet** and **follow-ups sent** blank, and keep them out of the follow-up offer above.
+
+   **Deadline urgency is the one clock that does apply to a drafted row.** Show the `deadline` column when the row has one and leave it blank otherwise. Mark a deadline within 7 days with 🔥 and one that has already passed with ⚠, on the same 7-day threshold `/rank` Step 3 uses so the two commands never disagree. A passed deadline on a `drafted` row is the failure this column exists to catch - documents written, never sent, and now unsendable - so name it in one line under the table rather than leaving the user to compare dates. This changes nothing about the follow-up offer: a drafted row is still never chased, because nobody is late replying to something that was never sent.
 4. Derive the archive folder name: `documents/applications/<company>_<role>/` - lowercase, underscores for spaces (the convention documented in `documents/README.md`). Check whether the folder and an `outcome.md` already exist - if so, you are updating, not creating.
 
 ---
@@ -141,7 +144,7 @@ Update rules: tick stage checkboxes as they are reached (add the date in parenth
 
 ## Step 4: Update the Tracker
 
-Update the matched row's `status` column using the canonical spellings from **Tracker status vocabulary** above (e.g. `drafted` → `applied` → `interview` → `offer` → `hired` / `rejected` / `no_response` / `offer_declined` / `withdrawn`) and append a short dated note to the `notes` column. Never restructure the CSV, reorder rows, or touch other rows.
+Update the matched row's `status` column using the canonical spellings from **Tracker status vocabulary** above (e.g. `drafted` → `applied` → `interview` → `offer` → `hired` / `rejected` / `no_response` / `offer_declined` / `withdrawn`) and append a short dated note to the `notes` column. Never restructure the CSV, reorder rows, or touch other rows. The rewrite touches only the `status` and `notes` columns: preserve every other field of the row, parsed or not, so a value the row carries - the `deadline` written by `/apply` Step 6b, or any column added in the future - is never blanked by a status update.
 
 **Moving a row off `drafted`:** rows written by `/apply` Step 6b carry the date the documents were drafted, not the date they were sent. Whenever this step advances such a row to any other status - `applied`, or straight to `interview` or `rejected` when the user reports an outcome for something they submitted without recording it - overwrite its `date` column with the actual submission date. The `date` column is read as "applied on" by `/notion-sync` and drives `/html-report`'s year/season grouping and this command's own days-quiet count, so leaving the draft date in place would misreport the application.
 

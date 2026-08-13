@@ -11,6 +11,29 @@ prefer updating to a tagged release over pulling raw `master` (see
 files a release touched; `python3 tools/check_upstream_updates.py` lists them with
 per-file diff commands.
 
+## [Unreleased]
+
+### Fixed
+
+- **Application deadlines are written down at every moment the framework provably holds them**
+  (#319). `/scrape` fetched the deadline and rendered it in a table, `/rank` turned it into the 🔥
+  urgency marker and the expiry check, and nothing stored it - so the marker fired exactly once,
+  every later run had to re-fetch a posting that might have expired to recover the date, and a
+  `drafted` application (whose only applicable clock is its deadline) had no time-based signal at
+  all. `seen_jobs.json` entries now carry a `deadline` (base field, written on first sight,
+  refreshed by `/rank` Step 4, `null` vs missing distinguished and never guessed); `/rank` Step 3
+  re-derives urgency from the stored value with no re-fetch and sweeps already-ranked entries past
+  their deadline into `expired`; the tracker gains a fourteenth `deadline` column appended last,
+  with a header-line-only migration for existing trackers; `/apply` Step 0 extracts the deadline
+  and Step 6b writes it (including the `/scrape` path via the assistant SKILL.md); `/outcome`
+  surfaces it on open rows and flags near/passed deadlines on `drafted` rows without changing the
+  no-follow-up rule; and the row-rewriting paths (`/outcome` Step 4, `/gmail-sync` Step 7a) now
+  preserve every unparsed field so the new column survives the first status update. `/notion-sync`
+  names the tracker as the Deadline source (tracker wins), `/upskill`'s column list stays true, and
+  `job-application-assistant/SKILL.md` bumps `framework_version` 1.3.2 → 1.3.3. Pinned by
+  `tests/test_rank_command.py`, `tests/test_apply_records_application.py`, and
+  `tests/test_upskill_skill.py`.
+
 ## [1.5.0] - 2026-08-12
 
 ### Added
