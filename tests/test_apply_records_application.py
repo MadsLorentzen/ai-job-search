@@ -300,6 +300,16 @@ class DeadlineTravelsWithTheApplication(unittest.TestCase):
         (APPLY, "### Step 6b: Record the Application", "leave an existing deadline alone",
          "a re-draft from a posting that no longer states a deadline would erase "
          "the date the first run captured"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application", "deadline, days quiet",
+         "the open-pipeline table is the one view of every unresolved row, and it "
+         "is where a drafted row's only clock becomes visible at all"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application",
+         "one clock that does apply to a drafted row",
+         "without the rule the markers are unspecified and /outcome silently "
+         "disagrees with /rank's 7-day threshold"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application", "still never chased",
+         "surfacing the deadline must not drag drafted rows into the follow-up "
+         "offer - all three existing exclusions are correct and stay"),
         (HTML_REPORT, "## Step 1: Collect Data", "`deadline`",
          "the parser's field list is the column's only reader-side contract"),
         (HTML_REPORT, "## Step 1: Collect Data", "thirteen fields",
