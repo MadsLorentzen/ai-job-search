@@ -33,6 +33,8 @@ NOTION_SYNC = COMMANDS / "notion-sync.md"
 SKILL = REPO / ".claude" / "skills" / "job-application-assistant" / "SKILL.md"
 SCRAPER = REPO / ".claude" / "skills" / "job-scraper" / "SKILL.md"
 
+UPSKILL = REPO / ".claude" / "skills" / "upskill" / "SKILL.md"
+
 TRACKER_HEADER = (
     "date,company,sector,role,role_type,channel,status,contact_person,"
     "fit_rating,notes,cv_file,cover_letter_file,source,deadline"
@@ -69,10 +71,10 @@ class ApplyRecordsApplication(unittest.TestCase):
     def test_tracker_header_matches_outcome(self):
         """Byte-identical, or the two commands create incompatible CSVs.
 
-        The equality check below is load-bearing, not decoration. `assertIn`
-        alone cannot see an *additive* drift: a thirteen-column header is a
-        substring of a fourteen-column one, so appending a column to `/apply`
-        and forgetting `/outcome` passed this test cleanly until it was added.
+        The `endswith` check below is load-bearing, not decoration. `assertIn` on
+        its own cannot see an *additive* drift: a 13-column header is a substring
+        of a 14-column one, so appending a column to `/apply` and forgetting
+        `/outcome` passed this test cleanly until the assertion was added.
         """
         self.assertIn(TRACKER_HEADER, OUTCOME.read_text(encoding="utf-8"))
         self.assertIn(
@@ -99,12 +101,49 @@ class ApplyRecordsApplication(unittest.TestCase):
         """Appended after `source`, never inserted.
 
         An existing thirteen-column tracker then reads as a row with an empty
-        trailing field. Inserted anywhere else, every value in every existing
-        row is silently re-labelled by one position.
+        trailing field. Inserted anywhere else, every value in every existing row
+        is silently re-labelled by one position.
         """
         self.assertTrue(
             TRACKER_HEADER.endswith(",source,deadline"),
             "deadline must stay the last column, directly after source",
+        )
+
+    def test_migrating_a_legacy_header_yields_the_canonical_header(self):
+        """The migration target and the create-path header must be one string.
+
+        This is the part of "13-column fixture in, header grows" that a spec-only
+        change can actually prove: a tracker created before `deadline` existed
+        carries the header minus its last column, and appending `,deadline` to it
+        has to land on exactly what `/apply` and `/outcome` write for a new file.
+        Derived from TRACKER_HEADER rather than written out, so it cannot drift
+        from the spec, and it fails the moment anyone inserts the column
+        mid-header instead of appending it - the mistake that silently re-labels
+        every field of every existing row.
+        """
+        legacy = TRACKER_HEADER.rsplit(",", 1)[0]
+        self.assertEqual(
+            len(legacy.split(",")), 13,
+            "the pre-migration tracker had thirteen columns; if that is no longer "
+            "true the migration this test describes is not the one that shipped",
+        )
+        self.assertEqual(
+            legacy + ",deadline", TRACKER_HEADER,
+            "a migrated legacy header and a freshly created one must be identical, "
+            "or the two code paths produce incompatible files",
+        )
+
+    def test_upskill_column_list_matches_the_header(self):
+        """A fourth copy of the column list, comma-space separated.
+
+        It never matched a grep for the byte-identical header, which is exactly
+        why it drifted unnoticed.
+        """
+        listed = section(UPSKILL, "### Aggregate mode").replace(", ", ",")
+        self.assertIn(
+            TRACKER_HEADER,
+            listed,
+            "/upskill's column list drifted from the real tracker header",
         )
 
     def test_step_runs_before_the_optional_offer_that_ends_the_turn(self):
@@ -286,8 +325,11 @@ class DeadlineTravelsWithTheApplication(unittest.TestCase):
     the run that fetched it.
 
     One case per hop. Step 0 is the only moment `/apply` provably holds the
-    posting, the same argument that put the posting archive there in #307, and
-    the value table is what stops the new column being written empty forever.
+    posting, the same argument that put the posting archive there in #307. The
+    value table is what stops the new column being written empty forever. The
+    header migration is what stops it being written into an unnamed overflow
+    field on every tracker that already exists, and the two row-writers have to
+    be told to preserve a column their own field lists never mention.
     """
 
     CASES = [
@@ -300,6 +342,45 @@ class DeadlineTravelsWithTheApplication(unittest.TestCase):
         (APPLY, "### Step 6b: Record the Application", "leave an existing deadline alone",
          "a re-draft from a posting that no longer states a deadline would erase "
          "the date the first run captured"),
+        (APPLY, "### Step 6b: Record the Application", "append `,deadline` to the header line",
+         "without the header migration an existing thirteen-column tracker keeps a "
+         "thirteen-column header while /apply appends fourteen-field rows under it, "
+         "so the deadline lands in an unnamed overflow field no reader sees - the "
+         "write-only bug this whole item exists to close"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application",
+         "append `,deadline` to the header line",
+         "/outcome creates the tracker too, so the migration has to live in both "
+         "or whichever command runs first decides whether the column is readable"),
+        # The three properties the migration has to hold, pinned one per file so
+        # each can fail on its own rather than hiding behind the sentence above.
+        (APPLY, "### Step 6b: Record the Application", "not a single data row",
+         "a migration that rewrites rows is a different and far riskier change "
+         "than one that appends to the header line, and only the second was agreed"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application",
+         "not a single data row",
+         "same rule, stated in both files, because either command may be the one "
+         "that meets a legacy tracker first"),
+        (APPLY, "### Step 6b: Record the Application", "read as an empty deadline",
+         "rows written before the migration have no fourteenth field; if that is "
+         "not stated, a reader may treat the short row as malformed and drop it"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application",
+         "read as an empty deadline",
+         "same rule, stated in both files"),
+        (OUTCOME, "## Step 4: Update the Tracker", "every field you did not parse",
+         "/outcome rewrites a matched row from the fields it parsed, and its rule "
+         "names only status and notes - the first status update would drop the "
+         "deadline, killing the drafted-row clock that justifies the column"),
+        (GMAIL_SYNC, "### Step 7a: Write Approved Updates", "every field you did not parse",
+         "/gmail-sync rewrites rows the same way and would silently truncate the "
+         "column the moment it recorded a reply"),
+        (SKILL, "### Step 3b: Record the Application", "`deadline` is the application deadline",
+         "/scrape Step 5 routes into this skill, which reaches Step 3b without ever "
+         "running /apply Step 0 - so its closed enumeration of Step 6b's values must "
+         "name where this one comes from, or that path writes an empty deadline "
+         "forever (the gap #307 had to patch for the posting text)"),
+        (SKILL, "### Step 3b: Record the Application", "Four of its values",
+         "the count is part of the enumeration's contract: left at Three, a reader "
+         "stops at source and never reaches the deadline clause"),
         (OUTCOME, "## Step 1: Load State and Identify the Application", "deadline, days quiet",
          "the open-pipeline table is the one view of every unresolved row, and it "
          "is where a drafted row's only clock becomes visible at all"),
