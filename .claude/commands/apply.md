@@ -319,6 +319,7 @@ Do this before the optional offer below, and before ending the turn for any othe
    ```
    date,company,sector,role,role_type,channel,status,contact_person,fit_rating,notes,cv_file,cover_letter_file,source,deadline
    ```
+   **If it does exist and its header line does not end in `,deadline`, append `,deadline` to the header line** and change nothing else - not a single data row. This is the one edit to an existing tracker this command may make, and it is what makes the column readable: without it the file keeps a thirteen-column header while the rows below gain a fourteenth field, so the deadline lands in an unnamed overflow field that no reader looking up columns by name will ever see. Rows written before the migration simply have no fourteenth field and read as an empty deadline.
 2. Match existing rows case-insensitively on company and role. **On no match, or when every match holds a final status, append a new row. On a match that is still open, update it.** "Final" and "open" are defined by the **Tracker status vocabulary** in `/outcome` — the legacy space spellings `no response` / `offer declined` count as final, so a closed application never gets its row overwritten. When you append alongside a final row, say so — the earlier application to that role keeps its own row and its own outcome.
 3. Values for a new row:
 
