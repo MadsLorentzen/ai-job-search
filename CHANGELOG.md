@@ -32,6 +32,18 @@ per-file diff commands.
 
 ### Fixed
 
+- **A `/` in a company or role name no longer nests the application archive one level too deep**
+  (jakob1379/ai-job-search#22). `Novo Nordisk A/S` derived
+  `documents/applications/novo_nordisk_a/s_data_scientist/` - written and found by every command
+  that derives the path, silently skipped by the two that enumerate it, so the application never
+  appeared in `/html-report`'s dashboard and `/setup`'s calibration never learned from it. The
+  **Subfolder naming** rule in `documents/README.md` now drops every character that is not a
+  letter, digit or underscore (collapsing underscore runs, trimming the ends), and the derivation
+  sites - `/outcome` Step 1.4 and `/apply`'s CV/cover-letter filenames - cite that rule instead of
+  paraphrasing it. **Already-nested archives are not migrated**: an archive written under the old
+  rule stays where it is until the user moves it; only newly derived names change. Thanks
+  @jakob1379 for the report.
+
 - **The `/html-report` dashboard now reads and renders the tracker's `deadline`** (follow-up to
   #319). The tracker gained a fourteenth `deadline` column and every other consumer (`/outcome`,
   `/upskill`, `/notion-sync`) was updated to know it, but the dashboard's Step 1 field
@@ -95,7 +107,6 @@ per-file diff commands.
   every CV open in fullscreen presentation mode. `05-cv-templates.md`'s preamble copy stays
   in lockstep (framework_version 1.4.0 -> 1.4.1). Verified on moderncv 2.5.1: exit 0,
   exactly 2 pages, rendering unchanged.
-
 ## [1.5.0] - 2026-08-12
 
 ### Added
