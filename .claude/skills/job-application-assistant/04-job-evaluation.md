@@ -65,7 +65,7 @@ How well do the required/preferred skills align with the candidate's capabilitie
 **Weak match areas:** [SKILLS_YOU_LACK]
 
 ### 2. Experience Match (0-100)
-Does work history align with what they're looking for?
+Does work history align with what they're looking for? Match on the function and nature of the work performed, not the literal job title - a "Data Consultant" and a "Data Scientist" role can be functionally identical.
 
 | Score | Meaning |
 |-------|---------|
