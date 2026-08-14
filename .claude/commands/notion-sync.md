@@ -42,6 +42,8 @@ Validate the cheap, local precondition before creating anything external. A run 
 2. Select `seen_jobs.json` entries with status `ranked` whose `rank_score` meets the threshold from Step 0. `--all` lifts the threshold entirely.
 3. Every tracker row joins the sync set (an applied-to job always syncs, ranked or not), matched to `seen_jobs.json` entries case-insensitively on company + role where possible. Tracker rows with no `seen_jobs.json` entry sync too - build their Key as `<company>_<role>` lowercased with underscores.
 4. **Status precedence:** the tracker wins. A job that is `ranked` in `seen_jobs.json` but `interview` in the tracker syncs as `interview`. Jobs only in `seen_jobs.json` keep their stored status.
+
+   **Deadline precedence:** the tracker wins for the same reason, and for one more. Both sources can now carry a `deadline` and they can disagree, because each was read from the posting at a different time. The tracker's was captured by `/apply` at the moment the application was drafted, which is the deadline the user actually applied against. Use `seen_jobs.json`'s only when the tracker row has none, and omit the property when neither states one - never reconcile the two by picking the earlier or later date.
 5. **If the sync set is empty** (no ranked entries meet the threshold and there are no tracker rows), say "Nothing to sync - run `/scrape` and `/rank` first" (or, when jobs exist but all score below the threshold, say so and suggest `--min-score`/`--all`) and **stop**.
 6. State the counts before touching the destination: how many rows will be created or checked, and the threshold in effect.
 
@@ -64,7 +66,7 @@ Validate the cheap, local precondition before creating anything external. A run 
    | Verdict | select | Strong Fit / Good Fit / Moderate Fit / Weak Fit / Poor Fit |
    | Status | select | `ranked` / `drafted` / `applied` / `interview` / `offer` / `hired` / `rejected` / `no_response` / `offer_declined` / `withdrawn` / `expired` — canonical tracker spellings per **Tracker status vocabulary** in `/outcome`; Notion options grow to match as values appear |
    | Fit | select | high / medium / low (scraper quick-fit) |
-   | Deadline | date | omit when unknown |
+   | Deadline | date | tracker `deadline` column, falling back to `seen_jobs.json`'s `deadline` when the row has none; omit when neither states one |
    | First seen | date | |
    | Ranked | date | `rank_date` from `seen_jobs.json`; omit when not ranked |
    | Applied on | date | tracker `date` column; omit when not in the tracker, and omit when the status is `drafted` |
