@@ -230,6 +230,21 @@ class DetectColumnTypeTests(unittest.TestCase):
 
         self.assertEqual(companies[0]["categories"], {})
 
+    def test_parse_sheet_skips_ambiguous_single_dot_thousands_string(self):
+        # "1.234" is the dot-side mirror of the comma guard above: in a
+        # decimal-dot locale it is 1.234, while a Danish export (whole
+        # thousands, no decimal comma, e.g. "60.000") means 1234/60000.
+        # float() used to write the 1000x-smaller value silently - the
+        # same never-guess policy must apply to both separators.
+        ws = FakeWorksheet([
+            ("Company", "Salary Index"),
+            ("Example Corp", "1.234"),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(companies[0]["categories"], {})
+
     def test_parse_sheet_pairs_interleaved_count_index_columns_by_name(self):
         ws = FakeWorksheet([
             ("Company", "Antal kvinder", "Antal mænd", "Kvinder indeks", "Mænd indeks"),
