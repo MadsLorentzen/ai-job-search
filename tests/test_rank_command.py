@@ -213,6 +213,22 @@ class RankCommandSpec(unittest.TestCase):
             "Step 5's template must name the Closing soon heading rule 6 lists under",
         )
 
+    def test_step4_persists_the_sweeps_expiry(self):
+        """The sweep must write its result, or it reproduces the very bug it fixes.
+
+        Step 4's expiry line is scoped to what the Step 2 agents returned. The sweep
+        runs over entries this run did not re-score, so without its own persistence
+        line the transition happens in reasoning only and disk never changes.
+        """
+        sections = _sections(COMMAND.read_text(encoding="utf-8"))
+        step4 = sections.get("Step 4: Update State", "")
+        self.assertIn(
+            "retired by Step 3's rule 6 sweep",
+            step4,
+            "Step 4 must persist the Step 3 rule 6 sweep's expiries, not just the ones "
+            "the scoring agents reported",
+        )
+
     def test_step5_documents_language_flag_marker(self):
         # Note: _sections() splits on every "\n## " line, including the "## Job
         # Ranking - YYYY-MM-DD" line inside Step 5's own fenced example template -
