@@ -11,6 +11,25 @@ prefer updating to a tagged release over pulling raw `master` (see
 files a release touched; `python3 tools/check_upstream_updates.py` lists them with
 per-file diff commands.
 
+## [Unreleased]
+
+### Fixed
+
+- **`main_example.tex` compiles on apt-packaged moderncv** (#242) - the banking template
+  set its name styling through `\firstnamestyle`/`\lastnamestyle`, which moderncv 2.3.1
+  (Debian/Ubuntu apt) does not have, so a fresh fork could not compile its own example CV
+  on that toolchain. Name styling now routes through `\namefont`, the hook every name-style
+  macro shares: a true no-op on moderncv 2.4+ (where head iii typesets via
+  `\firstnamestyle`/`\lastnamestyle` and never calls `\namefont`'s replacements), and the
+  only option on 2.3.1 where those macros do not exist. Two review follow-ups landed in the
+  same change: the `\hypersetup` comment now names the real clash mechanism
+  (`\RequirePackage[unicode]{hyperref}` on < 2.4; `\PassOptionsToPackage`, introduced in
+  2.4.0, is what removes the clash), and the metadata block sets `pdfpagemode=UseNone` - a
+  `FullScreen` value there would win over the class's own `\AtEndPreamble` default and make
+  every CV open in fullscreen presentation mode. `05-cv-templates.md`'s preamble copy stays
+  in lockstep (framework_version 1.4.0 -> 1.4.1). Verified on moderncv 2.5.1: exit 0,
+  exactly 2 pages, rendering unchanged.
+
 ## [1.5.0] - 2026-08-12
 
 ### Added

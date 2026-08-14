@@ -24,15 +24,20 @@
 
 \usepackage[utf8]{inputenc}
 % moderncv loads hyperref itself in an \AtEndPreamble hook, so \hypersetup
-% must go in an \AtEndPreamble of our own: a top-level \usepackage{hyperref}
-% clashes with the class's \PassOptionsToPackage on moderncv < 2.4.
+% must go in an \AtEndPreamble of our own: on moderncv < 2.4 a top-level
+% \usepackage{hyperref} clashes with the class's own
+% \RequirePackage[unicode]{hyperref}. From 2.4.0 the class passes its options
+% through \PassOptionsToPackage instead, which is what removes that clash.
 \AtEndPreamble{\hypersetup{
     colorlinks=true,
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
     pdftitle={[YOUR_NAME] - CV},
-    pdfpagemode=FullScreen,
+    % Keep pdfpagemode=UseNone: this block runs after moderncv's own
+    % \AtEndPreamble (moderncv.cls sets pdfpagemode there), so a FullScreen
+    % value here would win and open every CV in fullscreen presentation mode.
+    pdfpagemode=UseNone,
 }}
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
