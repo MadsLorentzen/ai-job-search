@@ -67,7 +67,17 @@ class ApplyRecordsApplication(unittest.TestCase):
             )
 
     def test_tracker_header_matches_outcome(self):
-        """Byte-identical, or the two commands create incompatible CSVs."""
+        """Byte-identical, or the two commands create incompatible CSVs.
+
+        The exact-equality loop below is load-bearing, not decoration. `assertIn`
+        on its own cannot see an *additive* drift: a 13-column header is a
+        substring of a 14-column one, so appending a column to `/apply` and
+        forgetting `/outcome` passed this test cleanly until the loop was added.
+
+        It is also what makes the constant-only assertions in this class mean
+        anything: they reason about TRACKER_HEADER, and this is the test that
+        anchors TRACKER_HEADER to what both spec files actually say.
+        """
         self.assertIn(TRACKER_HEADER, OUTCOME.read_text(encoding="utf-8"))
         self.assertIn(
             TRACKER_HEADER,
@@ -75,6 +85,19 @@ class ApplyRecordsApplication(unittest.TestCase):
             "Step 6b's header drifted from outcome.md's - whichever command ran "
             "first would decide the schema",
         )
+        for name, text in (("outcome.md", OUTCOME.read_text(encoding="utf-8")),
+                           ("apply.md Step 6b", self.step_6b)):
+            header = next(
+                (ln.strip() for ln in text.splitlines() if ln.strip().startswith("date,company,")),
+                None,
+            )
+            self.assertEqual(
+                header,
+                TRACKER_HEADER,
+                f"{name}'s header line is not exactly the canonical header - a column "
+                "appended to one file and not the other leaves both containing the "
+                "shorter header as a substring, which assertIn alone cannot catch",
+            )
 
     def test_tracker_header_ends_with_deadline(self):
         """/apply appends rows with one field per header column, so inserting
