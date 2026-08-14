@@ -28,14 +28,26 @@ per-file diff commands.
   reads the stored value back with no fetch and sweeps already-`ranked` entries it did not re-score,
   expiring the passed ones and listing the near ones under **Closing soon** - the first thing that
   enforces the scraper's "Only open positions" rule after the moment of fetching. The tracker CSV
-  gains a fourteenth column, `deadline`, **appended after `source`**, so an existing thirteen-column
-  tracker reads as a row with an empty trailing field rather than one whose every value has shifted
-  by a position. `/apply` Step 0 extracts it and Step 6b writes it, `/html-report` parses it and
-  treats a thirteen-field row as empty, and `/outcome`'s open-pipeline table shows it with 🔥 within
-  7 days and ⚠ once passed, on `/rank`'s threshold, while drafted rows stay out of the follow-up
-  offer exactly as before. No backfill: a missing key means the entry predates the field, `null`
-  means the posting stated none, and neither is ever guessed at. Pinned by
-  `tests/test_rank_command.py` and `tests/test_apply_records_application.py`.
+  gains a fourteenth column, `deadline`, **appended after `source`**. `/apply` Step 0 extracts it
+  and Step 6b writes it, `/html-report` parses it, and `/outcome`'s open-pipeline table shows it
+  with 🔥 within 7 days and ⚠ once passed, on `/rank`'s threshold, while drafted rows stay out of the
+  follow-up offer exactly as before. No backfill: a missing key means the entry predates the field,
+  `null` means the posting stated none, and neither is ever guessed at.
+
+  **One migration, header-only.** `/apply` and `/outcome` write the tracker header only when the
+  file is absent, so an existing tracker would have kept a thirteen-column header while `/apply`
+  appended fourteen-field rows beneath it, putting the deadline in an unnamed overflow field no
+  reader looking columns up by name would ever see. Both commands now append `,deadline` to the
+  header line of an existing tracker and touch no data row; rows written earlier simply have no
+  fourteenth field and read as an empty deadline. Relatedly, `/outcome` Step 4 and `/gmail-sync`
+  Step 7a rewrite a matched row while naming only `status` and `notes`, so both now state that every
+  field they did not parse is preserved - without it the first status update would have blanked the
+  new column.
+
+  `framework_version` 1.3.2 -> 1.3.3 on `job-application-assistant/SKILL.md`: the `/scrape` path
+  reaches its Step 3b without running `/apply` Step 0, so its enumeration of Step 6b's values names
+  where the deadline comes from on that path. Pinned by `tests/test_rank_command.py` and
+  `tests/test_apply_records_application.py`.
 
 ## [1.5.0] - 2026-08-12
 
