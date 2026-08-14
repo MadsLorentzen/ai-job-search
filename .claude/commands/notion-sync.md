@@ -64,7 +64,7 @@ Validate the cheap, local precondition before creating anything external. A run 
    | Verdict | select | Strong Fit / Good Fit / Moderate Fit / Weak Fit / Poor Fit |
    | Status | select | `ranked` / `drafted` / `applied` / `interview` / `offer` / `hired` / `rejected` / `no_response` / `offer_declined` / `withdrawn` / `expired` — canonical tracker spellings per **Tracker status vocabulary** in `/outcome`; Notion options grow to match as values appear |
    | Fit | select | high / medium / low (scraper quick-fit) |
-   | Deadline | date | tracker `deadline` column when the job is in the tracker, else the `seen_jobs.json` `deadline`; omit when unknown |
+   | Deadline | date | tracker `deadline` column, falling back to `seen_jobs.json`'s `deadline` when the row has none; omit when neither states one |
    | First seen | date | |
    | Ranked | date | `rank_date` from `seen_jobs.json`; omit when not ranked |
    | Applied on | date | tracker `date` column; omit when not in the tracker, and omit when the status is `drafted` |
