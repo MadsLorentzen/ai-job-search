@@ -44,6 +44,14 @@ per-file diff commands.
   field they did not parse is preserved - without it the first status update would have blanked the
   new column.
 
+  **Two readers of the column list follow.** `/notion-sync`'s `Deadline` property named no source,
+  unlike every other tracker-sourced row in its table, and could be fed by two places that disagree
+  now that both `seen_jobs.json` and the tracker carry a deadline; it names the tracker as its
+  source and mirrors the existing Status precedence rule. `/upskill` Step 2 carries a fourth copy of
+  the column list, comma-space separated rather than comma-joined, which is why no search for the
+  header ever found it; it gains the column and is now pinned against the same constant as the
+  other three.
+
   `framework_version` 1.3.2 -> 1.3.3 on `job-application-assistant/SKILL.md`: the `/scrape` path
   reaches its Step 3b without running `/apply` Step 0, so its enumeration of Step 6b's values names
   where the deadline comes from on that path. Pinned by `tests/test_rank_command.py` and

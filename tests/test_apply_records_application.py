@@ -71,10 +71,14 @@ class ApplyRecordsApplication(unittest.TestCase):
     def test_tracker_header_matches_outcome(self):
         """Byte-identical, or the two commands create incompatible CSVs.
 
-        The `endswith` check below is load-bearing, not decoration. `assertIn` on
-        its own cannot see an *additive* drift: a 13-column header is a substring
-        of a 14-column one, so appending a column to `/apply` and forgetting
-        `/outcome` passed this test cleanly until the assertion was added.
+        The exact-equality loop below is load-bearing, not decoration. `assertIn`
+        on its own cannot see an *additive* drift: a 13-column header is a
+        substring of a 14-column one, so appending a column to `/apply` and
+        forgetting `/outcome` passed this test cleanly until the loop was added.
+
+        It is also what makes the constant-only assertions in this class mean
+        anything: they reason about TRACKER_HEADER, and this is the test that
+        anchors TRACKER_HEADER to what both spec files actually say.
         """
         self.assertIn(TRACKER_HEADER, OUTCOME.read_text(encoding="utf-8"))
         self.assertIn(
@@ -109,29 +113,31 @@ class ApplyRecordsApplication(unittest.TestCase):
             "deadline must stay the last column, directly after source",
         )
 
-    def test_migrating_a_legacy_header_yields_the_canonical_header(self):
-        """The migration target and the create-path header must be one string.
+    def test_migration_appends_the_headers_own_last_column(self):
+        """The migration and the create path must agree on the column name.
 
-        This is the part of "13-column fixture in, header grows" that a spec-only
-        change can actually prove: a tracker created before `deadline` existed
-        carries the header minus its last column, and appending `,deadline` to it
-        has to land on exactly what `/apply` and `/outcome` write for a new file.
-        Derived from TRACKER_HEADER rather than written out, so it cannot drift
-        from the spec, and it fails the moment anyone inserts the column
-        mid-header instead of appending it - the mistake that silently re-labels
-        every field of every existing row.
+        Cross-checks two *spec sentences* against each other. An earlier version
+        of this test derived the legacy header from TRACKER_HEADER and asserted
+        that appending `,deadline` restored it, which is true of any string
+        ending in `,deadline` and so proved nothing at all.
+
+        What matters is that the token both files tell you to append is the same
+        token the canonical header ends with. Get those out of step - rename the
+        column in the header and not in the migration sentence - and a migrated
+        tracker and a freshly created one end up with different schemas, which is
+        precisely the divergence the header rule exists to prevent.
         """
-        legacy = TRACKER_HEADER.rsplit(",", 1)[0]
-        self.assertEqual(
-            len(legacy.split(",")), 13,
-            "the pre-migration tracker had thirteen columns; if that is no longer "
-            "true the migration this test describes is not the one that shipped",
-        )
-        self.assertEqual(
-            legacy + ",deadline", TRACKER_HEADER,
-            "a migrated legacy header and a freshly created one must be identical, "
-            "or the two code paths produce incompatible files",
-        )
+        last_column = TRACKER_HEADER.rsplit(",", 1)[1]
+        outcome_step_1 = section(OUTCOME, "## Step 1: Load State and Identify the Application")
+        for name, text in (("apply.md Step 6b", self.step_6b),
+                           ("outcome.md Step 1", outcome_step_1)):
+            self.assertIn(
+                f"append `,{last_column}` to the header line",
+                text,
+                f"{name}'s migration does not append the header's own last column "
+                f"({last_column!r}) - a tracker migrated by this command would not "
+                "match one this command creates from scratch",
+            )
 
     def test_upskill_column_list_matches_the_header(self):
         """A fourth copy of the column list, comma-space separated.
@@ -391,7 +397,7 @@ class DeadlineTravelsWithTheApplication(unittest.TestCase):
         (OUTCOME, "## Step 1: Load State and Identify the Application", "still never chased",
          "surfacing the deadline must not drag drafted rows into the follow-up "
          "offer - all three existing exclusions are correct and stay"),
-        (HTML_REPORT, "## Step 1: Collect Data", "`deadline`",
+        (HTML_REPORT, "## Step 1: Collect Data", "`source`, `deadline`",
          "the parser's field list is the column's only reader-side contract"),
         (HTML_REPORT, "## Step 1: Collect Data", "thirteen fields",
          "a row written before the column existed must read as empty, never be "

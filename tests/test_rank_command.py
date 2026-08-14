@@ -149,7 +149,7 @@ class RankCommandSpec(unittest.TestCase):
         sections = _sections(COMMAND.read_text(encoding="utf-8"))
         step3 = sections.get("Step 3: Aggregate and Rank", "")
         self.assertIn(
-            "stored `deadline`",
+            "a stored value costs no fetch",
             step3,
             "Step 3 must take the deadline from seen_jobs.json for an entry that already "
             "carries one - without a fetch, or nothing is gained by storing it",
@@ -176,7 +176,7 @@ class RankCommandSpec(unittest.TestCase):
         sections = _sections(COMMAND.read_text(encoding="utf-8"))
         step4 = sections.get("Step 4: Update State", "")
         self.assertIn(
-            "sweep",
+            "retired by Step 3's rule 6 sweep",
             step4,
             "Step 4 must persist the Step 3 rule 6 sweep's expiries, not just the ones "
             "the scoring agents reported",
