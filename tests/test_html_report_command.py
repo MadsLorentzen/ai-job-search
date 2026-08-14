@@ -50,11 +50,17 @@ class HtmlReportTrackerFieldTests(unittest.TestCase):
     column addition cannot silently vanish from the dashboard the way
     `deadline` did."""
 
-    CANONICAL_HEADER = [
-        "date", "company", "sector", "role", "role_type", "channel",
-        "status", "contact_person", "fit_rating", "notes", "cv_file",
-        "cover_letter_file", "source", "deadline",
-    ]
+    # Derived, never copied: a header literal repeated in this file drifts in
+    # lockstep with the spec it polices - add a 15th column to apply.md and a
+    # stale hardcoded 14-column list still passes every comparison here (a
+    # 14-column string is a substring of a 15-column header). Reading the
+    # canonical line back from apply.md makes the simulated drift fail with a
+    # clean list diff naming the missing column instead.
+    CANONICAL_HEADER = re.search(
+        r"^\s*(date,company,[a-z_,]+)$",
+        (REPO_ROOT / ".claude" / "commands" / "apply.md").read_text(encoding="utf-8"),
+        re.M,
+    ).group(1).split(",")
 
     def test_step1_parses_every_canonical_tracker_column(self):
         text = COMMAND_FILE.read_text(encoding="utf-8")
@@ -66,13 +72,23 @@ class HtmlReportTrackerFieldTests(unittest.TestCase):
         fields = [f.strip() for f in re.findall(r"`([^`]+)`", match.group(1))]
         self.assertEqual(fields, self.CANONICAL_HEADER)
 
-    def test_step3_table_columns_include_deadline(self):
+    def test_step3_table_columns_include_deadline_after_date(self):
+        """Date · Deadline order is the whole point of the change: the dashboard
+        must surface the clock that drives `/rank`'s urgency next to the date.
+        A membership pair (both `Date` and `Deadline` present somewhere) cannot
+        tell a swapped order from the correct one, and the order is what the
+        table shows the reader."""
         text = COMMAND_FILE.read_text(encoding="utf-8")
         match = re.search(r"### Table: columns to include\n\n(.+)\n", text)
         self.assertIsNotNone(match, "Step 3 table column list not found")
         line = match.group(1)
-        self.assertIn("`Deadline`", line, "Step 3 table must offer a Deadline column")
-        self.assertIn("`Date`", line, "Step 3 table must keep the Date column")
+        self.assertIn(
+            "`Date` · `Deadline` · `Company`",
+            line,
+            "Step 3 must offer the Deadline column directly after Date - the "
+            "list defines the dashboard's column order, and a swapped order "
+            "reads as a different table",
+        )
 
 
 class HtmlReportGitignoreTests(unittest.TestCase):
