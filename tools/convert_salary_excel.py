@@ -70,6 +70,9 @@ def parse_numeric_cell(value):
         if re.fullmatch(r"[+-]?\d+,\d{3}", text):
             raise ValueError("ambiguous comma separator")
         text = text.replace(",", ".")
+    elif "." in text:
+        if re.fullmatch(r"[+-]?\d+\.\d{3}", text):
+            raise ValueError("ambiguous dot separator")
     return float(text)
 
 

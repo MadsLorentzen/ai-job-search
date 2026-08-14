@@ -38,6 +38,8 @@ Reviews here are empirical. Bug reports are reproduced on master before the fix 
 
 **Credit norm:** a change that incorporates your actual code gets a `Co-authored-by` trailer; a change written independently from your observation or report gets a named mention in the commit message and PR. Both happen unprompted.
 
+**Invited PRs:** when a maintainer comment explicitly invites a named contributor to file the PR for an issue they diagnosed or designed, that invitation reserves the implementation for them - by default for seven days from the invite, longer when they say they are working on it. A duplicate PR filed inside that window will be closed in favor of the invitee's, regardless of arrival order or polish. Review, test, and comment on an invited PR all you like - that multiplies the work; racing it doesn't. (Prospective from 2026-08-14.)
+
 ## Building for your own market? Do this instead
 
 1. Fork the repo and run `/add-portal` with your local job board - it scaffolds a portal skill matching the shipped contract, and `/scrape` picks it up automatically.

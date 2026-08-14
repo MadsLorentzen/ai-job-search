@@ -13,7 +13,25 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Changed
+
+- **CONTRIBUTING: invited PRs are reserved for the invitee** - when a maintainer comment
+  explicitly invites a named contributor to implement an issue they diagnosed or designed,
+  the implementation is theirs for a stated window (default seven days, longer on request);
+  a duplicate PR filed inside that window closes in the invitee's favor regardless of
+  arrival order. Prospective from 2026-08-14. Sits alongside the existing credit norm.
+
 ### Fixed
+
+- **`convert_salary_excel.py` no longer misreads whole-thousands cells from a Danish-locale
+  export** - a cell like `60.000` (thousands separator, no decimal comma) was handed to
+  `float()` and silently written as `60.0`, a 1000x-wrong salary in `salary_data.json` that
+  then rendered with a meaningless `vs baseline` percentage in `/apply`. The comma-side
+  mirror (`1,234`) was already guarded as ambiguous and skipped; the dot side had no guard,
+  and tests only pinned the both-separators form (`1.234,5`). `\d+\.\d{3}` is now rejected
+  the same way, so the shared never-guess policy applies to both separators and the rows in
+  between (e.g. `60.000,50`, `108,5`) keep parsing exactly as before. Pinned by
+  `tests/test_convert_salary_excel.py`.
 
 - **`main_example.tex` compiles on apt-packaged moderncv** (#242) - the banking template
   set its name styling through `\firstnamestyle`/`\lastnamestyle`, which moderncv 2.3.1
