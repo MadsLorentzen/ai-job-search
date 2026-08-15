@@ -213,6 +213,76 @@ class RankCommandSpec(unittest.TestCase):
             "Step 5's template must name the Closing soon heading rule 6 lists under",
         )
 
+    def test_step3_sweep_states_its_two_boundary_rules(self):
+        """The sweep's behaviour on the majority case, and its reversibility.
+
+        Most `seen_jobs.json` entries predate the deadline column and carry no
+        `deadline` at all, so "left alone" versus "inferred from first_seen" is
+        the difference between a no-op and retiring jobs on a date nobody set.
+        And a status change made without a fetch needs a stated way back, or
+        `expired` reads as terminal and a wrongly swept job looks unrecoverable.
+        """
+        step3 = _sections(COMMAND.read_text(encoding="utf-8")).get("Step 3: Aggregate and Rank", "")
+        self.assertIn(
+            "never guessed at",
+            step3,
+            "rule 6 must say an entry with no stored deadline is left alone - it is the "
+            "majority case, and inferring one would retire jobs on a date nobody set",
+        )
+        self.assertIn(
+            "revived by a later `--all`",
+            step3,
+            "rule 6 must state that --all re-scores expired entries, or the sweep is an "
+            "irreversible automated status change",
+        )
+
+    def test_step4_sweep_is_named_as_the_exception_to_idempotency(self):
+        """Rule 6 mutates exactly the entries Step 4 says are skipped.
+
+        Step 4's closing line predates the sweep and says already-`ranked` jobs
+        are skipped unless `--all` re-scores them. Rule 6 rewrites some of those
+        same entries to `expired` with no `--all` and no re-score, so the two
+        sections contradict each other unless the exception is named. An
+        implementer following Step 4 literally skips the sweep, which is the
+        whole feature.
+        """
+        step4 = _sections(COMMAND.read_text(encoding="utf-8")).get("Step 4: Update State", "")
+        self.assertIn(
+            "deliberate exception",
+            step4,
+            "Step 4's idempotency line must name rule 6's sweep as its exception, or the "
+            "spec tells the reader both that already-ranked entries are skipped and that "
+            "they are swept",
+        )
+
+    def test_step4_null_deadline_rule_states_its_interlock_with_the_sweep(self):
+        """Absence-is-not-a-correction is load-bearing, not politeness.
+
+        A `null` from a fetch that degraded to a listing page would erase a real
+        stored date; because rule 6 leaves an entry with no stored deadline
+        alone, that erasure also makes the entry permanently unsweepable. The
+        two rules interlock, and an unexplained constraint is the kind that gets
+        simplified away later.
+        """
+        step4 = _sections(COMMAND.read_text(encoding="utf-8")).get("Step 4: Update State", "")
+        self.assertIn(
+            "immortal to the sweep",
+            step4,
+            "the null-overwrite rule must state why it matters here: erasing a stored "
+            "deadline also removes the entry from rule 6's reach forever",
+        )
+
+    def test_step5_reports_the_sweep_counts(self):
+        """A background status mutation with no reported count is the failure mode
+        this whole change set exists to object to."""
+        step5 = _sections(COMMAND.read_text(encoding="utf-8")).get("Job Ranking - YYYY-MM-DD", "")
+        self.assertIn(
+            "Swept",
+            step5,
+            "Step 5's template must report how many already-ranked entries the sweep "
+            "checked and how many it retired - it rewrites seen_jobs.json silently otherwise",
+        )
+
     def test_step4_persists_the_sweeps_expiry(self):
         """The sweep must write its result, or it reproduces the very bug it fixes.
 
