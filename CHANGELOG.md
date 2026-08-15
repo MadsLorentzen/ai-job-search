@@ -11,6 +11,43 @@ prefer updating to a tagged release over pulling raw `master` (see
 files a release touched; `python3 tools/check_upstream_updates.py` lists them with
 per-file diff commands.
 
+## [Unreleased]
+
+### Changed
+
+- **CONTRIBUTING: invited PRs are reserved for the invitee** - when a maintainer comment
+  explicitly invites a named contributor to implement an issue they diagnosed or designed,
+  the implementation is theirs for a stated window (default seven days, longer on request);
+  a duplicate PR filed inside that window closes in the invitee's favor regardless of
+  arrival order. Prospective from 2026-08-14. Sits alongside the existing credit norm.
+
+### Fixed
+
+- **`convert_salary_excel.py` no longer misreads whole-thousands cells from a Danish-locale
+  export** - a cell like `60.000` (thousands separator, no decimal comma) was handed to
+  `float()` and silently written as `60.0`, a 1000x-wrong salary in `salary_data.json` that
+  then rendered with a meaningless `vs baseline` percentage in `/apply`. The comma-side
+  mirror (`1,234`) was already guarded as ambiguous and skipped; the dot side had no guard,
+  and tests only pinned the both-separators form (`1.234,5`). `\d+\.\d{3}` is now rejected
+  the same way, so the shared never-guess policy applies to both separators and the rows in
+  between (e.g. `60.000,50`, `108,5`) keep parsing exactly as before. Pinned by
+  `tests/test_convert_salary_excel.py`.
+
+- **`main_example.tex` compiles on apt-packaged moderncv** (#242) - the banking template
+  set its name styling through `\firstnamestyle`/`\lastnamestyle`, which moderncv 2.3.1
+  (Debian/Ubuntu apt) does not have, so a fresh fork could not compile its own example CV
+  on that toolchain. Name styling now routes through `\namefont`, the hook every name-style
+  macro shares: live on every version (on 2.4+, head iii's `\firstnamestyle`/`\lastnamestyle`
+  both route through `\namefont`, so the override is what sets the 34pt name there too), and
+  the only option on 2.3.1 where those macros do not exist. Two review follow-ups landed in the
+  same change: the `\hypersetup` comment now names the real clash mechanism
+  (`\RequirePackage[unicode]{hyperref}` on < 2.4; `\PassOptionsToPackage`, introduced in
+  2.4.0, is what removes the clash), and the metadata block sets `pdfpagemode=UseNone` - a
+  `FullScreen` value there would win over the class's own `\AtEndPreamble` default and make
+  every CV open in fullscreen presentation mode. `05-cv-templates.md`'s preamble copy stays
+  in lockstep (framework_version 1.4.0 -> 1.4.1). Verified on moderncv 2.5.1: exit 0,
+  exactly 2 pages, rendering unchanged.
+
 ## [1.5.0] - 2026-08-12
 
 ### Added
