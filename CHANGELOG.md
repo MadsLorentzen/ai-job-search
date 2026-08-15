@@ -15,6 +15,15 @@ per-file diff commands.
 
 ### Changed
 
+- **Job matching reframed around function, not title** (`framework_version` 1.2.2 -> 1.2.3 in
+  `04-job-evaluation.md`) - title-lookalike matching throws away career capital that doesn't
+  fit one job-title box (e.g. a background spanning research leadership, platform ownership,
+  and program management gets collapsed into whichever single title sounds closest). `/setup`,
+  `search-queries.md`, and `04-job-evaluation.md` now guide the candidate to define priority
+  categories by function - the kind of problem a role solves - and to list several plausible
+  job titles as query variants within each category, rather than betting an entire priority
+  tier on one exact title string.
+
 - **CONTRIBUTING: invited PRs are reserved for the invitee** - when a maintainer comment
   explicitly invites a named contributor to implement an issue they diagnosed or designed,
   the implementation is theirs for a stated window (default seven days, longer on request);

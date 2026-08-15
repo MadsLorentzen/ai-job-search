@@ -1,5 +1,5 @@
 ---
-framework_version: 1.2.2
+framework_version: 1.2.3
 ---
 
 # Job Evaluation Framework
