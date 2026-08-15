@@ -52,6 +52,16 @@ per-file diff commands.
   `tests/test_rank_command.py`, `tests/test_apply_records_application.py`, and
   `tests/test_upskill_skill.py`.
 
+  The sweep's edges are stated rather than left to the reader: an entry with no stored `deadline`
+  is left alone and never inferred from another field (the majority case, since most entries
+  predate the column), `--all` re-scores any status including `expired` so a swept job is
+  recoverable, and `/rank` Step 4's idempotency rule now names the sweep as its deliberate
+  exception instead of contradicting it. Step 5 reports how many entries were swept and how many
+  were retired, so an automated status change is never silent. `/outcome` Step 1 states that the
+  header append is the one edit it may make outside a matched row, so it does not read as a
+  violation of Step 4's own "never restructure the CSV". `/notion-sync` forbids reconciling two
+  disagreeing deadlines by taking the earlier or later of them.
+
 - **`convert_salary_excel.py` no longer misreads whole-thousands cells from a Danish-locale
   export** - a cell like `60.000` (thousands separator, no decimal comma) was handed to
   `float()` and silently written as `60.0`, a 1000x-wrong salary in `salary_data.json` that

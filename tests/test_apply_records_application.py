@@ -109,6 +109,31 @@ class ApplyRecordsApplication(unittest.TestCase):
             "existing row's values by one position",
         )
 
+    def test_migration_appends_the_headers_own_last_column(self):
+        """The migration sentence and the create path must name the same column.
+
+        Derived, never copied - the same discipline `HtmlReportTrackerFieldTests`
+        already applies to its `CANONICAL_HEADER`. A hardcoded `,deadline` here
+        keeps passing after the column is renamed or a fifteenth is appended,
+        because the assertion no longer has any connection to the header it is
+        supposed to police. A tracker migrated by these commands and one they
+        create from scratch would then hold different schemas, which is the exact
+        divergence the shared-header rule exists to prevent.
+        """
+        last_column = TRACKER_HEADER.rsplit(",", 1)[1]
+        outcome_step_1 = section(OUTCOME, "## Step 1: Load State and Identify the Application")
+        for name, text in (
+            ("apply.md Step 6b", section(APPLY, "### Step 6b: Record the Application")),
+            ("outcome.md Step 1", outcome_step_1),
+        ):
+            self.assertIn(
+                f"append `,{last_column}` to the header line",
+                text,
+                f"{name}'s migration does not append the header's own last column "
+                f"({last_column!r}) - a tracker migrated by this command would not "
+                "match one this command creates from scratch",
+            )
+
     def test_step_runs_before_the_optional_offer_that_ends_the_turn(self):
         """The optional application-form offer asks the user a question.
 
@@ -324,6 +349,31 @@ class DeadlineSurvivesEveryWrite(unittest.TestCase):
         (SKILL, "### Step 3b: Record the Application", "`deadline` is the application deadline",
          "the /scrape path reaches Step 3b without running /apply Step 0, so it must "
          "still be told what the field is and where it comes from"),
+        # The two properties the migration has to hold. Both are stated in the
+        # prose of either file and neither was pinned, so either could be edited
+        # away with a green suite - turning an agreed header-line append into a
+        # row rewrite, which is a different and far riskier change.
+        (APPLY, "### Step 6b: Record the Application", "no data row is touched",
+         "a migration that rewrites rows is a different and far riskier change than "
+         "one that appends to the header line, and only the second was agreed"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application", "no data row is touched",
+         "same rule, stated in both files, because either command may be the one that "
+         "meets a legacy tracker first"),
+        (APPLY, "### Step 6b: Record the Application", "read as an empty deadline",
+         "rows written before the migration have no fourteenth field; if that is not "
+         "stated, a reader may treat the short row as malformed and drop it"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application",
+         "read as an empty deadline",
+         "same rule, stated in both files"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application",
+         "one edit to an existing tracker",
+         "Step 4 forbids restructuring the CSV, so without this the header append reads "
+         "as a violation of the same command's own rule and an implementer has a "
+         "documented reason to skip the migration"),
+        (NOTION_SYNC, None, "never reconcile the two by picking the earlier or later date",
+         "the tracker-wins rule says which source to prefer but does not forbid the "
+         "plausible-looking min() of the two, which syncs a date the user never "
+         "applied against"),
     ]
 
     def test_deadline_survives_every_write(self):

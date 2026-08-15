@@ -31,7 +31,7 @@ Follow these steps **in order**.
    ```
    date,company,sector,role,role_type,channel,status,contact_person,fit_rating,notes,cv_file,cover_letter_file,source,deadline
    ```
-   **If the file exists and its header does not end in `,deadline`, append `,deadline` to the header line only** - no data row is touched. Legacy rows then read as an empty deadline.
+   **If the file exists and its header does not end in `,deadline`, append `,deadline` to the header line only** - no data row is touched. Legacy rows then read as an empty deadline. This is the one edit to an existing tracker this command may make outside a matched row, and Step 4's "never restructure the CSV" governs that row, not this header line.
 2. **With an argument:** match rows case-insensitively on company (and role, if given). One match → proceed. Several → list them and ask. None → the application was made outside the workflow; collect company, role, date applied, channel, and posting URL from the user and add a tracker row.
 3. **Without an argument:** list all rows whose status is not final (see **Tracker status vocabulary** below) as a numbered table (company, role, date applied, current status, deadline, days quiet, follow-ups sent) and ask which to update. The two derived columns come straight from existing data: **days quiet** counts from the row's `date` or the latest dated entry in `notes`, whichever is more recent; **follow-ups sent** counts the `followed up YYYY-MM-DD` markers in `notes`. If any open row is 10+ days quiet with fewer than two follow-ups sent, add one line under the table: "Some of these have gone quiet - want a follow-up draft? (Step 2b)". If every row is resolved, say so and stop.
 
