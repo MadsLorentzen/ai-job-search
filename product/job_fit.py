@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import re
 import sys
@@ -28,9 +29,9 @@ from product.profile_snapshot import SnapshotValidationError, validate_snapshot
 SCHEMA_PATH = Path(__file__).with_name("schemas") / "job-fit-contract.v0.schema.json"
 CONTRACT_SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
 
-JOB_POSTING_SNAPSHOT_VERSION = "job-posting-snapshot.v0"
-JOB_FIT_REQUEST_VERSION = "job-fit-request.v0"
-JOB_FIT_RESULT_VERSION = "job-fit-result.v0"
+JOB_POSTING_SNAPSHOT_VERSION = CONTRACT_SCHEMA["$defs"]["jobPostingSnapshotVersion"]["const"]
+JOB_FIT_REQUEST_VERSION = CONTRACT_SCHEMA["$defs"]["jobFitRequestVersion"]["const"]
+JOB_FIT_RESULT_VERSION = CONTRACT_SCHEMA["$defs"]["jobFitResultVersion"]["const"]
 
 ID_RE = re.compile(CONTRACT_SCHEMA["$defs"]["id"]["pattern"])
 REQUIREMENT_KINDS = set(CONTRACT_SCHEMA["$defs"]["requirementKind"]["enum"])
@@ -271,7 +272,11 @@ def build_job_fit_result(
     """
 
     validate_job_fit_request(request)
-    analysis = copy.deepcopy(analysis or {})
+    if analysis is None:
+        analysis = {}
+    elif not isinstance(analysis, dict):
+        raise JobFitValidationError("$.analysis: must be an object")
+    analysis = copy.deepcopy(analysis)
     try:
         evaluation = evaluate_scores(
             analysis.get("dimension_scores", {}),
@@ -330,6 +335,42 @@ def normalized_job_fit_result(request: dict[str, Any], result: dict[str, Any]) -
 def normalized_job_fit_result_json(request: dict[str, Any], result: dict[str, Any]) -> str:
     validate_job_fit_result(request, result)
     return json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def profile_snapshot_content_id(profile: dict[str, Any]) -> str:
+    """Return a content-derived Profile Snapshot identifier.
+
+    This identifier detects stale content inside the Job Fit boundary. It is
+    deterministic but is not a durable database or domain record ID.
+    """
+
+    return _content_id("profilesnap", profile)
+
+
+def job_snapshot_content_id(job: dict[str, Any]) -> str:
+    """Return a content-derived Job Posting Snapshot identifier.
+
+    This identifier detects stale content inside the Job Fit boundary. It is
+    deterministic but is not a durable database or domain record ID.
+    """
+
+    return _content_id("jobsnap", job)
+
+
+def _content_id(prefix: str, value: dict[str, Any]) -> str:
+    try:
+        canonical = json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+    except (TypeError, ValueError) as exc:
+        raise JobFitValidationError(
+            f"$.{prefix}: content must be canonical JSON: {exc}"
+        ) from exc
+    return f"{prefix}_{hashlib.sha256(canonical.encode('utf-8')).hexdigest()[:20]}"
 
 
 def _validate_embedded_contracts(request: dict[str, Any], errors: list[str]) -> None:
@@ -437,8 +478,7 @@ def _active_extension_index(
 def _profile_identity(profile: dict[str, Any]) -> dict[str, Any]:
     return {
         "schema_version": profile["schema_version"],
-        "source_count": profile["summary"]["source_count"],
-        "claim_count": profile["summary"]["claim_count"],
+        "content_id": profile_snapshot_content_id(profile),
     }
 
 
@@ -446,6 +486,7 @@ def _job_identity(job: dict[str, Any]) -> dict[str, Any]:
     return {
         "schema_version": job["schema_version"],
         "job_id": job["job_id"],
+        "content_id": job_snapshot_content_id(job),
     }
 
 
@@ -481,7 +522,22 @@ def _validate_extension_versions(value: Any, context: dict[str, Any], errors: li
         path = f"$.result.active_extension_versions[{index}]"
         if not _object_shape(item, {"id", "version", "content_id"}, {"id", "version", "content_id"}, path, errors):
             continue
-        key = (item.get("id"), item.get("version"))
+        extension_id = item.get("id")
+        extension_version = item.get("version")
+        content_id = item.get("content_id")
+        _id(extension_id, f"{path}.id", errors)
+        _nonempty_string(extension_version, f"{path}.version", errors)
+        _nonempty_string(content_id, f"{path}.content_id", errors)
+        if not (
+            isinstance(extension_id, str)
+            and ID_RE.fullmatch(extension_id)
+            and isinstance(extension_version, str)
+            and extension_version.strip()
+            and isinstance(content_id, str)
+            and content_id.strip()
+        ):
+            continue
+        key = (extension_id, extension_version)
         if key in seen:
             errors.append(f"{path}: duplicate extension version")
         seen.add(key)
@@ -548,6 +604,11 @@ def _validate_transferable_matches(value: Any, context: dict[str, Any], errors: 
             expected_record_type="transferable_mapping",
             expected_record_id=match.get("transferable_mapping_id"),
         )
+        _id(
+            match.get("transferable_mapping_id"),
+            f"{path}.transferable_mapping_id",
+            errors,
+        )
         mapping = None
         if extension:
             mapping = _extension_record(extension, "transferable_mapping", match.get("transferable_mapping_id"))
@@ -558,8 +619,11 @@ def _validate_transferable_matches(value: Any, context: dict[str, Any], errors: 
         _string_list(match.get("conditions"), f"{path}.conditions", errors)
         _nonempty_string(match.get("confidence"), f"{path}.confidence", errors)
         _enum(match.get("status"), STATUSES, f"{path}.status", errors)
-        _reject_extension_only_candidate_facts(match.get("asserts_candidate_facts", []), path, errors)
+        _reject_extension_only_candidate_facts(
+            match.get("asserts_candidate_facts", []), context, path, errors
+        )
         if extension and mapping:
+            _preserve_mapping_safety_metadata(match, mapping, path, errors)
             _enforce_disallowed_boundaries(match, extension, path, errors)
 
 
@@ -717,8 +781,20 @@ def _validate_functional_basis(value: Any, path: str, errors: list[str]) -> None
         errors,
     ):
         return
-    _string_list(value.get("responsibility_alignment"), f"{path}.responsibility_alignment", errors)
-    _string_list(value.get("competency_alignment"), f"{path}.competency_alignment", errors)
+    responsibility_alignment = _string_list(
+        value.get("responsibility_alignment"),
+        f"{path}.responsibility_alignment",
+        errors,
+    )
+    competency_alignment = _string_list(
+        value.get("competency_alignment"),
+        f"{path}.competency_alignment",
+        errors,
+    )
+    if not responsibility_alignment and not competency_alignment:
+        errors.append(
+            f"{path}: at least one responsibility or competency alignment is required"
+        )
     if value.get("title_similarity_only") is not False:
         errors.append(f"{path}.title_similarity_only: must be false")
 
@@ -740,27 +816,51 @@ def _validate_extension_ref(
         errors,
     ):
         return None
-    key = (ref.get("extension_id"), ref.get("extension_version"))
+    extension_id = ref.get("extension_id")
+    extension_version = ref.get("extension_version")
+    record_type = ref.get("record_type")
+    record_id = ref.get("record_id")
+    _id(extension_id, f"{path}.extension_id", errors)
+    _nonempty_string(extension_version, f"{path}.extension_version", errors)
+    _enum(record_type, EXTENSION_RECORD_TYPES, f"{path}.record_type", errors)
+    _id(record_id, f"{path}.record_id", errors)
+    if not (
+        isinstance(extension_id, str)
+        and ID_RE.fullmatch(extension_id)
+        and isinstance(extension_version, str)
+        and extension_version.strip()
+        and isinstance(record_type, str)
+        and record_type in EXTENSION_RECORD_TYPES
+        and isinstance(record_id, str)
+        and ID_RE.fullmatch(record_id)
+    ):
+        return None
+    key = (extension_id, extension_version)
     extension = context["extensions"].get(key)
     if extension is None:
         errors.append(f"{path}: unknown active extension {key[0]}@{key[1]}")
         return None
-    _enum(ref.get("record_type"), EXTENSION_RECORD_TYPES, f"{path}.record_type", errors)
-    _id(ref.get("record_id"), f"{path}.record_id", errors)
-    if expected_record_type and ref.get("record_type") != expected_record_type:
+    if expected_record_type and record_type != expected_record_type:
         errors.append(f"{path}.record_type: must be {expected_record_type}")
-    if expected_record_id is not None and ref.get("record_id") != expected_record_id:
+    if expected_record_id is not None and record_id != expected_record_id:
         errors.append(f"{path}.record_id: must match transferable_mapping_id")
-    if _extension_record(extension, ref.get("record_type"), ref.get("record_id")) is None:
+    if _extension_record(extension, record_type, record_id) is None:
         errors.append(f"{path}.record_id: unknown extension record id")
     return extension
 
 
 def _extension_record(extension: dict[str, Any], record_type: Any, record_id: Any) -> dict[str, Any] | None:
+    if not isinstance(extension, dict):
+        return None
+    if not isinstance(record_type, str) or not isinstance(record_id, str):
+        return None
     collection = EXTENSION_RECORD_COLLECTIONS.get(record_type)
     if not collection:
         return None
-    for record in extension.get(collection, []):
+    records = extension.get(collection, [])
+    if not isinstance(records, list):
+        return None
+    for record in records:
         if isinstance(record, dict) and record.get("id") == record_id:
             return record
     return None
@@ -772,20 +872,51 @@ def _enforce_disallowed_boundaries(
     path: str,
     errors: list[str],
 ) -> None:
+    facts = match.get("asserts_candidate_facts", [])
+    if not isinstance(facts, list):
+        facts = []
     asserted = {
         fact.get("type")
-        for fact in match.get("asserts_candidate_facts", [])
-        if isinstance(fact, dict)
+        for fact in facts
+        if isinstance(fact, dict) and isinstance(fact.get("type"), str)
     }
-    for record in extension.get("disallowed_mappings", []):
+    records = extension.get("disallowed_mappings", [])
+    if not isinstance(records, list):
+        return
+    for record in records:
+        if not isinstance(record, dict):
+            continue
         prohibited = record.get("prohibited_inference")
-        if prohibited in asserted:
+        if isinstance(prohibited, str) and prohibited in asserted:
             errors.append(
                 f"{path}: transfer crosses prohibited inference boundary {prohibited!r}"
             )
 
 
-def _reject_extension_only_candidate_facts(value: Any, path: str, errors: list[str]) -> None:
+def _preserve_mapping_safety_metadata(
+    match: dict[str, Any],
+    mapping: dict[str, Any],
+    path: str,
+    errors: list[str],
+) -> None:
+    for field in ("limitations", "conditions"):
+        mapping_values = mapping.get(field, [])
+        match_values = match.get(field, [])
+        if not isinstance(mapping_values, list) or not isinstance(match_values, list):
+            continue
+        for value in mapping_values:
+            if isinstance(value, str) and value not in match_values:
+                errors.append(
+                    f"{path}.{field}: must preserve mapping {field[:-1]} {value!r}"
+                )
+
+
+def _reject_extension_only_candidate_facts(
+    value: Any,
+    context: dict[str, Any],
+    path: str,
+    errors: list[str],
+) -> None:
     for index, fact in enumerate(_list(value, f"{path}.asserts_candidate_facts", errors)):
         fact_path = f"{path}.asserts_candidate_facts[{index}]"
         if not _object_shape(
@@ -796,21 +927,42 @@ def _reject_extension_only_candidate_facts(value: Any, path: str, errors: list[s
             errors,
         ):
             continue
-        _enum(fact.get("type"), PROHIBITED_INFERENCES, f"{fact_path}.type", errors)
-        profile_ids = _list(fact.get("profile_evidence_ids"), f"{fact_path}.profile_evidence_ids", errors)
-        if fact.get("type") in PROFILE_FACT_INFERENCE_TYPES and not profile_ids:
+        fact_type = fact.get("type")
+        _enum(fact_type, PROHIBITED_INFERENCES, f"{fact_path}.type", errors)
+        profile_ids = _profile_refs(
+            fact.get("profile_evidence_ids"),
+            context,
+            f"{fact_path}.profile_evidence_ids",
+            errors,
+            required=False,
+        )
+        if (
+            isinstance(fact_type, str)
+            and fact_type in PROFILE_FACT_INFERENCE_TYPES
+            and not profile_ids
+        ):
             errors.append(
                 f"{fact_path}.profile_evidence_ids: candidate-specific facts require profile evidence"
             )
+        if "text" in fact:
+            _nonempty_string(fact.get("text"), f"{fact_path}.text", errors)
 
 
-def _profile_refs(value: Any, context: dict[str, Any], path: str, errors: list[str], *, required: bool) -> None:
+def _profile_refs(
+    value: Any,
+    context: dict[str, Any],
+    path: str,
+    errors: list[str],
+    *,
+    required: bool,
+) -> list[str]:
     refs = _string_list(value, path, errors)
     if required and not refs:
         errors.append(f"{path}: at least one profile evidence reference is required")
     for ref in refs:
         if ref not in context["profile_ids"]:
             errors.append(f"{path}: unknown profile evidence id {ref!r}")
+    return refs
 
 
 def _job_refs(value: Any, context: dict[str, Any], path: str, errors: list[str], *, required: bool) -> None:

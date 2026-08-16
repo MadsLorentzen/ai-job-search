@@ -2,9 +2,21 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/smbabalola/ai-job-search/product/schemas/job-fit-contract.v0.schema.json",
   "title": "Job Fit Contract v0",
-  "description": "Structured request/result envelope for evidence-backed job-fit analysis. This is a passive contract and does not define orchestration or AI behavior.",
+  "description": "Structured request/result envelope for evidence-backed job-fit analysis. Result snapshot content IDs are deterministic hashes for stale-content detection, not durable database identifiers. This is a passive contract and does not define orchestration or AI behavior.",
   "type": "object",
   "$defs": {
+    "jobPostingSnapshotVersion": {
+      "type": "string",
+      "const": "job-posting-snapshot.v0"
+    },
+    "jobFitRequestVersion": {
+      "type": "string",
+      "const": "job-fit-request.v0"
+    },
+    "jobFitResultVersion": {
+      "type": "string",
+      "const": "job-fit-result.v0"
+    },
     "id": {
       "type": "string",
       "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"

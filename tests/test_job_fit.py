@@ -13,13 +13,16 @@ from product.evaluation_policy import load_evaluation_policy
 from product.extensions import SCHEMA_VERSION as EXTENSION_SCHEMA_VERSION
 from product.extensions import extension_content_id
 from product.job_fit import (
+    CONTRACT_SCHEMA,
     JOB_FIT_REQUEST_VERSION,
     JOB_FIT_RESULT_VERSION,
     JOB_POSTING_SNAPSHOT_VERSION,
     JobFitValidationError,
     build_job_fit_result,
+    job_snapshot_content_id,
     main,
     normalized_job_fit_result_json,
+    profile_snapshot_content_id,
     validate_job_fit_request,
     validate_job_fit_result,
     validate_job_posting_snapshot,
@@ -338,6 +341,13 @@ class JobFitContractTests(unittest.TestCase):
 
         self.assert_invalid(lambda: validate_job_fit_request(req), "duplicate extension")
 
+    def test_malformed_active_extension_items_raise_contract_error(self):
+        for malformed in (None, [], {}, 7):
+            with self.subTest(malformed=malformed):
+                self.assert_invalid(
+                    lambda: validate_job_fit_request(request([malformed]))
+                )
+
     def test_direct_match_with_valid_profile_and_job_evidence(self):
         data = analysis()
         data["direct_matches"] = [direct_match()]
@@ -377,6 +387,21 @@ class JobFitContractTests(unittest.TestCase):
         data["functionally_equivalent_matches"] = [match]
 
         self.assert_invalid(lambda: build_job_fit_result(request(), data), "title_similarity_only")
+
+    def test_functional_equivalence_requires_nonempty_alignment_basis(self):
+        data = analysis()
+        match = functional_match()
+        match["functional_basis"] = {
+            "responsibility_alignment": [],
+            "competency_alignment": [],
+            "title_similarity_only": False,
+        }
+        data["functionally_equivalent_matches"] = [match]
+
+        self.assert_invalid(
+            lambda: build_job_fit_result(request(), data),
+            "at least one responsibility or competency alignment is required",
+        )
 
     def test_transferable_match_with_valid_active_extension_mapping(self):
         data = analysis()
@@ -423,6 +448,176 @@ class JobFitContractTests(unittest.TestCase):
         data["transferable_matches"] = [match]
 
         self.assert_invalid(lambda: build_job_fit_result(request(), data), "prohibited inference boundary")
+
+    def test_candidate_fact_evidence_ids_must_resolve_for_all_protected_types(self):
+        protected_types = (
+            "professional-certification",
+            "regulated-licence",
+            "employment-history",
+            "years-of-experience",
+            "hands-on-experience",
+            "formal-qualification",
+        )
+        for fact_type in protected_types:
+            with self.subTest(fact_type=fact_type):
+                data = analysis()
+                match = transferable_match()
+                match["asserts_candidate_facts"] = [
+                    {
+                        "type": fact_type,
+                        "profile_evidence_ids": ["clm_made_up"],
+                    }
+                ]
+                data["transferable_matches"] = [match]
+
+                self.assert_invalid(
+                    lambda: build_job_fit_result(request(), data),
+                    "unknown profile evidence id",
+                )
+
+    def test_transferable_match_preserves_mapping_limitations(self):
+        data = analysis()
+        match = transferable_match()
+        match["limitations"] = []
+        data["transferable_matches"] = [match]
+
+        self.assert_invalid(
+            lambda: build_job_fit_result(request(), data),
+            "must preserve mapping limitation",
+        )
+
+    def test_transferable_match_preserves_mapping_conditions(self):
+        data = analysis()
+        match = transferable_match()
+        match["conditions"] = []
+        data["transferable_matches"] = [match]
+
+        self.assert_invalid(
+            lambda: build_job_fit_result(request(), data),
+            "must preserve mapping condition",
+        )
+
+    def test_transferable_match_accepts_complete_mapping_safety_metadata(self):
+        data = analysis()
+        data["transferable_matches"] = [transferable_match()]
+
+        validate_job_fit_result(request(), build_job_fit_result(request(), data))
+
+    def test_transferable_match_accepts_extra_caller_safety_metadata(self):
+        data = analysis()
+        match = transferable_match()
+        match["limitations"].append("Caller-added limitation")
+        match["conditions"].append("Caller-added condition")
+        data["transferable_matches"] = [match]
+
+        validate_job_fit_result(request(), build_job_fit_result(request(), data))
+
+    def test_malformed_extension_version_fields_raise_contract_error(self):
+        malformed_values = (None, [], {}, 7)
+        for field in ("id", "version", "content_id"):
+            for malformed in malformed_values:
+                with self.subTest(field=field, malformed=malformed):
+                    req = request()
+                    result = build_job_fit_result(req, analysis())
+                    result["active_extension_versions"][0][field] = malformed
+
+                    self.assert_invalid(
+                        lambda: validate_job_fit_result(req, result)
+                    )
+
+    def test_malformed_extension_version_containers_raise_contract_error(self):
+        for malformed in (None, {}, 7, "extension"):
+            with self.subTest(malformed=malformed):
+                req = request()
+                result = build_job_fit_result(req, analysis())
+                result["active_extension_versions"] = malformed
+
+                self.assert_invalid(lambda: validate_job_fit_result(req, result))
+
+    def test_malformed_extension_reference_fields_raise_contract_error(self):
+        malformed_values = (None, [], {}, 7)
+        for field in (
+            "extension_id",
+            "extension_version",
+            "record_type",
+            "record_id",
+        ):
+            for malformed in malformed_values:
+                with self.subTest(field=field, malformed=malformed):
+                    data = analysis()
+                    match = transferable_match()
+                    match["extension_ref"][field] = malformed
+                    data["transferable_matches"] = [match]
+
+                    self.assert_invalid(lambda: build_job_fit_result(request(), data))
+
+    def test_malformed_transferable_mapping_ids_raise_contract_error(self):
+        for malformed in (None, [], {}, 7):
+            with self.subTest(malformed=malformed):
+                data = analysis()
+                match = transferable_match()
+                match["transferable_mapping_id"] = malformed
+                data["transferable_matches"] = [match]
+
+                self.assert_invalid(lambda: build_job_fit_result(request(), data))
+
+    def test_malformed_extension_reference_containers_raise_contract_error(self):
+        for malformed in (None, [], 7, "extension"):
+            with self.subTest(malformed=malformed):
+                data = analysis()
+                match = transferable_match()
+                match["extension_ref"] = malformed
+                data["transferable_matches"] = [match]
+
+                self.assert_invalid(lambda: build_job_fit_result(request(), data))
+
+    def test_malformed_candidate_fact_types_raise_contract_error(self):
+        for malformed in (None, [], {}, 7):
+            with self.subTest(malformed=malformed):
+                data = analysis()
+                match = transferable_match()
+                match["asserts_candidate_facts"] = [
+                    {
+                        "type": malformed,
+                        "profile_evidence_ids": ["clm_3333333333333333"],
+                    }
+                ]
+                data["transferable_matches"] = [match]
+
+                self.assert_invalid(lambda: build_job_fit_result(request(), data))
+
+    def test_malformed_candidate_fact_containers_raise_contract_error(self):
+        for malformed in (None, {}, 7, "fact"):
+            with self.subTest(malformed=malformed):
+                data = analysis()
+                match = transferable_match()
+                match["asserts_candidate_facts"] = malformed
+                data["transferable_matches"] = [match]
+
+                self.assert_invalid(lambda: build_job_fit_result(request(), data))
+
+    def test_malformed_candidate_fact_profile_references_raise_contract_error(self):
+        for malformed in (None, {}, 7, "claim"):
+            with self.subTest(malformed=malformed):
+                data = analysis()
+                match = transferable_match()
+                match["asserts_candidate_facts"] = [
+                    {
+                        "type": "formal-qualification",
+                        "profile_evidence_ids": malformed,
+                    }
+                ]
+                data["transferable_matches"] = [match]
+
+                self.assert_invalid(lambda: build_job_fit_result(request(), data))
+
+    def test_non_object_analysis_raises_contract_error(self):
+        for malformed in ([], "analysis", 7):
+            with self.subTest(malformed=malformed):
+                self.assert_invalid(
+                    lambda: build_job_fit_result(request(), malformed),
+                    "$.analysis: must be an object",
+                )
 
     def test_missing_evidence_represented_as_gap_not_fabricated_negative_fact(self):
         data = analysis()
@@ -603,6 +798,71 @@ class JobFitContractTests(unittest.TestCase):
 
         self.assert_invalid(lambda: validate_job_fit_result(req, result), "job_snapshot")
 
+    def test_profile_content_id_changes_when_claim_content_changes(self):
+        original = profile_snapshot()
+        changed = copy.deepcopy(original)
+        changed["claims"][0]["value"] = "Different skill"
+
+        self.assertNotEqual(
+            profile_snapshot_content_id(original),
+            profile_snapshot_content_id(changed),
+        )
+
+    def test_job_content_id_changes_when_requirement_content_changes(self):
+        original = job_snapshot()
+        changed = copy.deepcopy(original)
+        changed["requirements"][0]["text"] = "Different requirement"
+
+        self.assertNotEqual(
+            job_snapshot_content_id(original),
+            job_snapshot_content_id(changed),
+        )
+
+    def test_snapshot_content_ids_ignore_json_object_key_order(self):
+        def reverse_object_keys(value):
+            if isinstance(value, dict):
+                return {
+                    key: reverse_object_keys(value[key])
+                    for key in reversed(value)
+                }
+            if isinstance(value, list):
+                return [reverse_object_keys(item) for item in value]
+            return value
+
+        profile = profile_snapshot()
+        reordered_profile = reverse_object_keys(profile)
+        job = job_snapshot()
+        reordered_job = reverse_object_keys(job)
+
+        self.assertEqual(
+            profile_snapshot_content_id(profile),
+            profile_snapshot_content_id(reordered_profile),
+        )
+        self.assertEqual(
+            job_snapshot_content_id(job),
+            job_snapshot_content_id(reordered_job),
+        )
+
+    def test_stale_profile_result_identity_is_rejected(self):
+        req = request()
+        result = build_job_fit_result(req, analysis())
+        req["profile_snapshot"]["claims"][0]["value"] = "Changed after evaluation"
+
+        self.assert_invalid(
+            lambda: validate_job_fit_result(req, result),
+            "must identify request profile snapshot",
+        )
+
+    def test_stale_job_result_identity_is_rejected(self):
+        req = request()
+        result = build_job_fit_result(req, analysis())
+        req["job_snapshot"]["requirements"][0]["text"] = "Changed after evaluation"
+
+        self.assert_invalid(
+            lambda: validate_job_fit_result(req, result),
+            "must identify request job snapshot",
+        )
+
     def test_schema_version_mismatch_rejected(self):
         req = request()
         req["schema_version"] = "job-fit-request.v1"
@@ -612,6 +872,22 @@ class JobFitContractTests(unittest.TestCase):
         result = build_job_fit_result(request(), analysis())
         result["schema_version"] = "job-fit-result.v1"
         self.assert_invalid(lambda: validate_job_fit_result(request(), result), "unsupported job fit result version")
+
+    def test_contract_versions_are_owned_by_machine_readable_schema(self):
+        definitions = CONTRACT_SCHEMA["$defs"]
+
+        self.assertEqual(
+            JOB_POSTING_SNAPSHOT_VERSION,
+            definitions["jobPostingSnapshotVersion"]["const"],
+        )
+        self.assertEqual(
+            JOB_FIT_REQUEST_VERSION,
+            definitions["jobFitRequestVersion"]["const"],
+        )
+        self.assertEqual(
+            JOB_FIT_RESULT_VERSION,
+            definitions["jobFitResultVersion"]["const"],
+        )
 
     def test_deterministic_normalized_output(self):
         req = request()
@@ -633,6 +909,28 @@ class JobFitContractTests(unittest.TestCase):
 
             with redirect_stderr(error):
                 exit_code = main(["validate-request", str(path)])
+
+        self.assertEqual(exit_code, 1)
+        payload = json.loads(error.getvalue())
+        self.assertFalse(payload["valid"])
+        self.assertTrue(payload["errors"])
+
+    def test_cli_malformed_nested_json_returns_json_and_nonzero(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            request_path = Path(tempdir) / "request.json"
+            analysis_path = Path(tempdir) / "analysis.json"
+            malformed_analysis = analysis()
+            match = transferable_match()
+            match["extension_ref"]["record_type"] = {"unexpected": True}
+            malformed_analysis["transferable_matches"] = [match]
+            request_path.write_text(json.dumps(request()), encoding="utf-8")
+            analysis_path.write_text(json.dumps(malformed_analysis), encoding="utf-8")
+            error = io.StringIO()
+
+            with redirect_stderr(error):
+                exit_code = main(
+                    ["assemble", str(request_path), str(analysis_path)]
+                )
 
         self.assertEqual(exit_code, 1)
         payload = json.loads(error.getvalue())
