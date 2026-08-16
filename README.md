@@ -304,6 +304,34 @@ For **country-agnostic** starting points outside Denmark, the repo ships two por
 - **`linkedin-search`** — built on LinkedIn's public, unauthenticated `jobs-guest` endpoints. Field-agnostic, **zero runtime dependencies** (runs with just `bun`), and takes the search location as an explicit flag, so it works for any market out of the box (`-l "Berlin, Germany"`, `-l "Mumbai, Maharashtra, India"`, `-l "Remote"`, …). Intended for **personal use only** — automated access is against LinkedIn's Terms of Service, so keep volume low. See `.agents/skills/linkedin-search/SKILL.md`.
 - **`freehire-search`** — queries the [freehire.me](https://freehire.me) aggregator's public REST API (JSON, no API key). Tech-focused (software, data, engineering, DevOps, remote), multi-market via facet flags (`--region`, `--country`, `--remote`), and **zero runtime dependencies**. Unlike the HTML-scraping Danish portals, results come back structured (skills, seniority, category). The backend is MIT-licensed and [self-hostable](https://github.com/strelov1/freehire) — point `FREEHIRE_API_URL` at your own instance if you prefer. See `.agents/skills/freehire-search/SKILL.md`.
 
+### BOSS直聘 (zhipin.com) — this fork
+
+This fork ships an additional **`zhipin-search`** portal skill for **BOSS直聘** (zhipin.com),
+China's largest direct-chat recruiting platform. Unlike the country-agnostic portals above, there
+is no anonymous endpoint to query — BOSS直聘 is login-walled and anti-bot protected — so the skill
+drives your own logged-in Chrome session over the Chrome DevTools Protocol (CDP), read-only.
+
+Prerequisite (run once, then reuse the same profile dir to stay logged in):
+
+```bash
+open -a "Google Chrome" --args --remote-debugging-port=9222 \
+    --remote-allow-origins=* --user-data-dir="$HOME/zhipin-chrome-profile"
+```
+
+Usage:
+
+```bash
+# search by keyword, optionally scoped to a city (--format json|table|plain)
+bun run .agents/skills/zhipin-search/cli/src/cli.ts search -q "算法工程师" -l 上海 --format table
+
+# read a listing's full description — salary is clean here, the search list obfuscates it
+bun run .agents/skills/zhipin-search/cli/src/cli.ts detail <job-id> --format plain
+```
+
+**Personal use only** — this drives your own BOSS直聘 account; keep volume low and apply manually.
+Full command reference in `.agents/skills/zhipin-search/SKILL.md`; verified DOM selectors and city
+codes in `.agents/skills/zhipin-search/url-reference.md`.
+
 ### Extending the framework: portals, templates, criteria - and borrowing from other forks
 
 Everything above adds up to an extension model, so here it is stated plainly. The framework has three extension points, and none of them require touching upstream:
