@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/smbabalola/ai-job-search/product/schemas/extension-package.v0.schema.json",
+  "title": "Extension Package v0",
+  "description": "Passive reusable professional knowledge. Candidate-private facts and executable behavior are prohibited by the product validator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "version",
+    "status",
+    "description",
+    "publisher",
+    "trust",
+    "metadata",
+    "scope"
+  ],
+  "properties": {
+    "schema_version": {"const": "extension-package.v0"},
+    "id": {"$ref": "#/$defs/id"},
+    "name": {"$ref": "#/$defs/nonempty"},
+    "version": {"$ref": "#/$defs/semver"},
+    "status": {"enum": ["draft", "reviewed", "deprecated"]},
+    "description": {"$ref": "#/$defs/nonempty"},
+    "publisher": {"$ref": "#/$defs/publisher"},
+    "authors": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/author"}
+    },
+    "trust": {"$ref": "#/$defs/trust"},
+    "metadata": {"$ref": "#/$defs/metadata"},
+    "scope": {"$ref": "#/$defs/scope"},
+    "sources": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/source"}
+    },
+    "terminology": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/term"}
+    },
+    "competencies": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/competency"}
+    },
+    "roles": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/role"}
+    },
+    "certifications": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/certification"}
+    },
+    "transferable_mappings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/transferableMapping"}
+    },
+    "disallowed_mappings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/disallowedMapping"}
+    },
+    "interview_knowledge": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/interviewKnowledge"}
+    }
+  },
+  "$defs": {
+    "nonempty": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "stringArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/nonempty"}
+    },
+    "idArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/id"}
+    },
+    "publisher": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": {"$ref": "#/$defs/nonempty"},
+        "type": {"enum": ["individual", "organization"]},
+        "url": {"type": "string", "format": "uri", "pattern": "^https?://"}
+      }
+    },
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {"$ref": "#/$defs/nonempty"},
+        "organization": {"$ref": "#/$defs/nonempty"},
+        "url": {"type": "string", "format": "uri", "pattern": "^https?://"}
+      }
+    },
+    "trust": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level"],
+      "properties": {
+        "level": {"enum": ["unreviewed", "community-reviewed", "publisher-reviewed"]},
+        "notes": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_date"],
+      "properties": {
+        "created_date": {"$ref": "#/$defs/date"},
+        "reviewed_date": {"oneOf": [{"$ref": "#/$defs/date"}, {"type": "null"}]}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "industries": {"$ref": "#/$defs/stringArray"},
+        "professions": {"$ref": "#/$defs/stringArray"},
+        "role_families": {"$ref": "#/$defs/stringArray"},
+        "role_titles": {"$ref": "#/$defs/stringArray"},
+        "role_aliases": {"$ref": "#/$defs/stringArray"},
+        "seniority_levels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/seniority"}
+        },
+        "jurisdictions": {"$ref": "#/$defs/stringArray"}
+      }
+    },
+    "seniority": {
+      "enum": ["entry", "junior", "mid", "senior", "lead", "principal", "manager", "executive", "unspecified"]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "publisher", "source_type"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "title": {"$ref": "#/$defs/nonempty"},
+        "publisher": {"$ref": "#/$defs/nonempty"},
+        "url": {"type": "string", "format": "uri", "pattern": "^https?://"},
+        "source_type": {"enum": ["industry-guidance", "professional-body", "regulation", "standard", "textbook", "research", "other"]},
+        "jurisdiction": {"$ref": "#/$defs/nonempty"},
+        "publication_date": {"$ref": "#/$defs/date"},
+        "reviewed_date": {"$ref": "#/$defs/date"},
+        "notes": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "term": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "canonical_term", "definition", "category"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "canonical_term": {"$ref": "#/$defs/nonempty"},
+        "aliases": {"$ref": "#/$defs/stringArray"},
+        "definition": {"$ref": "#/$defs/nonempty"},
+        "category": {"$ref": "#/$defs/nonempty"},
+        "source_ids": {"$ref": "#/$defs/idArray"}
+      }
+    },
+    "expectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seniority", "description"],
+      "properties": {
+        "seniority": {"$ref": "#/$defs/seniority"},
+        "description": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "competency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "description", "category"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "name": {"$ref": "#/$defs/nonempty"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "category": {"$ref": "#/$defs/nonempty"},
+        "skills": {"$ref": "#/$defs/stringArray"},
+        "tools": {"$ref": "#/$defs/stringArray"},
+        "methods": {"$ref": "#/$defs/stringArray"},
+        "responsibilities": {"$ref": "#/$defs/stringArray"},
+        "expectations": {"type": "array", "items": {"$ref": "#/$defs/expectation"}},
+        "source_ids": {"$ref": "#/$defs/idArray"}
+      }
+    },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "name": {"$ref": "#/$defs/nonempty"},
+        "aliases": {"$ref": "#/$defs/stringArray"},
+        "role_family": {"$ref": "#/$defs/nonempty"},
+        "seniority_levels": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/seniority"}},
+        "expected_competency_ids": {"$ref": "#/$defs/idArray"},
+        "typical_expectations": {"$ref": "#/$defs/stringArray"},
+        "source_ids": {"$ref": "#/$defs/idArray"}
+      }
+    },
+    "certification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "issuer", "requirement_type"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "name": {"$ref": "#/$defs/nonempty"},
+        "aliases": {"$ref": "#/$defs/stringArray"},
+        "issuer": {"$ref": "#/$defs/nonempty"},
+        "jurisdiction": {"$ref": "#/$defs/nonempty"},
+        "requirement_type": {"enum": ["commonly-expected", "sometimes-expected", "legally-required", "preferred"]},
+        "notes": {"$ref": "#/$defs/nonempty"},
+        "source_ids": {"$ref": "#/$defs/idArray"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["requirement_type"],
+            "properties": {"requirement_type": {"const": "legally-required"}}
+          },
+          "then": {
+            "required": ["source_ids"],
+            "properties": {"source_ids": {"minItems": 1}}
+          }
+        }
+      ]
+    },
+    "mappingEndpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "competency_id": {"$ref": "#/$defs/id"},
+        "concept": {"$ref": "#/$defs/nonempty"}
+      },
+      "oneOf": [
+        {"required": ["competency_id"]},
+        {"required": ["concept"]}
+      ]
+    },
+    "transferableMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source", "target", "rationale", "transfer_strength"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "source": {"$ref": "#/$defs/mappingEndpoint"},
+        "target": {"$ref": "#/$defs/mappingEndpoint"},
+        "rationale": {"$ref": "#/$defs/nonempty"},
+        "transfer_strength": {"enum": ["weak", "moderate", "strong"]},
+        "conditions": {"$ref": "#/$defs/stringArray"},
+        "limitations": {"$ref": "#/$defs/stringArray"},
+        "evidence_requirements": {"$ref": "#/$defs/stringArray"},
+        "source_ids": {"$ref": "#/$defs/idArray"}
+      }
+    },
+    "disallowedMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source_concept", "prohibited_inference", "rationale"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "source_concept": {"$ref": "#/$defs/nonempty"},
+        "prohibited_inference": {"enum": ["regulated-licence", "professional-certification", "protected-status", "employment-history", "years-of-experience", "hands-on-experience", "formal-qualification", "other"]},
+        "rationale": {"$ref": "#/$defs/nonempty"},
+        "source_ids": {"$ref": "#/$defs/idArray"}
+      }
+    },
+    "interviewKnowledge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "topic", "why_it_matters"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "topic": {"$ref": "#/$defs/nonempty"},
+        "why_it_matters": {"$ref": "#/$defs/nonempty"},
+        "question_themes": {"$ref": "#/$defs/stringArray"},
+        "concepts": {"$ref": "#/$defs/stringArray"},
+        "source_ids": {"$ref": "#/$defs/idArray"}
+      }
+    }
+  }
+}

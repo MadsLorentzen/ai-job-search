@@ -1,0 +1,138 @@
+{
+  "schema_version": "extension-package.v0",
+  "id": "plumbing",
+  "name": "Plumbing",
+  "version": "0.1.0",
+  "status": "draft",
+  "description": "Small synthetic fixture describing reusable plumbing knowledge.",
+  "publisher": {
+    "name": "AI Job Search Test Fixtures",
+    "type": "organization",
+    "url": "https://example.test/extensions/plumbing"
+  },
+  "trust": {
+    "level": "unreviewed",
+    "notes": "Synthetic example only; requirements must be checked locally."
+  },
+  "metadata": {
+    "created_date": "2026-08-16",
+    "reviewed_date": null
+  },
+  "scope": {
+    "industries": ["Construction", "Building maintenance"],
+    "professions": ["Plumbing"],
+    "role_families": ["Building services trades"],
+    "role_titles": ["Plumber"],
+    "role_aliases": ["Plumbing technician"],
+    "seniority_levels": ["entry", "mid", "senior"],
+    "jurisdictions": ["Jurisdiction-dependent"]
+  },
+  "sources": [
+    {
+      "id": "synthetic-plumbing-guide",
+      "title": "Synthetic Plumbing Systems Guide",
+      "publisher": "Example Trade Body",
+      "url": "https://example.test/sources/plumbing-guide",
+      "source_type": "industry-guidance",
+      "reviewed_date": "2026-08-16",
+      "notes": "Fictional source used only to exercise provenance."
+    }
+  ],
+  "terminology": [
+    {
+      "id": "pipe-system-term",
+      "canonical_term": "pipe system",
+      "aliases": ["rørføring"],
+      "definition": "An arrangement of pipes and components that conveys water or waste.",
+      "category": "building-water-systems",
+      "source_ids": ["synthetic-plumbing-guide"]
+    }
+  ],
+  "competencies": [
+    {
+      "id": "pipe-system-assessment",
+      "name": "Pipe-system assessment",
+      "description": "Assess pipe layouts, components, condition, and maintenance needs.",
+      "category": "technical-practice",
+      "skills": ["read installation drawings", "identify system components"],
+      "tools": ["measurement tools"],
+      "methods": ["visual inspection", "risk assessment"],
+      "responsibilities": ["follow applicable safety and building requirements"],
+      "source_ids": ["synthetic-plumbing-guide"]
+    },
+    {
+      "id": "safe-installation-maintenance",
+      "name": "Safe installation and maintenance",
+      "description": "Plan and perform installation or maintenance within authorization boundaries.",
+      "category": "safety",
+      "skills": ["isolation awareness"],
+      "tools": ["trade-specific hand tools"],
+      "methods": ["pre-work safety checks"],
+      "responsibilities": ["recognize when licensed supervision is required"],
+      "source_ids": ["synthetic-plumbing-guide"]
+    }
+  ],
+  "roles": [
+    {
+      "id": "plumber",
+      "name": "Plumber",
+      "aliases": ["Plumbing technician"],
+      "role_family": "Building services trades",
+      "seniority_levels": ["entry", "mid", "senior"],
+      "expected_competency_ids": ["pipe-system-assessment", "safe-installation-maintenance"],
+      "typical_expectations": ["Understand drawings", "Work safely", "Maintain water systems"],
+      "source_ids": ["synthetic-plumbing-guide"]
+    }
+  ],
+  "certifications": [
+    {
+      "id": "jurisdiction-specific-plumbing-licence",
+      "name": "Jurisdiction-specific plumbing licence",
+      "aliases": ["Local plumbing authorization"],
+      "issuer": "Relevant local authority",
+      "jurisdiction": "Varies",
+      "requirement_type": "legally-required",
+      "notes": "Illustrative category only; verify the exact legal requirement in the relevant jurisdiction.",
+      "source_ids": ["synthetic-plumbing-guide"]
+    }
+  ],
+  "transferable_mappings": [
+    {
+      "id": "drawing-literacy-to-pipe-layouts",
+      "source": {"concept": "technical drawing literacy"},
+      "target": {"competency_id": "pipe-system-assessment"},
+      "rationale": "Evidence of reading technical drawings may support learning to interpret pipe layouts.",
+      "transfer_strength": "moderate",
+      "conditions": ["The source drawing experience is evidenced and sufficiently detailed"],
+      "limitations": ["It does not establish plumbing-code knowledge or installation competence"],
+      "evidence_requirements": ["Examples of correctly interpreting technical drawings"],
+      "source_ids": ["synthetic-plumbing-guide"]
+    }
+  ],
+  "disallowed_mappings": [
+    {
+      "id": "domain-similarity-does-not-imply-licence",
+      "source_concept": "experience with pressure or fluid systems in another profession",
+      "prohibited_inference": "regulated-licence",
+      "rationale": "Conceptual similarity cannot establish a regulated plumbing licence.",
+      "source_ids": ["synthetic-plumbing-guide"]
+    },
+    {
+      "id": "analysis-does-not-imply-hands-on-practice",
+      "source_concept": "analytical understanding of pipe or fluid systems",
+      "prohibited_inference": "hands-on-experience",
+      "rationale": "Analytical knowledge is not evidence of installation or maintenance practice.",
+      "source_ids": ["synthetic-plumbing-guide"]
+    }
+  ],
+  "interview_knowledge": [
+    {
+      "id": "safe-system-isolation",
+      "topic": "Safe system isolation",
+      "why_it_matters": "Maintenance work requires recognition of hazards and authorization boundaries.",
+      "question_themes": ["How would work be made safe before maintenance?"],
+      "concepts": ["isolation", "verification", "local requirements"],
+      "source_ids": ["synthetic-plumbing-guide"]
+    }
+  ]
+}

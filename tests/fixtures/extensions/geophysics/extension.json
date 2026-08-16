@@ -1,0 +1,132 @@
+{
+  "schema_version": "extension-package.v0",
+  "id": "geophysics",
+  "name": "Geophysics",
+  "version": "0.1.0",
+  "status": "draft",
+  "description": "Small synthetic fixture describing reusable geophysics knowledge.",
+  "publisher": {
+    "name": "AI Job Search Test Fixtures",
+    "type": "organization",
+    "url": "https://example.test/extensions/geophysics"
+  },
+  "authors": [
+    {
+      "name": "Synthetic Fixture Team",
+      "organization": "AI Job Search Test Fixtures"
+    }
+  ],
+  "trust": {
+    "level": "unreviewed",
+    "notes": "Synthetic example only; not a professional standard."
+  },
+  "metadata": {
+    "created_date": "2026-08-16",
+    "reviewed_date": null
+  },
+  "scope": {
+    "industries": ["Energy", "Environmental services"],
+    "professions": ["Geophysics"],
+    "role_families": ["Subsurface science"],
+    "role_titles": ["Geophysicist"],
+    "role_aliases": ["Seismic interpreter"],
+    "seniority_levels": ["entry", "mid", "senior"],
+    "jurisdictions": ["Jurisdiction-neutral"]
+  },
+  "sources": [
+    {
+      "id": "synthetic-geophysics-guide",
+      "title": "Synthetic Geophysics Practice Guide",
+      "publisher": "Example Professional Body",
+      "url": "https://example.test/sources/geophysics-guide",
+      "source_type": "professional-body",
+      "publication_date": "2026-01-15",
+      "reviewed_date": "2026-08-16",
+      "notes": "Fictional source used only to exercise provenance."
+    }
+  ],
+  "terminology": [
+    {
+      "id": "seismic-interpretation-term",
+      "canonical_term": "seismic interpretation",
+      "aliases": ["seismic data interpretation"],
+      "definition": "Analysis of seismic observations to form a reasoned subsurface interpretation.",
+      "category": "subsurface-analysis",
+      "source_ids": ["synthetic-geophysics-guide"]
+    }
+  ],
+  "competencies": [
+    {
+      "id": "seismic-interpretation",
+      "name": "Seismic interpretation",
+      "description": "Interpret seismic data while distinguishing observations from hypotheses.",
+      "category": "technical-analysis",
+      "skills": ["horizon interpretation", "fault interpretation"],
+      "tools": ["geological and geophysical interpretation software"],
+      "methods": ["seismic attribute review"],
+      "responsibilities": ["document interpretation assumptions"],
+      "expectations": [
+        {
+          "seniority": "mid",
+          "description": "Can explain uncertainty and competing interpretations."
+        }
+      ],
+      "source_ids": ["synthetic-geophysics-guide"]
+    },
+    {
+      "id": "uncertainty-analysis",
+      "name": "Subsurface uncertainty analysis",
+      "description": "Assess uncertainty in incomplete spatial evidence and models.",
+      "category": "analytical-methods",
+      "skills": ["uncertainty communication"],
+      "tools": ["subsurface modelling software"],
+      "methods": ["scenario analysis", "sensitivity analysis"],
+      "responsibilities": ["state model limitations"],
+      "source_ids": ["synthetic-geophysics-guide"]
+    }
+  ],
+  "roles": [
+    {
+      "id": "geophysicist",
+      "name": "Geophysicist",
+      "aliases": ["Applied geophysicist"],
+      "role_family": "Subsurface science",
+      "seniority_levels": ["entry", "mid", "senior"],
+      "expected_competency_ids": ["seismic-interpretation", "uncertainty-analysis"],
+      "typical_expectations": ["Interpret data", "Communicate uncertainty"],
+      "source_ids": ["synthetic-geophysics-guide"]
+    }
+  ],
+  "transferable_mappings": [
+    {
+      "id": "uncertainty-to-water-system-diagnostics",
+      "source": {"competency_id": "uncertainty-analysis"},
+      "target": {"concept": "diagnostic uncertainty in building water systems"},
+      "rationale": "Structured hypothesis testing may support reasoning about incomplete diagnostic evidence.",
+      "transfer_strength": "weak",
+      "conditions": ["The candidate has direct evidence of applying structured uncertainty methods"],
+      "limitations": ["This does not demonstrate plumbing practice, code knowledge, or hands-on ability"],
+      "evidence_requirements": ["A specific evidenced example of uncertainty analysis"],
+      "source_ids": ["synthetic-geophysics-guide"]
+    }
+  ],
+  "disallowed_mappings": [
+    {
+      "id": "geophysics-does-not-imply-plumbing-qualification",
+      "source_concept": "geophysics employment or education",
+      "prohibited_inference": "formal-qualification",
+      "rationale": "Domain-adjacent pressure or fluid concepts do not establish a plumbing qualification.",
+      "source_ids": ["synthetic-geophysics-guide"]
+    }
+  ],
+  "interview_knowledge": [
+    {
+      "id": "communicating-model-uncertainty",
+      "topic": "Communicating model uncertainty",
+      "why_it_matters": "Professional decisions depend on understanding assumptions and uncertainty.",
+      "question_themes": ["How are alternative interpretations compared?"],
+      "concepts": ["assumptions", "sensitivity", "uncertainty ranges"],
+      "source_ids": ["synthetic-geophysics-guide"]
+    }
+  ]
+}
