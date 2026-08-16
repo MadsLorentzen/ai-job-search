@@ -1,0 +1,19 @@
+{
+  "name": "company-pages-cli",
+  "version": "1.0.0",
+  "description": "CLI for looking up job openings directly on a registry of companies' own career pages (Greenhouse/Lever/SmartRecruiters public APIs, or a generic HTML scrape) — for corporates that don't syndicate all positions to job boards. Zero runtime dependencies. Personal use only.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "company-pages-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "1.3.14"
+  }
+}

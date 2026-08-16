@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Stripe",
+    "careers_url": "https://stripe.com/jobs/search",
+    "ats": "greenhouse",
+    "ats_id": "stripe",
+    "locations_filter": ["Remote"],
+    "notes": "Real, public Greenhouse board — verified 2026-08-01. Used here only as a worked example of the greenhouse ats type."
+  },
+  {
+    "name": "Coinbase",
+    "careers_url": "https://www.coinbase.com/careers/positions",
+    "ats": "greenhouse",
+    "ats_id": "coinbase",
+    "locations_filter": ["Remote"],
+    "notes": "Real, public Greenhouse board — verified 2026-08-01."
+  },
+  {
+    "name": "Palantir",
+    "careers_url": "https://www.palantir.com/careers/",
+    "ats": "lever",
+    "ats_id": "palantir",
+    "locations_filter": [],
+    "notes": "Real, public Lever board — verified 2026-08-01. Used here as a worked example of the lever ats type."
+  },
+  {
+    "name": "Visa",
+    "careers_url": "https://www.visa.com/careers.html",
+    "ats": "smartrecruiters",
+    "ats_id": "Visa",
+    "locations_filter": ["Geneva", "Remote"],
+    "notes": "Real, public SmartRecruiters company id — verified 2026-08-01. Used here as a worked example of the smartrecruiters ats type."
+  },
+  {
+    "name": "Union Bancaire Privée",
+    "careers_url": "https://www.ubp.com/en/careers",
+    "ats": "oracle",
+    "ats_id": "iaadtu.fa.ocs.oraclecloud.eu|CX_1",
+    "locations_filter": ["Geneva", "Zurich"],
+    "notes": "Real, public Oracle Cloud HCM (Candidate Experience) site — verified 2026-08-05, 43 live requisitions. Worked example of the oracle ats type: ats_id is \"<host>|<siteNumber>\", because the API host is tenant-specific and cannot be derived from the company name. Without this adapter such sites fall to ats=generic and return nothing, since the portal renders its listings client-side."
+  },
+  {
+    "name": "Placeholder Genève Pharma SA",
+    "careers_url": "https://example.com/careers",
+    "ats": "generic",
+    "ats_id": "",
+    "locations_filter": ["Geneva", "Lausanne"],
+    "notes": "FICTIONAL placeholder. Swiss corporates and pharma often don't syndicate to job boards at all — for ats=generic the agent should WebFetch careers_url directly rather than rely on the CLI's best-effort scrape."
+  },
+  {
+    "name": "Placeholder Lausanne Bank SA",
+    "careers_url": "https://example.com/en/careers",
+    "ats": "generic",
+    "ats_id": "",
+    "locations_filter": ["Lausanne", "Geneva", "Remote"],
+    "notes": "FICTIONAL placeholder for a private/retail bank careers page with no public ATS API — generic fallback path."
+  }
+]
