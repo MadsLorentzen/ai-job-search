@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/smbabalola/ai-job-search/product/schemas/evaluation-policy.v0.schema.json",
+  "title": "Executable Evaluation Policy v0",
+  "description": "Passive deterministic mechanics for job-fit gates, weighted scores, experience-match classes, and verdicts. The canonical evaluation methodology remains in .claude/skills/job-application-assistant/04-job-evaluation.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "methodology_reference",
+    "gate_statuses",
+    "experience_match_classes",
+    "gates",
+    "dimensions",
+    "verdict_thresholds",
+    "rounding"
+  ],
+  "properties": {
+    "schema_version": {"const": "evaluation-policy.v0"},
+    "id": {"$ref": "#/$defs/id"},
+    "methodology_reference": {"const": ".claude/skills/job-application-assistant/04-job-evaluation.md"},
+    "gate_statuses": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["PASS", "FAIL", "FLAG", "UNVERIFIED", "NOT_APPLICABLE"]}
+    },
+    "experience_match_classes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["direct", "functionally_equivalent", "transferable", "adjacent", "unsupported"]}
+    },
+    "gates": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/gate"}
+    },
+    "dimensions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/dimension"}
+    },
+    "verdict_thresholds": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/verdictThreshold"}
+    },
+    "rounding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "decimal_places"],
+      "properties": {
+        "mode": {"const": "half_up"},
+        "decimal_places": {"const": 1}
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"
+    },
+    "nonempty": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "score": {"type": "number", "minimum": 0, "maximum": 100},
+    "gateStatusArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["PASS", "FAIL", "FLAG", "UNVERIFIED", "NOT_APPLICABLE"]}
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "display_name",
+        "description",
+        "blocking_statuses",
+        "warning_statuses",
+        "unverified_statuses",
+        "proceed_statuses"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "display_name": {"$ref": "#/$defs/nonempty"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "blocking_statuses": {"$ref": "#/$defs/gateStatusArray"},
+        "warning_statuses": {"$ref": "#/$defs/gateStatusArray"},
+        "unverified_statuses": {"$ref": "#/$defs/gateStatusArray"},
+        "proceed_statuses": {"$ref": "#/$defs/gateStatusArray"}
+      }
+    },
+    "scoreBand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min_score", "max_score_exclusive", "label", "description"],
+      "properties": {
+        "min_score": {"$ref": "#/$defs/score"},
+        "max_score_exclusive": {
+          "oneOf": [{"type": "number", "minimum": 0, "maximum": 101}, {"type": "null"}]
+        },
+        "label": {"$ref": "#/$defs/id"},
+        "description": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "dimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "display_name", "description", "weight", "score_min", "score_max", "bands"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "display_name": {"$ref": "#/$defs/nonempty"},
+        "description": {"$ref": "#/$defs/nonempty"},
+        "weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "score_min": {"const": 0},
+        "score_max": {"const": 100},
+        "bands": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/scoreBand"}
+        }
+      }
+    },
+    "verdictThreshold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "display_name", "min_score", "max_score_exclusive"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "display_name": {"$ref": "#/$defs/nonempty"},
+        "min_score": {"$ref": "#/$defs/score"},
+        "max_score_exclusive": {
+          "oneOf": [{"type": "number", "minimum": 0, "maximum": 101}, {"type": "null"}]
+        }
+      }
+    }
+  }
+}

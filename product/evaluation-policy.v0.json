@@ -1,0 +1,105 @@
+{
+  "schema_version": "evaluation-policy.v0",
+  "id": "default_job_fit_policy",
+  "methodology_reference": ".claude/skills/job-application-assistant/04-job-evaluation.md",
+  "gate_statuses": ["PASS", "FAIL", "FLAG", "UNVERIFIED", "NOT_APPLICABLE"],
+  "experience_match_classes": ["direct", "functionally_equivalent", "transferable", "adjacent", "unsupported"],
+  "gates": [
+    {
+      "id": "eligibility",
+      "display_name": "Eligibility",
+      "description": "Work-rights, citizenship, residency, or clearance eligibility stated by the posting.",
+      "blocking_statuses": ["FAIL"],
+      "warning_statuses": ["FLAG"],
+      "unverified_statuses": ["UNVERIFIED"],
+      "proceed_statuses": ["PASS", "FLAG", "UNVERIFIED", "NOT_APPLICABLE"]
+    },
+    {
+      "id": "language",
+      "display_name": "Language",
+      "description": "Posting language requirements compared against supplied candidate language evidence.",
+      "blocking_statuses": ["FAIL"],
+      "warning_statuses": ["FLAG"],
+      "unverified_statuses": ["UNVERIFIED"],
+      "proceed_statuses": ["PASS", "FLAG", "UNVERIFIED", "NOT_APPLICABLE"]
+    },
+    {
+      "id": "location_logistics",
+      "display_name": "Location & Logistics",
+      "description": "Commute, remote, relocation, travel, hours, and timing constraints.",
+      "blocking_statuses": ["FAIL"],
+      "warning_statuses": ["FLAG"],
+      "unverified_statuses": ["UNVERIFIED"],
+      "proceed_statuses": ["PASS", "FLAG", "UNVERIFIED", "NOT_APPLICABLE"]
+    }
+  ],
+  "dimensions": [
+    {
+      "id": "technical_skills",
+      "display_name": "Technical Skills",
+      "description": "Required and preferred skills aligned against supplied candidate capability evidence.",
+      "weight": 0.3,
+      "score_min": 0,
+      "score_max": 100,
+      "bands": [
+        {"min_score": 0, "max_score_exclusive": 40, "label": "fundamental_mismatch", "description": "Fundamental mismatch."},
+        {"min_score": 40, "max_score_exclusive": 60, "label": "partial_match", "description": "Partial match with significant upskilling."},
+        {"min_score": 60, "max_score_exclusive": 80, "label": "mostly_matching", "description": "Most requirements match with limited learnable gaps."},
+        {"min_score": 80, "max_score_exclusive": null, "label": "primary_skills", "description": "Core requirements are primary skills."}
+      ]
+    },
+    {
+      "id": "experience_match",
+      "display_name": "Experience Match",
+      "description": "Work history aligned by responsibilities, competencies, and functional similarity rather than title equality.",
+      "weight": 0.25,
+      "score_min": 0,
+      "score_max": 100,
+      "bands": [
+        {"min_score": 0, "max_score_exclusive": 40, "label": "unsupported", "description": "Unsupported or unrelated experience."},
+        {"min_score": 40, "max_score_exclusive": 60, "label": "adjacent", "description": "Adjacent experience requiring a case to be made."},
+        {"min_score": 60, "max_score_exclusive": 80, "label": "transferable", "description": "Related experience with clear transferable evidence."},
+        {"min_score": 80, "max_score_exclusive": null, "label": "direct_or_functional", "description": "Direct or strongly functionally equivalent work."}
+      ]
+    },
+    {
+      "id": "behavioral_fit",
+      "display_name": "Behavioral Fit",
+      "description": "Role and culture compatibility against supplied behavioral preferences and researched signals.",
+      "weight": 0.15,
+      "score_min": 0,
+      "score_max": 100,
+      "bands": [
+        {"min_score": 0, "max_score_exclusive": 40, "label": "significant_mismatch", "description": "Significant culture mismatch."},
+        {"min_score": 40, "max_score_exclusive": 60, "label": "friction", "description": "Some friction areas."},
+        {"min_score": 60, "max_score_exclusive": 80, "label": "mostly_compatible", "description": "Mixed signals but mostly compatible."},
+        {"min_score": 80, "max_score_exclusive": null, "label": "strong_match", "description": "Culture strongly matches behavioral preferences."}
+      ]
+    },
+    {
+      "id": "career_alignment",
+      "display_name": "Career Alignment",
+      "description": "Career direction, motivation, growth path, and personal constraints alignment.",
+      "weight": 0.3,
+      "score_min": 0,
+      "score_max": 100,
+      "bands": [
+        {"min_score": 0, "max_score_exclusive": 40, "label": "backwards_step", "description": "Dead end or backwards step."},
+        {"min_score": 40, "max_score_exclusive": 60, "label": "weak_progression", "description": "Decent job but weak career-goal progression."},
+        {"min_score": 60, "max_score_exclusive": 80, "label": "partially_aligned", "description": "Good role but partially aligned with long-term goals."},
+        {"min_score": 80, "max_score_exclusive": null, "label": "strong_alignment", "description": "Strongly aligned with career direction and growth path."}
+      ]
+    }
+  ],
+  "verdict_thresholds": [
+    {"id": "poor_fit", "display_name": "Poor Fit", "min_score": 0, "max_score_exclusive": 30},
+    {"id": "weak_fit", "display_name": "Weak Fit", "min_score": 30, "max_score_exclusive": 45},
+    {"id": "moderate_fit", "display_name": "Moderate Fit", "min_score": 45, "max_score_exclusive": 60},
+    {"id": "good_fit", "display_name": "Good Fit", "min_score": 60, "max_score_exclusive": 75},
+    {"id": "strong_fit", "display_name": "Strong Fit", "min_score": 75, "max_score_exclusive": null}
+  ],
+  "rounding": {
+    "mode": "half_up",
+    "decimal_places": 1
+  }
+}
