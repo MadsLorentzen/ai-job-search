@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/smbabalola/ai-job-search/product/schemas/job-fit-contract.v0.schema.json",
+  "title": "Job Fit Contract v0",
+  "description": "Structured request/result envelope for evidence-backed job-fit analysis. This is a passive contract and does not define orchestration or AI behavior.",
+  "type": "object",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "requirementKind": {
+      "enum": ["required", "preferred", "informational", "unknown"]
+    },
+    "userIntent": {
+      "enum": ["evaluate", "evaluate_with_transferability"]
+    },
+    "status": {
+      "enum": ["READY", "NEEDS_REVIEW", "UNAVAILABLE", "UNSUPPORTED", "SUGGESTED"]
+    },
+    "matchClassification": {
+      "enum": ["direct", "functionally_equivalent", "transferable"]
+    },
+    "extensionRecordType": {
+      "enum": [
+        "competency",
+        "transferable_mapping",
+        "certification",
+        "terminology",
+        "role",
+        "disallowed_mapping"
+      ]
+    },
+    "gapType": {
+      "enum": ["missing_evidence", "partial_match", "unsupported", "qualification_gap", "unknown"]
+    },
+    "prohibitedInference": {
+      "enum": [
+        "regulated-licence",
+        "professional-certification",
+        "protected-status",
+        "employment-history",
+        "years-of-experience",
+        "hands-on-experience",
+        "formal-qualification",
+        "other"
+      ]
+    }
+  }
+}
