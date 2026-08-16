@@ -1,0 +1,19 @@
+{
+  "id": "backend-engineer-example-ab12cd34",
+  "title": "Backend Engineer",
+  "company": "Example Systems",
+  "company_slug": "example-systems",
+  "location": "Berlin, Germany",
+  "date": "2026-08-12T09:30:00Z",
+  "url": "https://jobs.example.test/backend-engineer/42",
+  "work_mode": "hybrid",
+  "regions": ["eu"],
+  "countries": ["de"],
+  "skills": ["python", "postgresql"],
+  "description": "  Build dependable services.\n\nKeep this spacing exactly.  ",
+  "cities": ["Berlin"],
+  "seniority": "mid",
+  "category": "software-engineering",
+  "employment_type": "full-time",
+  "salary": "EUR 70000–85000"
+}

@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/smbabalola/ai-job-search/product/schemas/job-source-record.v0.schema.json",
+  "title": "Job Source Record v0",
+  "description": "Explicit job-source facts accepted by the product ingestion boundary. Empty evidence collections mean that no structured evidence was supplied; they do not assert that the posting contains no such information.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source",
+    "captured_at",
+    "company",
+    "title"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "#/$defs/jobSourceRecordVersion"
+    },
+    "source": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "source_record_id": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "source_url": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "captured_at": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "company": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "title": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "location": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "employment_type": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "description": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "raw_text": {
+      "$ref": "#/$defs/nonEmptyString"
+    },
+    "compensation": {
+      "type": "object"
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "requirements": {
+      "$ref": "#/$defs/evidenceCollection"
+    },
+    "responsibilities": {
+      "$ref": "#/$defs/evidenceCollection"
+    },
+    "language_requirements": {
+      "$ref": "#/$defs/evidenceCollection"
+    },
+    "eligibility_requirements": {
+      "$ref": "#/$defs/evidenceCollection"
+    },
+    "logistics_requirements": {
+      "$ref": "#/$defs/evidenceCollection"
+    }
+  },
+  "$defs": {
+    "jobSourceRecordVersion": {
+      "type": "string",
+      "const": "job-source-record.v0"
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceCollection": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidenceItem"
+      }
+    },
+    "evidenceItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "kind"],
+      "properties": {
+        "text": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "kind": {
+          "$ref": "job-fit-contract.v0.schema.json#/$defs/requirementKind"
+        },
+        "source_section": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}
