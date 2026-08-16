@@ -1,6 +1,7 @@
 ---
 name: jobbank-search
 version: 1.0.0
+enabled: false  # Danish demo portal - kept as a reference implementation; this fork searches India + remote
 description: >
   Make sure to use this skill whenever the user mentions anything related to job
   searching on Akademikernes Jobbank, jobbank.dk, or looking for academic or

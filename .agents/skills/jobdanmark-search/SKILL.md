@@ -1,6 +1,7 @@
 ---
 name: jobdanmark-search
 version: 1.0.0
+enabled: false  # Danish demo portal - kept as a reference implementation; this fork searches India + remote
 description: >
   Make sure to use this skill whenever the user mentions anything related to Danish
   job listings, job search in Denmark, finding work in Denmark, or job vacancies on

@@ -1,6 +1,7 @@
 ---
 name: jobindex-search
 version: 1.0.0
+enabled: false  # Danish demo portal - kept as a reference implementation; this fork searches India + remote
 description: >
   Make sure to use this skill whenever the user wants to search for jobs in Denmark,
   find Danish job listings, look up a specific job posting, or asks anything about
