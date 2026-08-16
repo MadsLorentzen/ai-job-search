@@ -83,6 +83,16 @@ documents/interview/**
 # Personal job search tracking
 job_search_tracker.csv
 
+# Cached third-party posting bodies written by fetch_posting.py. Not ours to
+# commit (same spirit as documents/applications/**). `**/job_scraper/*.md`
+# above is depth-1 only and does not cover this subdirectory.
+**/job_scraper/postings/
+
+# The company-pages-search watchlist is personal (which employers you track).
+# A committed example lives at
+# .agents/skills/company-pages-search/company_pages.example.json
+company_pages.json
+
 # Gmail sync state (message IDs, subjects - personal data)
 gmail_sync/
 
