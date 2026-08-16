@@ -1,0 +1,20 @@
+{
+  "name": "cutshort-cli",
+  "version": "1.0.0",
+  "description": "CLI for searching public job postings on CutShort (cutshort.io, India tech/startup) via its robots-allowed jobs sitemap and public job pages — no authentication, zero runtime dependencies. Personal use only.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "cutshort-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 60000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "latest"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "foundit-cli",
+  "version": "1.0.0",
+  "description": "CLI for reading job postings from Foundit (formerly Monster India). Detail-only — search is unsupported (robots.txt / bot protection). Zero runtime dependencies.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "foundit-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 30000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "latest"
+  }
+}

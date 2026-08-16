@@ -1,0 +1,20 @@
+{
+  "name": "instahyre-cli",
+  "version": "1.0.0",
+  "description": "CLI for searching jobs on Instahyre (India, tech/startup) via its public job_search JSON API — no authentication, zero runtime dependencies. Personal use only.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "instahyre-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 30000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "latest"
+  }
+}

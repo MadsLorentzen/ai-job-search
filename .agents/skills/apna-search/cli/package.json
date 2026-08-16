@@ -1,0 +1,20 @@
+{
+  "name": "apna-cli",
+  "version": "1.0.0",
+  "description": "CLI for searching jobs on apna.co (India's blue-collar / entry-level job board) via its public web pages — no authentication, zero runtime dependencies.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "apna-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 30000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "latest"
+  }
+}
