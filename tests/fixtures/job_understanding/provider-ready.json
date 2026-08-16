@@ -1,0 +1,43 @@
+{
+  "schema_version": "job-understanding-candidate.v0",
+  "items": [
+    {
+      "proposal_id": "proposal-python",
+      "category": "requirements",
+      "kind": "required",
+      "quote": "Python is required.",
+      "certainty": "explicit"
+    },
+    {
+      "proposal_id": "proposal-pipelines",
+      "category": "responsibilities",
+      "kind": "required",
+      "quote": "Build reliable data pipelines.",
+      "certainty": "explicit"
+    },
+    {
+      "proposal_id": "proposal-work-rights",
+      "category": "eligibility_requirements",
+      "kind": "required",
+      "quote": "Applicants must already have the right to work in the UK.",
+      "certainty": "explicit"
+    },
+    {
+      "proposal_id": "proposal-german",
+      "category": "language_requirements",
+      "kind": "preferred",
+      "quote": "German would be an advantage.",
+      "certainty": "explicit"
+    },
+    {
+      "proposal_id": "proposal-hybrid",
+      "category": "logistics_requirements",
+      "kind": "required",
+      "quote": "Hybrid role: two days per week in London.",
+      "certainty": "explicit"
+    }
+  ],
+  "suggestions": [],
+  "ambiguous_statements": [],
+  "warnings": []
+}

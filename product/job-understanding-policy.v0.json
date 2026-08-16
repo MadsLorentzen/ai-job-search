@@ -1,0 +1,46 @@
+{
+  "schema_version": "job-understanding-policy.v0",
+  "id": "job-understanding-grounded-extraction",
+  "source_priority": [
+    "raw_text",
+    "description"
+  ],
+  "evidence_categories": [
+    "requirements",
+    "responsibilities",
+    "language_requirements",
+    "eligibility_requirements",
+    "logistics_requirements"
+  ],
+  "requirement_kinds": [
+    "required",
+    "preferred",
+    "informational",
+    "unknown"
+  ],
+  "certainty_levels": [
+    "explicit",
+    "ambiguous"
+  ],
+  "result_statuses": [
+    "READY",
+    "NEEDS_REVIEW",
+    "UNAVAILABLE",
+    "UNSUPPORTED",
+    "SUGGESTED"
+  ],
+  "prompt": {
+    "id": "job-understanding-extraction",
+    "version": "v0",
+    "path": "prompts/job-understanding.v0.txt"
+  },
+  "rules": {
+    "posting_text_is_untrusted_data": true,
+    "exact_quotes_required": true,
+    "fuzzy_quote_matching": false,
+    "provider_offsets_authoritative": false,
+    "silence_means_absent": false,
+    "semantic_deduplication": false,
+    "accepted_certainty": "explicit"
+  }
+}

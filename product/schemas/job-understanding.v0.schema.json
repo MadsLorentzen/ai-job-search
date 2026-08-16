@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/smbabalola/ai-job-search/product/schemas/job-understanding.v0.schema.json",
+  "title": "Job Understanding / Evidence Extraction v0",
+  "description": "Provider-neutral contracts for proposing and locally validating source-grounded job evidence.",
+  "type": "object",
+  "$defs": {
+    "requestVersion": {"const": "job-understanding-request.v0"},
+    "candidateVersion": {"const": "job-understanding-candidate.v0"},
+    "resultVersion": {"const": "job-understanding-result.v0"},
+    "policyVersion": {"const": "job-understanding-policy.v0"},
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "contentId": {
+      "type": "string",
+      "pattern": "^[a-z]+_[0-9a-f]{20,64}$"
+    },
+    "sourceField": {"enum": ["raw_text", "description"]},
+    "category": {
+      "enum": [
+        "requirements",
+        "responsibilities",
+        "language_requirements",
+        "eligibility_requirements",
+        "logistics_requirements"
+      ]
+    },
+    "requirementKind": {
+      "enum": ["required", "preferred", "informational", "unknown"]
+    },
+    "certainty": {"enum": ["explicit", "ambiguous"]},
+    "resultStatus": {
+      "enum": ["READY", "NEEDS_REVIEW", "UNAVAILABLE", "UNSUPPORTED", "SUGGESTED"]
+    },
+    "providerCitationProposal": {
+      "type": "object",
+      "required": ["quote"],
+      "properties": {
+        "quote": {"type": "string", "minLength": 1},
+        "occurrence": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "providerItem": {
+      "type": "object",
+      "required": ["proposal_id", "category", "kind", "quote", "certainty"],
+      "properties": {
+        "proposal_id": {"$ref": "#/$defs/id"},
+        "category": {"$ref": "#/$defs/category"},
+        "kind": {"$ref": "#/$defs/requirementKind"},
+        "quote": {"type": "string", "minLength": 1},
+        "occurrence": {"type": "integer", "minimum": 0},
+        "certainty": {"$ref": "#/$defs/certainty"}
+      },
+      "additionalProperties": false
+    },
+    "reviewProposal": {
+      "type": "object",
+      "required": ["proposal_id", "text", "reason", "quote"],
+      "properties": {
+        "proposal_id": {"$ref": "#/$defs/id"},
+        "text": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1},
+        "category": {"$ref": "#/$defs/category"},
+        "kind": {"$ref": "#/$defs/requirementKind"},
+        "quote": {"type": "string", "minLength": 1},
+        "occurrence": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "citation": {
+      "type": "object",
+      "required": ["source_field", "source_content_id", "start", "end", "quote", "occurrence"],
+      "properties": {
+        "source_field": {"$ref": "#/$defs/sourceField"},
+        "source_content_id": {"$ref": "#/$defs/contentId"},
+        "start": {"type": "integer", "minimum": 0},
+        "end": {"type": "integer", "minimum": 1},
+        "quote": {"type": "string", "minLength": 1},
+        "occurrence": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "acceptedItem": {
+      "type": "object",
+      "required": ["id", "proposal_id", "text", "kind", "certainty", "extraction_status", "citations"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "proposal_id": {"$ref": "#/$defs/id"},
+        "text": {"type": "string", "minLength": 1},
+        "kind": {"$ref": "#/$defs/requirementKind"},
+        "certainty": {"const": "explicit"},
+        "extraction_status": {"const": "ACCEPTED"},
+        "citations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/citation"}
+        },
+        "exact_duplicate_of": {"$ref": "#/$defs/id"}
+      },
+      "additionalProperties": false
+    },
+    "jobIdentity": {
+      "type": "object",
+      "required": ["schema_version", "job_id", "content_id"],
+      "properties": {
+        "schema_version": {"const": "job-posting-snapshot.v0"},
+        "job_id": {"$ref": "#/$defs/id"},
+        "content_id": {"$ref": "#/$defs/contentId"}
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["field", "content_id", "character_length", "text"],
+      "properties": {
+        "field": {"$ref": "#/$defs/sourceField"},
+        "content_id": {"$ref": "#/$defs/contentId"},
+        "character_length": {"type": "integer", "minimum": 1},
+        "text": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "policyIdentity": {
+      "type": "object",
+      "required": ["schema_version", "id", "content_id", "prompt_id", "prompt_version", "prompt_content_id"],
+      "properties": {
+        "schema_version": {"$ref": "#/$defs/policyVersion"},
+        "id": {"$ref": "#/$defs/id"},
+        "content_id": {"$ref": "#/$defs/contentId"},
+        "prompt_id": {"$ref": "#/$defs/id"},
+        "prompt_version": {"$ref": "#/$defs/id"},
+        "prompt_content_id": {"$ref": "#/$defs/contentId"}
+      },
+      "additionalProperties": false
+    },
+    "preservedEvidence": {
+      "type": "object",
+      "required": ["requirements", "responsibilities", "language_requirements", "eligibility_requirements", "logistics_requirements"],
+      "properties": {
+        "requirements": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "responsibilities": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "language_requirements": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "eligibility_requirements": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "logistics_requirements": {"type": "array", "items": {"$ref": "#/$defs/id"}}
+      },
+      "additionalProperties": false
+    },
+    "request": {
+      "type": "object",
+      "required": ["schema_version", "request_id", "job_snapshot", "source", "policy", "requested_categories", "preserved_evidence"],
+      "properties": {
+        "schema_version": {"$ref": "#/$defs/requestVersion"},
+        "request_id": {"$ref": "#/$defs/id"},
+        "job_snapshot": {"$ref": "#/$defs/jobIdentity"},
+        "source": {"oneOf": [{"$ref": "#/$defs/source"}, {"type": "null"}]},
+        "policy": {"$ref": "#/$defs/policyIdentity"},
+        "requested_categories": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/category"}
+        },
+        "preserved_evidence": {"$ref": "#/$defs/preservedEvidence"}
+      },
+      "additionalProperties": false
+    },
+    "candidateResponse": {
+      "type": "object",
+      "required": ["schema_version", "items", "suggestions", "ambiguous_statements", "warnings"],
+      "properties": {
+        "schema_version": {"$ref": "#/$defs/candidateVersion"},
+        "items": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {"$ref": "#/$defs/providerItem"}
+        },
+        "suggestions": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {"$ref": "#/$defs/reviewProposal"}
+        },
+        "ambiguous_statements": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {"$ref": "#/$defs/reviewProposal"}
+        },
+        "warnings": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {"type": "string", "minLength": 1, "maxLength": 20000}
+        }
+      },
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "required": ["provider_id", "model_id", "model_version"],
+      "properties": {
+        "provider_id": {"$ref": "#/$defs/id"},
+        "model_id": {"$ref": "#/$defs/id"},
+        "model_version": {"$ref": "#/$defs/id"},
+        "provider_response_id": {"$ref": "#/$defs/id"}
+      },
+      "additionalProperties": false
+    },
+    "reviewRecord": {
+      "type": "object",
+      "required": ["id", "proposal_id", "text", "reason", "grounding_status", "source_field", "source_content_id", "citation"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "proposal_id": {"$ref": "#/$defs/id"},
+        "text": {"type": "string", "minLength": 1, "maxLength": 20000},
+        "reason": {"type": "string", "minLength": 1, "maxLength": 20000},
+        "grounding_status": {"const": "EXACT"},
+        "source_field": {"$ref": "#/$defs/sourceField"},
+        "source_content_id": {"$ref": "#/$defs/contentId"},
+        "category": {"$ref": "#/$defs/category"},
+        "kind": {"$ref": "#/$defs/requirementKind"},
+        "citation": {"$ref": "#/$defs/citation"}
+      },
+      "additionalProperties": false
+    },
+    "reconciliation": {
+      "type": "object",
+      "required": ["type", "extracted_evidence_id", "explicit_evidence_id"],
+      "properties": {
+        "type": {"const": "EXACT_DUPLICATE"},
+        "extracted_evidence_id": {"$ref": "#/$defs/id"},
+        "explicit_evidence_id": {"$ref": "#/$defs/id"}
+      },
+      "additionalProperties": false
+    },
+    "coverage": {
+      "type": "object",
+      "required": ["category", "status", "accepted_count"],
+      "properties": {
+        "category": {"$ref": "#/$defs/category"},
+        "status": {"const": "PROCESSED"},
+        "accepted_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object",
+      "required": [
+        "schema_version", "request_id", "job_snapshot", "source", "policy", "execution",
+        "requirements", "responsibilities", "language_requirements", "eligibility_requirements",
+        "logistics_requirements", "suggestions", "ambiguous_statements", "warnings",
+        "reconciliation", "category_coverage", "status"
+      ],
+      "properties": {
+        "schema_version": {"$ref": "#/$defs/resultVersion"},
+        "request_id": {"$ref": "#/$defs/id"},
+        "job_snapshot": {"$ref": "#/$defs/jobIdentity"},
+        "source": {"oneOf": [{"$ref": "#/$defs/source"}, {"type": "null"}]},
+        "policy": {"$ref": "#/$defs/policyIdentity"},
+        "execution": {"oneOf": [{"$ref": "#/$defs/execution"}, {"type": "null"}]},
+        "requirements": {"type": "array", "items": {"$ref": "#/$defs/acceptedItem"}},
+        "responsibilities": {"type": "array", "items": {"$ref": "#/$defs/acceptedItem"}},
+        "language_requirements": {"type": "array", "items": {"$ref": "#/$defs/acceptedItem"}},
+        "eligibility_requirements": {"type": "array", "items": {"$ref": "#/$defs/acceptedItem"}},
+        "logistics_requirements": {"type": "array", "items": {"$ref": "#/$defs/acceptedItem"}},
+        "suggestions": {"type": "array", "items": {"$ref": "#/$defs/reviewRecord"}},
+        "ambiguous_statements": {"type": "array", "items": {"$ref": "#/$defs/reviewRecord"}},
+        "warnings": {"type": "array", "maxItems": 100, "items": {"type": "string", "minLength": 1, "maxLength": 20000}},
+        "reconciliation": {"type": "array", "items": {"$ref": "#/$defs/reconciliation"}},
+        "category_coverage": {"type": "array", "items": {"$ref": "#/$defs/coverage"}},
+        "status": {"$ref": "#/$defs/resultStatus"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {"$ref": "#/$defs/request"},
+    {"$ref": "#/$defs/candidateResponse"},
+    {"$ref": "#/$defs/result"}
+  ]
+}
