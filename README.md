@@ -18,6 +18,26 @@ An AI-powered job application framework built on [Claude Code](https://claude.co
 >
 > This project has **no affiliated cryptocurrency, token, or paid sponsorship program**. Anything claiming otherwise is unauthorized and should be treated as a scam. The only ways to support the project are the Ko-fi link below and contributing on GitHub.
 
+## About this fork
+
+A fork of [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search) retargeted from the Danish demo market to **India + remote/global**, with market-agnostic infrastructure borrowed from other forks. The core workflow is unchanged and tracks upstream.
+
+**India portals** (from [ashutoshgh/ai-job-search-india](https://github.com/ashutoshgh/ai-job-search-india)) — `apna-search`, `hirist-search`, `iimjobs-search`, `instahyre-search`, `foundit-search`, `cutshort-search`, `randstad-india-search`, `aijobs-search`, `protocoljobs-search`.
+
+**Remote / global boards** (same fork) — `himalayas-search`, `remoteok-search`, `weworkremotely-search`, `ycombinator-search` (Work at a Startup), `otta-search` (now Welcome to the Jungle).
+
+**Employer watchlist** (from [kblackma/ai-job-search](https://github.com/kblackma/ai-job-search)) — `company-pages-search` queries the public JSON APIs behind Greenhouse, Lever, SmartRecruiters and Oracle Cloud HCM for a registry of companies you care about, catching roles that never reach a job board. Its HTML fallback runs behind the repo's own `tools/robots_check.py` gate. Copy `company_pages.example.json` to `company_pages.json` (gitignored) to start.
+
+**Posting cache** (from [ank1494/ai-job-search](https://github.com/ank1494/ai-job-search)) — `fetch_posting.py` caches posting bodies on disk so `/scrape`, `/rank`, `/apply` and `/outcome` fetch a posting once instead of once each. It never fetches anything itself and degrades to a warning if the cache is unavailable.
+
+**`/sync-upstream`** (from [erikpr1994/ai-job-search-spain](https://github.com/erikpr1994/ai-job-search-spain)) — a fork-aware command for pulling upstream changes without clobbering local adaptations.
+
+The four Danish demo portals stay installed as reference implementations but are switched off via `enabled: false`, so `/scrape` skips them. Flip that line in any `SKILL.md` to re-enable one.
+
+**Deliberately not ported:** `indeed-india-search`. It shells out to `curl` specifically to get around Indeed's edge rejecting certain header combinations, and Indeed's Terms of Service restrict automated access. Working around bot filtering is a different thing from respecting a site's published policy, so it stays out.
+
+Every ported skill was checked before it landed: zero runtime dependencies, no install lifecycle scripts, network calls only to the host each one claims, no filesystem access outside its own folder, and an honest self-identifying User-Agent. Portals were also checked against their live `robots.txt`. **This is not a substitute for reading the code yourself** — these CLIs run against your career data.
+
 ## Does it actually work?
 
 I'm a geophysicist by training. When my position was cut in late 2025, I built this framework to run my own job search - the same `/scrape`, `/apply`, and `/interview` workflow in this repo, used weekly, on my own career. I was upfront about it with every employer I spoke to, and instead of counting against me, it usually sparked a genuine technical conversation.
