@@ -148,7 +148,11 @@ bun run src/cli.ts search --text "sygeplejerske" --zip 8000 --limit 10
         "url": "https://jobdanmark.dk/media/idvbnt4y/rah-service-as-billede.png",
         "focalPoint": { "top": 0.488, "left": 0.499 }
       },
-      "silhouetteLogo": false
+      "silhouetteLogo": false,
+      "company": "Rah Service A/S",
+      "location": "Ringkøbing",
+      "date": "2026-03-12",
+      "deadline": "2026-04-10"
     }
   ]
 }
@@ -161,6 +165,7 @@ bun run src/cli.ts search --text "sygeplejerske" --zip 8000 --limit 10
 > - `companyLogo` can be `null`.
 > - `publishedDate` format: `"DD-MM-YYYY"`.
 > - `coverImage` can be `null`.
+> - Every result also carries the cross-portal contract fields `company`, `location`, `date` and `deadline`, derived from `companyName`, the city after the postal code in `companyAddress`, and the day-first dates converted to `YYYY-MM-DD` — `/scrape` Step 2 expects search output to include title, company, location, date, and URL. Native fields are preserved unchanged.
 
 ---
 

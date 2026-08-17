@@ -2,7 +2,7 @@ import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
 import { apiPost, writeError, BASE_URL } from "../helpers.js"
 
-interface ApiSearchItem {
+export interface ApiSearchItem {
   title: string
   companyName: string
   companyLogo: {
@@ -34,7 +34,12 @@ interface ApiSearchResponse {
   totalPages: number
 }
 
-function normalizeItem(item: ApiSearchItem): Record<string, unknown> {
+function toContractDate(value: string | null): string | null {
+  const match = value?.match(/^(\d{2})-(\d{2})-(\d{4})$/)
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : (value ?? null)
+}
+
+export function normalizeItem(item: ApiSearchItem): Record<string, unknown> {
   const relativeUrl = item.url
   const fullUrl = relativeUrl.startsWith("http")
     ? relativeUrl
@@ -77,6 +82,10 @@ function normalizeItem(item: ApiSearchItem): Record<string, unknown> {
     slug,
     coverImage,
     silhouetteLogo: item.silhouetteLogo,
+    company: item.companyName,
+    location: item.companyAddress.match(/\d{4}\s+(.+)$/)?.[1] ?? null,
+    date: toContractDate(item.publishedDate),
+    deadline: toContractDate(item.applicationDeadline),
   }
 }
 
