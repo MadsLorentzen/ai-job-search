@@ -147,6 +147,7 @@ export const search = defineCommand({
           description: item.description,
           url: item.link,
           posted,
+          date: posted ? posted.slice(0, 10) : null,
           deadline: parsed.deadline,
         }
       })
