@@ -23,18 +23,25 @@ from product.evaluation_policy import (
     validate_evaluation_policy,
 )
 from product.extensions import ExtensionValidationError, extension_content_id, validate_extension
+from product.job_posting import (
+    JOB_EVIDENCE_COLLECTIONS,
+    JOB_POSTING_SNAPSHOT_VERSION,
+    REQUIREMENT_KINDS,
+    JobPostingValidationError,
+    job_evidence_ids,
+    job_snapshot_content_id as _job_snapshot_content_id,
+    validate_job_posting_snapshot as _validate_job_posting_snapshot,
+)
 from product.profile_snapshot import SnapshotValidationError, validate_snapshot
 
 
 SCHEMA_PATH = Path(__file__).with_name("schemas") / "job-fit-contract.v0.schema.json"
 CONTRACT_SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
 
-JOB_POSTING_SNAPSHOT_VERSION = CONTRACT_SCHEMA["$defs"]["jobPostingSnapshotVersion"]["const"]
 JOB_FIT_REQUEST_VERSION = CONTRACT_SCHEMA["$defs"]["jobFitRequestVersion"]["const"]
 JOB_FIT_RESULT_VERSION = CONTRACT_SCHEMA["$defs"]["jobFitResultVersion"]["const"]
 
 ID_RE = re.compile(CONTRACT_SCHEMA["$defs"]["id"]["pattern"])
-REQUIREMENT_KINDS = set(CONTRACT_SCHEMA["$defs"]["requirementKind"]["enum"])
 USER_INTENTS = set(CONTRACT_SCHEMA["$defs"]["userIntent"]["enum"])
 STATUSES = set(CONTRACT_SCHEMA["$defs"]["status"]["enum"])
 MATCH_CLASSIFICATIONS = set(CONTRACT_SCHEMA["$defs"]["matchClassification"]["enum"])
@@ -42,13 +49,6 @@ EXTENSION_RECORD_TYPES = set(CONTRACT_SCHEMA["$defs"]["extensionRecordType"]["en
 GAP_TYPES = set(CONTRACT_SCHEMA["$defs"]["gapType"]["enum"])
 PROHIBITED_INFERENCES = set(CONTRACT_SCHEMA["$defs"]["prohibitedInference"]["enum"])
 
-JOB_EVIDENCE_COLLECTIONS = (
-    "requirements",
-    "responsibilities",
-    "language_requirements",
-    "eligibility_requirements",
-    "logistics_requirements",
-)
 EXTENSION_RECORD_COLLECTIONS = {
     "competency": "competencies",
     "transferable_mapping": "transferable_mappings",
@@ -79,62 +79,12 @@ class JobFitValidationError(ValueError):
 
 
 def validate_job_posting_snapshot(snapshot: Any) -> None:
-    """Validate a normalized Job Posting Snapshot v0 object."""
+    """Compatibility wrapper for the product-owned Job Posting validator."""
 
-    errors: list[str] = []
-    if not _object_shape(
-        snapshot,
-        {
-            "schema_version",
-            "job_id",
-            "source",
-            "captured_at",
-            "company",
-            "title",
-            "requirements",
-            "responsibilities",
-        },
-        {
-            "schema_version",
-            "job_id",
-            "source",
-            "source_url",
-            "captured_at",
-            "company",
-            "title",
-            "location",
-            "employment_type",
-            "description",
-            "raw_text",
-            "requirements",
-            "responsibilities",
-            "language_requirements",
-            "eligibility_requirements",
-            "logistics_requirements",
-            "compensation",
-            "metadata",
-        },
-        "$.job_snapshot",
-        errors,
-    ):
-        raise JobFitValidationError(errors)
-
-    if snapshot.get("schema_version") != JOB_POSTING_SNAPSHOT_VERSION:
-        errors.append("$.job_snapshot.schema_version: unsupported job snapshot version")
-    _id(snapshot.get("job_id"), "$.job_snapshot.job_id", errors)
-    for field in ("source", "captured_at", "company", "title"):
-        _nonempty_string(snapshot.get(field), f"$.job_snapshot.{field}", errors)
-    for field in ("source_url", "location", "employment_type", "description", "raw_text"):
-        if field in snapshot:
-            _nonempty_string(snapshot[field], f"$.job_snapshot.{field}", errors)
-    if "compensation" in snapshot and not isinstance(snapshot["compensation"], dict):
-        errors.append("$.job_snapshot.compensation: must be an object")
-    if "metadata" in snapshot and not isinstance(snapshot["metadata"], dict):
-        errors.append("$.job_snapshot.metadata: must be an object")
-
-    _job_evidence_ids(snapshot, errors)
-    if errors:
-        raise JobFitValidationError(errors)
+    try:
+        _validate_job_posting_snapshot(snapshot)
+    except JobPostingValidationError as exc:
+        raise JobFitValidationError(exc.errors) from exc
 
 
 def validate_job_fit_request(request: Any) -> None:
@@ -354,7 +304,10 @@ def job_snapshot_content_id(job: dict[str, Any]) -> str:
     deterministic but is not a durable database or domain record ID.
     """
 
-    return _content_id("jobsnap", job)
+    try:
+        return _job_snapshot_content_id(job)
+    except JobPostingValidationError as exc:
+        raise JobFitValidationError(exc.errors) from exc
 
 
 def _content_id(prefix: str, value: dict[str, Any]) -> str:
@@ -405,37 +358,7 @@ def _validate_user_intent(value: Any, errors: list[str]) -> None:
 
 
 def _job_evidence_ids(snapshot: dict[str, Any], errors: list[str]) -> set[str]:
-    ids: set[str] = set()
-    for collection in JOB_EVIDENCE_COLLECTIONS:
-        items = snapshot.get(collection, [])
-        if collection in {"requirements", "responsibilities"} and collection not in snapshot:
-            items = []
-        if not isinstance(items, list):
-            errors.append(f"$.job_snapshot.{collection}: must be an array")
-            continue
-        for index, item in enumerate(items):
-            path = f"$.job_snapshot.{collection}[{index}]"
-            if not _object_shape(
-                item,
-                {"id", "text", "kind"},
-                {"id", "text", "kind", "source_section", "metadata"},
-                path,
-                errors,
-            ):
-                continue
-            item_id = item.get("id")
-            _id(item_id, f"{path}.id", errors)
-            if isinstance(item_id, str):
-                if item_id in ids:
-                    errors.append(f"{path}.id: duplicate job evidence id {item_id!r}")
-                ids.add(item_id)
-            _nonempty_string(item.get("text"), f"{path}.text", errors)
-            _enum(item.get("kind"), REQUIREMENT_KINDS, f"{path}.kind", errors)
-            if "source_section" in item:
-                _nonempty_string(item["source_section"], f"{path}.source_section", errors)
-            if "metadata" in item and not isinstance(item["metadata"], dict):
-                errors.append(f"{path}.metadata: must be an object")
-    return ids
+    return job_evidence_ids(snapshot, errors)
 
 
 def _reference_context(request: dict[str, Any]) -> dict[str, Any]:

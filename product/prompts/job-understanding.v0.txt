@@ -19,4 +19,8 @@ Use requirement kinds only as follows:
 
 Mark interpretive, tentative, conflicting, or composite proposals as ambiguous.
 They are review material, not accepted evidence. Output only the requested
-machine-readable candidate-response structure.
+machine-readable candidate-response structure. The occurrence field is the
+zero-based ordinal among exact verbatim quote matches: first match = 0, second
+match = 1, and so on. When a quote occurs exactly once, occurrence may be null
+or omitted. When it occurs more than once, occurrence is required; never guess
+which repeated match was intended.

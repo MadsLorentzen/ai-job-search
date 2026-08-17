@@ -17,11 +17,30 @@ class JobUnderstandingProviderError(RuntimeError):
 
 
 @dataclass(frozen=True)
+class ProviderCallAudit:
+    """Bounded adapter-owned runtime telemetry kept outside evidence JSON."""
+
+    provider_id: str
+    model_id: str
+    model_version: str
+    provider_response_id: str | None
+    started_at: str
+    elapsed_ms: int
+    attempt_count: int
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    total_tokens: int | None = None
+    local_request_id: str | None = None
+    source_content_id: str | None = None
+
+
+@dataclass(frozen=True)
 class ProviderResponse:
     """Untrusted provider payload plus bounded adapter-owned metadata."""
 
     payload: Any
     response_id: str | None = None
+    audit: ProviderCallAudit | None = None
 
 
 @runtime_checkable

@@ -35,6 +35,12 @@ from product.job_understanding_providers import (
 
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "job_understanding"
+PROMPT_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "product"
+    / "prompts"
+    / "job-understanding.v0.txt"
+)
 
 
 def fixture(name: str) -> dict:
@@ -89,6 +95,14 @@ class Ticket6TestCase(unittest.TestCase):
 
 
 class PolicyAndContractTests(Ticket6TestCase):
+    def test_prompt_defines_zero_based_occurrence_disambiguation(self):
+        prompt = PROMPT_PATH.read_text(encoding="utf-8")
+        self.assertIn("zero-based ordinal", prompt)
+        self.assertIn("first match = 0, second", prompt)
+        self.assertIn("occurs exactly once, occurrence may be null", prompt)
+        self.assertIn("occurs more than once, occurrence is required", prompt)
+        self.assertIn("never guess", prompt)
+
     def test_versions_are_owned_by_machine_readable_schema(self):
         self.assertEqual(REQUEST_VERSION, SCHEMA["$defs"]["requestVersion"]["const"])
         self.assertEqual(CANDIDATE_VERSION, SCHEMA["$defs"]["candidateVersion"]["const"])
@@ -381,6 +395,43 @@ class ReadyExtractionTests(Ticket6TestCase):
 
 
 class ReviewSeparationTests(Ticket6TestCase):
+    def test_unique_quote_occurrence_is_locally_canonicalized(self):
+        job = snapshot()
+        quote = "Python is required."
+        expected_start = job["raw_text"].index(quote)
+        evidence_ids = set()
+        for supplied in (None, 0, 1, 10_000):
+            with self.subTest(supplied=supplied):
+                candidate = one_item(quote, proposal_id=f"proposal-unique-{supplied}")
+                if supplied is not None:
+                    candidate["items"][0]["occurrence"] = supplied
+                result = extract_job_understanding(
+                    job,
+                    DeterministicFakeProvider(candidate),
+                    f"extract-unique-{supplied}",
+                )
+                accepted = result["requirements"][0]
+                citation = accepted["citations"][0]
+                evidence_ids.add(accepted["id"])
+                self.assertEqual(citation["occurrence"], 0)
+                self.assertEqual(citation["start"], expected_start)
+                self.assertEqual(citation["end"], expected_start + len(quote))
+                self.assertEqual(citation["quote"], quote)
+                self.assertEqual(citation["source_content_id"], result["source"]["content_id"])
+        self.assertEqual(len(evidence_ids), 1)
+
+    def test_repeated_quote_occurrence_zero_resolves_first_match(self):
+        job = snapshot()
+        quote = "Repeated phrase."
+        candidate = one_item(quote, proposal_id="proposal-repeated-first")
+        candidate["items"][0]["occurrence"] = 0
+        result = extract_job_understanding(
+            job, DeterministicFakeProvider(candidate), "extract-repeated-first"
+        )
+        citation = result["requirements"][0]["citations"][0]
+        self.assertEqual(citation["occurrence"], 0)
+        self.assertEqual(citation["start"], job["raw_text"].index(quote))
+
     def test_ambiguous_item_cannot_enter_accepted_collection(self):
         candidate = one_item(certainty="ambiguous")
         result = extract_job_understanding(
@@ -636,6 +687,20 @@ class ReviewSeparationTests(Ticket6TestCase):
 
 
 class UntrustedCandidateTests(Ticket6TestCase):
+    def test_malformed_or_negative_unique_occurrence_is_rejected(self):
+        for occurrence in (-1, True, "0"):
+            with self.subTest(occurrence=occurrence):
+                candidate = one_item()
+                candidate["items"][0]["occurrence"] = occurrence
+                self.assert_invalid(
+                    lambda: extract_job_understanding(
+                        snapshot(),
+                        DeterministicFakeProvider(candidate),
+                        f"extract-malformed-occurrence-{occurrence}",
+                    ),
+                    "occurrence",
+                )
+
     def test_hallucinated_quote_is_rejected(self):
         candidate = one_item("Five years of experience required.")
         self.assert_invalid(

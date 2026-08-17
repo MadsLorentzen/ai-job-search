@@ -17,10 +17,10 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 
-from product.job_fit import (
+from product.job_posting import (
     JOB_POSTING_SNAPSHOT_VERSION,
     REQUIREMENT_KINDS,
-    JobFitValidationError,
+    JobPostingValidationError,
     validate_job_posting_snapshot,
 )
 
@@ -160,7 +160,7 @@ def normalize_job_source_record(record: Any) -> dict[str, Any]:
 
     try:
         validate_job_posting_snapshot(snapshot)
-    except JobFitValidationError as exc:
+    except JobPostingValidationError as exc:
         raise JobIngestionValidationError(
             [f"$.normalized_job_snapshot: {error}" for error in exc.errors]
         ) from exc
@@ -474,7 +474,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(snapshot, ensure_ascii=False, indent=2))
     except (
         JobIngestionValidationError,
-        JobFitValidationError,
+        JobPostingValidationError,
         FileNotFoundError,
         OSError,
         UnicodeError,

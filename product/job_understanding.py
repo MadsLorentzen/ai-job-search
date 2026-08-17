@@ -5,11 +5,9 @@ The provider is an untrusted proposer. Only exact quotes resolved and validated
 by this module enter accepted evidence collections. The module performs no
 candidate evaluation, semantic matching, networking, or persistence.
 
-Technical debt: Job Snapshot validation/content identity currently comes from
-``product.job_fit``, whose module graph also loads profile, extension, and
-evaluation-policy code. This module never calls those unrelated contracts or
-reads candidate data. The Job Posting contract should be separated before or
-alongside hosted-provider integration.
+Job Snapshot validation/content identity comes from the isolated product-owned
+Job Posting contract. This module never loads candidate, extension, or
+evaluation-policy contracts.
 """
 
 from __future__ import annotations
@@ -21,9 +19,9 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 
-from product.job_fit import (
+from product.job_posting import (
     JOB_POSTING_SNAPSHOT_VERSION,
-    JobFitValidationError,
+    JobPostingValidationError,
     job_snapshot_content_id,
     validate_job_posting_snapshot,
 )
@@ -532,15 +530,23 @@ def _resolve_quote(
         raise JobUnderstandingValidationError(
             "$.candidate: proposed quote does not occur exactly in selected source"
         )
-    if occurrence is None:
-        if len(starts) != 1:
-            return None
-        occurrence = 0
-    if isinstance(occurrence, bool) or not isinstance(occurrence, int) or occurrence < 0:
+    if occurrence is not None and (
+        isinstance(occurrence, bool)
+        or not isinstance(occurrence, int)
+        or occurrence < 0
+    ):
         raise JobUnderstandingValidationError("$.candidate: occurrence must be a non-negative integer")
-    if occurrence >= len(starts):
-        raise JobUnderstandingValidationError("$.candidate: occurrence is outside exact quote matches")
-    start = starts[occurrence]
+    if len(starts) == 1:
+        canonical_occurrence = 0
+    else:
+        if occurrence is None:
+            return None
+        if occurrence >= len(starts):
+            raise JobUnderstandingValidationError(
+                "$.candidate: occurrence is outside exact quote matches"
+            )
+        canonical_occurrence = occurrence
+    start = starts[canonical_occurrence]
     end = start + len(quote)
     return {
         "source_field": source["field"],
@@ -548,7 +554,7 @@ def _resolve_quote(
         "start": start,
         "end": end,
         "quote": quote,
-        "occurrence": occurrence,
+        "occurrence": canonical_occurrence,
     }
 
 
@@ -658,7 +664,7 @@ def _job_identity(job_snapshot: dict[str, Any]) -> dict[str, Any]:
 def _validate_job_snapshot(job_snapshot: Any) -> None:
     try:
         validate_job_posting_snapshot(job_snapshot)
-    except JobFitValidationError as exc:
+    except JobPostingValidationError as exc:
         raise JobUnderstandingValidationError(f"$.job_snapshot: {exc}") from exc
 
 
