@@ -1,6 +1,14 @@
 import { describe, test, expect, beforeAll } from "bun:test";
 import { runCLI, parseJSON } from "./helpers";
 
+// Live portal tests hit the real job board over the network. CI deliberately
+// does not run them (see .github/workflows/ci.yml): they are network-flaky and
+// job boards block datacenter IPs, so a red build would mean "GitHub's runner
+// was blocked today", not "this CLI is broken". Run them locally on demand:
+//   LIVE_PORTAL_TESTS=1 bun test
+const LIVE_PORTAL_TESTS = process.env.LIVE_PORTAL_TESTS === "1"
+
+
 function parsedStderr(stderr: string): { error?: string; code?: string } {
   try {
     return JSON.parse(stderr);
@@ -27,7 +35,7 @@ async function firstLiveJobId(): Promise<string> {
   return m[1];
 }
 
-describe("foundit CLI — detail (live)", () => {
+describe.skipIf(!LIVE_PORTAL_TESTS)("foundit CLI — detail (live)", () => {
   let jobId = "";
   beforeAll(async () => {
     jobId = await firstLiveJobId();

@@ -1,6 +1,14 @@
 import { describe, test, expect } from "bun:test";
 import { runCLI, parseJSON } from "./helpers";
 
+// Live portal tests hit the real job board over the network. CI deliberately
+// does not run them (see .github/workflows/ci.yml): they are network-flaky and
+// job boards block datacenter IPs, so a red build would mean "GitHub's runner
+// was blocked today", not "this CLI is broken". Run them locally on demand:
+//   LIVE_PORTAL_TESTS=1 bun test
+const LIVE_PORTAL_TESTS = process.env.LIVE_PORTAL_TESTS === "1"
+
+
 interface SearchResult {
   meta: { count: number; page: number };
   results: Array<{
@@ -62,7 +70,7 @@ describe("apna CLI flag validation", () => {
   });
 });
 
-describe("apna CLI live search", () => {
+describe.skipIf(!LIVE_PORTAL_TESTS)("apna CLI live search", () => {
   test('search "delivery executive" in Delhi returns ≥1 clean result', async () => {
     const result = await runCLI(["search", "-q", "delivery executive", "-l", "Delhi", "--limit", "5"]);
     expect(result.exitCode).toBe(0);

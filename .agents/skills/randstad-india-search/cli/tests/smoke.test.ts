@@ -1,6 +1,14 @@
 import { describe, test, expect } from "bun:test";
 import { runCLI, parseJSON } from "./helpers";
 
+// Live portal tests hit the real job board over the network. CI deliberately
+// does not run them (see .github/workflows/ci.yml): they are network-flaky and
+// job boards block datacenter IPs, so a red build would mean "GitHub's runner
+// was blocked today", not "this CLI is broken". Run them locally on demand:
+//   LIVE_PORTAL_TESTS=1 bun test
+const LIVE_PORTAL_TESTS = process.env.LIVE_PORTAL_TESTS === "1"
+
+
 interface SearchResult {
   meta: { count: number; page: number };
   results: Array<{
@@ -55,7 +63,7 @@ describe("Randstad India CLI — flag validation", () => {
   });
 });
 
-describe("Randstad India CLI — live search", () => {
+describe.skipIf(!LIVE_PORTAL_TESTS)("Randstad India CLI — live search", () => {
   test("search returns >=1 result with non-null id/title/url", async () => {
     const result = await runCLI([
       "search",

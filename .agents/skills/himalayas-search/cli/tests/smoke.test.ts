@@ -1,6 +1,14 @@
 import { describe, test, expect } from "bun:test";
 import { runCLI, parseJSON } from "./helpers";
 
+// Live portal tests hit the real job board over the network. CI deliberately
+// does not run them (see .github/workflows/ci.yml): they are network-flaky and
+// job boards block datacenter IPs, so a red build would mean "GitHub's runner
+// was blocked today", not "this CLI is broken". Run them locally on demand:
+//   LIVE_PORTAL_TESTS=1 bun test
+const LIVE_PORTAL_TESTS = process.env.LIVE_PORTAL_TESTS === "1"
+
+
 interface SearchResult {
   meta: { count: number; scannedPages: number };
   results: Array<{
@@ -20,7 +28,7 @@ function parsedStderr(stderr: string): { error?: string; code?: string } {
   }
 }
 
-describe("himalayas CLI live smoke", () => {
+describe.skipIf(!LIVE_PORTAL_TESTS)("himalayas CLI live smoke", () => {
   test("search with no filters returns results", async () => {
     const result = await runCLI(["search", "--pages", "1", "--limit", "5"]);
     const data = parseJSON<SearchResult>(result);

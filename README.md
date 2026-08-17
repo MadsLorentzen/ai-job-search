@@ -36,6 +36,14 @@ The four Danish demo portals stay installed as reference implementations but are
 
 **Deliberately not ported:** `indeed-india-search`. It shells out to `curl` specifically to get around Indeed's edge rejecting certain header combinations, and Indeed's Terms of Service restrict automated access. Working around bot filtering is a different thing from respecting a site's published policy, so it stays out.
 
+**Running the live portal tests.** Several ported skills ship tests that query the real job board. Those are gated behind an opt-in flag, because CI deliberately doesn't run live portal tests — boards block datacenter IPs, so a red build would mean "GitHub's runner was blocked today" rather than "this CLI is broken". CI still typechecks every CLI and runs the offline flag-validation and parsing tests. To exercise the live ones yourself, from a skill's `cli/` directory:
+
+```bash
+LIVE_PORTAL_TESTS=1 bun test
+```
+
+Worth doing before you rely on a portal: `apna-search` and `foundit-search` both failed their live tests from GitHub's runners (a parse failure and a 403), which may be IP blocking or may be real markup drift — running them from your own connection is what tells the two apart.
+
 Every ported skill was checked before it landed: zero runtime dependencies, no install lifecycle scripts, network calls only to the host each one claims, no filesystem access outside its own folder, and an honest self-identifying User-Agent. Portals were also checked against their live `robots.txt`. **This is not a substitute for reading the code yourself** — these CLIs run against your career data.
 
 ## Does it actually work?

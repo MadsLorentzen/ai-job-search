@@ -1,6 +1,14 @@
 import { describe, test, expect } from "bun:test";
 import { runCLI, parseJSON } from "./helpers";
 
+// Live portal tests hit the real job board over the network. CI deliberately
+// does not run them (see .github/workflows/ci.yml): they are network-flaky and
+// job boards block datacenter IPs, so a red build would mean "GitHub's runner
+// was blocked today", not "this CLI is broken". Run them locally on demand:
+//   LIVE_PORTAL_TESTS=1 bun test
+const LIVE_PORTAL_TESTS = process.env.LIVE_PORTAL_TESTS === "1"
+
+
 function parsedStderr(stderr: string): { error?: string; code?: string } {
   try {
     return JSON.parse(stderr);
@@ -65,7 +73,7 @@ describe("ycombinator CLI flag validation", () => {
   });
 });
 
-describe("ycombinator CLI live search (network)", () => {
+describe.skipIf(!LIVE_PORTAL_TESTS)("ycombinator CLI live search (network)", () => {
   test("search by role returns real jobs with required fields", async () => {
     const result = await runCLI(["search", "--role", "science", "--limit", "5"]);
     const data = parseJSON<SearchResponse>(result);
@@ -94,7 +102,7 @@ describe("ycombinator CLI live search (network)", () => {
   }, 30000);
 });
 
-describe("ycombinator CLI live detail (network)", () => {
+describe.skipIf(!LIVE_PORTAL_TESTS)("ycombinator CLI live detail (network)", () => {
   test("detail of the first search result is readable", async () => {
     const search = await runCLI(["search", "--role", "science", "--limit", "1"]);
     const data = parseJSON<SearchResponse>(search);
