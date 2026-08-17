@@ -1,6 +1,7 @@
 ---
 name: apna-search
 version: 1.0.0
+enabled: false  # BROKEN 2026-08-17: parser returns PARSE_FAILED against live apna.co (markup drift, not IP blocking - reproduced from a residential connection)
 description: >
   Use this skill to search for jobs on apna.co — India's largest blue-collar,
   grey-collar and entry-level job board (delivery, driver, telecaller, sales,

@@ -1,6 +1,7 @@
 ---
 name: foundit-search
 version: 1.0.0
+enabled: false  # BROKEN 2026-08-17: job pages 403 the honest UA (sitemap 200s, detail does not) - and detail is all this skill does
 description: >
   Read a specific job posting from Foundit (formerly Monster India,
   foundit.in) — a portal strong in IT and corporate roles across India.
