@@ -75,7 +75,10 @@ describe("foundit CLI — error paths", () => {
     expect(parsedStderr(result.stderr).code).toBe("BAD_ID");
   });
 
-  test("bogus numeric id exits 1 with NOT_FOUND", async () => {
+  // Live despite sitting among the offline error-path tests: distinguishing
+  // NOT_FOUND from any other failure requires Foundit to actually answer. From
+  // a blocked IP the CLI reports DETAIL_FAILED on a 403 and this fails.
+  test.skipIf(!LIVE_PORTAL_TESTS)("bogus numeric id exits 1 with NOT_FOUND", async () => {
     const result = await runCLI(["detail", "99999999999"]);
     expect(result.exitCode).toBe(1);
     expect(parsedStderr(result.stderr).code).toBe("NOT_FOUND");
