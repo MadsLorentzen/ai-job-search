@@ -13,6 +13,20 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Added
+
+- **`seen_jobs.json` entries record which mechanism produced them** - a new additive `source`
+  field (`cli` for Step 1b portal-CLI output, `websearch` for the Step 1c fallback), a Step 1c
+  rule tagging fallback results at collection time, and a `fallback (websearch):` line in the
+  Step 5 run summary naming the portals that ran on the fallback. Motivated by the
+  ghost-LinkedIn-jobs report (#331): when a stored job later turns out not to exist at its URL,
+  triage hinges on whether the entry came from live CLI output or a search index that can be
+  weeks stale - evidence that previously lived only in the run's scrollback. An entry that is
+  missing `source` predates the field and is never backfilled; a presented job with no
+  `seen_jobs.json` entry at all points at fabrication, which the scraper's Rule 1 forbids.
+  Pinned by `tests/test_scrape_provenance.py`. `job-scraper/SKILL.md` sits outside the
+  `framework_version`-marked set, so no version bump applies.
+
 ### Changed
 
 - **Job matching reframed around function, not title** (`framework_version` 1.2.2 -> 1.2.3 in
