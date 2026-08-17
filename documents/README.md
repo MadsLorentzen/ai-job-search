@@ -118,8 +118,9 @@ You can maintain these folders by hand, or let the **`/outcome`** command do it:
 **Subfolder naming:** `<company>_<role>` — lowercase, underscores for spaces.
 Every character that is not a letter, digit or underscore is dropped (so `Novo Nordisk A/S`
 becomes `novo_nordisk_as`), runs of underscores collapse to one, and leading and trailing
-underscores are trimmed. This keeps the name a single path component whatever the posting
-contains.
+underscores are trimmed. If the derived name is empty, stop and ask the user for a company or
+role containing at least one letter or digit; do not create a file or directory. Every non-empty
+result is therefore a single path component whatever the posting contains.
 
 Examples:
 ```

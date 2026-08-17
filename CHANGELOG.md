@@ -39,10 +39,12 @@ per-file diff commands.
   appeared in `/html-report`'s dashboard and `/setup`'s calibration never learned from it. The
   **Subfolder naming** rule in `documents/README.md` now drops every character that is not a
   letter, digit or underscore (collapsing underscore runs, trimming the ends), and the derivation
-  sites - `/outcome` Step 1.4 and `/apply`'s CV/cover-letter filenames - cite that rule instead of
-  paraphrasing it. **Already-nested archives are not migrated**: an archive written under the old
-  rule stays where it is until the user moves it; only newly derived names change. Thanks
-  @jakob1379 for the report.
+  sites - `/apply`, `/outcome`, the direct application skill, `/gmail-sync`, `/interview`, and
+  `/notion-sync` - cite that rule instead of paraphrasing it. An all-punctuation value that derives
+  to an empty name now stops for user correction instead of writing into the archive root. The
+  application assistant's `framework_version` moves 1.3.3 → 1.3.4. **Already-nested archives are
+  not migrated**: an archive written under the old rule stays where it is until the user moves it;
+  only newly derived names change. Thanks @jakob1379 for the report.
 
 - **The `/html-report` dashboard now reads and renders the tracker's `deadline`** (follow-up to
   #319). The tracker gained a fourteenth `deadline` column and every other consumer (`/outcome`,
