@@ -1,0 +1,90 @@
+{
+  "schema_version": "candidate-profile-evidence-snapshot.v0",
+  "id_semantics": "deterministic content-derived identifiers; not durable persistent identifiers",
+  "sources": [
+    {"file": "CLAUDE.md", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "line_count": 1}
+  ],
+  "claims": [
+    {
+      "id": "clm_1111111111111111",
+      "record_id": "rec_1111111111111111",
+      "concept_id": "cpt_1111111111111111",
+      "category": "skills",
+      "field": "technical_skill",
+      "value": "Python",
+      "source": {"file": "CLAUDE.md", "section": "Technical Skills", "line_start": 10, "line_end": 10},
+      "placeholder": false,
+      "confidence": "high",
+      "extraction_status": "explicit"
+    },
+    {
+      "id": "clm_2222222222222222",
+      "record_id": "rec_2222222222222222",
+      "concept_id": "cpt_2222222222222222",
+      "category": "employment",
+      "field": "job_title",
+      "value": "Data Engineer",
+      "source": {"file": "CLAUDE.md", "section": "Professional Experience", "line_start": 20, "line_end": 20},
+      "placeholder": false,
+      "confidence": "high",
+      "extraction_status": "explicit"
+    },
+    {
+      "id": "clm_3333333333333333",
+      "record_id": "rec_2222222222222222",
+      "concept_id": "cpt_3333333333333333",
+      "category": "employment",
+      "field": "date_range",
+      "value": "2020-2023",
+      "source": {"file": "CLAUDE.md", "section": "Professional Experience", "line_start": 20, "line_end": 20},
+      "placeholder": false,
+      "confidence": "high",
+      "extraction_status": "explicit"
+    },
+    {
+      "id": "clm_4444444444444444",
+      "record_id": "rec_2222222222222222",
+      "concept_id": "cpt_4444444444444444",
+      "category": "employment",
+      "field": "responsibility_or_achievement",
+      "value": "Built production data pipelines in Python",
+      "source": {"file": "CLAUDE.md", "section": "Professional Experience", "line_start": 21, "line_end": 21},
+      "placeholder": false,
+      "confidence": "high",
+      "extraction_status": "explicit"
+    },
+    {
+      "id": "clm_5555555555555555",
+      "record_id": "rec_2222222222222222",
+      "concept_id": "cpt_5555555555555555",
+      "category": "skills",
+      "field": "technical_skill",
+      "value": "Python",
+      "source": {"file": "CLAUDE.md", "section": "Technical Skills", "line_start": 22, "line_end": 22},
+      "placeholder": false,
+      "confidence": "high",
+      "extraction_status": "explicit"
+    },
+    {
+      "id": "clm_6666666666666666",
+      "record_id": "rec_2222222222222222",
+      "concept_id": "cpt_6666666666666666",
+      "category": "skills",
+      "field": "technical_skill",
+      "value": "SQL",
+      "source": {"file": "CLAUDE.md", "section": "Technical Skills", "line_start": 23, "line_end": 23},
+      "placeholder": false,
+      "confidence": "high",
+      "extraction_status": "explicit"
+    }
+  ],
+  "corroborations": [],
+  "conflicts": [],
+  "summary": {
+    "source_count": 1,
+    "claim_count": 6,
+    "placeholder_claim_count": 0,
+    "corroboration_count": 0,
+    "conflict_count": 0
+  }
+}

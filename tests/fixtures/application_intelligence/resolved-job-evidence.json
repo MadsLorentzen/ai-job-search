@@ -1,0 +1,25 @@
+{
+  "schema_version": "resolved-job-evidence-bundle.v0",
+  "evidence": [
+    {
+      "id": "jobev_req_python",
+      "category": "requirements",
+      "text": "Requires production Python experience.",
+      "kind": "required"
+    },
+    {
+      "id": "jobev_req_pipelines",
+      "category": "responsibilities",
+      "text": "Build reliable data pipelines.",
+      "kind": "required"
+    }
+  ],
+  "aliases": [],
+  "excluded": {
+    "raw_text": "not_semantic_fit_evidence",
+    "suggestions": "not_semantic_fit_evidence",
+    "ambiguous_statements": "not_semantic_fit_evidence",
+    "warnings": "not_semantic_fit_evidence"
+  },
+  "summary": {"evidence_count": 2, "alias_count": 0}
+}

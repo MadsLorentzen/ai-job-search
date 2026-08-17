@@ -1,0 +1,45 @@
+{
+  "schema_version": "application-intelligence-policy.v0",
+  "id": "default_application_intelligence_policy",
+  "recommendation_rules": [
+    {
+      "rule_id": "blocked",
+      "when_blocked": true,
+      "recommendation": "do_not_proceed",
+      "reason": "Ticket 7 fit result is blocked by a failing gate."
+    },
+    {
+      "rule_id": "unavailable",
+      "when_status": "UNAVAILABLE",
+      "recommendation": "do_not_proceed",
+      "reason": "Ticket 7 fit result is unavailable."
+    },
+    {
+      "rule_id": "needs_review",
+      "when_status": "NEEDS_REVIEW",
+      "recommendation": "proceed_with_review",
+      "reason": "Ticket 7 fit result has unresolved dimensions, unsupported claims, or open questions."
+    },
+    {
+      "rule_id": "ready_poor_or_weak",
+      "when_status": "READY",
+      "when_verdict_in": ["poor_fit", "weak_fit"],
+      "recommendation": "do_not_proceed",
+      "reason": "Ticket 7 verdict indicates insufficient fit."
+    },
+    {
+      "rule_id": "ready_moderate",
+      "when_status": "READY",
+      "when_verdict_in": ["moderate_fit"],
+      "recommendation": "proceed_with_review",
+      "reason": "Ticket 7 verdict indicates moderate fit; human judgment recommended."
+    },
+    {
+      "rule_id": "ready_good_or_strong",
+      "when_status": "READY",
+      "when_verdict_in": ["good_fit", "strong_fit"],
+      "recommendation": "proceed",
+      "reason": "Ticket 7 verdict indicates good or strong fit."
+    }
+  ]
+}
