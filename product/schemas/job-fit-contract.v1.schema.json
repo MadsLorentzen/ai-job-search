@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/smbabalola/ai-job-search/product/schemas/job-fit-contract.v1.schema.json",
+  "title": "Semantic Job Fit Contract v1",
+  "description": "Versioned Ticket 7 contract constants for semantic job-fit analysis. The Python validator owns relational checks across Profile Snapshot, Job Understanding, Extension Package, Evaluation Policy, and Semantic Fit Policy contracts.",
+  "type": "object",
+  "$defs": {
+    "resolvedJobEvidenceBundleVersion": {
+      "type": "string",
+      "const": "resolved-job-evidence-bundle.v0"
+    },
+    "jobFitRequestVersion": {
+      "type": "string",
+      "const": "job-fit-request.v1"
+    },
+    "jobFitResultVersion": {
+      "type": "string",
+      "const": "job-fit-result.v1"
+    },
+    "semanticFitPolicyVersion": {
+      "type": "string",
+      "const": "semantic-fit-policy.v0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "matchClassification": {
+      "enum": [
+        "direct",
+        "functionally_equivalent",
+        "transferable",
+        "adjacent",
+        "unsupported"
+      ]
+    },
+    "dimensionStatus": {
+      "enum": ["READY", "NEEDS_REVIEW", "UNAVAILABLE"]
+    },
+    "semanticStatus": {
+      "enum": ["READY", "NEEDS_REVIEW", "UNAVAILABLE", "UNSUPPORTED"]
+    },
+    "gapType": {
+      "enum": [
+        "missing_evidence",
+        "partial_match",
+        "unsupported",
+        "qualification_gap",
+        "unknown"
+      ]
+    }
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "schema_version": "semantic-fit-policy.v0",
+  "id": "default_semantic_fit_policy",
+  "description": "Deterministic policy for turning locally adjudicated semantic fit evidence into dimension readiness and scores. Evaluation Policy v0 remains authoritative for dimension weights, overall score, rounding, and verdict thresholds.",
+  "classification_precedence": [
+    "direct",
+    "functionally_equivalent",
+    "transferable",
+    "adjacent",
+    "unsupported"
+  ],
+  "positive_classifications": [
+    "direct",
+    "functionally_equivalent",
+    "transferable"
+  ],
+  "required_gates": [
+    "eligibility",
+    "language",
+    "location_logistics"
+  ],
+  "gate_evidence_categories": {
+    "eligibility": "eligibility_requirements",
+    "language": "language_requirements",
+    "location_logistics": "logistics_requirements"
+  },
+  "dimension_rules": [
+    {
+      "id": "technical_skills",
+      "required": true,
+      "job_categories": ["requirements"],
+      "scores_by_classification": {
+        "direct": 90,
+        "functionally_equivalent": 80,
+        "transferable": 65,
+        "adjacent": null,
+        "unsupported": null
+      },
+      "coverage": {
+        "material_kinds": ["required", "preferred"],
+        "minimum_ratio_for_ready": 1.0,
+        "score_aggregation": "mean"
+      },
+      "unresolved_when_no_positive_match": "NEEDS_REVIEW"
+    },
+    {
+      "id": "experience_match",
+      "required": true,
+      "job_categories": ["responsibilities"],
+      "scores_by_classification": {
+        "direct": 88,
+        "functionally_equivalent": 82,
+        "transferable": 68,
+        "adjacent": null,
+        "unsupported": null
+      },
+      "coverage": {
+        "material_kinds": ["required", "preferred"],
+        "minimum_ratio_for_ready": 1.0,
+        "score_aggregation": "mean"
+      },
+      "unresolved_when_no_positive_match": "NEEDS_REVIEW"
+    },
+    {
+      "id": "behavioral_fit",
+      "required": true,
+      "job_categories": [],
+      "coverage": {
+        "material_kinds": ["required", "preferred"],
+        "minimum_ratio_for_ready": 1.0,
+        "score_aggregation": "mean"
+      },
+      "unresolved_when_no_positive_match": "NEEDS_REVIEW"
+    },
+    {
+      "id": "career_alignment",
+      "required": true,
+      "job_categories": [],
+      "coverage": {
+        "material_kinds": ["required", "preferred"],
+        "minimum_ratio_for_ready": 1.0,
+        "score_aggregation": "mean"
+      },
+      "unresolved_when_no_positive_match": "NEEDS_REVIEW"
+    }
+  ],
+  "rules": {
+    "raw_posting_text_is_not_fit_evidence": true,
+    "ticket6_suggestions_are_not_fit_evidence": true,
+    "ticket6_ambiguities_are_not_fit_evidence": true,
+    "ticket6_warnings_are_not_fit_evidence": true,
+    "positive_matches_require_job_and_profile_evidence": true,
+    "transferable_matches_require_active_extension_mapping": true,
+    "extensions_cannot_create_candidate_facts": true,
+    "placeholder_profile_claims_support_conclusions": false,
+    "conflicted_profile_concepts_auto_resolve": false,
+    "missing_candidate_evidence_fails_gate": false,
+    "qualification_gap_requires_mismatch_evidence": true,
+    "unresolved_dimensions_block_overall_score": true
+  }
+}
