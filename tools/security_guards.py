@@ -80,6 +80,8 @@ REQUIRED_IGNORE_RULES = [
     "documents/references/**",
     "documents/applications/**",
     "documents/postings/**",
+    # Belt-and-braces, not the primary guard: nothing writes here.
+    # /interview's prep packs land under documents/applications/**, above.
     "documents/interview/**",
     "job_search_tracker.csv",
     "gmail_sync/",

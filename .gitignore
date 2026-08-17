@@ -73,10 +73,14 @@ documents/cv/**
 documents/linkedin/**
 documents/diplomas/**
 documents/references/**
+# Also where /interview saves its prep packs (interview_prep_<stage>.md): these
+# name the employers applied to, quote what was submitted, and set out the
+# candidate's weak points.
 documents/applications/**
 documents/postings/**
-# Interview prep and experience records: these name the employers applied to,
-# quote what was submitted, and set out the candidate's weak points.
+# Belt-and-braces, not the primary guard: nothing writes here. Prep packs land
+# in documents/applications/<company>_<role>/, covered above. Kept because
+# tools/security_guards.py pins it in REQUIRED_IGNORE_RULES.
 documents/interview/**
 !documents/**/.gitkeep
 

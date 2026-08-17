@@ -261,24 +261,28 @@ class GitignoreGuardTests(GuardRepoFixture):
 
 
 class GitignorePatternBehaviorTests(unittest.TestCase):
-    """Pin the match semantics of the shipped .gitignore for upskill reports.
+    """Pin the match semantics of the shipped .gitignore, not just rule presence.
 
-    The upskill skill resolves `upskill/` relative to its own directory (the
-    same observed behavior the **/job_scraper rules exist for), so a report
-    must be ignored at that depth too. The skill's own SKILL.md lives in a
-    directory that shares the `upskill` name, so a broad `**/upskill/*.md`
-    would ignore the template's own skill file - this pins that it stays
-    tracked. Guard presence checks cannot see either property; only real
-    check-ignore semantics can.
+    The guard checks that a rule exists; it never checks what the rule matches.
+    These cases run real `git check-ignore` over the shipped file, for paths the
+    framework actually writes.
     """
 
-    def test_upskill_reports_ignored_at_depth_but_skill_md_stays_tracked(self):
-        root = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+    def setUp(self):
+        self.root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.root, ignore_errors=True)
         subprocess.run(
-            ["git", "init", "-q", str(root)], check=True, capture_output=True
+            ["git", "init", "-q", str(self.root)], check=True, capture_output=True
         )
-        shutil.copy(REPO_ROOT / ".gitignore", root / ".gitignore")
+        shutil.copy(REPO_ROOT / ".gitignore", self.root / ".gitignore")
+
+    def test_upskill_reports_ignored_at_depth_but_skill_md_stays_tracked(self):
+        # The upskill skill resolves `upskill/` relative to its own directory
+        # (the same observed behavior the **/job_scraper rules exist for), so a
+        # report must be ignored at that depth too. The skill's own SKILL.md
+        # lives in a directory that shares the `upskill` name, so a broad
+        # `**/upskill/*.md` would ignore the template's own skill file - this
+        # pins that it stays tracked.
         cases = {
             "upskill/report-2026-08-11.md": True,
             ".claude/skills/upskill/upskill/report-2026-08-11.md": True,
@@ -288,7 +292,7 @@ class GitignorePatternBehaviorTests(unittest.TestCase):
         for path, expect_ignored in cases.items():
             with self.subTest(path=path):
                 result = subprocess.run(
-                    ["git", "-C", str(root), "check-ignore", "-q", path],
+                    ["git", "-C", str(self.root), "check-ignore", "-q", path],
                     capture_output=True,
                 )
                 self.assertEqual(
@@ -296,6 +300,38 @@ class GitignorePatternBehaviorTests(unittest.TestCase):
                     expect_ignored,
                     f"{path}: expected ignored={expect_ignored}",
                 )
+
+    def test_interview_prep_pack_is_ignored_at_the_path_the_command_writes(self):
+        # Derived, never copied: a hardcoded prep-pack path pins only that
+        # documents/applications/** still matches that shape - which the
+        # presence guard already catches - and stays green if /interview moves
+        # its output, leaving .gitignore's comment stale exactly the way #336
+        # found it. Reading the path back from the command spec is what makes
+        # the move fail here instead.
+        # Two fragments, not one literal: #329 split the path across Step 1
+        # (which derives the archive folder) and Step 3 (which names the file),
+        # so either half can move independently and each must be pinned.
+        folder = "documents/applications/<company>_<role>/"
+        filename = "interview_prep_<stage>.md"
+        spec = (REPO_ROOT / ".claude" / "commands" / "interview.md").read_text(encoding="utf-8")
+        for fragment in (folder, filename):
+            # assertTrue, not assertIn: the haystack is the whole command spec,
+            # and dumping it buries the one sentence explaining the failure.
+            self.assertTrue(
+                fragment in spec,
+                f"/interview no longer writes {fragment}; .gitignore's comment is now stale",
+            )
+
+        path = folder.replace("<company>_<role>", "acme_data_scientist") + filename.replace(
+            "<stage>", "technical"
+        )
+        result = subprocess.run(
+            ["git", "-C", str(self.root), "check-ignore", "-v", path],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, f"{path}: not ignored by the shipped .gitignore")
+        self.assertIn("documents/applications/**", result.stdout)
 
 
 class GitignoreNegationTests(GuardRepoFixture):
