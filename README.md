@@ -42,7 +42,14 @@ The four Danish demo portals stay installed as reference implementations but are
 LIVE_PORTAL_TESTS=1 bun test
 ```
 
-Worth doing before you rely on a portal: `apna-search` and `foundit-search` both failed their live tests from GitHub's runners (a parse failure and a 403), which may be IP blocking or may be real markup drift — running them from your own connection is what tells the two apart.
+**Portal status, verified live 2026-08-17 from a residential Indian connection:**
+
+| Working | Broken (disabled) |
+|---|---|
+| `iimjobs-search` (50 results), `hirist-search` (50), `instahyre-search` (35), `cutshort-search` (20), `aijobs-search` (50), `randstad-india-search`, `protocoljobs-search` | `apna-search` — apna.co responds but the parser finds no listings (`PARSE_FAILED`); markup drift, needs a parser rewrite |
+| `himalayas-search`, `remoteok-search`, `weworkremotely-search`, `ycombinator-search`, `otta-search` (30), `company-pages-search` | `foundit-search` — job pages 403 the honest User-Agent while the sitemap 200s, and detail is the skill's only function |
+
+The two broken ones stay installed with their tests, so re-enabling is one line in their `SKILL.md` once fixed. Neither is a config problem. Note `otta-search` runs on Welcome to the Jungle and skews European, so its results may need location filtering for an India search.
 
 Every ported skill was checked before it landed: zero runtime dependencies, no install lifecycle scripts, network calls only to the host each one claims, no filesystem access outside its own folder, and an honest self-identifying User-Agent. Portals were also checked against their live `robots.txt`. **This is not a substitute for reading the code yourself** — these CLIs run against your career data.
 
