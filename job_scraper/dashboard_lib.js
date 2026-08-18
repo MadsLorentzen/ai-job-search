@@ -269,8 +269,15 @@ export async function updateTrackerStatus({ company, role, status, note, source,
   try {
     text = await Bun.file(trackerPath).text()
   } catch {
-    text = TRACKER_HEADER.join(",") + "\r\n"
+    text = TRACKER_HEADER.join(",") + "\n"
   }
+  // Preserve whatever line ending the file already uses rather than forcing one -
+  // this tracker is normally hand-edited via the Edit tool (plain \n), while
+  // export_csv.js's seen_jobs.csv deliberately forces \r\n for Excel. Hardcoding
+  // \r\n here would silently rewrite every line's bytes (not just the changed row)
+  // on the very first write, which is surprising for a file the user may also be
+  // versioning or diffing elsewhere.
+  const eol = text.includes("\r\n") ? "\r\n" : "\n"
   let lines = text.split(/\r?\n/).filter((l) => l.length > 0)
   if (lines.length === 0) lines = [TRACKER_HEADER.join(",")]
 
@@ -306,7 +313,7 @@ export async function updateTrackerStatus({ company, role, status, note, source,
       return ""
     })
     lines.push(row.map(csvEscape).join(","))
-    await Bun.write(trackerPath, lines.join("\r\n") + "\r\n")
+    await Bun.write(trackerPath, lines.join(eol) + eol)
     return { ok: true, created: true, message: `Added a new tracker row for ${company} and set status to "${status}".` }
   }
 
@@ -318,7 +325,7 @@ export async function updateTrackerStatus({ company, role, status, note, source,
   const existingNotes = f[idx.notes] ?? ""
   f[idx.notes] = existingNotes ? `${existingNotes}; ${dated}` : dated
   lines[matchIndex] = f.map(csvEscape).join(",")
-  await Bun.write(trackerPath, lines.join("\r\n") + "\r\n")
+  await Bun.write(trackerPath, lines.join(eol) + eol)
   return { ok: true, created: false, message: `Updated ${company} to "${status}".` }
 }
 
