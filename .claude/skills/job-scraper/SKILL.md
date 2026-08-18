@@ -153,11 +153,12 @@ The `portal` field records which CLI skill produced the job (results are already
 
 2. Only present jobs NOT already in the seen list or tracker.
 
-3. Regenerate the Excel-readable export so it never drifts out of sync with the JSON:
+3. Regenerate the Excel-readable export and the local dashboard so neither drifts out of sync with the JSON:
 ```bash
 bun run job_scraper/export_csv.js
+bun run job_scraper/export_dashboard.js
 ```
-This rewrites `job_scraper/seen_jobs.csv` from the current `seen_jobs.json` in one shot — always run it after writing to `seen_jobs.json` in this step, even if nothing new was found (idempotent, and cheap).
+This rewrites `job_scraper/seen_jobs.csv` and `job_scraper/dashboard.html` from the current `seen_jobs.json` in one shot — always run both after writing to `seen_jobs.json` in this step, even if nothing new was found (idempotent, and cheap). `dashboard.html` is a bookmarkable, self-contained local page (filters, sorting, an expandable detail panel per job, cross-referenced against `job_search_tracker.csv` for application status) - see `export_dashboard.js`'s header comment for why it embeds a data snapshot rather than reading the JSON live.
 
 ### Step 4.5: Generate Referral Contact Links (High & Medium Fit Only)
 
