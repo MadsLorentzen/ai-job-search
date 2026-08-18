@@ -1,3 +1,5 @@
+import pytest
+
 from webapp.persistence.db import init_db, connect
 from webapp.persistence.workspaces import create_workspace
 from webapp.persistence.artifacts import (
@@ -69,4 +71,14 @@ def test_list_artifact_history_newest_first(tmp_path):
     second = save_artifact(conn, workspace_id=workspace_id, artifact_type="profile_snapshot", payload={"v": 2})
     history = list_artifact_history(conn, workspace_id, "profile_snapshot")
     assert [row["id"] for row in history] == [second["id"], first["id"]]
+    conn.close()
+
+
+def test_save_artifact_rejects_unknown_artifact_type(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    with pytest.raises(ValueError):
+        save_artifact(
+            conn, workspace_id=workspace_id, artifact_type="not_a_real_type",
+            payload={"v": 1},
+        )
     conn.close()

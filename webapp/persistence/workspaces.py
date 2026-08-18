@@ -17,12 +17,20 @@ def ensure_profile_workspace(conn: sqlite3.Connection) -> dict[str, Any]:
     if existing is not None:
         return existing
     now = _now()
-    conn.execute(
-        "INSERT INTO workspaces (id, kind, company, title, workflow_status, created_at, updated_at) "
-        "VALUES (?, 'profile', '', '', NULL, ?, ?)",
-        (PROFILE_WORKSPACE_ID, now, now),
-    )
-    conn.commit()
+    try:
+        conn.execute(
+            "INSERT INTO workspaces (id, kind, company, title, workflow_status, created_at, updated_at) "
+            "VALUES (?, 'profile', '', '', NULL, ?, ?)",
+            (PROFILE_WORKSPACE_ID, now, now),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        # A concurrent caller won the race and already inserted the single
+        # profile-workspace row (primary-key conflict on PROFILE_WORKSPACE_ID).
+        # ensure_profile_workspace() is documented as idempotent, so resolve
+        # to the existing row instead of propagating the conflict.
+        conn.rollback()
+        return get_workspace(conn, PROFILE_WORKSPACE_ID)
     return get_workspace(conn, PROFILE_WORKSPACE_ID)
 
 

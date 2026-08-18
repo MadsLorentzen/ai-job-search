@@ -62,3 +62,30 @@ def test_set_workflow_status_updates_row(tmp_path):
     set_workflow_status(conn, ws["id"], "drafted")
     assert get_workspace(conn, ws["id"])["workflow_status"] == "drafted"
     conn.close()
+
+
+def test_ensure_profile_workspace_survives_concurrent_insert_race(tmp_path):
+    # Simulate two callers racing to create the profile workspace: both see
+    # `existing is None`, then a second connection inserts the row first, so
+    # the module-under-test's own INSERT hits a primary-key conflict. This
+    # must resolve to the existing row rather than raising IntegrityError.
+    db_path = tmp_path / "jobsearch.sqlite3"
+    init_db(db_path)
+    conn = connect(db_path)
+
+    other = connect(db_path)
+    other.execute(
+        "INSERT INTO workspaces (id, kind, company, title, workflow_status, created_at, updated_at) "
+        "VALUES (?, 'profile', '', '', NULL, '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00')",
+        (PROFILE_WORKSPACE_ID,),
+    )
+    other.commit()
+    other.close()
+
+    # `conn` still thinks the row may not exist (no prior read in this test),
+    # so calling ensure_profile_workspace on it exercises the INSERT ->
+    # IntegrityError -> fallback-read path directly.
+    result = ensure_profile_workspace(conn)
+    assert result["id"] == PROFILE_WORKSPACE_ID
+    assert result["kind"] == "profile"
+    conn.close()

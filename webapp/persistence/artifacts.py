@@ -34,6 +34,8 @@ def save_artifact(
     conn: sqlite3.Connection, *, workspace_id: str, artifact_type: str,
     payload: dict[str, Any], content_id: str | None = None,
 ) -> dict[str, Any]:
+    if artifact_type not in ARTIFACT_TYPES:
+        raise ValueError(f"unknown artifact_type: {artifact_type!r}")
     artifact_id = f"art_{uuid.uuid4().hex[:20]}"
     now = _now()
     conn.execute(
