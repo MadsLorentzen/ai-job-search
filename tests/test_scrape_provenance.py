@@ -72,8 +72,8 @@ class ScrapeProvenanceSpec(unittest.TestCase):
             "Step 5 must surface which portals ran on the WebSearch fallback this run",
         )
         self.assertIn(
-            "omit the",
-            step5,
+            "omit the line when every portal ran its CLI",
+            " ".join(step5.split()),
             "the fallback line must be omitted when every portal ran its CLI, not printed empty",
         )
 
