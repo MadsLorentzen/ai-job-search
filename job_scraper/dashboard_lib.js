@@ -1,28 +1,47 @@
-#!/usr/bin/env bun
-// Regenerates job_scraper/dashboard.html — a self-contained, bookmarkable local
-// dashboard reading job_scraper/seen_jobs.json + job_search_tracker.csv. Run by
-// /scrape and /rank (end of Step 4) alongside export_csv.js so the dashboard never
-// drifts far out of sync with the underlying data — see those skills for the call site.
-//
-// The generated HTML embeds a full snapshot of the data at generation time (a file://
-// page can't reliably fetch() sibling files across browsers), so it is a point-in-time
-// view, not a live feed. Bookmark the output file directly; re-run this script (or
-// /scrape / /rank, which call it automatically) to refresh what it shows. It is
-// read-only by design — status changes belong in the tracker via /apply and /outcome,
-// never edited in the browser, since any in-page edit would be silently lost on the
-// next regeneration.
+// Shared data-building, HTML shell, and tracker-write logic for the live job dashboard
+// served by serve_dashboard.js. There is no static-export mode: a bookmarked page can't
+// write to job_search_tracker.csv without a server behind it (that's the whole point of
+// the Apply / status-update buttons), so once the server exists there is no reason to
+// also maintain a stale, read-only snapshot file alongside it. GET / serves the shell
+// below unchanged; the client fetches /api/data itself, so nothing here needs to embed
+// a data snapshot into the HTML.
 
 const JSON_PATH = new URL("./seen_jobs.json", import.meta.url)
 const TRACKER_PATH = new URL("../job_search_tracker.csv", import.meta.url)
 const CLAUDE_MD_PATH = new URL("../CLAUDE.md", import.meta.url)
-const OUT_PATH = new URL("./dashboard.html", import.meta.url)
+
+export const VALID_STATUSES = [
+  "applied",
+  "interview",
+  "offer",
+  "hired",
+  "rejected",
+  "no response",
+  "offer declined",
+  "withdrawn",
+  "drafted",
+]
+
+const TRACKER_HEADER = [
+  "date",
+  "company",
+  "sector",
+  "role",
+  "role_type",
+  "channel",
+  "status",
+  "contact_person",
+  "fit_rating",
+  "notes",
+  "cv_file",
+  "cover_letter_file",
+  "source",
+]
 
 /**
- * Minimal RFC4180-ish CSV line parser — only what's needed to read back the tracker's
- * own csvEscape-style quoting (quotes doubled, fields with commas/newlines wrapped).
+ * Minimal RFC4180-ish CSV line parser/writer — only what's needed to read and write
+ * back the tracker's own quoting (quotes doubled, fields with commas/newlines wrapped).
  * No external dependency, matching this repo's zero-dependency tooling convention.
- * Duplicated from export_csv.js rather than shared, so each export script stays a
- * single self-contained file (same convention as the portal-search CLIs).
  */
 function parseCsvLine(line) {
   const fields = []
@@ -52,6 +71,12 @@ function parseCsvLine(line) {
   return fields
 }
 
+function csvEscape(value) {
+  const s = value === null || value === undefined ? "" : String(value)
+  if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"'
+  return s
+}
+
 /**
  * German-market postings routinely carry a gender-marker suffix - (m/w/d), (m/f/d),
  * (w/m/d), (f/m/d), and their asterisk/slash variants - that the scraped title keeps
@@ -63,6 +88,10 @@ function normalizeRole(role) {
   return role
     .replace(/[\s([]*[mwfd]\s*[/*]\s*[mwfd]\s*(?:[/*]\s*[mwfd]\s*)?\)?\s*$/i, "")
     .trim()
+}
+
+function trackerKey(company, role) {
+  return `${(company ?? "").trim().toLowerCase()}|${normalizeRole((role ?? "").trim().toLowerCase())}`
 }
 
 function inferMarket(locationText) {
@@ -84,17 +113,16 @@ async function readVisaDeadline() {
 }
 
 /**
- * Unlike export_csv.js's readTrackerStatus (which only needs a status string), the
- * dashboard's detail panel wants the full tracker row - date, fit_rating, notes,
+ * The dashboard's detail panel wants the full tracker row - date, fit_rating, notes,
  * cv_file, cover_letter_file, channel, contact_person - so this returns parsed rows
  * keyed by normalized company|role, last-match-wins (a re-application overwrites the
  * earlier row, which is the more current state to show).
  */
-async function readTrackerRows() {
+async function readTrackerRows(trackerPath) {
   const byKey = new Map()
   let text
   try {
-    text = await Bun.file(TRACKER_PATH).text()
+    text = await Bun.file(trackerPath).text()
   } catch {
     return byKey
   }
@@ -108,8 +136,7 @@ async function readTrackerRows() {
     const company = (f[idx.company] ?? "").trim()
     const role = (f[idx.role] ?? "").trim()
     if (!company || !role) continue
-    const key = `${company.toLowerCase()}|${normalizeRole(role.toLowerCase())}`
-    byKey.set(key, {
+    byKey.set(trackerKey(company, role), {
       date: f[idx.date] ?? "",
       sector: f[idx.sector] ?? "",
       role_type: f[idx.role_type] ?? "",
@@ -127,11 +154,10 @@ async function readTrackerRows() {
 }
 
 function findTrackerRow(entry, trackerByKey) {
-  const key = `${(entry.company ?? "").trim().toLowerCase()}|${normalizeRole((entry.title ?? "").trim().toLowerCase())}`
-  return trackerByKey.get(key) ?? null
+  return trackerByKey.get(trackerKey(entry.company, entry.title)) ?? null
 }
 
-/** Relative-to-dashboard.html link for a tracker file path like "cv/main_x.tex", preferring the compiled PDF sibling since that's what a human actually wants to open. */
+/** Relative-to-site-root link for a tracker file path like "cv/main_x.tex", preferring the compiled PDF sibling since that's what a human actually wants to open. serve_dashboard.js serves GET /cv/* and /cover_letters/* directly from the project root, so "../cv/x.pdf" normalizes to "/cv/x.pdf" against the server's root - see that file's isSafeStaticPath. */
 function toDashboardLink(path) {
   if (!path) return null
   const pdf = path.replace(/\.tex$/i, ".pdf")
@@ -209,13 +235,95 @@ function computeStats(jobs) {
   }
 }
 
-function escapeForScriptTag(jsonString) {
-  // Prevents a literal "</script>" inside any scraped title/note from prematurely
-  // closing the embedded data block - safe because < is a valid JSON string escape.
-  return jsonString.replace(/</g, "\\u003c")
+/** Full data payload, read fresh from disk on every call - this is what GET /api/data returns, so every page load and every post-update refresh reflects current file state with no caching or regeneration step anywhere. */
+export async function buildDashboardData() {
+  const data = JSON.parse(await Bun.file(JSON_PATH).text())
+  const trackerByKey = await readTrackerRows(TRACKER_PATH)
+  const visaDeadline = await readVisaDeadline()
+  const jobs = buildJobs(data.seen ?? {}, trackerByKey, visaDeadline)
+  const stats = computeStats(jobs)
+  const generatedAt = new Date().toISOString().replace("T", " ").slice(0, 16) + " UTC"
+  return { jobs, stats, generatedAt }
 }
 
-const PAGE_TEMPLATE = String.raw`<!doctype html>
+/**
+ * Writes an application-status update straight to job_search_tracker.csv, mirroring
+ * /outcome's Step 4 rules exactly: update status, overwrite `date` with today only when
+ * leaving "drafted" (the tracker's date column means "applied on", not "drafted on"),
+ * append a dated note rather than overwrite notes, and never restructure the CSV or
+ * touch other rows. If no row matches (a job applied to outside the /apply workflow),
+ * appends a new minimal row instead of failing - mirroring /outcome Step 1.2's "None ->
+ * add a tracker row" behavior, just without the extra clarifying questions that command
+ * asks conversationally.
+ *
+ * `trackerPath` defaults to the real tracker so callers don't need to pass it, but stays
+ * overridable so tests can point at a scratch copy instead of mutating live data.
+ */
+export async function updateTrackerStatus({ company, role, status, note, source, fit_rating }, trackerPath = TRACKER_PATH) {
+  if (!company || !role) return { ok: false, error: "company and role are required" }
+  if (!VALID_STATUSES.includes(status)) {
+    return { ok: false, error: `Unknown status "${status}". Valid: ${VALID_STATUSES.join(", ")}` }
+  }
+
+  let text = ""
+  try {
+    text = await Bun.file(trackerPath).text()
+  } catch {
+    text = TRACKER_HEADER.join(",") + "\r\n"
+  }
+  let lines = text.split(/\r?\n/).filter((l) => l.length > 0)
+  if (lines.length === 0) lines = [TRACKER_HEADER.join(",")]
+
+  const header = parseCsvLine(lines[0]).map((h) => h.trim().toLowerCase())
+  const idx = Object.fromEntries(header.map((h, i) => [h, i]))
+  if (["date", "company", "role", "status", "notes"].some((c) => idx[c] === undefined)) {
+    return { ok: false, error: "job_search_tracker.csv is missing one of the required columns (date/company/role/status/notes)" }
+  }
+
+  const targetKey = trackerKey(company, role)
+  const today = new Date().toISOString().slice(0, 10)
+  const dated = note ? `${note} (${today})` : `status -> ${status} (${today})`
+
+  let matchIndex = -1
+  for (let i = 1; i < lines.length; i++) {
+    const f = parseCsvLine(lines[i])
+    if (trackerKey(f[idx.company], f[idx.role]) === targetKey) {
+      matchIndex = i
+      break
+    }
+  }
+
+  if (matchIndex === -1) {
+    const row = header.map((col) => {
+      if (col === "date") return today
+      if (col === "company") return company
+      if (col === "role") return role
+      if (col === "status") return status
+      if (col === "channel") return "portal"
+      if (col === "notes") return dated
+      if (col === "source") return source ?? ""
+      if (col === "fit_rating") return fit_rating ?? ""
+      return ""
+    })
+    lines.push(row.map(csvEscape).join(","))
+    await Bun.write(trackerPath, lines.join("\r\n") + "\r\n")
+    return { ok: true, created: true, message: `Added a new tracker row for ${company} and set status to "${status}".` }
+  }
+
+  const f = parseCsvLine(lines[matchIndex])
+  while (f.length < header.length) f.push("")
+  const oldStatus = (f[idx.status] ?? "").trim().toLowerCase()
+  if (oldStatus === "drafted" && status !== "drafted") f[idx.date] = today
+  f[idx.status] = status
+  const existingNotes = f[idx.notes] ?? ""
+  f[idx.notes] = existingNotes ? `${existingNotes}; ${dated}` : dated
+  lines[matchIndex] = f.map(csvEscape).join(",")
+  await Bun.write(trackerPath, lines.join("\r\n") + "\r\n")
+  return { ok: true, created: false, message: `Updated ${company} to "${status}".` }
+}
+
+/** Static page shell - no data embedded, nothing varies per request. The client fetches /api/data itself on load and after every write, so this same constant is returned by GET / every time. */
+export const SHELL_HTML = String.raw`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -243,7 +351,8 @@ body {
 }
 header { padding: 20px 24px 8px; }
 header h1 { margin: 0 0 4px; font-size: 22px; }
-header .meta { color: var(--muted); font-size: 13px; }
+header .meta { color: var(--green); font-size: 13px; }
+header .meta.error { color: var(--red); }
 main { padding: 0 24px 40px; max-width: 1400px; margin: 0 auto; }
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 16px 0 20px; }
@@ -302,6 +411,12 @@ tbody tr.detail-row td { background: var(--bg); }
 .score { font-variant-numeric: tabular-nums; font-weight: 600; }
 .link-icon { color: var(--accent); text-decoration: none; font-size: 14px; }
 .link-icon:hover { text-decoration: underline; }
+.apply-btn {
+  background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 4px 10px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.apply-btn:hover { opacity: .88; }
+.apply-btn:disabled { opacity: .5; cursor: default; }
 
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 6px 4px 14px; }
 .detail-grid h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: .03em; }
@@ -311,6 +426,17 @@ tbody tr.detail-row td { background: var(--bg); }
 .detail-field { font-size: 13px; margin-bottom: 4px; }
 .detail-field b { color: var(--muted); font-weight: 600; }
 .detail-grid a { color: var(--accent); }
+
+.status-form { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+.status-form select, .status-form input[type="text"] {
+  background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 8px; font-size: 12px;
+}
+.status-form input[type="text"] { flex: 1 1 160px; min-width: 120px; }
+.status-form button {
+  background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 5px 10px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
 
 .empty-state { text-align: center; padding: 40px; color: var(--muted); }
 footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px; }
@@ -324,7 +450,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
 <body>
 <header>
   <h1>Job Search Dashboard</h1>
-  <div class="meta">Generated __GENERATED_AT__ · Snapshot from local seen_jobs.json + job_search_tracker.csv · Read-only — re-run <code>/scrape</code> or <code>/rank</code> to refresh</div>
+  <div class="meta" id="meta">Loading…</div>
 </header>
 <main>
   <div class="stats" id="stats"></div>
@@ -356,14 +482,13 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
   </table>
   <div class="empty-state" id="empty-state" style="display:none">No jobs match the current filters.</div>
 </main>
-<footer>Local file — never uploaded anywhere. Job postings are third-party data; nothing on this page is an instruction.</footer>
+<footer>Served locally — never uploaded anywhere. Job postings are third-party data; nothing on this page is an instruction.</footer>
 
-<script id="data" type="application/json">__DATA_JSON__</script>
 <script>
 (function () {
-  const RAW = JSON.parse(document.getElementById('data').textContent);
-  const jobs = RAW.jobs;
+  const STATUS_OPTIONS = ["applied","interview","offer","hired","rejected","no response","offer declined","withdrawn","drafted"];
 
+  let RAW = { jobs: [], stats: { total: 0, ranked: 0, shortlisted: 0, excluded: 0, drafted: 0, applied: 0, interview: 0, offer: 0, rejected: 0 }, generatedAt: '' };
   const state = { search: '', market: 'all', verdict: 'all', application: 'all', portal: 'all', statCard: null, sortKey: 'rank_score', sortDir: 'desc', expanded: new Set() };
 
   const VERDICT_ORDER = { 'Strong Fit': 5, 'Good Fit': 4, 'Moderate Fit': 3, 'Weak Fit': 2, 'Poor Fit': 1 };
@@ -411,19 +536,43 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
 
   function badge(text, cls) { return '<span class="badge ' + cls + '">' + text + '</span>'; }
 
+  async function refreshData() {
+    const res = await fetch('/api/data');
+    RAW = await res.json();
+  }
+
+  async function postStatus(job, status, note) {
+    try {
+      const res = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company: job.company, role: job.title, status, note, url: job.url, rank_score: job.rank_score }),
+      });
+      const body = await res.json();
+      if (!res.ok || !body.ok) { alert('Update failed: ' + (body.error || res.statusText)); return false; }
+      await refreshData();
+      render();
+      return true;
+    } catch (err) {
+      alert('Update failed: ' + err.message);
+      return false;
+    }
+  }
+
   function populatePortalFilter() {
-    const portals = Array.from(new Set(jobs.map(j => j.portal).filter(Boolean))).sort();
+    const portals = Array.from(new Set(RAW.jobs.map(j => j.portal).filter(Boolean))).sort();
     const sel = document.getElementById('filter-portal');
+    sel.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
     for (const p of portals) sel.appendChild(el('option', { text: p, attrs: { value: p } }));
   }
 
   // "Not applied" is always offered even with zero matches (it's the default state for
   // most rows); every other status is only added once it actually appears in the tracker,
   // so the dropdown grows on its own as the pipeline progresses (applied, interview, offer...)
-  // without needing the generator script to know the full set of possible statuses up front.
   function populateApplicationFilter() {
-    const statuses = Array.from(new Set(jobs.map(j => j.application && j.application.status ? j.application.status.toLowerCase() : null).filter(Boolean))).sort();
+    const statuses = Array.from(new Set(RAW.jobs.map(j => j.application && j.application.status ? j.application.status.toLowerCase() : null).filter(Boolean))).sort();
     const sel = document.getElementById('filter-application');
+    sel.querySelectorAll('option:not(:first-child):not([value="not_applied"])').forEach(o => o.remove());
     for (const s of statuses) sel.appendChild(el('option', { text: s.charAt(0).toUpperCase() + s.slice(1), attrs: { value: s } }));
   }
 
@@ -501,6 +650,27 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
       });
       container.appendChild(card);
     }
+  }
+
+  function statusForm(job) {
+    const wrap = el('div', { class: 'status-form' });
+    const select = el('select');
+    for (const opt of STATUS_OPTIONS) {
+      const o = el('option', { text: opt.charAt(0).toUpperCase() + opt.slice(1), attrs: { value: opt } });
+      if (job.application && job.application.status && job.application.status.toLowerCase() === opt) o.selected = true;
+      select.appendChild(o);
+    }
+    const note = el('input', { attrs: { type: 'text', placeholder: 'Add a note (optional)' } });
+    const btn = el('button', { text: job.application ? 'Update status' : 'Mark applied / set status' });
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      await postStatus(job, select.value, note.value.trim() || null);
+      btn.disabled = false;
+    });
+    wrap.appendChild(select);
+    wrap.appendChild(note);
+    wrap.appendChild(btn);
+    return wrap;
   }
 
   function detailRow(job) {
@@ -581,6 +751,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
     } else {
       right.appendChild(el('div', { class: 'empty', text: 'Not applied yet' }));
     }
+    right.appendChild(statusForm(job));
 
     grid.appendChild(left);
     grid.appendChild(right);
@@ -610,13 +781,22 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
       tr.appendChild(el('td', { html: job.language_gate ? badge(job.language_gate, gateBadgeClass(job.language_gate)) : '—' }));
       tr.appendChild(el('td', { text: job.first_seen || '—' }));
 
-      const tdLink = el('td');
-      if (job.url) {
+      const tdActions = el('td');
+      if (!job.application) {
+        const applyBtn = el('button', { class: 'apply-btn', text: 'Apply', attrs: { title: 'Mark this job as applied' } });
+        applyBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          applyBtn.disabled = true;
+          const ok = await postStatus(job, 'applied', null);
+          if (!ok) applyBtn.disabled = false;
+        });
+        tdActions.appendChild(applyBtn);
+      } else if (job.url) {
         const a = el('a', { class: 'link-icon', text: '↗', attrs: { href: job.url, target: '_blank', rel: 'noopener', title: 'Open posting' } });
         a.addEventListener('click', (e) => e.stopPropagation());
-        tdLink.appendChild(a);
+        tdActions.appendChild(a);
       }
-      tr.appendChild(tdLink);
+      tr.appendChild(tdActions);
 
       tr.addEventListener('click', () => {
         if (state.expanded.has(job.key)) state.expanded.delete(job.key);
@@ -638,12 +818,17 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
   }
 
   function render() {
-    const filtered = jobs.filter(matchesFilters);
+    const filtered = RAW.jobs.filter(matchesFilters);
     const sorted = sortJobs(filtered);
     renderStats();
     renderTable(sorted);
     updateSortArrows();
-    document.getElementById('result-count').textContent = 'Showing ' + sorted.length + ' of ' + jobs.length;
+    populatePortalFilter();
+    populateApplicationFilter();
+    document.getElementById('result-count').textContent = 'Showing ' + sorted.length + ' of ' + RAW.jobs.length;
+    const meta = document.getElementById('meta');
+    meta.className = 'meta';
+    meta.textContent = 'Live · ' + RAW.generatedAt + ' · Apply/status updates write straight to job_search_tracker.csv';
   }
 
   document.getElementById('search').addEventListener('input', (e) => { state.search = e.target.value; render(); });
@@ -669,33 +854,18 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
     });
   });
 
-  populatePortalFilter();
-  populateApplicationFilter();
-  render();
+  (async function init() {
+    try {
+      await refreshData();
+      render();
+    } catch (err) {
+      const meta = document.getElementById('meta');
+      meta.className = 'meta error';
+      meta.textContent = 'Could not reach the dashboard server at /api/data - is "bun run job_scraper/serve_dashboard.js" still running?';
+    }
+  })();
 })();
 </script>
 </body>
 </html>
 `
-
-function buildHtml({ jobs, stats, generatedAt }) {
-  const dataJson = escapeForScriptTag(JSON.stringify({ jobs, stats, generatedAt }))
-  return PAGE_TEMPLATE
-    .replace("__GENERATED_AT__", generatedAt)
-    .replace("__DATA_JSON__", dataJson)
-}
-
-async function main() {
-  const data = JSON.parse(await Bun.file(JSON_PATH).text())
-  const trackerByKey = await readTrackerRows()
-  const visaDeadline = await readVisaDeadline()
-  const jobs = buildJobs(data.seen ?? {}, trackerByKey, visaDeadline)
-  const stats = computeStats(jobs)
-  const generatedAt = new Date().toISOString().replace("T", " ").slice(0, 16) + " UTC"
-
-  const html = buildHtml({ jobs, stats, generatedAt })
-  await Bun.write(OUT_PATH, html)
-  console.log(`Wrote dashboard for ${jobs.length} jobs to ${OUT_PATH.pathname.replace(/^\//, "")}`)
-}
-
-main()

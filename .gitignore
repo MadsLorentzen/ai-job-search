@@ -25,7 +25,6 @@ salary_data.json
 # A rooted `job_scraper/...` pattern silently fails to match them.
 **/job_scraper/seen_jobs.json
 **/job_scraper/seen_jobs.csv
-**/job_scraper/dashboard.html
 **/job_scraper/notion_sync.json
 **/job_scraper/*.md
 *_BehavioralReport.pdf
