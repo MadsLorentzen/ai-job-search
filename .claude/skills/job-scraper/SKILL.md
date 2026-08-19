@@ -153,11 +153,7 @@ The `portal` field records which CLI skill produced the job (results are already
 
 2. Only present jobs NOT already in the seen list or tracker.
 
-3. Regenerate the Excel-readable export so it never drifts out of sync with the JSON:
-```bash
-bun run job_scraper/export_csv.js
-```
-This rewrites `job_scraper/seen_jobs.csv` from the current `seen_jobs.json` in one shot — always run it after writing to `seen_jobs.json` in this step, even if nothing new was found (idempotent, and cheap). A live, filterable, write-back-capable dashboard is also available - see `job_scraper/serve_dashboard.js` (`bun run job_scraper/serve_dashboard.js`, then bookmark the URL it prints); it reads `seen_jobs.json` and `job_search_tracker.csv` fresh on every page load, so nothing needs to be run here to keep it in sync.
+3. No separate export step is needed. The live, filterable, write-back-capable dashboard (`job_scraper/serve_dashboard.js` — `bun run job_scraper/serve_dashboard.js`, then bookmark the URL it prints) reads `seen_jobs.json` and `job_search_tracker.csv` fresh on every page load, so nothing here needs to stay in sync with a separate file. (A `seen_jobs.csv` export previously existed for spreadsheet use before the live dashboard existed; it's no longer generated — the dashboard has fully replaced that use case.)
 
 ### Step 4.5: Generate Referral Contact Links (High & Medium Fit Only)
 

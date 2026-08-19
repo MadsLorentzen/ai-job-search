@@ -15,7 +15,8 @@ framework_version: 1.1.2
 - **LinkedIn:** linkedin.com/in/shamik-mukherjee
 - **Status:** Employed (Product Owner, Cognizant Technology Solutions). Nationality: Indian.
 - **Constraints:** Dual-market search: **UK** (based in Reading, Berkshire) and **Germany** (English-speaking roles only; German A0). UK: current Skilled Worker visa expires **February 2027**; Cognizant cannot sponsor a transfer, so UK roles must be prioritised at employers with an **active, A-rated sponsor licence** — this is time-critical, not a nice-to-have. Germany: plans to relocate independently via the **Chancenkarte (Opportunity Card)** — eligible, actively preparing application documents (not yet submitted). This route does not require day-one employer sponsorship to *begin*, so it can absorb roles a UK search would have to reject on sponsorship grounds alone — but this is not the same as zero employer involvement ever: converting from the Chancenkarte to a job-based residence permit after hire still involves the employer providing the job contract. Never state or imply "no employer sponsorship needed" on any application document.
-- **Salary baseline:** £69.5k base + £7.8k target bonus (current UK total comp, for benchmarking only — never shown to employers)
+- **Salary baseline:** £70,000 base + £7,800 target bonus (current UK total comp, for benchmarking only — never shown to employers)
+- **Notice period:** 2 months, per the original Indian employment contract, which candidate believes still governs since he's on deputation/global mobility assignment to the UK rather than a separate UK contract. Not independently verified with Cognizant HR — flag this uncertainty if it becomes materially important (e.g. negotiating a start date), and recommend the candidate confirm directly before committing to a specific date.
 - **Deal-breakers / must-haves:** Prefers to stay in payments/fintech; open to adjacent regulated domains (banking, insurance, etc.) if payments-specific roles aren't available
 
 ### Personal Details (German-market Lebenslauf CVs only)
@@ -50,16 +51,26 @@ a hard no, not a gap to smooth over. -->
 
 ## Professional Experience
 
+<!-- CONFIDENTIAL - actual card network / client names live in confidential_client_info.md
+(repo root, gitignored - never committed). Never name them directly in any CV, cover letter,
+application form answer, or interview-prep talking point - always use the masked descriptor
+"a leading US card network" / "Leading US Card Network & Digital Bank" (see CLAUDE.md
+Confidentiality note). -->
+
 ### Product Owner - Cognizant Technology Solutions (02/2026 - present)
 Farnborough, UK (On-site) · Leading US Card Network & Digital Bank · Digital Payments
 - Own product backlog for edge applications connecting card network to Google Pay and Samsung Pay - translating requirements into epics, user stories, and acceptance criteria for two agile squads
 - Define and maintain B2B integration specifications for wallet provisioning adopted by partner organisations
 - Lead wallet provisioning validation across Google Pay and Samsung Pay for a large-scale card migration programme
 - Leverage AI tools (Gemini) to accelerate requirements drafting, refine acceptance criteria, and improve stakeholder communication turnaround
-- Facilitate bi-monthly PI Planning; maintain >95% sprint predictability across all planning cycles
+- Facilitate bi-monthly PI Planning; maintain >80% sprint predictability across all planning cycles
 
 ### Product Owner (Proxy) & Onsite Delivery Manager - Cognizant Technology Solutions (05/2022 - 01/2026)
 Farnborough, UK (On-site) · Leading US Card Network & Digital Bank · Two Scrum Teams (~15 engineers)
+<!-- Internal note, not for CVs: role started 05/2022 but the first ~3 months (May-Jul 2022) went
+into UK visa processing before relocating on-site to Farnborough from 08/2022 onward. CVs correctly
+show "Farnborough, UK" for the whole role for simplicity - only surface this if visa/relocation
+history becomes directly relevant (e.g. an interview question about UK arrival date). -->
 - Launched Virtual Card autofill feature (Google Chrome Autofill programme) to 100% of eligible cardholders (Nov 2024) - owned full product backlog and acceptance criteria for the retrieval flow end-to-end; 275,000+ successful transactions in first 60 days
 - Delivered Issuer Push Provisioning into Google Wallet and Samsung Wallet - defined network-side B2B specification adopted by issuer bank partners
 - Completed delivery of RBI regulatory compliance programme - took ownership mid-programme, elaborated remaining backlog, drove delivery to completion within regulatory deadlines

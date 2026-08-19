@@ -20,6 +20,7 @@ export const VALID_STATUSES = [
   "offer declined",
   "withdrawn",
   "drafted",
+  "skipped",
 ]
 
 const TRACKER_HEADER = [
@@ -176,12 +177,29 @@ function visaNote(entry, market, visaDeadline) {
   return `Verify this employer holds an active UK sponsor licence — ${deadline}.`
 }
 
+/**
+ * Deterministic 5-character base36 ID derived from the entry's own seen_jobs.json
+ * key (URL, or company+title composite for portals without a clean URL - see the
+ * schema note on that key format). Requires no stored state and no migration of
+ * existing entries: the same key always hashes to the same ID, so it's stable
+ * across re-scrapes and safe to use as a short human-referenceable handle in
+ * conversation ("job A3F9K") instead of quoting a full URL.
+ */
+function shortId(key) {
+  let hash = 5381
+  for (let i = 0; i < key.length; i++) {
+    hash = ((hash << 5) + hash + key.charCodeAt(i)) | 0
+  }
+  return (hash >>> 0).toString(36).slice(0, 5).toUpperCase()
+}
+
 function buildJobs(seen, trackerByKey, visaDeadline) {
   return Object.entries(seen).map(([key, entry]) => {
     const tracker = findTrackerRow(entry, trackerByKey)
     const market = inferMarket(entry.location_text)
     return {
       key,
+      id: shortId(key),
       title: entry.title ?? null,
       company: entry.company ?? null,
       url: entry.url ?? null,
@@ -376,18 +394,36 @@ main { padding: 0 24px 40px; max-width: 1400px; margin: 0 auto; }
   display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px;
   background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
 }
-.controls input[type="search"], .controls select {
+.controls input[type="search"] {
   background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 7px;
   padding: 7px 10px; font-size: 13px;
 }
 .controls input[type="search"] { flex: 1 1 220px; min-width: 160px; }
-.controls select { flex: 0 0 auto; }
 .controls button {
   background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 7px;
   padding: 7px 12px; font-size: 13px; cursor: pointer;
 }
 .controls button:hover { border-color: var(--accent); }
 .result-count { font-size: 12px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+
+.multiselect { position: relative; flex: 0 0 auto; }
+.ms-toggle {
+  background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 7px;
+  padding: 7px 10px; font-size: 13px; cursor: pointer; white-space: nowrap;
+}
+.ms-toggle:hover { border-color: var(--accent); }
+.multiselect.open .ms-toggle { border-color: var(--accent); }
+.ms-panel {
+  display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; background: var(--panel);
+  border: 1px solid var(--border); border-radius: 7px; padding: 6px; min-width: 200px; max-height: 260px;
+  overflow-y: auto; z-index: 20; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+.multiselect.open .ms-panel { display: block; }
+.ms-option { display: flex; align-items: center; gap: 6px; padding: 5px 6px; border-radius: 5px; font-size: 13px; cursor: pointer; }
+.ms-option:hover { background: var(--bg); }
+.ms-option input { margin: 0; }
+.ms-clear { display: block; width: 100%; text-align: left; background: none; border: none; color: var(--accent); font-size: 12px; padding: 5px 6px 8px; cursor: pointer; }
+.ms-clear:hover { text-decoration: underline; }
 
 table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
 thead th {
@@ -445,12 +481,15 @@ tbody tr.detail-row td { background: var(--bg); }
   font-size: 12px; font-weight: 600; cursor: pointer;
 }
 
+.id-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--muted); letter-spacing: .02em; }
+
 .empty-state { text-align: center; padding: 40px; color: var(--muted); }
 footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px; }
 
 @media (max-width: 720px) {
   .detail-grid { grid-template-columns: 1fr; }
-  thead th:nth-child(n+6), tbody td:nth-child(n+6) { display: none; }
+  thead th:nth-child(n+7), tbody td:nth-child(n+7) { display: none; }
+  thead th:nth-child(1), tbody td:nth-child(1) { display: none; }
 }
 </style>
 </head>
@@ -462,17 +501,19 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
 <main>
   <div class="stats" id="stats"></div>
   <div class="controls">
-    <input type="search" id="search" placeholder="Search company or role...">
-    <select id="filter-market"><option value="all">All markets</option><option value="UK">UK</option><option value="DE">Germany</option></select>
-    <select id="filter-verdict"><option value="all">All verdicts</option><option value="Strong Fit">Strong Fit</option><option value="Good Fit">Good Fit</option><option value="Moderate Fit">Moderate Fit</option><option value="Weak Fit">Weak Fit</option><option value="Poor Fit">Poor Fit</option><option value="unranked">Unranked</option></select>
-    <select id="filter-application"><option value="all">All application statuses</option><option value="not_applied">Not applied</option></select>
-    <select id="filter-portal"><option value="all">All portals</option></select>
+    <input type="search" id="search" placeholder="Search company, role, or ID...">
+    <div class="multiselect" id="filter-market"><button type="button" class="ms-toggle">Market: All</button><div class="ms-panel"></div></div>
+    <div class="multiselect" id="filter-verdict"><button type="button" class="ms-toggle">Verdict: All</button><div class="ms-panel"></div></div>
+    <div class="multiselect" id="filter-application"><button type="button" class="ms-toggle">Application: All</button><div class="ms-panel"></div></div>
+    <div class="multiselect" id="filter-portal"><button type="button" class="ms-toggle">Portal: All</button><div class="ms-panel"></div></div>
+    <div class="multiselect" id="filter-daterange"><button type="button" class="ms-toggle">Added: All time</button><div class="ms-panel"></div></div>
     <button id="reset">Reset filters</button>
     <span class="result-count" id="result-count"></span>
   </div>
   <table>
     <thead>
       <tr>
+        <th data-key="id">ID <span class="arrow"></span></th>
         <th data-key="company">Company <span class="arrow"></span></th>
         <th data-key="title">Role <span class="arrow"></span></th>
         <th data-key="market">Market <span class="arrow"></span></th>
@@ -493,10 +534,25 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
 
 <script>
 (function () {
-  const STATUS_OPTIONS = ["applied","interview","offer","hired","rejected","no response","offer declined","withdrawn","drafted"];
+  const STATUS_OPTIONS = ["applied","interview","offer","hired","rejected","no response","offer declined","withdrawn","drafted","skipped"];
 
   let RAW = { jobs: [], stats: { total: 0, ranked: 0, shortlisted: 0, excluded: 0, drafted: 0, applied: 0, interview: 0, offer: 0, rejected: 0 }, generatedAt: '' };
-  const state = { search: '', market: 'all', verdict: 'all', application: 'all', portal: 'all', statCard: null, sortKey: 'rank_score', sortDir: 'desc', expanded: new Set() };
+  // Each filter is a Set of selected values; an empty Set means "all" (no restriction),
+  // matching the old dropdowns' "all" option but allowing more than one value at once.
+  // dateRange is single-valued (date ranges overlap and aren't independent choices like
+  // verdict/portal, so a radio-style single-select is the right widget, not checkboxes).
+  const state = { search: '', market: new Set(), verdict: new Set(), application: new Set(), portal: new Set(), dateRange: 'all', statCard: null, sortKey: 'rank_score', sortDir: 'desc', expanded: new Set() };
+
+  const MARKET_OPTIONS = [{ value: 'UK', label: 'UK' }, { value: 'DE', label: 'Germany' }];
+  const DATE_RANGE_OPTIONS = [
+    { value: 'all', label: 'All time' }, { value: '1', label: 'Last 24 hours' }, { value: '3', label: 'Last 3 days' },
+    { value: '7', label: 'Last 7 days' }, { value: '14', label: 'Last 14 days' }, { value: '30', label: 'Last 30 days' },
+  ];
+  const VERDICT_OPTIONS = [
+    { value: 'Strong Fit', label: 'Strong Fit' }, { value: 'Good Fit', label: 'Good Fit' },
+    { value: 'Moderate Fit', label: 'Moderate Fit' }, { value: 'Weak Fit', label: 'Weak Fit' },
+    { value: 'Poor Fit', label: 'Poor Fit' }, { value: 'unranked', label: 'Unranked' },
+  ];
 
   const VERDICT_ORDER = { 'Strong Fit': 5, 'Good Fit': 4, 'Moderate Fit': 3, 'Weak Fit': 2, 'Poor Fit': 1 };
 
@@ -566,21 +622,70 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
     }
   }
 
-  function populatePortalFilter() {
-    const portals = Array.from(new Set(RAW.jobs.map(j => j.portal).filter(Boolean))).sort();
-    const sel = document.getElementById('filter-portal');
-    sel.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
-    for (const p of portals) sel.appendChild(el('option', { text: p, attrs: { value: p } }));
+  function portalOptions() {
+    return Array.from(new Set(RAW.jobs.map(j => j.portal).filter(Boolean))).sort().map(p => ({ value: p, label: p }));
   }
 
   // "Not applied" is always offered even with zero matches (it's the default state for
   // most rows); every other status is only added once it actually appears in the tracker,
-  // so the dropdown grows on its own as the pipeline progresses (applied, interview, offer...)
-  function populateApplicationFilter() {
+  // so the list grows on its own as the pipeline progresses (applied, interview, offer...)
+  function applicationOptions() {
     const statuses = Array.from(new Set(RAW.jobs.map(j => j.application && j.application.status ? j.application.status.toLowerCase() : null).filter(Boolean))).sort();
-    const sel = document.getElementById('filter-application');
-    sel.querySelectorAll('option:not(:first-child):not([value="not_applied"])').forEach(o => o.remove());
-    for (const s of statuses) sel.appendChild(el('option', { text: s.charAt(0).toUpperCase() + s.slice(1), attrs: { value: s } }));
+    return [{ value: 'not_applied', label: 'Not applied' }, ...statuses.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))];
+  }
+
+  function multiSelectLabel(prefix, selected, options) {
+    if (selected.size === 0) return prefix + ': All';
+    if (selected.size === 1) {
+      const only = options.find(o => o.value === [...selected][0]);
+      return prefix + ': ' + (only ? only.label : [...selected][0]);
+    }
+    return prefix + ': ' + selected.size + ' selected';
+  }
+
+  function renderSingleSelect(containerId, prefix, options, currentValue, onSelect) {
+    const container = document.getElementById(containerId);
+    const toggle = container.querySelector('.ms-toggle');
+    const panel = container.querySelector('.ms-panel');
+    const current = options.find(o => o.value === currentValue);
+    toggle.textContent = prefix + ': ' + (current ? current.label : 'All time');
+    panel.innerHTML = '';
+    for (const opt of options) {
+      const label = el('label', { class: 'ms-option' });
+      const radio = el('input', { attrs: { type: 'radio', name: containerId + '-radio' } });
+      radio.checked = currentValue === opt.value;
+      radio.addEventListener('change', () => {
+        onSelect(opt.value);
+        container.classList.remove('open');
+        render();
+      });
+      label.appendChild(radio);
+      label.appendChild(document.createTextNode(opt.label));
+      panel.appendChild(label);
+    }
+  }
+
+  function renderMultiSelect(containerId, prefix, options, selected) {
+    const container = document.getElementById(containerId);
+    const toggle = container.querySelector('.ms-toggle');
+    const panel = container.querySelector('.ms-panel');
+    toggle.textContent = multiSelectLabel(prefix, selected, options);
+    panel.innerHTML = '';
+    const clearBtn = el('button', { class: 'ms-clear', text: 'Clear', attrs: { type: 'button' } });
+    clearBtn.addEventListener('click', (e) => { e.stopPropagation(); selected.clear(); render(); });
+    panel.appendChild(clearBtn);
+    for (const opt of options) {
+      const label = el('label', { class: 'ms-option' });
+      const cb = el('input', { attrs: { type: 'checkbox' } });
+      cb.checked = selected.has(opt.value);
+      cb.addEventListener('change', () => {
+        if (cb.checked) selected.add(opt.value); else selected.delete(opt.value);
+        render();
+      });
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(opt.label));
+      panel.appendChild(label);
+    }
   }
 
   function applicationFilterValue(job) {
@@ -591,16 +696,21 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
 
   function matchesFilters(job) {
     if (state.search) {
-      const hay = ((job.company || '') + ' ' + (job.title || '')).toLowerCase();
+      const hay = ((job.company || '') + ' ' + (job.title || '') + ' ' + (job.id || '')).toLowerCase();
       if (!hay.includes(state.search.toLowerCase())) return false;
     }
-    if (state.market !== 'all' && job.market !== state.market) return false;
-    if (state.verdict !== 'all') {
-      if (state.verdict === 'unranked') { if (job.rank_verdict) return false; }
-      else if (job.rank_verdict !== state.verdict) return false;
+    if (state.market.size && !state.market.has(job.market)) return false;
+    if (state.verdict.size && !state.verdict.has(job.rank_verdict || 'unranked')) return false;
+    if (state.application.size && !state.application.has(applicationFilterValue(job))) return false;
+    if (state.portal.size && !state.portal.has(job.portal)) return false;
+    if (state.dateRange !== 'all') {
+      if (!job.first_seen) return false;
+      const days = Number(state.dateRange);
+      const cutoff = new Date();
+      cutoff.setHours(0, 0, 0, 0);
+      cutoff.setDate(cutoff.getDate() - days);
+      if (new Date(job.first_seen + 'T00:00:00') < cutoff) return false;
     }
-    if (state.application !== 'all' && applicationFilterValue(job) !== state.application) return false;
-    if (state.portal !== 'all' && job.portal !== state.portal) return false;
     if (state.statCard === 'shortlisted' && !isShortlisted(job)) return false;
     if (state.statCard === 'excluded' && !isVetoed(job)) return false;
     if (state.statCard && ['drafted', 'applied'].includes(state.statCard) && applicationFilterValue(job) !== state.statCard) return false;
@@ -611,6 +721,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
   }
 
   function sortValue(job, key) {
+    if (key === 'id') return job.id || '';
     if (key === 'rank_score') return job.rank_score === null ? -1 : job.rank_score;
     if (key === 'rank_verdict') return VERDICT_ORDER[job.rank_verdict] || 0;
     if (key === 'company') return (job.company || '').toLowerCase();
@@ -775,6 +886,8 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
     for (const job of list) {
       const tr = el('tr', { class: 'job-row' });
 
+      tr.appendChild(el('td', { class: 'id-code', text: job.id || '—' }));
+
       const tdCompany = el('td');
       tdCompany.appendChild(el('div', { class: 'company', text: job.company || '—' }));
       tr.appendChild(tdCompany);
@@ -830,8 +943,11 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
     renderStats();
     renderTable(sorted);
     updateSortArrows();
-    populatePortalFilter();
-    populateApplicationFilter();
+    renderMultiSelect('filter-market', 'Market', MARKET_OPTIONS, state.market);
+    renderMultiSelect('filter-verdict', 'Verdict', VERDICT_OPTIONS, state.verdict);
+    renderMultiSelect('filter-application', 'Application', applicationOptions(), state.application);
+    renderMultiSelect('filter-portal', 'Portal', portalOptions(), state.portal);
+    renderSingleSelect('filter-daterange', 'Added', DATE_RANGE_OPTIONS, state.dateRange, (v) => { state.dateRange = v; });
     document.getElementById('result-count').textContent = 'Showing ' + sorted.length + ' of ' + RAW.jobs.length;
     const meta = document.getElementById('meta');
     meta.className = 'meta';
@@ -839,17 +955,24 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
   }
 
   document.getElementById('search').addEventListener('input', (e) => { state.search = e.target.value; render(); });
-  document.getElementById('filter-market').addEventListener('change', (e) => { state.market = e.target.value; render(); });
-  document.getElementById('filter-verdict').addEventListener('change', (e) => { state.verdict = e.target.value; render(); });
-  document.getElementById('filter-application').addEventListener('change', (e) => { state.application = e.target.value; render(); });
-  document.getElementById('filter-portal').addEventListener('change', (e) => { state.portal = e.target.value; render(); });
+  document.querySelectorAll('.multiselect .ms-toggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const container = btn.closest('.multiselect');
+      const wasOpen = container.classList.contains('open');
+      document.querySelectorAll('.multiselect.open').forEach(m => m.classList.remove('open'));
+      if (!wasOpen) container.classList.add('open');
+    });
+  });
+  document.querySelectorAll('.multiselect .ms-panel').forEach(panel => {
+    panel.addEventListener('click', (e) => e.stopPropagation());
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.multiselect.open').forEach(m => m.classList.remove('open'));
+  });
   document.getElementById('reset').addEventListener('click', () => {
-    state.search = ''; state.market = 'all'; state.verdict = 'all'; state.application = 'all'; state.portal = 'all'; state.statCard = null;
+    state.search = ''; state.market.clear(); state.verdict.clear(); state.application.clear(); state.portal.clear(); state.dateRange = 'all'; state.statCard = null;
     document.getElementById('search').value = '';
-    document.getElementById('filter-market').value = 'all';
-    document.getElementById('filter-verdict').value = 'all';
-    document.getElementById('filter-application').value = 'all';
-    document.getElementById('filter-portal').value = 'all';
     render();
   });
   document.querySelectorAll('thead th[data-key]').forEach(th => {

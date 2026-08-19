@@ -90,11 +90,7 @@ Store both arrays **verbatim** as the agent returned them (1-3 bullets each) - n
 
 Do not modify `job_search_tracker.csv` - that file records applications, and `/rank` never applies. Re-running `/rank` is idempotent: already-`ranked` jobs are skipped unless `--all` re-scores them.
 
-After writing `seen_jobs.json`, regenerate the CSV export so it reflects the new scores immediately:
-```bash
-bun run job_scraper/export_csv.js
-```
-Run this even when `/rank` scored zero new jobs this call (e.g. everything was already ranked) - it's cheap and idempotent, and it's the only thing keeping `seen_jobs.csv` in sync with the JSON between runs. A live, filterable, write-back-capable dashboard is also available - see `job_scraper/serve_dashboard.js` (`bun run job_scraper/serve_dashboard.js`, then bookmark the URL it prints); it reads `seen_jobs.json` fresh on every page load, so nothing needs to be run here to keep it in sync.
+No separate export step is needed after writing `seen_jobs.json`. The live, filterable, write-back-capable dashboard (`job_scraper/serve_dashboard.js` — `bun run job_scraper/serve_dashboard.js`, then bookmark the URL it prints) reads `seen_jobs.json` fresh on every page load, so nothing here needs to stay in sync with a separate file. (A `seen_jobs.csv` export previously existed for spreadsheet use before the live dashboard existed; it's no longer generated — the dashboard has fully replaced that use case.)
 
 ---
 

@@ -20,6 +20,7 @@ venv/
 
 # Personal data (never commit these)
 salary_data.json
+confidential_client_info.md
 # Match at any depth: the job-scraper skill resolves `job_scraper/` relative to
 # its own directory, so these land at .claude/skills/job-scraper/job_scraper/*.
 # A rooted `job_scraper/...` pattern silently fails to match them.
