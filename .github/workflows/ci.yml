@@ -103,11 +103,38 @@ jobs:
           fail-on-severity: high
 
   latex-smoke:
-    name: Compile example CV and cover letter
+    # Two legs. texlive/texlive:latest tracks current TeX Live (moderncv 2.5+);
+    # debian:bookworm compiles on apt-packaged TeX Live 2022 with moderncv
+    # 2.3.1 - the environment #242 hit and the one texlive:latest can never
+    # catch a regression in, because it never shipped the old class. The
+    # README's Linux setup path is apt, so both ends of the moderncv range
+    # users actually have stay compiled.
+    name: Compile example CV and cover letter (${{ matrix.leg.name }})
     runs-on: ubuntu-latest
-    container: texlive/texlive:latest
+    container: ${{ matrix.leg.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        leg:
+          - name: texlive-latest
+            container: texlive/texlive:latest
+          - name: debian-bookworm
+            container: debian:bookworm
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Install apt-packaged TeX Live (bookworm leg)
+        if: matrix.leg.name == 'debian-bookworm'
+        # --no-install-recommends keeps the leg lean, so the two font packages
+        # must then be named explicitly: moderncv loads fontawesome5, which apt
+        # ships in texlive-fonts-extra (lualatex dies fatally without it), and
+        # hyperref's xetex driver probes the pzdr metrics from
+        # texlive-fonts-recommended (the cover letter fails without it).
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            texlive-luatex texlive-latex-extra texlive-xetex \
+            texlive-fonts-extra texlive-fonts-recommended \
+            poppler-utils python3
       - name: Install PDF inspection tools
         run: |
           if ! command -v pdfinfo >/dev/null || ! command -v pdftotext >/dev/null; then

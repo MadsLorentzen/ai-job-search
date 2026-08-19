@@ -34,6 +34,20 @@ per-file diff commands.
   `apply.md` Step 0 states for the posting itself, since cache notes are written from
   the same fetched web content. The verification-still-applies restatement in both
   `apply.md` and `interview.md`'s cache-check paragraphs is now pinned too.
+- **CI now compiles the LaTeX examples on Debian bookworm's apt-packaged TeX Live** (the
+  separate-PR follow-up invited in #323's review). The `latex-smoke` job ran only
+  `texlive/texlive:latest` - the environment that never had the #242 bug, so the moderncv-2.3.1
+  compile fix shipped guarded by nothing: the next edit to `cv/main_example.tex` could
+  reintroduce a `\firstnamestyle` override or a top-level `\usepackage{hyperref}` and CI would
+  stay green. The job is now a two-leg matrix, `texlive-latest` unchanged and `debian-bookworm`
+  installing TeX Live 2022 from apt (moderncv 2.3.1, verified in a real bookworm container:
+  both documents compile clean and the strict stock assertions - 2-page CV, 1-page cover
+  letter, extractable text - pass on both legs unchanged). `--no-install-recommends` keeps the
+  leg lean, which makes two font packages explicit requirements: `texlive-fonts-extra`
+  (moderncv loads fontawesome5) and `texlive-fonts-recommended` (hyperref's xetex driver
+  probes the `pzdr` metrics). **Note for repo admins:** the matrix renames the check from
+  "Compile example CV and cover letter" to two leg-suffixed names, so a branch-protection
+  rule requiring the old name needs updating once.
 
 ## [1.6.0] - 2026-08-19
 
