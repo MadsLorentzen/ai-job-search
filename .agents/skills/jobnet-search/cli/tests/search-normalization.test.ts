@@ -137,14 +137,14 @@ describe("Jobnet search normalization", () => {
       location: null,
       date: "2026-07-01",
       deadline: null,
-      url: "https://jobnet.dk/job/job-1",
+      url: "https://jobnet.dk/find-job/job-1",
     });
     expect(output.results[1]).toMatchObject({
       company: "Example Co",
       location: "København Ø",
       date: "2026-07-02",
       deadline: "2026-08-01",
-      url: "https://jobnet.dk/job/job-2",
+      url: "https://jobnet.dk/find-job/job-2",
     });
     expect(output.results[0].hiringOrgName).toBe("Acme");
     expect(output.results[1].applicationDeadline).toBe("2026-08-01T23:59:00+02:00");

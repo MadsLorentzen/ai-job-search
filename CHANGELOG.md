@@ -32,6 +32,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobnet-search` search output now carries the `/scrape` contract fields** - the CLI emitted
+  the raw Jobnet API schema (`jobAdId`, `hiringOrgName`, `publicationDate`, …) with no
+  `company`, `location`, `date` or `url`, so every `/scrape` run flagged jobnet as degraded
+  forever (CI stayed green), the `seen_jobs.json` dedupe fell back to company+title, and `/rank`
+  lost the posting link. Search results now additively emit `company`, `location`, `date`,
+  `deadline` and `url` (`https://jobnet.dk/find-job/{jobAdId}` - the `/job/` route is
+  login-walled); the API's `1900-01-01` "deadline not disclosed" sentinel maps to `null`.
+
 - **The `/html-report` dashboard now reads and renders the tracker's `deadline`** (follow-up to
   #319). The tracker gained a fourteenth `deadline` column and every other consumer (`/outcome`,
   `/upskill`, `/notion-sync`) was updated to know it, but the dashboard's Step 1 field

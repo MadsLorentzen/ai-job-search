@@ -152,7 +152,7 @@ bun run src/cli.ts search \
       "location": "Viborg",
       "date": "2026-03-13",
       "deadline": "2026-04-05",
-      "url": "https://jobnet.dk/job/9ef43bce-d82b-4ea1-a098-7ff6520f99be"
+      "url": "https://jobnet.dk/find-job/9ef43bce-d82b-4ea1-a098-7ff6520f99be"
     }
   ]
 }
@@ -357,8 +357,13 @@ All errors are written to **stderr** in JSON format and exit with code `1`:
 Job ad detail pages on jobnet.dk:
 
 ```
-https://jobnet.dk/job/{jobAdId}
+https://jobnet.dk/find-job/{jobAdId}
 ```
+
+The legacy `https://jobnet.dk/job/{jobAdId}` route redirects anonymous visitors into the
+MitID login flow, so it is never emitted. External ads (`isExternal: true`, jobAdIds with an
+`E` prefix) 404 on `/find-job/` and hit the login wall on `/job/` - neither route serves them
+anonymously; `/find-job/` is still strictly better and external ads are left as-is.
 
 Company logo images (prefix relative logoUrl from API):
 
