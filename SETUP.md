@@ -160,6 +160,14 @@ cd ai-job-search
 
 Or manually: fork on GitHub, then clone your fork.
 
+> **Before you go further: forks are public.** GitHub cannot make a fork of a public
+> repository private, and `/setup` (section 6) writes your personal data into **tracked**
+> files — pushing those commits to a fork publishes them. If this copy is for your own
+> job search rather than for contributing, prefer a **private repository** with this repo
+> as `upstream`: see section 8, step 1 for the exact commands and why committing your
+> personalization there is still the right move. Everything else in this guide works
+> identically either way.
+
 ## 3. Install job search CLI dependencies
 Run these from the repository root.
 

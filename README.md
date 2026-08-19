@@ -78,6 +78,15 @@ gh repo fork MadsLorentzen/ai-job-search --clone
 cd ai-job-search
 ```
 
+> [!IMPORTANT]
+> **A fork of this repo is always public** — GitHub does not allow private forks of
+> public repositories — and `/setup` (step 3 below) writes your personal data (name,
+> contact details, employment history, salary expectations) into **tracked** files.
+> If this copy is for your own job search rather than for contributing changes back,
+> use a **private repository** with this repo as `upstream` instead — the two-minute
+> recipe is in [SETUP.md section 8](SETUP.md#8-pulling-upstream-updates-into-your-fork),
+> and every update workflow works identically. Fork only to contribute.
+
 ### 2. Install job search tools
 
 PowerShell:
