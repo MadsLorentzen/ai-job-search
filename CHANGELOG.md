@@ -13,6 +13,20 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Added
+
+- **`seen_jobs.json` entries record which mechanism produced them** - a new additive `source`
+  field (`cli` for Step 1b portal-CLI output, `websearch` for the Step 1c fallback), a Step 1c
+  rule tagging fallback results at collection time, and a `fallback (websearch):` line in the
+  Step 5 run summary naming the portals that ran on the fallback. Motivated by the
+  ghost-LinkedIn-jobs report (#331): when a stored job later turns out not to exist at its URL,
+  triage hinges on whether the entry came from live CLI output or a search index that can be
+  weeks stale - evidence that previously lived only in the run's scrollback. An entry that is
+  missing `source` predates the field and is never backfilled; a presented job with no
+  `seen_jobs.json` entry at all points at fabrication, which the scraper's Rule 1 forbids.
+  Pinned by `tests/test_scrape_provenance.py`. `job-scraper/SKILL.md` sits outside the
+  `framework_version`-marked set, so no version bump applies.
+
 ### Changed
 
 - **Job matching reframed around function, not title** (`framework_version` 1.2.2 -> 1.2.3 in
@@ -39,6 +53,20 @@ per-file diff commands.
   lost the posting link. Search results now additively emit `company`, `location`, `date`,
   `deadline` and `url` (`https://jobnet.dk/find-job/{jobAdId}` - the `/job/` route is
   login-walled); the API's `1900-01-01` "deadline not disclosed" sentinel maps to `null`.
+
+- **A `/` in a company or role name no longer nests the application archive one level too deep**
+  (jakob1379/ai-job-search#22). `Novo Nordisk A/S` derived
+  `documents/applications/novo_nordisk_a/s_data_scientist/` - written and found by every command
+  that derives the path, silently skipped by the two that enumerate it, so the application never
+  appeared in `/html-report`'s dashboard and `/setup`'s calibration never learned from it. The
+  **Subfolder naming** rule in `documents/README.md` now drops every character that is not a
+  letter, digit or underscore (collapsing underscore runs, trimming the ends), and the derivation
+  sites - `/apply`, `/outcome`, the direct application skill, `/gmail-sync`, `/interview`, and
+  `/notion-sync` - cite that rule instead of paraphrasing it. An all-punctuation value that derives
+  to an empty name now stops for user correction instead of writing into the archive root. The
+  application assistant's `framework_version` moves 1.3.3 → 1.3.4. **Already-nested archives are
+  not migrated**: an archive written under the old rule stays where it is until the user moves it;
+  only newly derived names change. Thanks @jakob1379 for the report.
 
 - **The `/html-report` dashboard now reads and renders the tracker's `deadline`** (follow-up to
   #319). The tracker gained a fourteenth `deadline` column and every other consumer (`/outcome`,

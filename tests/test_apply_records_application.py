@@ -29,9 +29,11 @@ APPLY = COMMANDS / "apply.md"
 OUTCOME = COMMANDS / "outcome.md"
 GMAIL_SYNC = COMMANDS / "gmail-sync.md"
 HTML_REPORT = COMMANDS / "html-report.md"
+INTERVIEW = COMMANDS / "interview.md"
 NOTION_SYNC = COMMANDS / "notion-sync.md"
 SKILL = REPO / ".claude" / "skills" / "job-application-assistant" / "SKILL.md"
 SCRAPER = REPO / ".claude" / "skills" / "job-scraper" / "SKILL.md"
+DOCS_README = REPO / "documents" / "README.md"
 
 TRACKER_HEADER = (
     "date,company,sector,role,role_type,channel,status,contact_person,"
@@ -381,6 +383,96 @@ class DeadlineSurvivesEveryWrite(unittest.TestCase):
             with self.subTest(file=path.name, rule=needle):
                 haystack = section(path, heading) if heading else path.read_text(encoding="utf-8")
                 self.assertIn(needle, haystack, why)
+
+
+class ArchiveNameIsOnePathComponent(unittest.TestCase):
+    """`<company>_<role>` must derive a single path component.
+
+    `Novo Nordisk A/S` used to derive `novo_nordisk_a/s_<role>/`: every
+    command that *derives* the path agrees and keeps working, while the
+    two that *enumerate* `documents/applications/*/` (/setup Path A,
+    /html-report's glob) silently skip the nested archive. The character
+    rule lives in one place - documents/README.md's Subfolder naming
+    block - and the derivation sites cite it rather than restating it
+    (jakob1379/ai-job-search#22).
+    """
+
+    CASES = [
+        (DOCS_README, "## applications/",
+         "not a letter, digit or underscore is dropped",
+         "the character rule is stated nowhere else; without it the naming "
+         "convention leaves `/` untouched and the archive nests"),
+        (DOCS_README, "## applications/",
+         "single path component",
+         "the sentence that says why the rule exists; without it the next "
+         "edit simplifies the rule back to spaces-only"),
+        (OUTCOME, "## Step 1: Load State and Identify the Application",
+         "by the **Subfolder naming** rule in `documents/README.md`",
+         "Step 1.4 is the derivation every other writer cites; paraphrasing "
+         "the rule here is how the two copies drifted apart originally"),
+        (APPLY, "### Requirement coverage (both documents)",
+         "the same rule `/outcome` Step 1.4 uses",
+         "CV and cover-letter filenames use the same unsanitised values; a "
+         "`/` there sends the draft to a path lualatex never writes a PDF "
+         "back to, and the Step 4 compile check fails on a phantom path"),
+        (SKILL, "### Step 2: Tailor CV",
+         "by the **Subfolder naming** rule in `documents/README.md`",
+         "the /scrape path writes its documents before Step 3b consults /apply, "
+         "so /apply's filename rule cannot protect it"),
+        (GMAIL_SYNC, "## Step 2: Load State",
+         "by the **Subfolder naming** rule in `documents/README.md`",
+         "gmail-sync both locates and creates archives; its old spaces-only "
+         "paraphrase would split state across two folders"),
+        (INTERVIEW, "## Step 1: Load the Application Context",
+         "by the **Subfolder naming** rule in `documents/README.md`",
+         "interview must read the same archive /apply and /outcome wrote"),
+        (INTERVIEW, "### 6. Logistics",
+         "archive folder derived in Step 1",
+         "interview must reuse its canonical read path when writing the prep pack"),
+        (NOTION_SYNC, "## Step 5: Write the Detail Page",
+         "by the **Subfolder naming** rule in `documents/README.md`",
+         "notion-sync otherwise reports that the sanitized local archive is absent"),
+        (DOCS_README, "## applications/",
+         "If the derived name is empty",
+         "dropping untrusted punctuation can produce no component at all, which "
+         "would write files directly under documents/applications"),
+    ]
+
+    def test_the_rule_has_one_home_and_every_deriver_cites_it(self):
+        for path, heading, needle, why in self.CASES:
+            with self.subTest(file=path.name, rule=needle):
+                self.assertIn(needle, section(path, heading), why)
+
+    @staticmethod
+    def derive(company, role):
+        """The Subfolder naming rule, executed exactly as documented:
+        lowercase, underscores for spaces, drop every character that is
+        not a letter/digit/underscore, collapse runs, trim the ends.
+        (\\w is Unicode in Python 3, so Danish letters survive.)"""
+        name = f"{company}_{role}".lower().replace(" ", "_")
+        name = re.sub(r"[^\w]", "", name)
+        name = re.sub(r"_+", "_", name).strip("_")
+        return name or None
+
+    DERIVATIONS = [
+        ("Novo Nordisk A/S", "Data Scientist", "novo_nordisk_as_data_scientist"),
+        ("Acme", "Data Scientist / ML Engineer", "acme_data_scientist_ml_engineer"),
+        ("Ørsted A/S", "ML Engineer", "ørsted_as_ml_engineer"),
+        # company/role reach the derivation from untrusted posting text
+        # (apply.md Step 0), so `..` must not survive either
+        ("../..", "Data Scientist", "data_scientist"),
+        ("../..", "///", None),
+    ]
+
+    def test_documented_rule_yields_a_single_path_component(self):
+        for company, role, expected in self.DERIVATIONS:
+            with self.subTest(company=company, role=role):
+                name = self.derive(company, role)
+                self.assertEqual(name, expected)
+                if name is None:
+                    continue
+                self.assertNotIn("/", name)
+                self.assertNotIn("..", name)
 
 
 if __name__ == "__main__":
