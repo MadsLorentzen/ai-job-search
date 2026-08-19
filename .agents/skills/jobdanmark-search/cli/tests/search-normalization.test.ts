@@ -44,6 +44,16 @@ describe("Jobdanmark search normalization", () => {
     expect(result.company).toBe("Statens It");
   });
 
+  test("survives a null companyAddress from the API", () => {
+    const result = normalizeItem({
+      ...item(),
+      companyAddress: null,
+    });
+
+    expect(result.location).toBeNull();
+    expect(result.company).toBe("Statens It");
+  });
+
   test("keeps native fields unchanged (additive contract)", () => {
     const result = normalizeItem(item());
 

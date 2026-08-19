@@ -46,6 +46,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobdanmark-search` search output now carries the `/scrape` contract fields** - the CLI
+  exposed the API-native schema (`companyName`, `publishedDate` in `DD-MM-YYYY`, …) with no
+  `company`, `location`, `date` or `deadline`, so every `/scrape` run flagged jobdanmark as
+  degraded and the `seen_jobs.json` dedupe lost the company. Search results now additively emit
+  `company`, `location` (city after the postal code in `companyAddress`), and `date`/`deadline`
+  in the `YYYY-MM-DD` convention, with null-safe handling of a missing address.
+
 - **`jobnet-search` search output now carries the `/scrape` contract fields** - the CLI emitted
   the raw Jobnet API schema (`jobAdId`, `hiringOrgName`, `publicationDate`, …) with no
   `company`, `location`, `date` or `url`, so every `/scrape` run flagged jobnet as degraded

@@ -12,7 +12,7 @@ export interface ApiSearchItem {
   } | null
   companyLogoSvgMarkup: string | null
   overlayColor: string | null
-  companyAddress: string
+  companyAddress: string | null
   jobTypes: string[]
   boostJob: boolean
   publishedDate: string
@@ -83,7 +83,7 @@ export function normalizeItem(item: ApiSearchItem): Record<string, unknown> {
     coverImage,
     silhouetteLogo: item.silhouetteLogo,
     company: item.companyName,
-    location: item.companyAddress.match(/\d{4}\s+(.+)$/)?.[1] ?? null,
+    location: item.companyAddress?.match(/\d{4}\s+(.+)$/)?.[1] ?? null,
     date: toContractDate(item.publishedDate),
     deadline: toContractDate(item.applicationDeadline),
   }
