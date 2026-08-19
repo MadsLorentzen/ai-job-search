@@ -30,6 +30,13 @@ If the candidate's permit also constrains *hours* or *start date* (a student vis
 
 A role that fails this gate is not scored and not drafted. Everything below applies only to roles that pass it.
 
+### Candidate-specific timing gate (added by /setup, dual-market search)
+
+The candidate runs a **dual-market search**: UK (Reading-based) and Germany (English-speaking roles only).
+
+- **UK roles:** Current Skilled Worker visa expires **February 2027**. The current employer (Cognizant) cannot sponsor a transfer, so a new UK role must come from an employer able to sponsor from scratch. Before scoring any UK posting, check whether the employer is a genuine, active sponsor — an "we sponsor" statement in the posting is not enough on its own; prefer employers with a visible, current sponsor licence. Treat sponsorship uncertainty on a UK posting as a **FLAG**, not an automatic pass — surface it explicitly rather than assuming it will work out, given the Feb 2027 deadline.
+- **Germany roles:** No sponsorship dependency — the candidate plans to relocate independently via the **Chancenkarte (Opportunity Card)**, for which they are eligible but have not yet submitted an application. This route does not require the employer to sponsor a work permit on day one, so a German posting should **not** be failed or flagged for silence on sponsorship the way a UK posting would be. It still must pass the Language Gate below (English-speaking role required — the candidate's German is A0).
+
 ## Language Gate — run before scoring
 
 No dimension or gate anywhere in this framework currently checks a posting's language requirements against what the candidate actually speaks - it is not one of the five Scoring Dimensions below, not a field `/scrape` or `/rank` track, and not something `/apply`'s language detection (Step 1, which already extracts a posting's required language generically) has anywhere to report to. This gate adds that check, structured the same way as the Eligibility Gate above: read the posting, classify against profile data, and treat a hard mismatch as FAIL before scoring.
@@ -60,9 +67,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Product ownership / backlog management, epic & user story elaboration, acceptance criteria, agile delivery (Scrum, SAFe, PI Planning), digital payments domain (tokenisation, EMV, virtual cards, wallet integrations with Google Pay/Samsung Pay, issuer push provisioning), regulatory compliance delivery (RBI, PCI), stakeholder management, AI-augmented delivery workflows (Gemini)
+**Moderate match areas:** Pre-sales / solution architecture, business case development, commercial modelling & bid management (RFP/RFI), Go-to-Market strategy, B2B integration specs, cross-functional dependency management at scale
+**Weak match areas:** Hands-on software engineering/coding (last coded professionally 2010-2012, Java), data science / ML, languages beyond English/Bengali/Hindi (German is A0), UX/design
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for?
@@ -74,9 +81,9 @@ Does work history align with what they're looking for?
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** Product Owner / Product Manager roles in digital payments, wallets, card networks, and fintech; Delivery Manager / Agile Delivery Lead roles in regulated environments
+**Moderate:** Pre-Sales / Solutions Consultant roles in fintech or banking; Senior/Lead Product Owner or Product Manager roles (a step up in seniority from current IC-level PO)
+**Entry-level:** Roles outside payments/fintech domain (banking, insurance, other regulated adjacent domains) — transferable delivery and product skills, but domain knowledge would need to be built
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -107,19 +114,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Continue owning digital payments / wallet / card network products, ideally stepping up to Senior or Lead Product Owner / Product Manager level
+- Stay close to regulated, high-complexity delivery environments where the payments and compliance domain expertise compounds
+- Keep AI-augmented delivery (backlog drafting, requirements analysis) as a core part of the working style, not a side skill
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: End-to-end feature ownership from backlog to launch, complex B2B partner integrations (e.g. Google/Samsung wallets), managing high-impact delivery squads, navigating regulated technical compliance frameworks
+- Tasks that drain: Repetitive manual status reporting, lack of delivery autonomy, unmapped/shifting product requirements without clear stakeholder consensus
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Current UK Skilled Worker visa expires February 2027; current employer (Cognizant) cannot sponsor a transfer. UK opportunities are time-pressured and depend on landing an actively-sponsoring employer well before that deadline. Germany opportunities via the Chancenkarte are not sponsorship-dependent and offer an alternative path that isn't gated by the same clock.
+- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS] <!-- not yet captured - ask directly if relevant -->
+- **Professional development**: Deepening product/PM seniority in payments and fintech; open to broadening into adjacent regulated domains if it accelerates career progression
 
 ### 6. Salary Benchmark (Optional)
 

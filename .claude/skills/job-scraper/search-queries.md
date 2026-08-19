@@ -12,66 +12,72 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Dual-market search: **UK** (commutable from Reading, Berkshire) and **Germany** (English-speaking roles only — relocation planned independently via the Chancenkarte, not employer-sponsorship-dependent). See `04-job-evaluation.md`'s candidate-specific timing gate — UK roles are time-critical (current Skilled Worker visa expires February 2027, current employer cannot sponsor a transfer), so UK results should be checked for active sponsor status before scoring.
+
+Primary:
+- **linkedin.com/jobs** - LinkedIn job listings (filter: United Kingdom / Germany); also covered by `linkedin-search` CLI
+- `freehire-search` CLI - country-agnostic, covers both markets
+- `stepstone-search` CLI - StepStone.de, Germany-specific; searches by job title + optional city (e.g. `-q "Product Owner" -l "Berlin"`). No `--jobage`/`--page` support (robots.txt constraint - see `.agents/skills/stepstone-search/url-reference.md`), so treat it as a single best-page-of-results source per query rather than an exhaustive crawl
+- `arbeitnow-search` CLI - Arbeitnow, Germany-focused aggregator skewing toward English-speaking/remote-friendly listings; supports `--query`, `--location`, `--jobage`, and `--page`, but all filtering is client-side against one page at a time (the API itself has no server-side search - see `.agents/skills/arbeitnow-search/url-reference.md`), so a combined query+location+jobage filter can legitimately return nothing on a given page even when matches exist further back - call again with a higher `--page` rather than assuming zero results means no matches
 
 Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for known target companies
+- Direct Google searches with `site:` filters for known target companies (card networks, digital banks, wallet providers)
 
 ## Query Categories
 
-Queries are grouped by priority. Write **each category in every language from your Languages table** (see Language scope above). Combine each query with your location terms (e.g. your city, region, or metro area) where the site supports it.
+Queries are grouped by priority. All queries are in English only — the candidate's German is A0, and the Germany search targets English-speaking roles specifically, so no German-language query variants are needed (see Language scope above). Combine each query with UK or Germany location terms depending on which market it targets.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: Product Owner / Product Manager - Digital Payments
 
-These match your strongest and most desired career direction.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_COUNTRY]
-```
-
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
+These match the strongest and most desired career direction.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:linkedin.com/jobs "Product Owner" payments Reading OR London OR UK
+site:linkedin.com/jobs "Product Manager" wallet OR tokenisation OR "card network" UK
+site:linkedin.com/jobs "Product Owner" payments Germany
+site:linkedin.com/jobs "Product Manager" fintech Germany English-speaking
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
+### Priority 2: Payments & Fintech Domain Expertise
 
-Adjacent roles you could pivot into.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
-```
-
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
+These match deep domain expertise in digital payments, wallets, and card networks.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:linkedin.com/jobs "digital payments" "product owner" UK
+site:linkedin.com/jobs tokenisation OR "virtual card" OR "wallet integration" product UK OR Germany
+site:linkedin.com/jobs "card network" OR "issuer processor" product owner Germany
+```
+
+### Priority 3: Senior/Lead Product roles & Delivery Management
+
+Adjacent roles - a step up in seniority, or leaning into the delivery-management side of the current dual role.
+
+```
+site:linkedin.com/jobs "Senior Product Owner" OR "Lead Product Owner" payments UK OR Germany
+site:linkedin.com/jobs "Delivery Manager" OR "Agile Delivery Lead" payments OR fintech UK OR Germany
+```
+
+### Priority 4: Pre-Sales / Solutions Consulting (fintech)
+
+Wider net, leaning into the pre-sales/commercial background instead.
+
+```
+site:linkedin.com/jobs "Pre-Sales" OR "Solutions Consultant" fintech OR banking UK OR Germany
+site:linkedin.com/jobs "Solution Architect" payments banking UK OR Germany
 ```
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+Two independent markets, evaluated differently:
+
+**UK** (commute-based, from Reading, Berkshire):
+- Reading, Berkshire and the Thames Valley (ideal)
+- London (acceptable - commutable via rail)
+- Elsewhere in the UK (borderline - only for an exceptional fit, given the Feb 2027 visa deadline makes speed more important than location flexibility)
+
+**Germany** (relocation-based, not commute-based):
+- Any German city is in scope, since relocation is planned independently via the Chancenkarte
+- Hard filter: the role itself must be English-speaking (see Language Filter below) - this matters more than which city it's in
 
 ## Language Filter
 

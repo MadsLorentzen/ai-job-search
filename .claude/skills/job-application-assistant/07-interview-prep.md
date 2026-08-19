@@ -12,32 +12,71 @@ Structure answers as: **Situation** (context), **Task** (your responsibility), *
 
 Keep answers to 1-2 minutes. Be specific. End with what you learned or would do differently.
 
-## Ready-Made STAR Examples
+## STAR Candidates (Complete Manually)
 
-<!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
+<!-- Path A of /setup found these achievements in your CV/LinkedIn documents but did not draft full
+STAR examples - fill in the situation/task/action/result detail yourself before relying on these
+in an interview. -->
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### Virtual Card autofill launch (Google Chrome Autofill programme)
+**Source:** CV / LinkedIn - Product Owner (Proxy) & Onsite Delivery Manager, Cognizant, May 2022-Jan 2026
+**What happened:** Owned the Virtual Card retrieval flow end-to-end, from Google's technical requirements through to go-live on 13 Nov 2024, shipping to 100% of eligible cardholders and processing 275,000+ transactions in the first 60 days.
+**Why it matters:** Strong answer for "tell me about a feature you owned end-to-end", "biggest impact you've had", or "how do you handle a complex external partner dependency (Google)"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### Issuer Push Provisioning into Google Wallet and Samsung Wallet
+**Source:** CV / LinkedIn - Product Owner (Proxy) & Onsite Delivery Manager, Cognizant
+**What happened:** Defined the network-side B2B integration specification and owned the full user story set for in-app card provisioning, adopted by issuer bank partners.
+**Why it matters:** Good for "describe a time you defined technical specs for external partners" or "how do you manage a multi-party integration"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### RBI regulatory compliance programme rescue
+**Source:** CV - Product Owner (Proxy) & Onsite Delivery Manager, Cognizant
+**What happened:** Took ownership of an in-flight regulatory compliance programme mid-way, elaborated the remaining backlog, and drove delivery to completion within hard regulatory deadlines.
+**Why it matters:** Strong for "tell me about a time you inherited a problem" or "how do you work under a hard deadline you didn't set"
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-<!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
+### >$100M TCV pre-sales proposals
+**Source:** CV / LinkedIn - Pre-Sales Solution Architect, Cognizant BFS QE&A, Jul 2019-Apr 2022
+**What happened:** Architected and won proposals totalling over $100M in total contract value across DevOps transformation, test automation, and quality engineering programmes for banking clients.
+**Why it matters:** Good for "how do you think about business impact / commercial outcomes", or bridging into more senior/strategic PM questions
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Award-winning whitepaper and Go-to-Market strategy
+**Source:** CV / LinkedIn - Pre-Sales Solution Architect, Cognizant BFS QE&A
+**What happened:** Co-authored "Digital Transformation - A Quality Engineering Perspective" (Cognizant Cheers Award), used as client-facing sales collateral; also formulated GTM strategy for the BFS QE&A North America practice (2020, 2021) and the Product Testing group (2019).
+**Why it matters:** Useful for "tell me about a time you influenced strategy beyond your immediate role" or thought-leadership/domain-expertise questions
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Mentoring interns into client-facing work
+**Source:** LinkedIn - Pre-Sales Solution Architect, Cognizant BFS QE&A
+**What happened:** Mentored two cohorts of summer interns (2020, 2021), producing POV documents on LIBOR Transition and Contact Centre Modernization that fed into active client pursuits.
+**Why it matters:** Good for "tell me about a time you developed someone junior" or mentoring/leadership questions
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
 ## Common Tough Questions
 

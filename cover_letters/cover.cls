@@ -15,6 +15,7 @@
 \usepackage{titlesec}
 \usepackage[absolute]{textpos}
 \usepackage{fontspec,xltxtra,xunicode}
+\usepackage{graphicx}
 
 % Publications
 \usepackage{cite}

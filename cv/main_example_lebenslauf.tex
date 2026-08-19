@@ -1,0 +1,156 @@
+%% MASTER REFERENCE - Lebenslauf (German-market CV format)
+%% Comprehensive overview of all competencies, experience, and achievements.
+%% Use as source when building targeted German-market CVs (cv/main_<company>_<role>.tex) - trim per role.
+%% Content stays in ENGLISH (see CLAUDE.md "CV language") - only the FORMAT is German-style:
+%% photo, tabular Personal Details block, and a closing signature line.
+%% Compile with: lualatex main_example_lebenslauf.tex
+
+\documentclass[11pt,a4paper,sans]{moderncv}
+\moderncvstyle{classic}
+\moderncvcolor{blue}
+
+\renewcommand*{\firstnamestyle}[1]{{\fontsize{28}{30}\bfseries\upshape\color{color1}#1}}
+\renewcommand*{\lastnamestyle}[1]{{\fontsize{28}{30}\bfseries\upshape\color{color1}#1}}
+\renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
+
+\usepackage[utf8]{inputenc}
+\usepackage{needspace}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=blue,
+    pdftitle={Shamik Mukherjee - Lebenslauf},
+    pdfpagemode=FullScreen,
+}
+\usepackage[scale=0.78]{geometry}
+\usepackage{import}
+
+% Personal data
+\name{Shamik}{Mukherjee}
+\title{Product Owner -- Payments \& Wallets}
+\address{Reading, Berkshire, UK}{}{}
+\phone[mobile]{+44 7442 020030}
+\email{shamik.mukherjee.88@gmail.com}
+\extrainfo{\href{https://linkedin.com/in/shamik-mukherjee}{LinkedIn}}
+\photo[64pt][0.4pt]{assets/photo}
+
+\begin{document}
+\makecvtitle
+
+% ============================================================
+%     PERSONAL DETAILS
+% ============================================================
+\section{Personal Details}
+\begin{tabularx}{\linewidth}{@{}p{0.24\linewidth}p{0.24\linewidth}p{0.18\linewidth}X@{}}
+\textbf{Date of Birth:} & 09 February 1988 & \textbf{Nationality:} & Indian \\[4pt]
+\textbf{Marital Status:} & Married & \textbf{Relocation:} & Chancenkarte (Opportunity Card) -- actively preparing application documents \\
+\end{tabularx}
+
+\vspace{4pt}
+
+% ============================================================
+%     PROFILE STATEMENT (tailor per role)
+% ============================================================
+\section{Profile}
+\cvitem{}{Product Owner with 4+ years in end-to-end product ownership and 13+ years total in digital payments, specialising in card network integrations, tokenisation, and mobile wallet products (Google Pay, Samsung Pay). Delivered a Virtual Card feature to 100\% of eligible cardholders processing 275,000+ transactions within 60 days, maintaining over 95\% sprint predictability. Combines deep PO delivery experience with a background in pre-sales solution architecture and commercial bid management. Uses AI tooling (Gemini) daily to accelerate delivery.}
+
+% ============================================================
+%     PROFESSIONAL EXPERIENCE (full history - trim per role, never drop an entry without merging it elsewhere)
+% ============================================================
+\section{Professional Experience}
+
+\needspace{6\baselineskip}
+\cventry{2026-Present}{Product Owner}{Cognizant Technology Solutions}{Farnborough, UK}{}{
+\begin{itemize}
+\item Own product backlog for edge applications connecting card network to Google Pay and Samsung Pay -- translating requirements into epics, user stories, and acceptance criteria for two agile squads
+\item Define and maintain B2B integration specifications for wallet provisioning adopted by partner organisations
+\item Lead wallet provisioning validation across Google Pay and Samsung Pay for a large-scale card migration programme
+\item Use AI tools (Gemini) daily to accelerate requirements drafting and refine acceptance criteria
+\item Maintain >95\% sprint predictability across bi-monthly PI Planning cycles
+\end{itemize}}
+
+\needspace{6\baselineskip}
+\cventry{2022-2026}{Product Owner (Proxy) \& Onsite Delivery Manager}{Cognizant Technology Solutions}{Farnborough, UK}{}{
+\begin{itemize}
+\item Launched Virtual Card autofill feature to 100\% of eligible cardholders (Nov 2024) -- 275,000+ successful transactions in first 60 days
+\item Delivered Issuer Push Provisioning into Google Wallet and Samsung Wallet, defining the network-side B2B specification
+\item Completed delivery of RBI regulatory compliance programme, taking ownership mid-programme through to completion within regulatory deadlines
+\item Recognised with 'Star Award -- Excellence in Delivery' (December 2024)
+\end{itemize}}
+
+\needspace{6\baselineskip}
+\cventry{2019-2022}{Pre-Sales Solution Architect}{Cognizant Technology Solutions}{Kolkata, India}{}{
+\begin{itemize}
+\item Architected and won proposals totalling >\$100M TCV across DevOps transformation, test automation, and quality engineering programmes for banking clients
+\item Co-authored Cognizant Cheers Award-winning whitepaper, "Digital Transformation -- A Quality Engineering Perspective"
+\end{itemize}}
+
+\needspace{6\baselineskip}
+\cventry{2016-2019}{Pre-Sales Lead / Senior Analyst}{Cognizant Technology Solutions}{Kolkata, India}{}{
+\begin{itemize}
+\item Managed the full bid lifecycle (RFP/RFI response, solution design, commercial modelling, pricing strategy) across the banking and financial services portfolio
+\item Formulated Go-to-Market strategy and roadmap for BFS Quality Engineering \& Assurance North America and the Product Testing group
+\item Coordinated across sales, delivery, and Centre of Excellence teams to align solution design with client priorities and business goals
+\end{itemize}}
+
+\needspace{6\baselineskip}
+\cventry{Aug 2014 - Dec 2015}{Business Analyst \& Test Lead}{Cognizant Technology Solutions}{Kolkata, India}{}{
+\begin{itemize}
+\item Led a team of 10 QA engineers validating the transaction authorisation module during a major card network upgrade, including testing of new tokenisation capabilities
+\item Led a separate team of 6 engineers for merchant billing report certification following a revamped billing structure
+\end{itemize}}
+
+% ============================================================
+%     EDUCATION
+% ============================================================
+\section{Education}
+\cventry{2012-2014}{M.Mgmt. (MBA equivalent)}{SJMSOM, IIT Bombay}{Mumbai, India}{}{Business Administration \& Management -- GPA: 8.38 / 10.0}
+\cventry{2006-2010}{B.Tech., Computer Science}{West Bengal University of Technology}{Kolkata, India}{}{GPA: 8.47 / 10.0}
+
+% ============================================================
+%     SKILLS
+% ============================================================
+\section{Skills}
+\cvitem{Product Management}{Backlog Ownership, Epic / Story Elaboration, Acceptance Criteria, PI Planning, MVP Definition, Release Planning, Sprint Prioritisation}
+\cvitem{Agile \& Delivery}{Scrum, SAFe, Sprint Planning \& Reviews, Cross-functional Dependency Management, Delivery Governance, Stakeholder Management}
+\cvitem{Payments \& Domain}{Digital Payments, Tokenisation (EMV / Virtual Cards), Wallet Integrations (Google Pay, Samsung Pay), Issuer Push Provisioning, B2B Integration, Regulatory Compliance (RBI, PCI)}
+\cvitem{Commercial \& Pre-Sales}{Business case development, bid management (RFP/RFI), commercial modelling (TCV >\$100M), Go-to-Market strategy}
+\cvitem{AI Tools}{Gemini (Epic / Story Drafting, Stakeholder Communication, Requirements Analysis)}
+\cvitem{Software}{Jira, Confluence, SQL, Microsoft Office 365}
+
+% ============================================================
+%     LANGUAGES
+% ============================================================
+\section{Languages}
+\cvitem{English}{C2 -- Full professional proficiency (native / working language)}
+\cvitem{Bengali}{Native speaker}
+\cvitem{Hindi}{C1 -- Highly proficient}
+\cvitem{German}{A0 -- Beginner (course planned)}
+
+% ============================================================
+%     PUBLICATIONS (optional - include if space allows)
+% ============================================================
+\section{Publications}
+\cvitem{}{Mukherjee, S. et al. Digital Transformation -- A Quality Engineering Perspective. Cognizant internal whitepaper (Cognizant Cheers Award-winning).}
+
+% ============================================================
+%     HONOURS AND AWARDS (optional - include if space allows)
+% ============================================================
+\section{Honours and Awards}
+\cvitem{}{\textbf{Star Award -- Excellence in Delivery} -- Cognizant Technology Solutions (2024)}
+\cvitem{}{\textbf{Cognizant Cheers Award} -- for co-authored whitepaper on digital transformation}
+\cvitem{}{\textbf{TCS Gems} -- Tata Consultancy Services}
+
+% ============================================================
+%     SIGNATURE LINE
+%     (no References section on German-market CVs - see 05-cv-templates.md)
+% ============================================================
+\vspace{20pt}
+\begin{tabularx}{\linewidth}{@{}X r@{}}
+Reading, DD.MM.YYYY & \raisebox{-0.5\height}{\includegraphics[height=1.2cm]{assets/signature}} \\
+\end{tabularx}
+
+\end{document}

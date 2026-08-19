@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Shamik Mukherjee
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Shamik Mukherjee, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -16,76 +13,89 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 <!-- This section is auto-populated by /setup. You can also fill it in manually. -->
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
+- **Name:** Shamik Mukherjee
+- **Location:** Reading, Berkshire, UK (dual-market search: UK + Germany — see Deal-breakers below)
 - **Languages:**
   | Language | Level |
   |----------|-------|
-  | [LANGUAGE] | [LEVEL] |
+  | English | C2 (full professional / native-working language) |
+  | Bengali | Native |
+  | Hindi | C1 (highly proficient) |
+  | German | A0 (beginner, course planned) |
   <!-- Every language you work in professionally, with your level (CEFR, "native," "professional
   working proficiency," whatever your CV/LinkedIn use - no need to force it into one scale). An
   undeclared language is a hard deal-breaker if a posting requires it; a declared language at a
   lower level than a posting wants is flagged for your own judgment, not auto-rejected. See
   04-job-evaluation.md's Language Gate. -->
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+- **CV language:** English (used for both UK and German-market applications — see `05-cv-templates.md` for the Lebenslauf-format German-market variant)
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Employed — Product Owner, Cognizant Technology Solutions
+- **LinkedIn headline:** "Product Owner | Digital Payments & Mobile Wallets (Google Pay · Samsung Pay) | Tokenization · Virtual Cards · Agile | IIT Bombay"
 
 ### Education
 <!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **M.Mgmt. (MBA equivalent) in Business Administration & Management** (2012-2014) - SJMSOM, IIT Bombay, Mumbai, India
+  - GPA: 8.38/10.0
+- **B.Tech. in Computer Science** (2006-2010) - West Bengal University of Technology (Guru Nanak Institute of Technology), Kolkata, India
+  - GPA: 8.47/10.0
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+<!-- List your roles, most recent first. Full history with all 7 roles is in
+.claude/skills/job-application-assistant/01-candidate-profile.md -->
+- **Product Owner** (02/2026 - present) - **Cognizant Technology Solutions** (Farnborough, UK)
+  - Own product backlog for edge applications connecting card network to Google Pay and Samsung Pay
+  - Lead wallet provisioning validation across Google Pay and Samsung Pay for a large-scale card migration programme
+  - Maintain >95% sprint predictability across bi-monthly PI Planning cycles
+- **Product Owner (Proxy) & Onsite Delivery Manager** (05/2022 - 01/2026) - **Cognizant Technology Solutions** (Farnborough, UK)
+  - Launched Virtual Card autofill feature to 100% of eligible cardholders (Nov 2024); 275,000+ transactions in first 60 days
+  - Delivered Issuer Push Provisioning into Google Wallet and Samsung Wallet
+  - Recognised with 'Star Award - Excellence in Delivery' (December 2024)
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Product/backlog ownership, epic & user story elaboration, acceptance criteria, agile delivery (Scrum, SAFe, PI Planning), stakeholder management
+- **Secondary:** Pre-sales/solution architecture, business case development, commercial modelling & bid management (RFP/RFI), Go-to-Market strategy
+- **Domain:** Digital payments, tokenisation (EMV/virtual cards), wallet integrations (Google Pay, Samsung Pay), issuer push provisioning, B2B integration, regulatory compliance (RBI, PCI)
+- **Software:** Jira, Confluence, SQL, Microsoft Office 365, Gemini (AI-augmented delivery)
 
 ### Certifications
 <!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- None on record — ask if there are any to add
 
 ### Publications
 <!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- Mukherjee, S. et al. Digital Transformation - A Quality Engineering Perspective. Cognizant (internal whitepaper, Cognizant Cheers Award-winning).
 
 ### Awards
 <!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- Star Award - Excellence in Delivery - Cognizant Technology Solutions (December 2024)
+- Cognizant Cheers Award - for co-authored whitepaper "Digital Transformation - A Quality Engineering Perspective"
+- 2nd Runners Up - White Paper Contest
+- Pillar of the Month - Business Development
+- Pillar of the Month - Training & Mentoring
+- TCS Gems - Tata Consultancy Services
 
 ### Behavioral Profile
 <!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- Not yet captured — skipped during /setup, to be filled in via `/setup --section behavioral` or manually in `02-behavioral-profile.md` before it's relied on
 
 ### What Excites You
 <!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- End-to-end feature ownership from backlog to launch
+- Complex B2B partner integrations (e.g. Google/Samsung wallets)
+- Managing high-impact delivery squads
+- Navigating regulated technical compliance frameworks
 
 ### Target Sectors
 <!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- Digital payments / fintech: card networks, digital banks, wallet providers
+- Adjacent regulated domains (banking, insurance) if payments-specific roles aren't available
 
 ### Deal-breakers
 <!-- Hard constraints on job search. Language requirements are handled separately and
 automatically from your Languages table above - don't duplicate them here. -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Prefers to stay in payments/fintech domain; open to adjacent regulated domains as a fallback
+- **UK roles:** current Skilled Worker visa expires February 2027; current employer (Cognizant) cannot sponsor a transfer, so UK roles must be prioritised at employers with an active, genuine sponsor licence — time-critical, see `04-job-evaluation.md`'s candidate-specific timing gate
+- **Germany roles:** English-speaking environments only (German is A0); relocation planned independently via the Chancenkarte (Opportunity Card) — eligible, actively preparing application documents (not yet submitted). Note: the "not employer-sponsorship-dependent" framing applies to the *initial* move only — unlike the UK's licensed-sponsor system, no German employer needs pre-authorisation to hire the candidate, so the Chancenkarte lets him enter and search independently of finding an employer first. It does **not** mean zero employer involvement ever: converting from the Chancenkarte to a job-based residence permit after hire does involve the employer providing the job contract. Never state or imply "no employer sponsorship needed" on any application document — see 05-cv-templates.md's Personal Details field for the accurate phrasing.
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

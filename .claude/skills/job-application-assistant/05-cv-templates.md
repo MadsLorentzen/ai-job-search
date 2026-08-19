@@ -1,10 +1,21 @@
 ---
-framework_version: 1.4.0
+framework_version: 1.5.0
 ---
 
 # CV Templates and Tailoring Guide
 
 <!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
+
+## Template routing by market (standing rule)
+
+Two templates are in active use, selected by the target role's market — never by user preference on a given day, and never mixed:
+
+| Market | Template | Section below |
+|---|---|---|
+| UK | moderncv banking style | "Template: LaTeX moderncv (Banking Style)" |
+| Germany | Lebenslauf (moderncv classic + photo) | "Template: Lebenslauf (German-Market CV Format)" |
+
+Determine market from the posting's location, not from the target company's HQ — a UK-based role at a German company still uses the banking template. Content stays in **English** either way (see CLAUDE.md's `CV language` line) — the Lebenslauf format changes *presentation* (photo, personal-data block, German CV conventions), never the language.
 
 ## Template: LaTeX moderncv (Banking Style)
 
@@ -104,6 +115,50 @@ Two related patterns are fine and should be kept:
 
 Section headings such as `\section{Core Competencies}`, `Professional Experience`, `Education`, `Languages`, `Publications`, `Honors and Awards`, `References` (and any others your template defines), plus the `Available upon request.` line under References, are all **literal English text baked into the template** - they do not translate themselves. Whenever the CV language (see `CV language` in the candidate profile) is not English, translate every one of these too, whatever they are, not just the body prose - a CV with a fully localized profile statement and bullets sitting under untouched English section headers reads as sloppy and inconsistent, and it's an easy thing to forget precisely because the prose translation is the obvious, visible part of the job. Worked example for Spanish: `Competencias Clave`, `Experiencia Profesional`, `Educaci\'on`, `Idiomas`, `Publicaciones`, `Distinciones y Premios`, `Referencias`, `Disponibles a solicitud.` The same rule applies for any other target language - check this explicitly during the verification pass.
 
+## Template: Lebenslauf (German-Market CV Format)
+
+For every German-market role (see "Template routing by market" above). Built on moderncv's **classic** style rather than banking style, because classic's native `\cventry` layout (date in a narrow left column, role/employer/description in a wide right column) already matches German Lebenslauf convention, and it supports a header photo natively via `\photo`.
+
+**Output file:** `cv/main_<company>_<role>.tex` (same naming convention as the banking template — market determines *content*, not the filename pattern)
+**Compile with:** lualatex, same as the banking template
+**Master reference:** `cv/main_example_lebenslauf.tex`
+**Photo asset:** `cv/assets/photo.png` (shared across every German-market CV — do not duplicate per role)
+
+### Compile command
+
+```bash
+cd cv && lualatex -interaction=nonstopmode main_<company>_<role>.tex
+```
+
+Expected output: 2 pages, same as the banking template.
+
+### What's different from the banking template
+
+- **`\moderncvstyle{classic}`** instead of `banking`.
+- **`\photo[64pt][0.4pt]{assets/photo}`** in the preamble — the only template that includes a photo. Never add a photo to a UK-market (banking-style) CV.
+- **`\title{...}`** under the name — keep this **short** (under ~30 characters). A longer tagline wraps to two lines and collides with the address block that sits to its right in the header; this was a real layout bug caught during template construction, not a hypothetical one. `Product Owner -- Payments \& Wallets` is the tested-safe length.
+- **A "Personal Details" section**, placed immediately after the header, before "Profile":
+  ```latex
+  \section{Personal Details}
+  \begin{tabularx}{\linewidth}{@{}p{0.24\linewidth}p{0.24\linewidth}p{0.18\linewidth}X@{}}
+  \textbf{Date of Birth:} & 09 February 1988 & \textbf{Nationality:} & Indian \\[4pt]
+  \textbf{Marital Status:} & Married & \textbf{Relocation:} & Chancenkarte (Opportunity Card) -- actively preparing application documents \\
+  \end{tabularx}
+  ```
+  Values come from `01-candidate-profile.md`'s "Personal Details (German-market Lebenslauf CVs only)" section — never re-derive or guess them per role. **Never write "no employer sponsorship needed" or similar** — see CLAUDE.md's Germany-roles note for why that overclaims: the Chancenkarte only means entry and job search don't require a sponsor *first* (unlike the UK's licensed-sponsor system), not that the employer has zero role after hire — converting to a job-based residence permit still involves the employer providing the job contract. Keep the label columns at their current widths (`0.24`/`0.24`/`0.18`) — narrower and `Marital Status:` or a `Relocation:`-style label hyphenates mid-word, which is what the first draft of this template did before the widths were fixed.
+- **Skills and Languages use `\cvitem{label}{value}`** (moderncv's built-in two-column item), not bullet lists — matches the tabular label/value convention the rest of the German CV uses. Category labels wrapping to two lines (e.g. "Agile & / Delivery") is normal `\cvitem` behavior at these widths and is not a bug worth fixing.
+- **A closing signature line** at the very end of the document, using the real signature image:
+  ```latex
+  \vspace{20pt}
+  \begin{tabularx}{\linewidth}{@{}X r@{}}
+  Reading, DD.MM.YYYY & \raisebox{-0.5\height}{\includegraphics[height=1.2cm]{assets/signature}} \\
+  \end{tabularx}
+  ```
+  Use the numeric `DD.MM.YYYY` format (German convention), not a spelled-out English date, and set it to the actual date the CV is generated. **Signature asset:** `cv/assets/signature.jpg` (source: `documents/cv/shamik - sign.jpg`) — a real signature, supplied by the candidate. Never fabricate a stylised/cursive text rendering as a stand-in for a signature; if the asset is ever missing, ask the candidate for one rather than approximating with an italic font.
+- **No "References" section.** The candidate's own reference Lebenslauf (`documents/cv/Shamik_Mukherjee_Lebenslauf_EN.pdf`) omits it, matching common German CV practice; don't add one back in in for this template.
+
+Everything else — profile statement writing, experience bullet tailoring, relevance-weighted cutting, the 2-page budget, the ATS text-layer checks, the compile-and-inspect loop, reverse-chronological ordering — follows the exact same rules as the banking template below. Read those sections too; they are not repeated here.
+
 ## Section-by-Section Tailoring
 
 ### Profile Statement / Elevator Pitch (Best Practice)
@@ -116,11 +171,13 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Product Owner / Product Manager (payments & wallets) roles:** *[Used for: Visa_AccountWallet, Lebenslauf_EN]*
+> Product Owner/Manager with 13+ years in digital payments, specialising in account, wallet, and card network products - owning backlogs, defining epics and user stories, and shipping features that process transactions at scale. Launched a Virtual Card wallet feature to 100% of eligible cardholders, processing 275,000+ transactions in 60 days with >95% sprint predictability across two scrum teams. Combines deep payments domain expertise (tokenisation, wallet integrations, card lifecycle) with commercial sharpness built across pre-sales solution architecture experience - thinking about product decisions in terms of customer value, adoption, and business outcome.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For delivery-focused / AI-augmented Product Owner roles:** *[Used for: Wire, MarketplacePO]*
+> Delivery-focused Product Owner with 13+ years in regulated, high-complexity environments - owning backlogs end-to-end, running agile rituals, writing epics and acceptance criteria, and protecting sprint scope across cross-functional engineering teams. Consistently achieves >95% sprint predictability across two scrum teams. Uses AI tooling (Gemini) daily to accelerate epic and story drafting, refine acceptance criteria, and improve stakeholder communication turnaround - treating AI as a force multiplier for delivery, not a novelty. Technically fluent from a Computer Science background, comfortable working closely with developers, tech leads, and QA to make confident delivery decisions.
+
+Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy. Note: Gemini is the AI tool actually used on the job (per every CV and the LinkedIn export) and must stay Gemini wherever the CV/cover letter describes on-the-job tool usage. CLAUDE.md's "reference Claude Code by name" rule applies only where the application separately and truthfully references this job-search workflow itself (e.g. a candidate who built this tracker) - it must never overwrite a real, differently-named on-the-job tool.
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 
@@ -313,6 +370,7 @@ Cut the lowest-total-score line first, regardless of which section it sits in.
 - Do not mechanically cut from the bottom of a static section list without checking relevance. "Cut the oldest role first" is wrong if that role is literally about the skill the posting asks for.
 - Do not cut the one concrete example the cover letter leans on. Relevance is measured against the cover letter you wrote, not just the job posting — interviewers will have read both.
 - Do not cut to fit if the fit is borderline (2.02 pages). Prefer `\enlargethispage{2-3\baselineskip}` on a late section for near-misses; reserve content cuts for genuine overflow (content on page 3 that is more than a single trailing section).
+- **Never cut a whole role entry if doing so opens a gap in the employment timeline.** Cutting bullets within a role is fine; cutting the entire entry is not, if the role before it and the role after it don't connect in time — a visible gap reads far worse to a reader than a slightly denser page, and is exactly the kind of thing a recruiter screens for first. This actually happened: trimming a CV from 5 roles to 3 for space dropped the two pre-sales roles (2016-2022) entirely, leaving 2015 to 2022 unaccounted for. The fix, not "add the roles back at full length": **merge adjacent same-employer roles into one `\cventry`** spanning the combined date range, title joined with "\&" (e.g. "Pre-Sales Solution Architect \& Pre-Sales Lead", 2016-2022), keeping only the single strongest bullet from each merged role. This closes the gap in about the space one full entry would have taken. Check the full timeline for gaps as an explicit step before presenting any CV, not just page count.
 
 ## Recommended Section Order
 

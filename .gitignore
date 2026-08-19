@@ -59,6 +59,7 @@ skills-lock.json
 # artifacts like main_example.pdf/.aux.
 cv/main_*.*
 !cv/main_example.tex
+!cv/main_example_lebenslauf.tex
 cv/*.txt
 cover_letters/cover_*.*
 cover_letters/Cover_*.*
