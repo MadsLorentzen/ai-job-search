@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Applications · Job Search Workspace{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <div><p class="eyebrow">Application command centre</p><h1>Your job pipeline</h1>
+  <p>Evidence, decisions, and real-world status remain separate and traceable.</p></div>
+  <a class="button" href="/new-job">Add a job</a>
+</section>
+<nav class="filters" aria-label="Application filters">
+{% for item in filters %}<a href="/?filter={{ item }}" class="filter {% if filter == item %}active{% endif %}">{{ item | replace('_', ' ') | title }}</a>{% endfor %}
+</nav>
+{% if workspaces %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Company / role</th><th>Product stage</th><th>Fit</th><th>Recommendation</th><th>Trust state</th><th>Workflow</th><th>Updated</th></tr></thead>
+  <tbody>{% for ws in workspaces %}<tr>
+    <td><a class="row-link" href="/workspaces/{{ ws.id }}">{{ ws.company }}<small>{{ ws.title }}</small></a></td>
+    <td>{{ ws.computed_stage }}</td>
+    <td>{{ ws.fit_verdict or "—" }}</td><td>{{ ws.recommendation or "—" }}</td>
+    <td>{% if ws.stale %}<span class="badge stale">Stale</span>{% endif %}
+      {% if ws.review_count %}<span class="badge review">{{ ws.review_count }} to review</span>{% elif not ws.stale %}<span class="muted">Current</span>{% endif %}</td>
+    <td><span class="badge neutral">{{ ws.workflow_status or "Active" }}</span></td>
+    <td><time>{{ ws.updated_at }}</time></td>
+  </tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<section class="empty-state"><h2>No {{ filter }} applications</h2><p>Add a saved posting or choose another filter.</p><a class="button" href="/new-job">Add your first job</a></section>{% endif %}
+{% endblock %}
