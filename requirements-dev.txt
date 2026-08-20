@@ -1,3 +1,5 @@
-# Development/test-only browser dependencies; not part of the Uvicorn runtime.
+# Development/test-only dependencies; not part of the Uvicorn runtime.
+httpx==0.28.1
+pytest==8.4.1
 playwright==1.49.1
 pytest-playwright==0.6.2
