@@ -85,6 +85,10 @@ REQUIRED_IGNORE_RULES = [
     # fetching service, and that skill reads an API token from the environment.
     ".env",
     ".env.*",
+    # Company research cache (/apply Step 3, /interview Step 2). Referenced
+    # from commands, not a skill, so a plain rooted rule is correct here -
+    # unlike the **/-prefixed job_scraper/upskill rules above.
+    "company_research/*.json",
 ]
 
 # Negation (re-include) rules the template legitimately ships. .gitignore is

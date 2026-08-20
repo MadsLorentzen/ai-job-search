@@ -98,6 +98,12 @@ reports/
 upskill/*.md
 **/upskill/report-*.md
 
+# Company research cache (/apply Step 3, /interview Step 2 - personal search
+# history). Referenced from commands, not a skill, so it resolves against the
+# repo root normally - a plain rooted pattern is correct here, unlike the
+# **/-prefixed job_scraper/upskill rules above.
+company_research/*.json
+
 # Agent skills: track the source, ignore only deps and logs.
 # (A blanket `.agents/` ignore silently drops the job-search CLI skills from the repo.)
 .agents/**/node_modules/
