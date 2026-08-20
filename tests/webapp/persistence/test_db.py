@@ -19,7 +19,7 @@ def test_init_db_creates_all_tables(tmp_path):
 
     assert {
         "workspaces", "artifacts", "current_artifacts",
-        "review_decisions", "workflow_events", "dependency_fingerprints",
+        "review_decisions", "workflow_events", "dependency_fingerprints", "provider_audits",
     }.issubset(names)
 
 

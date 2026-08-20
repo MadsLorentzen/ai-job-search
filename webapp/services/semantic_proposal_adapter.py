@@ -16,6 +16,11 @@ import copy
 from typing import Any, Protocol
 
 FORBIDDEN_KEYS = {"overall_score", "verdict", "recommendation", "blocked", "blocking_gate_ids"}
+SEMANTIC_CATEGORIES = frozenset({
+    "employment", "education", "skills", "languages", "projects",
+    "publications", "awards", "constraints", "location",
+})
+SEMANTIC_IDENTITY_FIELDS = frozenset({"employment_status"})
 
 
 def _strip_forbidden(value: Any) -> Any:
@@ -43,6 +48,7 @@ class SemanticProposalAdapter:
                 {"id": item["id"], "category": item.get("category"), "field": item.get("field"),
                  "value": item.get("value")}
                 for item in profile_evidence
+                if _is_semantic_claim(item)
             ],
             "job_evidence": [
                 {"id": item["id"], "category": item.get("category"), "kind": item.get("kind"), "text": item.get("text")}
@@ -79,6 +85,34 @@ class SemanticProposalAdapter:
         raw = self._client.complete(context)
         cleaned = _strip_forbidden(copy.deepcopy(raw))
         return {"matches": cleaned.get("matches", []), "gates": cleaned.get("gates", [])}
+
+    @property
+    def last_audit(self) -> dict[str, Any] | None:
+        value = getattr(self._client, "last_audit", None)
+        return copy.deepcopy(value) if isinstance(value, dict) else None
+
+
+def select_semantic_profile_evidence(profile_snapshot: dict[str, Any]) -> list[dict[str, Any]]:
+    """Select locally valid, fit-relevant claims for the hosted proposer."""
+    conflicts = {
+        item.get("concept_id") for item in profile_snapshot.get("conflicts", [])
+        if isinstance(item, dict) and item.get("concept_id")
+    }
+    selected = []
+    for claim in profile_snapshot.get("claims", []):
+        if not isinstance(claim, dict) or not _is_semantic_claim(claim):
+            continue
+        if claim.get("placeholder") or claim.get("concept_id") in conflicts:
+            continue
+        selected.append(copy.deepcopy(claim))
+    return selected
+
+
+def _is_semantic_claim(item: dict[str, Any]) -> bool:
+    category = item.get("category")
+    return category in SEMANTIC_CATEGORIES or (
+        category == "identity" and item.get("field") in SEMANTIC_IDENTITY_FIELDS
+    )
 
 
 class FakeSemanticProposalAdapter(SemanticProposalAdapter):

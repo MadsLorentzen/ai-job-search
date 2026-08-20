@@ -32,10 +32,20 @@ from product.semantic_job_fit import (
 )
 
 from webapp.persistence.artifacts import get_current_artifact, save_artifact
+from webapp.persistence.provider_audits import save_provider_audit
 from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID, create_workspace, ensure_profile_workspace
-from webapp.services.semantic_proposal_adapter import SemanticProposalAdapter
+from webapp.services.semantic_proposal_adapter import (
+    SemanticProposalAdapter,
+    select_semantic_profile_evidence,
+)
 from webapp.services.semantic_proposer_errors import SemanticProposerProviderError
 from webapp.services.staleness import record_dependency_fingerprint
+from webapp.services.input_identity import (
+    active_extensions_identity,
+    content_identity,
+    semantic_proposals_identity,
+    semantic_proposer_policy_identity,
+)
 
 
 class PipelineError(RuntimeError):
@@ -70,11 +80,11 @@ def get_current_profile_snapshot(conn: sqlite3.Connection) -> dict[str, Any] | N
 def create_job_from_source_record(
     conn: sqlite3.Connection, *, company: str, title: str, source_record: dict[str, Any]
 ) -> dict[str, Any]:
-    workspace = create_workspace(conn, company=company, title=title)
     try:
         job_snapshot = normalize_job_source_record(source_record)
     except Exception as exc:
         raise PipelineError(f"job ingestion failed: {exc}") from exc
+    workspace = create_workspace(conn, company=company, title=title)
     content_id = job_snapshot_content_id(job_snapshot)
     artifact = save_artifact(
         conn, workspace_id=workspace["id"], artifact_type="job_posting_snapshot",
@@ -138,6 +148,7 @@ def run_job_understanding(
 def run_job_fit(
     conn: sqlite3.Connection, workspace_id: str, semantic_adapter: SemanticProposalAdapter, *,
     request_id: str, extension_paths: list[str] | None = None,
+    active_extensions: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     profile_artifact = get_current_profile_snapshot(conn)
     job_artifact = get_current_artifact(conn, workspace_id, "job_posting_snapshot")
@@ -175,30 +186,40 @@ def run_job_fit(
                                    upstream_content_id=job_artifact["content_id"])
     if understanding_result_artifact is not None:
         record_dependency_fingerprint(
+            conn, artifact_id=bundle_saved["id"], upstream_artifact_type="job_understanding_request",
+            upstream_content_id=understanding_request_artifact["content_id"],
+        )
+        record_dependency_fingerprint(
             conn, artifact_id=bundle_saved["id"], upstream_artifact_type="job_understanding_result",
             upstream_content_id=understanding_result_artifact["content_id"],
         )
 
-    try:
-        active_extensions = load_extensions(extension_paths) if extension_paths else []
-    except Exception as exc:
-        raise PipelineError(f"extension loading failed: {exc}") from exc
+    if active_extensions is not None and extension_paths is not None:
+        raise PipelineError("supply active_extensions or extension_paths, not both")
+    if active_extensions is None:
+        try:
+            active_extensions = load_extensions(extension_paths) if extension_paths else []
+        except Exception as exc:
+            raise PipelineError(f"extension loading failed: {exc}") from exc
 
     try:
         proposals = semantic_adapter.propose(
-            profile_evidence=profile_artifact["payload"].get("claims", []),
+            profile_evidence=select_semantic_profile_evidence(profile_artifact["payload"]),
             resolved_job_evidence=bundle,
             active_extensions=active_extensions,
         )
     except SemanticProposerProviderError as exc:
+        _persist_semantic_provider_audit(conn, workspace_id, semantic_adapter)
         raise PipelineError(f"semantic proposer failed: {exc}") from exc
 
+    evaluation_policy = load_evaluation_policy()
+    semantic_fit_policy = load_semantic_fit_policy()
     try:
         request = build_semantic_job_fit_request(
             request_id=request_id, profile_snapshot=profile_artifact["payload"],
             job_snapshot=job_artifact["payload"], resolved_job_evidence=bundle,
-            active_extensions=active_extensions, evaluation_policy=load_evaluation_policy(),
-            semantic_fit_policy=load_semantic_fit_policy(), semantic_proposals=proposals,
+            active_extensions=active_extensions, evaluation_policy=evaluation_policy,
+            semantic_fit_policy=semantic_fit_policy, semantic_proposals=proposals,
         )
     except Exception as exc:
         raise PipelineError(f"job fit request construction failed: {exc}") from exc
@@ -207,21 +228,24 @@ def run_job_fit(
         conn, workspace_id=workspace_id, artifact_type="job_fit_request",
         payload=request, content_id=_hash_artifact("jofitreq_", request),
     )
+    _persist_semantic_provider_audit(
+        conn, workspace_id, semantic_adapter, request_artifact_id=request_saved["id"]
+    )
     record_dependency_fingerprint(conn, artifact_id=request_saved["id"], upstream_artifact_type="profile_snapshot",
                                    upstream_content_id=profile_artifact["content_id"])
     record_dependency_fingerprint(conn, artifact_id=request_saved["id"], upstream_artifact_type="resolved_job_evidence",
                                    upstream_content_id=bundle_saved["content_id"])
-    # No separate fingerprint is recorded for extension selection or
-    # semantic proposals: both are embedded as top-level keys inside
-    # `request` itself (build_semantic_job_fit_request's `active_extensions`
-    # and `semantic_proposals` fields, per the verified request contract
-    # above), and `job_fit_request`'s own content_id already hashes the
-    # ENTIRE request payload via _hash_artifact. A change to either input
-    # therefore already changes job_fit_request's content_id, which
-    # job_fit_result's fingerprint against job_fit_request already tracks —
-    # a separate fingerprint would be redundant, not additive. This closes
-    # the "staleness ignores active extensions/policies/proposals" gap
-    # through the existing request-hash mechanism rather than a parallel one.
+    for input_type, identity in (
+        ("server:active_extensions", active_extensions_identity(active_extensions)),
+        ("server:evaluation_policy", content_identity("evalpolicy_", evaluation_policy)),
+        ("server:semantic_fit_policy", content_identity("semfitpolicy_", semantic_fit_policy)),
+        ("server:semantic_proposer_policy", semantic_proposer_policy_identity()),
+        ("server:semantic_proposals", semantic_proposals_identity(proposals)),
+    ):
+        record_dependency_fingerprint(
+            conn, artifact_id=request_saved["id"], upstream_artifact_type=input_type,
+            upstream_content_id=identity,
+        )
 
     try:
         result = analyze_semantic_job_fit(request)
@@ -234,6 +258,10 @@ def run_job_fit(
     )
     record_dependency_fingerprint(conn, artifact_id=result_saved["id"], upstream_artifact_type="job_fit_request",
                                    upstream_content_id=request_saved["content_id"])
+    record_dependency_fingerprint(conn, artifact_id=result_saved["id"], upstream_artifact_type="profile_snapshot",
+                                   upstream_content_id=profile_artifact["content_id"])
+    record_dependency_fingerprint(conn, artifact_id=result_saved["id"], upstream_artifact_type="resolved_job_evidence",
+                                   upstream_content_id=bundle_saved["content_id"])
     return result_saved
 
 
@@ -249,13 +277,14 @@ def run_application_intelligence(
             "and resolved_job_evidence to run application intelligence"
         )
 
+    application_intelligence_policy = _load_application_intelligence_policy()
     request = {
         "schema_version": "application-intelligence-request.v0",
         "request_id": request_id,
         "job_fit_result": fit_artifact["payload"],
         "resolved_job_evidence": bundle_artifact["payload"],
         "profile_snapshot": profile_artifact["payload"],
-        "policy": _load_application_intelligence_policy(),
+        "policy": application_intelligence_policy,
     }
     request_saved = save_artifact(
         conn, workspace_id=workspace_id, artifact_type="application_intelligence_request",
@@ -265,6 +294,11 @@ def run_application_intelligence(
                                    upstream_content_id=profile_artifact["content_id"])
     record_dependency_fingerprint(conn, artifact_id=request_saved["id"], upstream_artifact_type="job_fit_result",
                                    upstream_content_id=fit_artifact["content_id"])
+    record_dependency_fingerprint(
+        conn, artifact_id=request_saved["id"],
+        upstream_artifact_type="server:application_intelligence_policy",
+        upstream_content_id=content_identity("aiintelpolicy_", application_intelligence_policy),
+    )
 
     try:
         proposal_response = ai_provider.propose(request)
@@ -281,6 +315,10 @@ def run_application_intelligence(
     record_dependency_fingerprint(conn, artifact_id=result_saved["id"],
                                    upstream_artifact_type="application_intelligence_request",
                                    upstream_content_id=request_saved["content_id"])
+    record_dependency_fingerprint(conn, artifact_id=result_saved["id"], upstream_artifact_type="profile_snapshot",
+                                   upstream_content_id=profile_artifact["content_id"])
+    record_dependency_fingerprint(conn, artifact_id=result_saved["id"], upstream_artifact_type="job_fit_result",
+                                   upstream_content_id=fit_artifact["content_id"])
     return result_saved
 
 
@@ -288,3 +326,16 @@ def _load_application_intelligence_policy() -> dict[str, Any]:
     from pathlib import Path
     policy_path = Path(__file__).resolve().parents[2] / "product" / "application_intelligence_policy.v0.json"
     return json.loads(policy_path.read_text(encoding="utf-8"))
+
+
+def _persist_semantic_provider_audit(
+    conn: sqlite3.Connection, workspace_id: str, semantic_adapter: Any, *,
+    request_artifact_id: str | None = None,
+) -> None:
+    audit = getattr(semantic_adapter, "last_audit", None)
+    if not isinstance(audit, dict):
+        return
+    save_provider_audit(
+        conn, workspace_id=workspace_id, stage="semantic_job_fit_proposal",
+        metadata=audit, request_artifact_id=request_artifact_id,
+    )

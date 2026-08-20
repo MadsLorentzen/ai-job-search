@@ -1,7 +1,9 @@
 # tests/webapp/services/test_semantic_proposal_adapter.py
 from product.semantic_job_fit import build_semantic_job_fit_request, validate_semantic_job_fit_request
 
-from webapp.services.semantic_proposal_adapter import SemanticProposalAdapter, FakeSemanticProposalAdapter
+from webapp.services.semantic_proposal_adapter import (
+    SemanticProposalAdapter, FakeSemanticProposalAdapter, select_semantic_profile_evidence,
+)
 
 FORBIDDEN_KEYS = {"overall_score", "verdict", "recommendation", "blocked", "blocking_gate_ids"}
 
@@ -129,3 +131,33 @@ def test_adapter_builds_prompt_context_with_extension_mapping_identity_not_raw_f
     serialized = json.dumps(context)
     assert "source_file" not in serialized
     assert "cv_file" not in serialized
+
+
+def test_semantic_profile_subset_excludes_contact_identity_placeholders_and_conflicts():
+    claims = [
+        {"id": "name", "concept_id": "c-name", "category": "identity", "field": "name", "value": "Ada"},
+        {"id": "email", "concept_id": "c-email", "category": "contact", "field": "email", "value": "ada@example.test"},
+        {"id": "phone", "concept_id": "c-phone", "category": "contact", "field": "phone", "value": "+44 000"},
+        {"id": "url", "concept_id": "c-url", "category": "contact", "field": "linkedin", "value": "https://example.test"},
+        {"id": "placeholder", "concept_id": "c-placeholder", "category": "skills", "field": "skill", "value": "[SKILL]", "placeholder": True},
+        {"id": "conflicted", "concept_id": "c-conflict", "category": "employment", "field": "title", "value": "Engineer"},
+        {"id": "skill", "concept_id": "c-skill", "category": "skills", "field": "skill", "value": "Python", "placeholder": False},
+        {"id": "language", "concept_id": "c-language", "category": "languages", "field": "language", "value": "English", "placeholder": False},
+        {"id": "location", "concept_id": "c-location", "category": "location", "field": "location", "value": "London", "placeholder": False},
+        {"id": "status", "concept_id": "c-status", "category": "identity", "field": "employment_status", "value": "Employed", "placeholder": False},
+    ]
+    selected = select_semantic_profile_evidence({
+        "claims": claims,
+        "conflicts": [{"id": "conf", "concept_id": "c-conflict"}],
+    })
+    assert {item["id"] for item in selected} == {"skill", "language", "location", "status"}
+
+    adapter = FakeSemanticProposalAdapter({"matches": [], "gates": []})
+    context = adapter.build_prompt_context(
+        profile_evidence=selected, resolved_job_evidence=_minimal_resolved_bundle(),
+        active_extensions=[],
+    )
+    serialized = str(context)
+    assert "ada@example.test" not in serialized
+    assert "+44 000" not in serialized
+    assert "https://example.test" not in serialized

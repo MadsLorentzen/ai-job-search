@@ -63,6 +63,17 @@ def test_create_job_from_source_record_creates_job_kind_workspace_only(tmp_path)
     conn.close()
 
 
+def test_invalid_source_record_leaves_no_orphan_workspace(tmp_path):
+    conn = _conn(tmp_path)
+    with pytest.raises(PipelineError, match="job ingestion failed"):
+        create_job_from_source_record(
+            conn, company="Acme", title="Broken",
+            source_record={"schema_version": "wrong-version"},
+        )
+    assert conn.execute("SELECT COUNT(*) FROM workspaces WHERE kind='job'").fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM artifacts").fetchone()[0] == 0
+
+
 class _FakeJobUnderstandingProvider:
     provider_id = "fake"
     model_id = "fake-model"

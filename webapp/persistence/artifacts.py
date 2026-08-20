@@ -32,7 +32,7 @@ def _row_to_artifact(row: sqlite3.Row) -> dict[str, Any]:
 
 def save_artifact(
     conn: sqlite3.Connection, *, workspace_id: str, artifact_type: str,
-    payload: dict[str, Any], content_id: str | None = None,
+    payload: dict[str, Any], content_id: str | None = None, commit: bool = True,
 ) -> dict[str, Any]:
     if artifact_type not in ARTIFACT_TYPES:
         raise ValueError(f"unknown artifact_type: {artifact_type!r}")
@@ -48,7 +48,8 @@ def save_artifact(
         "ON CONFLICT(workspace_id, artifact_type) DO UPDATE SET artifact_id = excluded.artifact_id",
         (workspace_id, artifact_type, artifact_id),
     )
-    conn.commit()
+    if commit:
+        conn.commit()
     return get_artifact(conn, artifact_id)
 
 

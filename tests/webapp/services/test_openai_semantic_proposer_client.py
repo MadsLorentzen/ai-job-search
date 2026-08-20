@@ -143,3 +143,28 @@ def test_transient_failure_then_success_retries_within_bound():
     result = client.complete({"profile_evidence": [], "job_evidence": [], "active_extensions": []})
     assert result == {"matches": [], "gates": []}
     assert len(fake.responses.calls) == 2
+
+
+def test_sanitized_audit_records_success_without_prompt_key_or_candidate_payload():
+    client, _ = _client([_FakeResponse(json.dumps({"matches": [], "gates": []}))])
+    client.complete({"profile_evidence": [{"value": "private@example.test"}]})
+    audit = client.last_audit
+    assert audit["success"] is True
+    assert audit["attempt_count"] == 1
+    assert audit["provider_response_id"] == "resp_fake_1"
+    assert audit["provider_id"] == "openai"
+    serialized = json.dumps(audit)
+    assert "sk-test" not in serialized
+    assert "private@example.test" not in serialized
+    assert "profile_evidence" not in serialized
+    assert "instructions" not in serialized
+
+
+def test_sanitized_audit_records_bounded_failure_metadata():
+    client, _ = _client([RuntimeError("secret provider detail"), RuntimeError("again")])
+    with pytest.raises(SemanticProposerProviderError):
+        client.complete({"profile_evidence": [{"value": "private"}]})
+    assert client.last_audit["success"] is False
+    assert client.last_audit["attempt_count"] == 2
+    assert client.last_audit["error_type"] == "RuntimeError"
+    assert "secret provider detail" not in json.dumps(client.last_audit)

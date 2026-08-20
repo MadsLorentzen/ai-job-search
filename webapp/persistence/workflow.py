@@ -25,7 +25,8 @@ def _now() -> str:
 
 def record_status_change(
     conn: sqlite3.Connection, *, workspace_id: str, new_status: str, effective_date: str,
-    note: str | None = None, submitted_pack_artifact_id: str | None = None, _allow_drafted: bool = False,
+    note: str | None = None, submitted_pack_artifact_id: str | None = None,
+    _allow_drafted: bool = False, commit: bool = True,
 ) -> dict[str, Any]:
     if new_status not in TRACKER_STATUSES:
         raise ValueError(f"unknown tracker status: {new_status!r}")
@@ -68,9 +69,11 @@ def record_status_change(
             "UPDATE workspaces SET workflow_status = ?, updated_at = ? WHERE id = ?",
             (new_status, _now(), workspace_id),
         )
-        conn.commit()
+        if commit:
+            conn.commit()
     except Exception:
-        conn.rollback()
+        if commit:
+            conn.rollback()
         raise
 
     return dict(conn.execute("SELECT * FROM workflow_events WHERE id = ?", (event_id,)).fetchone())

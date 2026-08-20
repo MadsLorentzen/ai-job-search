@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Add job · Job Search Workspace{% endblock %}
+{% block content %}
+<section class="hero compact"><div><p class="eyebrow">Job intake</p><h1>Add a job posting</h1>
+<p>Use a manual record, paste source posting text, or import a supported saved Job Source Record JSON.</p></div></section>
+<section class="panel form-panel"><form id="new-job-form">
+  <fieldset class="mode-picker"><legend>Source method</legend>
+    <label><input type="radio" name="mode" value="paste" checked> Paste posting</label>
+    <label><input type="radio" name="mode" value="manual"> Manual details</label>
+    <label><input type="radio" name="mode" value="import"> Supported JSON import</label>
+  </fieldset>
+  <div class="form-grid"><label>Company<input name="company" autocomplete="organization" required></label>
+  <label>Role title<input name="title" required></label></div>
+  <label data-mode-panel="paste">Exact source posting text<textarea name="posting_text" rows="14" placeholder="Paste the posting text you possess…"></textarea></label>
+  <label data-mode-panel="manual" hidden>Description<textarea name="description" rows="8" placeholder="Enter source-provided job details…"></textarea></label>
+  <label data-mode-panel="import" hidden>Job Source Record v0 JSON<textarea name="source_json" rows="14" spellcheck="false" placeholder='{"schema_version":"job-source-record.v0", …}'></textarea></label>
+  <p class="form-note">Supported intake only. This page does not scrape, submit, or contact an employer.</p>
+  <button class="button" type="submit">Create workspace</button>
+</form></section>
+{% endblock %}

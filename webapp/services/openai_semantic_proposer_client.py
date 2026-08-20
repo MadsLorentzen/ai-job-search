@@ -128,6 +128,18 @@ _RESPONSE_SCHEMA = {
     "additionalProperties": False,
 }
 
+
+def semantic_proposer_policy_material() -> dict[str, Any]:
+    """Return sanitized, deterministic hosted-proposer revision material."""
+    return {
+        "provider_id": "openai",
+        "model_id": OPENAI_MODEL_ID,
+        "model_version": OPENAI_MODEL_VERSION,
+        "prompt": INSTRUCTIONS,
+        "response_schema": _RESPONSE_SCHEMA,
+        "max_output_tokens": MAX_OUTPUT_TOKENS,
+    }
+
 ClientFactory = Callable[[str], Any]
 Clock = Callable[[], float]
 UtcNow = Callable[[], datetime]
@@ -148,10 +160,20 @@ class OpenAISemanticProposerClient:
         self._clock = clock
         self._utc_now = utc_now or (lambda: datetime.now(timezone.utc))
         self._sleep = sleep
+        self.last_audit: dict[str, Any] | None = None
 
     def complete(self, context: dict[str, Any]) -> dict[str, Any]:
-        api_key = self._credential()
-        client = self._make_client(api_key)
+        started_at = self._utc_now().isoformat()
+        self.last_audit = None
+        try:
+            api_key = self._credential()
+            client = self._make_client(api_key)
+        except SemanticProposerProviderError as exc:
+            self.last_audit = self._audit(
+                started_at=started_at, attempts=0, success=False,
+                error_type=type(exc).__name__, response_id=None,
+            )
+            raise
         call = {
             "model": OPENAI_MODEL,
             "instructions": INSTRUCTIONS,
@@ -166,7 +188,9 @@ class OpenAISemanticProposerClient:
 
         response = None
         last_exc: Exception | None = None
+        attempts = 0
         for attempt in range(1, MAX_ATTEMPTS + 1):
+            attempts = attempt
             try:
                 response = client.responses.create(**copy.deepcopy(call))
                 last_exc = None
@@ -178,9 +202,46 @@ class OpenAISemanticProposerClient:
                 self._sleep(1.0)
 
         if last_exc is not None:
+            self.last_audit = self._audit(
+                started_at=started_at, attempts=attempts, success=False,
+                error_type=type(last_exc).__name__, response_id=None,
+            )
             raise SemanticProposerProviderError(f"openai semantic proposer failed: {last_exc}") from None
 
-        return _decode_response(response)
+        response_id = getattr(response, "id", None)
+        try:
+            payload = _decode_response(response)
+        except SemanticProposerProviderError as exc:
+            self.last_audit = self._audit(
+                started_at=started_at, attempts=attempts, success=False,
+                error_type=type(exc).__name__,
+                response_id=response_id if isinstance(response_id, str) else None,
+            )
+            raise
+        self.last_audit = self._audit(
+            started_at=started_at, attempts=attempts, success=True, error_type=None,
+            response_id=response_id if isinstance(response_id, str) else None,
+        )
+        return payload
+
+    def _audit(
+        self, *, started_at: str, attempts: int, success: bool,
+        error_type: str | None, response_id: str | None,
+    ) -> dict[str, Any]:
+        from webapp.services.input_identity import semantic_proposer_policy_identity
+
+        return {
+            "provider_id": self.provider_id,
+            "model_id": self.model_id,
+            "model_version": self.model_version,
+            "policy_revision": semantic_proposer_policy_identity(),
+            "attempt_count": attempts,
+            "provider_response_id": response_id,
+            "success": success,
+            "error_type": error_type,
+            "started_at": started_at,
+            "completed_at": self._utc_now().isoformat(),
+        }
 
     def _credential(self) -> str:
         value = self._environ.get(OPENAI_API_KEY_ENV)

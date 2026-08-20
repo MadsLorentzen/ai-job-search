@@ -5,7 +5,6 @@ from webapp.persistence.workspaces import (
     create_workspace,
     get_workspace,
     list_workspaces,
-    set_workflow_status,
 )
 
 
@@ -53,14 +52,6 @@ def test_get_workspace_roundtrip(tmp_path):
 def test_get_workspace_missing_returns_none(tmp_path):
     conn = _conn(tmp_path)
     assert get_workspace(conn, "does-not-exist") is None
-    conn.close()
-
-
-def test_set_workflow_status_updates_row(tmp_path):
-    conn = _conn(tmp_path)
-    ws = create_workspace(conn, company="Acme", title="Backend Engineer")
-    set_workflow_status(conn, ws["id"], "drafted")
-    assert get_workspace(conn, ws["id"])["workflow_status"] == "drafted"
     conn.close()
 
 

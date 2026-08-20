@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Evidence Profile · Job Search Workspace{% endblock %}
+{% block content %}
+<section class="hero compact"><div><p class="eyebrow">Trust inspection</p><h1>Candidate evidence profile</h1>
+<p>This page shows what the product can cite. Update source profile files outside this interface, then refresh the snapshot.</p></div>
+<button class="button secondary" data-action="refresh-profile">Refresh snapshot</button></section>
+{% if profile %}
+<div class="summary-strip"><span>Snapshot</span><code>{{ profile.content_id }}</code><span>{{ claims | length }} claims</span><span>{{ profile.payload.conflicts | length }} conflicts</span></div>
+<section class="panel"><div class="panel-heading"><h2>Evidence claims</h2><p>No editing or conflict resolution occurs here.</p></div>
+<div class="evidence-list">{% for entry in claims %}<article class="evidence-row">
+  {% if entry.label == "Verified evidence" %}<span class="badge verified">Verified evidence</span>
+  {% elif entry.label == "Missing evidence" %}<span class="badge missing">Missing evidence</span>
+  {% else %}<span class="badge review">NEEDS_REVIEW</span>{% endif %}
+  <div><strong>{{ entry.claim.field | replace('_', ' ') | title }}</strong><p>{{ entry.claim.value }}</p>
+  <small>{{ entry.claim.category }} · evidence ID {{ entry.claim.id }}</small></div>
+</article>{% endfor %}</div></section>
+{% if profile.payload.conflicts %}<section class="panel danger-panel"><div class="panel-heading"><h2>Conflicts requiring source correction</h2></div>
+{% for conflict in profile.payload.conflicts %}<article><span class="badge review">NEEDS_REVIEW</span> <strong>{{ conflict.field | replace('_', ' ') | title }}</strong><code>{{ conflict.id }}</code></article>{% endfor %}</section>{% endif %}
+{% else %}<section class="empty-state"><h2>No evidence snapshot yet</h2><p>Refresh to read the current profile sources. This does not edit them.</p></section>{% endif %}
+{% endblock %}

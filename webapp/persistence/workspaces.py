@@ -33,7 +33,6 @@ def ensure_profile_workspace(conn: sqlite3.Connection) -> dict[str, Any]:
         return get_workspace(conn, PROFILE_WORKSPACE_ID)
     return get_workspace(conn, PROFILE_WORKSPACE_ID)
 
-
 def create_workspace(conn: sqlite3.Connection, *, company: str, title: str) -> dict[str, Any]:
     workspace_id = f"ws_{uuid.uuid4().hex[:20]}"
     now = _now()
@@ -56,11 +55,3 @@ def list_workspaces(conn: sqlite3.Connection) -> list[dict[str, Any]]:
         "SELECT * FROM workspaces WHERE kind = 'job' ORDER BY updated_at DESC"
     ).fetchall()
     return [dict(row) for row in rows]
-
-
-def set_workflow_status(conn: sqlite3.Connection, workspace_id: str, status: str) -> None:
-    conn.execute(
-        "UPDATE workspaces SET workflow_status = ?, updated_at = ? WHERE id = ?",
-        (status, _now(), workspace_id),
-    )
-    conn.commit()

@@ -67,3 +67,15 @@ CREATE TABLE IF NOT EXISTS dependency_fingerprints (
     upstream_content_id TEXT NOT NULL,
     PRIMARY KEY (artifact_id, upstream_artifact_type)
 );
+
+CREATE TABLE IF NOT EXISTS provider_audits (
+    id TEXT PRIMARY KEY,
+    workspace_id TEXT NOT NULL REFERENCES workspaces(id),
+    stage TEXT NOT NULL,
+    request_artifact_id TEXT REFERENCES artifacts(id),
+    metadata_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_provider_audits_workspace_stage
+    ON provider_audits(workspace_id, stage);
