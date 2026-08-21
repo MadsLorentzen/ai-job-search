@@ -31,6 +31,26 @@ def application_intelligence_policy_identity() -> str:
     return content_identity("aiintelpolicy_", json.loads(path.read_text(encoding="utf-8")))
 
 
+def application_intelligence_generation_contract_identity() -> str:
+    """Deterministic identity for everything that changes what
+    analyze_application_intelligence + the OpenAI provider would produce from
+    the same request, independent of the request's own content -- explicit
+    and versioned, never derived from hashing code or files."""
+    # Import lazily to avoid a potential import-order issue between
+    # webapp.services and product, matching this file's existing caution
+    # around cross-package imports at module scope (see
+    # semantic_proposer_policy_identity below).
+    from product.application_intelligence import CONNECTIVE_ALLOWLIST, RESULT_VERSION, TEMPLATE_TABLE
+
+    return content_identity("aiintelgencontract_", {
+        "prompt_version": "application-intelligence.v0",
+        "proposal_schema_version": "application_intelligence_atom_proposal_v1",
+        "result_schema_version": RESULT_VERSION,
+        "template_table_keys": sorted(f"{key[0]}:{key[1]}" for key in TEMPLATE_TABLE),
+        "connective_allowlist": sorted(CONNECTIVE_ALLOWLIST),
+    })
+
+
 def semantic_proposer_policy_identity() -> str:
     # Import lazily so offline persistence/staleness imports do not initialize
     # the hosted-provider adapter unnecessarily.

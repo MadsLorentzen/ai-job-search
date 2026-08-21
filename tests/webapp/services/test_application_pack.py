@@ -26,6 +26,7 @@ from webapp.services.pipeline import PipelineError
 from webapp.services.staleness import record_dependency_fingerprint
 from webapp.services.input_identity import (
     active_extensions_identity,
+    application_intelligence_generation_contract_identity,
     application_intelligence_policy_identity,
     evaluation_policy_identity,
     semantic_fit_policy_identity,
@@ -142,6 +143,10 @@ def _seed(conn, workspace_id, *, profile=None, fit=None, units=None, unsupported
         ("profile_snapshot", profile_artifact["content_id"]),
         ("job_fit_result", fit_artifact["content_id"]),
         ("server:application_intelligence_policy", application_intelligence_policy_identity()),
+        (
+            "server:application_intelligence_generation_contract",
+            application_intelligence_generation_contract_identity(),
+        ),
     ):
         record_dependency_fingerprint(
             conn, artifact_id=intelligence_request["id"], upstream_artifact_type=upstream_type,

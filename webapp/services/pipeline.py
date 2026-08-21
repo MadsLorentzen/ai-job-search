@@ -42,6 +42,7 @@ from webapp.services.semantic_proposer_errors import SemanticProposerProviderErr
 from webapp.services.staleness import record_dependency_fingerprint
 from webapp.services.input_identity import (
     active_extensions_identity,
+    application_intelligence_generation_contract_identity,
     content_identity,
     semantic_proposals_identity,
     semantic_proposer_policy_identity,
@@ -301,6 +302,11 @@ def run_application_intelligence(
         conn, artifact_id=request_saved["id"],
         upstream_artifact_type="server:application_intelligence_policy",
         upstream_content_id=content_identity("aiintelpolicy_", application_intelligence_policy),
+    )
+    record_dependency_fingerprint(
+        conn, artifact_id=request_saved["id"],
+        upstream_artifact_type="server:application_intelligence_generation_contract",
+        upstream_content_id=application_intelligence_generation_contract_identity(),
     )
 
     try:

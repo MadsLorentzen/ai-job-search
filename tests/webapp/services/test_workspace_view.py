@@ -11,6 +11,7 @@ from webapp.persistence.workspaces import (
 from webapp.services.staleness import record_dependency_fingerprint
 from webapp.services.input_identity import (
     active_extensions_identity,
+    application_intelligence_generation_contract_identity,
     application_intelligence_policy_identity,
     evaluation_policy_identity,
     semantic_fit_policy_identity,
@@ -92,6 +93,10 @@ def _seed_evidence(conn, workspace_id):
     for upstream_type, upstream_id in (
         ("profile_snapshot", profile["content_id"]), ("job_fit_result", fit["content_id"]),
         ("server:application_intelligence_policy", application_intelligence_policy_identity()),
+        (
+            "server:application_intelligence_generation_contract",
+            application_intelligence_generation_contract_identity(),
+        ),
     ):
         record_dependency_fingerprint(conn, artifact_id=intelligence_request["id"], upstream_artifact_type=upstream_type, upstream_content_id=upstream_id)
     intelligence = save_artifact(conn, workspace_id=workspace_id, artifact_type="application_intelligence_result", content_id="ai_A", payload={

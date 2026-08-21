@@ -11,7 +11,10 @@ from webapp.services.pipeline import refresh_profile, run_job_fit, run_applicati
 from webapp.services.staleness import check_staleness
 from webapp.services.semantic_proposal_adapter import FakeSemanticProposalAdapter
 from webapp.services.semantic_proposer_errors import SemanticProposerProviderError
-from webapp.services.input_identity import content_identity
+from webapp.services.input_identity import (
+    application_intelligence_generation_contract_identity,
+    content_identity,
+)
 
 
 FIXTURE_PROFILE_ROOT = None  # set in Step 0 below to the same fixture Task 9 created
@@ -245,6 +248,7 @@ def test_run_application_intelligence_persists_request_and_result(tmp_path, weba
     }
     assert request_fingerprints == {
         "profile_snapshot", "job_fit_result", "server:application_intelligence_policy",
+        "server:application_intelligence_generation_contract",
     }
     policy_fingerprint = conn.execute(
         "SELECT upstream_content_id FROM dependency_fingerprints "
@@ -254,6 +258,12 @@ def test_run_application_intelligence_persists_request_and_result(tmp_path, weba
     assert policy_fingerprint == content_identity(
         "aiintelpolicy_", request["payload"]["policy"]
     )
+    generation_contract_fingerprint = conn.execute(
+        "SELECT upstream_content_id FROM dependency_fingerprints "
+        "WHERE artifact_id=? AND upstream_artifact_type='server:application_intelligence_generation_contract'",
+        (request["id"],),
+    ).fetchone()["upstream_content_id"]
+    assert generation_contract_fingerprint == application_intelligence_generation_contract_identity()
     conn.close()
 
 

@@ -23,6 +23,7 @@ DEPENDENCY_TYPES: dict[str, tuple[str, ...]] = {
     "job_fit_result": ("profile_snapshot", "resolved_job_evidence", "job_fit_request"),
     "application_intelligence_request": (
         "profile_snapshot", "job_fit_result", "server:application_intelligence_policy",
+        "server:application_intelligence_generation_contract",
     ),
     "application_intelligence_result": ("profile_snapshot", "job_fit_result", "application_intelligence_request"),
     "application_pack": ("job_fit_result", "application_intelligence_result"),
@@ -126,6 +127,7 @@ def _server_input_identity(
     input_type: str, artifact: dict[str, Any], extensions_dir: Path,
 ) -> str:
     from webapp.services.input_identity import (
+        application_intelligence_generation_contract_identity,
         application_intelligence_policy_identity,
         current_active_extensions_identity,
         evaluation_policy_identity,
@@ -149,4 +151,6 @@ def _server_input_identity(
         return semantic_proposals_identity(payload.get("semantic_proposals", {}))
     if input_type == "server:application_intelligence_policy":
         return application_intelligence_policy_identity()
+    if input_type == "server:application_intelligence_generation_contract":
+        return application_intelligence_generation_contract_identity()
     raise ValueError(f"unknown mutable server input {input_type!r}")

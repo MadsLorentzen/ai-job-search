@@ -122,6 +122,7 @@ def test_missing_current_artifact_is_not_stale(tmp_path):
         ("job_fit_request", "server:evaluation_policy"),
         ("job_fit_request", "server:semantic_fit_policy"),
         ("application_intelligence_request", "server:application_intelligence_policy"),
+        ("application_intelligence_request", "server:application_intelligence_generation_contract"),
     ],
 )
 def test_missing_required_fingerprint_fails_closed_at_multiple_depths(
@@ -163,6 +164,10 @@ def test_missing_required_upstream_current_pointer_fails_closed(tmp_path):
         ("semantic_fit_policy_identity", "server:semantic_fit_policy"),
         ("semantic_proposer_policy_identity", "server:semantic_proposer_policy"),
         ("application_intelligence_policy_identity", "server:application_intelligence_policy"),
+        (
+            "application_intelligence_generation_contract_identity",
+            "server:application_intelligence_generation_contract",
+        ),
     ],
 )
 def test_mutable_server_policy_identity_change_stales_downstream(
@@ -189,3 +194,11 @@ def test_promoted_semantic_proposal_request_stales_old_fit_result(tmp_path):
     result = check_staleness(conn, workspace_id, "job_fit_result")
     assert result["stale"] is True
     assert "job_fit_request changed" in "; ".join(result["reasons"])
+
+
+def test_application_intelligence_request_dependency_types_include_generation_contract():
+    from webapp.services.staleness import DEPENDENCY_TYPES
+    assert (
+        "server:application_intelligence_generation_contract"
+        in DEPENDENCY_TYPES["application_intelligence_request"]
+    )
