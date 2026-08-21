@@ -1330,5 +1330,21 @@ class TestNewTemplateEntries(unittest.TestCase):
         self.assertEqual(eligible, [])
 
 
+
+
+class TestExpandedConnectiveAllowlist(unittest.TestCase):
+    def test_which_included_is_allowed(self):
+        from product.application_intelligence import _validate_connective
+        self.assertTrue(_validate_connective("which included"))
+
+    def test_specifically_is_allowed(self):
+        from product.application_intelligence import _validate_connective
+        self.assertTrue(_validate_connective("specifically"))
+
+    def test_building_on_is_not_allowed(self):
+        from product.application_intelligence import _validate_connective
+        self.assertFalse(_validate_connective("building on"))
+
+
 if __name__ == "__main__":
     unittest.main()

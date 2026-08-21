@@ -486,6 +486,7 @@ CONNECTIVE_ALLOWLIST = frozenset(
     {
         "additionally", "in this role", "as a result", "furthermore",
         "and", "with", "while", "in addition", "notably", ",", ".", ";",
+        "which included", "specifically",
     }
 )
 
