@@ -74,6 +74,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **Onboarding warns about public forks at the point of decision** (#345) - the quick
+  start walked a new user into `gh repo fork` (forks of public repos are always public)
+  and two steps later had `/setup` write personal data into tracked files, with the only
+  complete warning sitting in SETUP.md section 8 - a section about pulling updates that a
+  first-time user has no reason to open. A real user hit exactly this. The warning now
+  sits adjacent to both fork commands (README step 1, SETUP.md section 2), and `/setup`
+  checks the origin's visibility **before** writing anything: a public-fork origin gets a
+  confirm-first warning instead of a note after every file is already on disk. Reported
+  by @basilevs with a complete reproduction and fix analysis. Pinned by the new
+  `tests/test_onboarding_privacy.py`.
 - **`/upskill` reports are now gitignored at the path the skill actually writes them to.**
   The ignore rule `upskill/*.md` is rooted (a middle slash anchors a gitignore pattern to the
   repo root), but `/upskill` is a *skill*, and skills resolve bare relative paths against

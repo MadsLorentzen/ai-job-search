@@ -10,7 +10,26 @@ There are three paths into setup. Step 0 picks the right one; all three converge
 
 If `$ARGUMENTS` contains `--section <name>`, skip directly to that section in Path C for an update-only flow. Do not run the path-selection prompt below.
 
-Otherwise, before greeting the user, scan the `documents/` folder. Use Glob with `documents/**/*` and count files per subfolder (`cv/`, `linkedin/`, `diplomas/`, `references/`, `applications/`).
+Otherwise, first check where this working copy would publish to — **before anything is
+written, not after** (the Step 4 privacy note fires only once every file is already on
+disk, which is too late to inform the decision). Run `git remote get-url origin`; if the
+command fails (no remote, or not a git checkout), skip this check silently. If there is
+a GitHub `origin`, check it with `gh repo view <owner/repo> --json visibility,isFork`
+when `gh` is available. If the origin is a **public fork** of the template — or its
+visibility cannot be determined — warn now and wait:
+
+> **Heads-up before we start:** your `origin` points at `<owner/repo>`, which is a
+> public GitHub fork. This setup writes your personal data (name, contact details,
+> employment history, salary expectations) into **tracked** files, and anything you
+> commit *and push* to that fork is visible to anyone. Two safe options: keep your
+> profile commits local and never push them, or push to a **private** repository
+> instead — SETUP.md section 8 has the two-minute private-remote recipe. Want to
+> continue with the setup?
+
+Wait for the user's confirmation before showing the path prompt. A private origin, no
+origin, or a non-fork remote needs no warning — continue silently.
+
+Then, before greeting the user, scan the `documents/` folder. Use Glob with `documents/**/*` and count files per subfolder (`cv/`, `linkedin/`, `diplomas/`, `references/`, `applications/`).
 
 Then welcome the user with a single message that lists three paths. The wording changes based on what was found.
 
