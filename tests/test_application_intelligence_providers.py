@@ -87,6 +87,37 @@ class TestOpenAIProviderSchema(unittest.TestCase):
         self.assertEqual(params["text"]["format"]["strict"], True)
         self.assertEqual(params["store"], False)
 
+    def test_schema_name_is_v1(self):
+        from product.openai_application_intelligence_provider import OPENAI_RESPONSE_SCHEMA_NAME
+        self.assertEqual(OPENAI_RESPONSE_SCHEMA_NAME, "application_intelligence_atom_proposal_v1")
+
+    def test_schema_includes_typed_cv_emphasis_plan(self):
+        schema = openai_atom_proposal_schema()
+        self.assertIn("cv_emphasis_plan", schema["properties"])
+        plan_schema = schema["properties"]["cv_emphasis_plan"]["items"]
+        self.assertEqual(plan_schema["additionalProperties"], False)
+        self.assertIn("rationale_kind", plan_schema["properties"])
+        self.assertIn("covers_uncovered_requirement", plan_schema["properties"]["rationale_kind"]["enum"])
+
+    def test_schema_includes_typed_cover_letter_plan(self):
+        schema = openai_atom_proposal_schema()
+        self.assertIn("cover_letter_plan", schema["properties"])
+
+    def test_schema_still_forbids_free_text_fields(self):
+        schema = openai_atom_proposal_schema()
+        plan_props = schema["properties"]["cv_emphasis_plan"]["items"]["properties"]
+        # plan_id and target_job_requirement_ids are opaque identifiers (a
+        # provider-supplied id and references to job-posting-specific
+        # requirement ids computed by Ticket 7's matching, respectively) --
+        # not candidate-bearing prose -- exactly like content_units' existing
+        # profile_evidence_ids/job_evidence_ids fields, which are also plain
+        # string arrays rather than enums for the same reason.
+        opaque_id_fields = {"plan_id", "target_job_requirement_ids"}
+        for prop_name, prop_schema in plan_props.items():
+            if prop_name in opaque_id_fields:
+                continue
+            self.assertIn("enum", prop_schema.get("items", prop_schema), f"{prop_name} must be enum-constrained, not free text")
+
 
 class TestOpenAIProviderCredential(unittest.TestCase):
     def test_missing_api_key_raises_provider_error(self):
