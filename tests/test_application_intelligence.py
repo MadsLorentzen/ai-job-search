@@ -1074,5 +1074,99 @@ class TestConnectiveIndexBoundsChecking(unittest.TestCase):
         self.assertTrue(any("out of range" in claim["reason"] for claim in result["unsupported_claims"]))
 
 
+from product.application_intelligence import (
+    PLAN_RATIONALE_KINDS,
+    _validate_plan,
+    _validate_plan_entry_shape,
+)
+
+
+class TestPlanEntryValidation(unittest.TestCase):
+    def test_well_formed_entry_returns_none(self):
+        entry = {
+            "plan_id": "plan-1",
+            "target_unit_type": "cv_bullet",
+            "target_job_requirement_ids": ["jobev_req_python"],
+            "rationale_kind": "covers_uncovered_requirement",
+        }
+        self.assertIsNone(_validate_plan_entry_shape(entry))
+
+    def test_non_object_entry_is_rejected(self):
+        self.assertIsNotNone(_validate_plan_entry_shape("not-a-dict"))
+
+    def test_unknown_rationale_kind_is_rejected(self):
+        entry = {
+            "plan_id": "plan-1",
+            "target_unit_type": "cv_bullet",
+            "target_job_requirement_ids": [],
+            "rationale_kind": "made_up_reason",
+        }
+        self.assertIsNotNone(_validate_plan_entry_shape(entry))
+
+    def test_unknown_unit_type_is_rejected(self):
+        entry = {
+            "plan_id": "plan-1",
+            "target_unit_type": "not_a_real_unit_type",
+            "target_job_requirement_ids": [],
+            "rationale_kind": "covers_uncovered_requirement",
+        }
+        self.assertIsNotNone(_validate_plan_entry_shape(entry))
+
+    def test_non_list_target_job_requirement_ids_is_rejected(self):
+        entry = {
+            "plan_id": "plan-1",
+            "target_unit_type": "cv_bullet",
+            "target_job_requirement_ids": "not-a-list",
+            "rationale_kind": "covers_uncovered_requirement",
+        }
+        self.assertIsNotNone(_validate_plan_entry_shape(entry))
+
+    def test_all_four_rationale_kinds_are_recognized(self):
+        for kind in (
+            "covers_uncovered_requirement", "reinforces_required_dimension",
+            "strengthens_direct_match", "addresses_gap_context",
+        ):
+            entry = {
+                "plan_id": "plan-1",
+                "target_unit_type": "cv_bullet",
+                "target_job_requirement_ids": [],
+                "rationale_kind": kind,
+            }
+            self.assertIsNone(_validate_plan_entry_shape(entry), f"{kind} should be valid")
+        self.assertEqual(
+            PLAN_RATIONALE_KINDS,
+            frozenset({
+                "covers_uncovered_requirement", "reinforces_required_dimension",
+                "strengthens_direct_match", "addresses_gap_context",
+            }),
+        )
+
+
+class TestValidatePlan(unittest.TestCase):
+    def test_valid_entries_pass_through_no_issues(self):
+        raw = [{
+            "plan_id": "plan-1", "target_unit_type": "cv_bullet",
+            "target_job_requirement_ids": ["jobev_req_python"],
+            "rationale_kind": "covers_uncovered_requirement",
+        }]
+        valid, issues = _validate_plan(raw, "cv_emphasis_plan")
+        self.assertEqual(valid, raw)
+        self.assertEqual(issues, [])
+
+    def test_malformed_entry_is_dropped_and_recorded_as_plan_issue_not_unsupported_claim(self):
+        raw = [{"plan_id": "plan-1", "target_unit_type": "bogus", "target_job_requirement_ids": [], "rationale_kind": "covers_uncovered_requirement"}]
+        valid, issues = _validate_plan(raw, "cv_emphasis_plan")
+        self.assertEqual(valid, [])
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["field"], "cv_emphasis_plan")
+        self.assertEqual(issues[0]["index"], 0)
+        self.assertIn("reason", issues[0])
+
+    def test_non_list_plan_produces_no_valid_entries_and_no_crash(self):
+        valid, issues = _validate_plan("not-a-list", "cover_letter_plan")
+        self.assertEqual(valid, [])
+        self.assertEqual(issues, [])
+
+
 if __name__ == "__main__":
     unittest.main()

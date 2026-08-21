@@ -463,6 +463,11 @@ CONNECTIVE_ALLOWLIST = frozenset(
     }
 )
 
+PLAN_RATIONALE_KINDS = frozenset({
+    "covers_uncovered_requirement", "reinforces_required_dimension",
+    "strengthens_direct_match", "addresses_gap_context",
+})
+
 
 def _linked_claims(claim: dict[str, Any], all_claims: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
     record_id = claim.get("record_id")
@@ -905,6 +910,44 @@ def _validate_unit_proposal_shape(unit_proposal: Any) -> str | None:
     if not isinstance(unit_proposal.get("connectives", []), list):
         return "connectives must be an array"
     return None
+
+
+def _validate_plan_entry_shape(entry: Any) -> str | None:
+    """Return an error reason if this cv_emphasis_plan/cover_letter_plan entry
+    is malformed, or None if it is well-formed. Mirrors _validate_atom_shape's
+    return convention exactly."""
+
+    if not isinstance(entry, dict):
+        return "plan entry must be an object"
+    if not isinstance(entry.get("plan_id"), str) or not entry["plan_id"].strip():
+        return "plan_id must be a non-empty string"
+    if entry.get("target_unit_type") not in UNIT_TYPES:
+        return f"target_unit_type must be one of {sorted(UNIT_TYPES)}"
+    ids = entry.get("target_job_requirement_ids")
+    if not isinstance(ids, list) or not all(isinstance(item, str) for item in ids):
+        return "target_job_requirement_ids must be a list of strings"
+    if entry.get("rationale_kind") not in PLAN_RATIONALE_KINDS:
+        return f"rationale_kind must be one of {sorted(PLAN_RATIONALE_KINDS)}"
+    return None
+
+
+def _validate_plan(raw_plan: Any, field_name: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Validate a cv_emphasis_plan or cover_letter_plan list. Malformed entries
+    are dropped fail-closed and reported as plan_issues -- never raised, never
+    routed into unsupported_claims, which is reserved for candidate-content
+    rejection (a distinct concept from malformed planning metadata)."""
+
+    if not isinstance(raw_plan, list):
+        return [], []
+    valid: list[dict[str, Any]] = []
+    issues: list[dict[str, Any]] = []
+    for index, entry in enumerate(raw_plan):
+        error = _validate_plan_entry_shape(entry)
+        if error is not None:
+            issues.append({"field": field_name, "index": index, "reason": error})
+            continue
+        valid.append(entry)
+    return valid, issues
 
 
 def _adjudicate_content_unit(unit_proposal: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
