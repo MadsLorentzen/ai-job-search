@@ -36,12 +36,15 @@ const server = Bun.serve({
     const url = new URL(req.url)
 
     if (url.pathname === "/" && req.method === "GET") {
-      return new Response(SHELL_HTML, { headers: { "content-type": "text/html; charset=utf-8" } })
+      // no-store: this shell embeds the client JS inline, so a browser silently serving a
+      // cached copy on plain refresh would make every future fix here look like it "didn't
+      // work" even though the server was updated - this endpoint must always be re-fetched.
+      return new Response(SHELL_HTML, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } })
     }
 
     if (url.pathname === "/api/data" && req.method === "GET") {
       const data = await buildDashboardData()
-      return Response.json(data)
+      return Response.json(data, { headers: { "cache-control": "no-store" } })
     }
 
     if (url.pathname === "/api/status" && req.method === "POST") {

@@ -13,9 +13,12 @@ Two templates are in active use, selected by the target role's market — never 
 | Market | Template | Section below |
 |---|---|---|
 | UK | moderncv banking style | "Template: LaTeX moderncv (Banking Style)" |
+| Ireland | moderncv banking style (added 2026-08-20) | "Template: LaTeX moderncv (Banking Style)" |
 | Germany | Lebenslauf (moderncv classic + photo) | "Template: Lebenslauf (German-Market CV Format)" |
 
 Determine market from the posting's location, not from the target company's HQ — a UK-based role at a German company still uses the banking template. Content stays in **English** either way (see CLAUDE.md's `CV language` line) — the Lebenslauf format changes *presentation* (photo, personal-data block, German CV conventions), never the language.
+
+**Ireland uses the UK banking template, not the German Lebenslauf.** Irish CV convention follows UK/US norms — no photo, no date of birth, no marital status — and Ireland's Employment Equality Acts prohibit discrimination on those grounds the same way UK law does, so including that personal-data block would look out of place (and mildly risky) on an Irish application, unlike Germany where it's standard practice.
 
 ## Template: LaTeX moderncv (Banking Style)
 
@@ -156,6 +159,29 @@ Expected output: 2 pages, same as the banking template.
   ```
   Use the numeric `DD.MM.YYYY` format (German convention), not a spelled-out English date, and set it to the actual date the CV is generated. **Signature asset:** `cv/assets/signature.jpg` (source: `documents/cv/shamik - sign.jpg`) — a real signature, supplied by the candidate. Never fabricate a stylised/cursive text rendering as a stand-in for a signature; if the asset is ever missing, ask the candidate for one rather than approximating with an italic font.
 - **No "References" section.** The candidate's own reference Lebenslauf (`documents/cv/Shamik_Mukherjee_Lebenslauf_EN.pdf`) omits it, matching common German CV practice; don't add one back in in for this template.
+
+### Draft with placeholder images, swap in the real ones only on the final pass (trial, added 2026-08-21)
+
+The photo (`\photo[64pt][0.4pt]{assets/photo}`) and the closing signature (`\includegraphics[height=1.2cm]{assets/signature}`) are the two things that make Lebenslauf compiles/inspections more expensive than the banking template: LaTeX reserves page-layout space based on the **declared width/height parameter**, not the source image's actual pixel content, so a tiny placeholder image at the same declared dimensions produces byte-identical page breaks to the real photo/signature — but is far cheaper to visually inspect via the Read tool during iteration.
+
+**Shared placeholder assets** (create once, reuse across every Lebenslauf CV, same convention as the real assets): `cv/assets/photo_placeholder.png`, `cv/assets/signature_placeholder.png` — minimal 1x1-pixel PNGs, already created.
+
+**Workflow:**
+1. During drafting (Step 2), reviewer revision (Step 4), and the entire page-fitting compile/inspect loop (Step 5's first pass), reference `assets/photo_placeholder` and `assets/signature_placeholder` instead of the real assets, using the **exact same declared width/height parameters** the real ones use (`[64pt][0.4pt]` for the photo, `height=1.2cm` for the signature).
+2. Only once page count, layout, and content have fully passed the Verification Checklist against the placeholder version, swap both `\photo{...}` and `\includegraphics{...}` calls back to the real `assets/photo` / `assets/signature` filenames.
+3. Recompile twice (cross-references need a second pass to settle) and run **one final visual inspection with the real images** — confirm the actual photo/signature render correctly (not cropped, not corrupted, correct orientation). This final check is not skippable — the placeholder swap only defers the expensive image inspection, it doesn't remove the need for it once.
+
+**Status: trial.** Being tried on the next 2-3 German-market roles (SIGNAL IDUNA, EDEKABANK, spotixx) to measure actual token savings against this session's established baselines before being treated as a firm rule. If the savings are tangible, this becomes standard practice for every Lebenslauf CV going forward; if not, revert to compiling with the real assets throughout.
+
+### Fixed at the root: classic-style `\cventry` blocks used to be atomic (bug found 2026-08-21, cost 300k+ tokens to diagnose once; root-cause fix applied same day, verified against real content)
+
+`\moderncvstyle{classic}`'s stock `\cventry` (title + bullets) does **not** split across a page break — if the whole block doesn't fit in the space remaining on the current page, LaTeX moves it wholesale to the next page rather than breaking mid-entry. On a Lebenslauf CV this commonly strands blank space at the bottom of page 1 (the first, usually longest, entry doesn't fit) and cascades into a 3rd page for Publications/Honours/the signature line, even though the *content* comfortably fits in 2 pages.
+
+**Root cause, confirmed by reading moderncv's actual source** (`moderncvbodyi.sty`, the body file `classic` loads): `\cventry` wraps its bullet description in a `minipage`, and delegates its header row to `\cvitem`, which wraps everything in a plain `tabular`. Both are genuine LaTeX box types that categorically cannot split across a page break, regardless of content length — this isn't a stylistic choice, it's the same restriction that makes plain `tabular` (as opposed to `longtable`) unable to break across pages.
+
+**Fix (now baked into `cv/main_example_lebenslauf.tex`'s preamble — copy it into every new Lebenslauf CV, don't re-derive it):** a custom `\renewcommand*{\cventry}` that keeps the short header line in the original `\cvitem`/`tabular` row (never itself an issue — one line), but renders the bullet description as a genuine breakable `list` environment (indented via `\leftmargin` to preserve the original column alignment) instead of a `minipage`. Verified empirically with a forced page-break test: a bullet list now splits mid-list across a page break, with the header staying attached to whichever bullets fit rather than the whole entry jumping as one atomic unit. Also verified against the full master reference's real content (photo, Personal Details, all 8 experience entries, Skills, Languages, Publications, Honours, signature) — no visual regressions anywhere.
+
+**This eliminates the failure mode entirely — it does not just make it cheaper to work around.** `\enlargethispage` may still occasionally be useful for ordinary 2-page-budget trimming (the same way it's used in the banking template), but it is no longer the fix for this specific bug, since the bug's root cause no longer exists. Do not reach for `\enlargethispage`-tuning first on a Lebenslauf page-count problem — check whether the CV's preamble actually includes the custom `\cventry` redefinition before doing anything else.
 
 Everything else — profile statement writing, experience bullet tailoring, relevance-weighted cutting, the 2-page budget, the ATS text-layer checks, the compile-and-inspect loop, reverse-chronological ordering — follows the exact same rules as the banking template below. Read those sections too; they are not repeated here.
 

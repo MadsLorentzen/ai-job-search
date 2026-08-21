@@ -12,7 +12,7 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Dual-market search: **UK** (commutable from Reading, Berkshire) and **Germany** (English-speaking roles only — relocation planned independently via the Chancenkarte, not employer-sponsorship-dependent). See `04-job-evaluation.md`'s candidate-specific timing gate — UK roles are time-critical (current Skilled Worker visa expires February 2027, current employer cannot sponsor a transfer), so UK results should be checked for active sponsor status before scoring.
+Triple-market search: **UK** (commutable from Reading, Berkshire), **Germany** (English-speaking roles only — relocation planned independently via the Chancenkarte, not employer-sponsorship-dependent), and **Ireland** (added 2026-08-20 — no independent route, employer sponsorship required like the UK). See `04-job-evaluation.md`'s candidate-specific timing gate — UK and Ireland roles are both time-critical/sponsorship-dependent (UK: current Skilled Worker visa expires February 2027, current employer cannot sponsor a transfer; Ireland: needs a Critical Skills or General Employment Permit sponsor), so both should be checked for active sponsor status before scoring, unlike Germany.
 
 Primary:
 - **linkedin.com/jobs** - LinkedIn job listings (filter: United Kingdom / Germany); also covered by `linkedin-search` CLI
@@ -36,6 +36,7 @@ site:linkedin.com/jobs "Product Owner" payments Reading OR London OR UK
 site:linkedin.com/jobs "Product Manager" wallet OR tokenisation OR "card network" UK
 site:linkedin.com/jobs "Product Owner" payments Germany
 site:linkedin.com/jobs "Product Manager" fintech Germany English-speaking
+site:linkedin.com/jobs "Product Owner" OR "Product Manager" payments OR fintech Dublin OR Ireland
 ```
 
 ### Priority 2: Payments & Fintech Domain Expertise
@@ -68,7 +69,7 @@ site:linkedin.com/jobs "Solution Architect" payments banking UK OR Germany
 
 ## Location Filter
 
-Two independent markets, evaluated differently:
+Three independent markets, evaluated differently:
 
 **UK** (commute-based, from Reading, Berkshire):
 - Reading, Berkshire and the Thames Valley (ideal)
@@ -78,6 +79,10 @@ Two independent markets, evaluated differently:
 **Germany** (relocation-based, not commute-based):
 - Any German city is in scope, since relocation is planned independently via the Chancenkarte
 - Hard filter: the role itself must be English-speaking (see Language Filter below) - this matters more than which city it's in
+
+**Ireland** (relocation-based, sponsorship-dependent, added 2026-08-20):
+- Any Irish city is in scope (Dublin is the primary hub for fintech/payments roles)
+- Hard filter: unlike Germany, there is no independent relocation route - only pursue roles where the employer can plausibly sponsor a Critical Skills or General Employment Permit; treat sponsorship-silent postings as unverified (FLAG), the same as a UK posting
 
 ## Language Filter
 

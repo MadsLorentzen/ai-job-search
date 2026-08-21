@@ -30,12 +30,25 @@ If the candidate's permit also constrains *hours* or *start date* (a student vis
 
 A role that fails this gate is not scored and not drafted. Everything below applies only to roles that pass it.
 
-### Candidate-specific timing gate (added by /setup, dual-market search)
+### Candidate-specific timing gate (added by /setup, triple-market search)
 
-The candidate runs a **dual-market search**: UK (Reading-based) and Germany (English-speaking roles only).
+The candidate runs a **triple-market search**: UK (Reading-based), Germany (English-speaking roles only), and Ireland (added 2026-08-20).
 
 - **UK roles:** Current Skilled Worker visa expires **February 2027**. The current employer (Cognizant) cannot sponsor a transfer, so a new UK role must come from an employer able to sponsor from scratch. Before scoring any UK posting, check whether the employer is a genuine, active sponsor — an "we sponsor" statement in the posting is not enough on its own; prefer employers with a visible, current sponsor licence. Treat sponsorship uncertainty on a UK posting as a **FLAG**, not an automatic pass — surface it explicitly rather than assuming it will work out, given the Feb 2027 deadline.
+
+#### UK Sponsor Register Check (standard, mandatory for every UK posting)
+
+Don't stop at whether the posting *mentions* sponsorship — cross-check the employer against the UK Home Office's own **Register of Licensed Sponsors: Workers**, the authoritative public source, before scoring or drafting any UK role:
+
+1. **Use the cached copy first.** `job_scraper/uk_sponsor_register.csv` holds the last-downloaded register (gitignored — regenerable, never committed). Check its file mtime: the register updates several times a week, so if the cached copy is more than ~3-4 days old, re-fetch it rather than trusting a stale copy.
+2. **To refresh:** WebFetch `https://www.gov.uk/government/publications/register-of-licensed-sponsors-workers` to find the current CSV's direct download URL (it's dated and changes each update), then download it to `job_scraper/uk_sponsor_register.csv`, overwriting the old copy.
+3. **Search by company name, but expect legal-entity mismatches.** The register lists the sponsoring *legal entity*, not always the consumer-facing brand — a posting from "Arrive" may only appear under one of its trading brands (e.g. "Flowbird Ltd", "RingGo Limited"). If a direct name search misses, try known parent/subsidiary/brand names before concluding there's no match (check the company's own "about us" page for its registered UK entity name if needed).
+4. **Verdict mapping:**
+   - **Found, with a "Worker" route (Skilled Worker or Global Business Mobility) at any rating** → sponsorship **PASS** — a genuine, current sponsor. Worth noting as a positive.
+   - **Not found after trying plausible name variants** → this is a **stronger signal than ordinary posting-silence** — it means no active licence exists at all, not just that the posting didn't mention one. Don't auto-fail silently: surface it prominently to the user and treat it as a near-blocking FLAG. If pursuing further (e.g. a company that's newly incorporated or plausibly just missed a name-variant search), also check Companies House for a UK legal entity as a secondary signal, the same way the Reap evaluation did on 2026-08-21 before it correctly stopped rather than drafting for a role with no verified UK sponsor.
+5. This check happens at **both** `/rank` triage and `/apply`'s Step 1 full evaluation — triage should surface the result (PASS/no-match) in the shortlist output, and `/apply` re-verifies since a licence can change between triage and application.
 - **Germany roles:** No sponsorship dependency — the candidate plans to relocate independently via the **Chancenkarte (Opportunity Card)**, for which they are eligible but have not yet submitted an application. This route does not require the employer to sponsor a work permit on day one, so a German posting should **not** be failed or flagged for silence on sponsorship the way a UK posting would be. It still must pass the Language Gate below (English-speaking role required — the candidate's German is A0).
+- **Ireland roles:** No independent route equivalent to the Chancenkarte — treated the same as UK roles. Only pursue roles where the employer can sponsor an Irish employment permit (Critical Skills Employment Permit or General Employment Permit). Treat sponsorship silence on an Ireland posting as a **FLAG**, never an automatic pass, the same as a UK posting.
 
 ## Language Gate — run before scoring
 
@@ -200,6 +213,20 @@ Present the evaluation as:
 - **Moderate Fit** (45-59): Consider carefully, discuss with user
 - **Weak Fit** (30-44): Probably skip unless strategic reasons
 - **Poor Fit** (<30): Skip
+
+**Germany/Ireland override (added 2026-08-20):** the thresholds above assume domain fit matters as much as the weighting implies. For Germany and Ireland specifically, the candidate has said landing a job (and the resulting visa/permit) takes priority over staying in payments/fintech — so a Moderate or even Weak Fit score driven by the domain-heavy dimensions (Technical Skills, Career Alignment) should still be actively surfaced and discussed, not defaulted to "probably skip," as long as Location and the relevant sponsorship/Eligibility gate are clean (Germany: PASS; Ireland: a genuine sponsor, not silence). Still flag genuine execution-risk gaps honestly (years-of-experience shortfalls, missing named hard requirements) — those aren't waived by this override, only the domain-fit penalty is. This override does not apply to UK postings.
+
+## Persistence — write every evaluation back to seen_jobs.json
+
+**Any time this framework is applied to a job that has an entry in `job_scraper/seen_jobs.json`** — via `/rank`'s batch triage, `/apply`'s Step 1, or an ad-hoc "evaluate X" / "fact check this" request outside either command — update that entry's `rank_score`, `rank_verdict`, and `rank_date` (today's date) to the result of *this* evaluation before presenting it to the user. If the Location or Language Gate verdict changed, update `location`/`language_gate` (and `language_note`) too.
+
+This is not optional bookkeeping: the dashboard (`job_scraper/serve_dashboard.js`) reads these fields directly, and a deeper re-evaluation that only lives in chat leaves the dashboard silently showing the stale `/rank` triage score indefinitely — exactly the kind of gap a later session (or the user, mid-decision) can't detect without re-asking. `/rank`'s Step 4 already does this as part of its normal flow; this rule extends the same discipline to every other path that produces a score, including one-off requests that were never routed through `/rank` or `/apply` at all.
+
+Locate the entry by matching the job's URL (or company+title key) against `seen_jobs.json`. If no entry exists yet (a posting evaluated directly from a pasted URL/text that `/scrape` never saw), skip this — there is nothing to update.
+
+**If research corrects the company name** (a mis-scraped tag, a rebrand, a duplicate-listing consolidation — e.g. "Avarda UK" → "Avarda Group" after confirming the actual legal entity), update `seen_jobs.json`'s `company` field to match, not just the tracker row. The dashboard joins application status by `company + title`, both lowercased, so a corrected name in the tracker that isn't mirrored back into `seen_jobs.json` breaks the join silently — the entry keeps showing "Not applied" even after a CV is drafted or the role is applied to. This has recurred three times in one session (Awin/Awin Global, N26/N26 GmbH, Avarda UK/Avarda Group); treat any company-name correction as a two-file edit, always.
+
+**The same join breaks on the role/title side too, and is easier to trigger by accident.** `normalizeRole()` in `dashboard_lib.js` only strips a trailing gender-marker suffix like "(m/w/d)" — it does NOT strip other parenthetical additions such as a seniority/team qualifier. When writing the tracker row's role column, copy the `seen_jobs.json` entry's `title` field verbatim (character-for-character) rather than re-typing or embellishing it — e.g. do not write "Manager, Product Manager (SME)" in the tracker if `seen_jobs.json` has `"title": "Manager, Product Manager"`, even if "(SME)" is an accurate descriptor from the posting. This exact mismatch happened once already (Mastercard "Manager, Product Manager" vs. tracker's "Manager, Product Manager (SME)"), silently leaving the role stuck on "Not applied" in the dashboard despite a completed, tracked application.
 
 ## Pre-Application: Call the Employer (Best Practice)
 

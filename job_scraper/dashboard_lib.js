@@ -37,6 +37,7 @@ const TRACKER_HEADER = [
   "cv_file",
   "cover_letter_file",
   "source",
+  "applied_at",
 ]
 
 /**
@@ -99,6 +100,7 @@ function inferMarket(locationText) {
   if (!locationText) return null
   const t = locationText.toLowerCase()
   if (t.includes("germany") || t.includes("deutschland")) return "DE"
+  if (t.includes("ireland") || t.includes("dublin")) return "IE"
   if (t.includes("uk") || t.includes("united kingdom") || t.includes("england") || t.includes("scotland")) return "UK"
   return null
 }
@@ -149,6 +151,7 @@ async function readTrackerRows(trackerPath) {
       cv_file: f[idx.cv_file] ?? "",
       cover_letter_file: f[idx.cover_letter_file] ?? "",
       source: f[idx.source] ?? "",
+      applied_at: f[idx.applied_at] ?? "",
     })
   }
   return byKey
@@ -221,6 +224,7 @@ function buildJobs(seen, trackerByKey, visaDeadline) {
         ? {
             status: tracker.status || null,
             date: tracker.date || null,
+            applied_at: tracker.applied_at || null,
             fit_rating: tracker.fit_rating || null,
             notes: tracker.notes || null,
             channel: tracker.channel || null,
@@ -235,21 +239,30 @@ function buildJobs(seen, trackerByKey, visaDeadline) {
 
 function computeStats(jobs) {
   const isVetoed = (j) => j.location_gate === "FAIL" || j.language_gate === "FAIL"
+  const isDuplicate = (j) => j.status === "duplicate"
   const isShortlisted = (j) =>
-    j.rank_verdict && ["Strong Fit", "Good Fit"].includes(j.rank_verdict) && !isVetoed(j)
+    j.rank_verdict && ["Strong Fit", "Good Fit"].includes(j.rank_verdict) && !isVetoed(j) && j.status !== "expired" && !isDuplicate(j)
   const appStatus = (j) => (j.application?.status ?? "").toLowerCase()
   const stageCount = (pred) => jobs.filter(pred).length
+  // Stage counts (drafted/applied/interview/offer/rejected) reflect real-world application
+  // state, which lives once per role even when the same posting was scraped under multiple
+  // URLs (a LinkedIn repost of a company's own ATS listing, for instance). Both duplicate
+  // entries join to the same tracker row via company+role matching and would otherwise both
+  // count - excluding status:"duplicate" here is what keeps "Applied" etc. from double-counting
+  // a single real submission.
+  const appStageCount = (pred) => jobs.filter((j) => pred(j) && !isDuplicate(j)).length
 
   return {
     total: jobs.length,
     ranked: stageCount((j) => !!j.rank_verdict),
     shortlisted: stageCount(isShortlisted),
     excluded: stageCount(isVetoed),
-    drafted: stageCount((j) => appStatus(j) === "drafted"),
-    applied: stageCount((j) => appStatus(j) === "applied"),
-    interview: stageCount((j) => appStatus(j).includes("interview")),
-    offer: stageCount((j) => appStatus(j).includes("offer") || appStatus(j) === "hired"),
-    rejected: stageCount((j) => appStatus(j).includes("reject")),
+    duplicates: stageCount(isDuplicate),
+    drafted: appStageCount((j) => appStatus(j) === "drafted"),
+    applied: appStageCount((j) => appStatus(j) === "applied"),
+    interview: appStageCount((j) => appStatus(j).includes("interview")),
+    offer: appStageCount((j) => appStatus(j).includes("offer") || appStatus(j) === "hired"),
+    rejected: appStageCount((j) => appStatus(j).includes("reject")),
   }
 }
 
@@ -328,6 +341,7 @@ export async function updateTrackerStatus({ company, role, status, note, source,
       if (col === "notes") return dated
       if (col === "source") return source ?? ""
       if (col === "fit_rating") return fit_rating ?? ""
+      if (col === "applied_at") return status === "applied" ? new Date().toISOString() : ""
       return ""
     })
     lines.push(row.map(csvEscape).join(","))
@@ -339,6 +353,13 @@ export async function updateTrackerStatus({ company, role, status, note, source,
   while (f.length < header.length) f.push("")
   const oldStatus = (f[idx.status] ?? "").trim().toLowerCase()
   if (oldStatus === "drafted" && status !== "drafted") f[idx.date] = today
+  // Stamp applied_at the moment status first becomes "applied" - never overwritten on
+  // subsequent status changes (interview, offer, etc.), so it always answers "when did
+  // I actually submit this?" for follow-up timing, distinct from `date` which tracks
+  // whatever the most recent status-relevant date is.
+  if (status === "applied" && oldStatus !== "applied" && idx.applied_at !== undefined && !f[idx.applied_at]) {
+    f[idx.applied_at] = new Date().toISOString()
+  }
   f[idx.status] = status
   const existingNotes = f[idx.notes] ?? ""
   f[idx.notes] = existingNotes ? `${existingNotes}; ${dated}` : dated
@@ -536,14 +557,14 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
 (function () {
   const STATUS_OPTIONS = ["applied","interview","offer","hired","rejected","no response","offer declined","withdrawn","drafted","skipped"];
 
-  let RAW = { jobs: [], stats: { total: 0, ranked: 0, shortlisted: 0, excluded: 0, drafted: 0, applied: 0, interview: 0, offer: 0, rejected: 0 }, generatedAt: '' };
+  let RAW = { jobs: [], stats: { total: 0, ranked: 0, shortlisted: 0, excluded: 0, duplicates: 0, drafted: 0, applied: 0, interview: 0, offer: 0, rejected: 0 }, generatedAt: '' };
   // Each filter is a Set of selected values; an empty Set means "all" (no restriction),
   // matching the old dropdowns' "all" option but allowing more than one value at once.
   // dateRange is single-valued (date ranges overlap and aren't independent choices like
   // verdict/portal, so a radio-style single-select is the right widget, not checkboxes).
   const state = { search: '', market: new Set(), verdict: new Set(), application: new Set(), portal: new Set(), dateRange: 'all', statCard: null, sortKey: 'rank_score', sortDir: 'desc', expanded: new Set() };
 
-  const MARKET_OPTIONS = [{ value: 'UK', label: 'UK' }, { value: 'DE', label: 'Germany' }];
+  const MARKET_OPTIONS = [{ value: 'UK', label: 'UK' }, { value: 'DE', label: 'Germany' }, { value: 'IE', label: 'Ireland' }];
   const DATE_RANGE_OPTIONS = [
     { value: 'all', label: 'All time' }, { value: '1', label: 'Last 24 hours' }, { value: '3', label: 'Last 3 days' },
     { value: '7', label: 'Last 7 days' }, { value: '14', label: 'Last 14 days' }, { value: '30', label: 'Last 30 days' },
@@ -569,7 +590,8 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
     if (g === 'FAIL') return 'badge-red';
     return 'badge-gray';
   }
-  function appBadgeClass(status) {
+  function appBadgeClass(status, isDup) {
+    if (isDup) return 'badge-gray';
     const s = (status || '').toLowerCase();
     if (!s) return 'badge-gray';
     if (s.includes('reject')) return 'badge-red';
@@ -579,12 +601,21 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
     if (s === 'drafted') return 'badge-blue';
     return 'badge-gray';
   }
+  // Duplicate listings (the same real-world application, scraped under a second URL - a
+  // LinkedIn repost of a company's own ATS listing, for instance) still join to the one real
+  // tracker row via company+role matching, so job.application would otherwise show the same
+  // "Applied"/"Drafted" badge on both rows. Labeling the job's own status:"duplicate" here
+  // keeps the table honest about which row is the one real application.
   function appLabel(job) {
+    if (job.status === 'duplicate') {
+      const real = job.application && job.application.status;
+      return real ? 'Duplicate (' + real.charAt(0).toUpperCase() + real.slice(1) + ')' : 'Duplicate';
+    }
     if (!job.application || !job.application.status) return 'Not applied';
     const s = job.application.status;
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
-  function marketLabel(m) { return m === 'UK' ? 'UK' : m === 'DE' ? 'Germany' : '—'; }
+  function marketLabel(m) { return m === 'UK' ? 'UK' : m === 'DE' ? 'Germany' : m === 'IE' ? 'Ireland' : '—'; }
 
   function el(tag, opts) {
     const node = document.createElement(tag);
@@ -631,7 +662,9 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
   // so the list grows on its own as the pipeline progresses (applied, interview, offer...)
   function applicationOptions() {
     const statuses = Array.from(new Set(RAW.jobs.map(j => j.application && j.application.status ? j.application.status.toLowerCase() : null).filter(Boolean))).sort();
-    return [{ value: 'not_applied', label: 'Not applied' }, ...statuses.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))];
+    const opts = [{ value: 'not_applied', label: 'Not applied' }, ...statuses.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))];
+    if (RAW.jobs.some(j => j.status === 'duplicate')) opts.push({ value: 'duplicate', label: 'Duplicate' });
+    return opts;
   }
 
   function multiSelectLabel(prefix, selected, options) {
@@ -689,10 +722,11 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
   }
 
   function applicationFilterValue(job) {
+    if (job.status === 'duplicate') return 'duplicate';
     return job.application && job.application.status ? job.application.status.toLowerCase() : 'not_applied';
   }
   function isVetoed(j) { return j.location_gate === 'FAIL' || j.language_gate === 'FAIL'; }
-  function isShortlisted(j) { return j.rank_verdict && (j.rank_verdict === 'Strong Fit' || j.rank_verdict === 'Good Fit') && !isVetoed(j); }
+  function isShortlisted(j) { return j.rank_verdict && (j.rank_verdict === 'Strong Fit' || j.rank_verdict === 'Good Fit') && !isVetoed(j) && j.status !== 'expired' && j.status !== 'duplicate'; }
 
   function matchesFilters(job) {
     if (state.search) {
@@ -700,7 +734,11 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
       if (!hay.includes(state.search.toLowerCase())) return false;
     }
     if (state.market.size && !state.market.has(job.market)) return false;
-    if (state.verdict.size && !state.verdict.has(job.rank_verdict || 'unranked')) return false;
+    // Expired/duplicate postings never match a verdict filter - a "Good Fit"/"Strong Fit"
+    // selection means "roles worth pursuing", and a dead listing or a duplicate of another
+    // row isn't one, regardless of what score it carries. Use the "Excluded"/"Duplicates"
+    // stat cards to see those specifically.
+    if (state.verdict.size && (!state.verdict.has(job.rank_verdict || 'unranked') || job.status === 'expired' || job.status === 'duplicate')) return false;
     if (state.application.size && !state.application.has(applicationFilterValue(job))) return false;
     if (state.portal.size && !state.portal.has(job.portal)) return false;
     if (state.dateRange !== 'all') {
@@ -717,6 +755,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
     if (state.statCard === 'interview' && !applicationFilterValue(job).includes('interview')) return false;
     if (state.statCard === 'offer' && !(applicationFilterValue(job).includes('offer') || applicationFilterValue(job) === 'hired')) return false;
     if (state.statCard === 'ranked' && !job.rank_verdict) return false;
+    if (state.statCard === 'duplicate' && job.status !== 'duplicate') return false;
     return true;
   }
 
@@ -755,6 +794,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
       { key: 'interview', label: 'Interview', num: s.interview },
       { key: 'offer', label: 'Offer', num: s.offer },
       { key: 'excluded', label: 'Excluded', num: s.excluded },
+      { key: 'duplicate', label: 'Duplicates', num: s.duplicates },
     ];
     const container = document.getElementById('stats');
     container.innerHTML = '';
@@ -846,7 +886,8 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
     right.appendChild(el('h4', { text: 'Application' }));
     if (job.application) {
       const a = job.application;
-      const appFields = [['Applied/drafted', a.date], ['Channel', a.channel], ['Contact', a.contact_person], ['Notes', a.notes]];
+      const appliedAtLabel = a.applied_at ? new Date(a.applied_at).toLocaleString() : null;
+      const appFields = [['Applied/drafted', a.date], ['Applied at', appliedAtLabel], ['Channel', a.channel], ['Contact', a.contact_person], ['Notes', a.notes]];
       for (const [label, val] of appFields) {
         if (!val) continue;
         const f = el('div', { class: 'detail-field' });
@@ -896,7 +937,7 @@ footer { color: var(--muted); font-size: 12px; text-align: center; padding: 20px
       tr.appendChild(el('td', { html: badge(marketLabel(job.market), 'badge-gray') }));
       tr.appendChild(el('td', { class: 'score', text: job.rank_score !== null ? job.rank_score.toFixed(1) : '—' }));
       tr.appendChild(el('td', { html: job.rank_verdict ? badge(job.rank_verdict, verdictBadgeClass(job.rank_verdict)) : badge('Unranked', 'badge-gray') }));
-      tr.appendChild(el('td', { html: badge(appLabel(job), appBadgeClass(job.application ? job.application.status : null)) }));
+      tr.appendChild(el('td', { html: badge(appLabel(job), appBadgeClass(job.application ? job.application.status : null, job.status === 'duplicate')) }));
       tr.appendChild(el('td', { html: job.location_gate ? badge(job.location_gate, gateBadgeClass(job.location_gate)) : '—' }));
       tr.appendChild(el('td', { html: job.language_gate ? badge(job.language_gate, gateBadgeClass(job.language_gate)) : '—' }));
       tr.appendChild(el('td', { text: job.first_seen || '—' }));

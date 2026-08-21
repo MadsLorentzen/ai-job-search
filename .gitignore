@@ -28,6 +28,9 @@ confidential_client_info.md
 **/job_scraper/seen_jobs.csv
 **/job_scraper/notion_sync.json
 **/job_scraper/*.md
+# UK Home Office sponsor register cache (10MB+, refreshed regularly from gov.uk -
+# see 04-job-evaluation.md's UK Sponsor Register Check; never commit, always re-fetch)
+**/job_scraper/uk_sponsor_register.csv
 *_BehavioralReport.pdf
 linkedin_Profile.pdf
 

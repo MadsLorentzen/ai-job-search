@@ -14,7 +14,7 @@ framework_version: 1.1.2
 - **Email:** shamik.mukherjee.88@gmail.com
 - **LinkedIn:** linkedin.com/in/shamik-mukherjee
 - **Status:** Employed (Product Owner, Cognizant Technology Solutions). Nationality: Indian.
-- **Constraints:** Dual-market search: **UK** (based in Reading, Berkshire) and **Germany** (English-speaking roles only; German A0). UK: current Skilled Worker visa expires **February 2027**; Cognizant cannot sponsor a transfer, so UK roles must be prioritised at employers with an **active, A-rated sponsor licence** — this is time-critical, not a nice-to-have. Germany: plans to relocate independently via the **Chancenkarte (Opportunity Card)** — eligible, actively preparing application documents (not yet submitted). This route does not require day-one employer sponsorship to *begin*, so it can absorb roles a UK search would have to reject on sponsorship grounds alone — but this is not the same as zero employer involvement ever: converting from the Chancenkarte to a job-based residence permit after hire still involves the employer providing the job contract. Never state or imply "no employer sponsorship needed" on any application document.
+- **Constraints:** Triple-market search: **UK** (based in Reading, Berkshire), **Germany** (English-speaking roles only; German A0), and **Ireland** (added 2026-08-20). UK: current Skilled Worker visa expires **February 2027**; Cognizant cannot sponsor a transfer, so UK roles must be prioritised at employers with an **active, A-rated sponsor licence** — this is time-critical, not a nice-to-have. Germany: plans to relocate independently via the **Chancenkarte (Opportunity Card)** — eligible, actively preparing application documents (not yet submitted). This route does not require day-one employer sponsorship to *begin*, so it can absorb roles a UK search would have to reject on sponsorship grounds alone — but this is not the same as zero employer involvement ever: converting from the Chancenkarte to a job-based residence permit after hire still involves the employer providing the job contract. Never state or imply "no employer sponsorship needed" on any application document. Ireland: no independent route equivalent to the Chancenkarte — treat like the UK gate, only pursue roles where the employer can sponsor an Irish employment permit (Critical Skills or General Employment Permit); sponsorship-silent postings are unverified, not a pass. **For Germany and Ireland specifically (added 2026-08-20): landing a job and the resulting visa/permit takes priority over staying in the payments/fintech domain.** Moderate or even Weak Fit roles outside payments should be actively surfaced, not screened out, as long as Location and the relevant sponsorship gate are clean. Genuine gaps in years-of-experience or named hard requirements are still real screening risks and must be flagged honestly regardless. Does not extend to the UK, where the candidate already holds the right to work and the constraint is the Feb 2027 deadline, not first-foothold urgency.
 - **Salary baseline:** £70,000 base + £7,800 target bonus (current UK total comp, for benchmarking only — never shown to employers)
 - **Notice period:** 2 months, per the original Indian employment contract, which candidate believes still governs since he's on deputation/global mobility assignment to the UK rather than a separate UK contract. Not independently verified with Cognizant HR — flag this uncertainty if it becomes materially important (e.g. negotiating a start date), and recommend the candidate confirm directly before committing to a specific date.
 - **Deal-breakers / must-haves:** Prefers to stay in payments/fintech; open to adjacent regulated domains (banking, insurance, etc.) if payments-specific roles aren't available
@@ -59,6 +59,16 @@ Confidentiality note). -->
 
 ### Product Owner - Cognizant Technology Solutions (02/2026 - present)
 Farnborough, UK (On-site) · Leading US Card Network & Digital Bank · Digital Payments
+<!-- Internal note, not for CVs: "Product Owner" is the functional/client-facing role title
+performed for the client. Cognizant's own official HR designation is "Engagement Delivery
+Lead" (grade: Sr. Manager) - this is what appears on Cognizant HR reference letters and
+background-check paperwork. Confirmed 2026-08-20 after a Cognizant reference letter used
+"Engagement Delivery Lead" and it needed reconciling against the CVs. Keep CVs on "Product
+Owner" (accurate, client-facing, and what recruiters in this domain expect) - only surface
+"Engagement Delivery Lead" / Sr. Manager if directly asked about official designation/grade,
+e.g. in a background check or when a Cognizant reference letter is being submitted alongside
+a CV. -->
+
 - Own product backlog for edge applications connecting card network to Google Pay and Samsung Pay - translating requirements into epics, user stories, and acceptance criteria for two agile squads
 - Define and maintain B2B integration specifications for wallet provisioning adopted by partner organisations
 - Lead wallet provisioning validation across Google Pay and Samsung Pay for a large-scale card migration programme

@@ -13,6 +13,41 @@
 \renewcommand*{\lastnamestyle}[1]{{\fontsize{28}{30}\bfseries\upshape\color{color1}#1}}
 \renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
 
+% Fix for moderncv classic-style \cventry being a non-breakable page unit (found/fixed
+% 2026-08-21 - cost 300k+ tokens to diagnose the underlying bug once before this fix existed).
+% Root cause (confirmed by reading moderncvbodyi.sty directly): \cventry wraps its bullet
+% description in a `minipage`, and delegates the header row to `\cvitem`, which wraps
+% everything in a plain `tabular` - both are genuine LaTeX box types that can NEVER split
+% across a page break, regardless of content length. That forces the entire entry (title +
+% every bullet) to jump wholesale to the next page if it doesn't fit the remaining space,
+% even when the content would easily fit across a natural page break.
+% Fix: keep the short header (date/title/employer/location) in the original \cvitem/tabular
+% row (never itself an issue - it's one line), but render the bullet description as a
+% genuine breakable `list` environment (indented via leftmargin to match the original
+% column alignment) instead of a `minipage`. Verified empirically: a bullet list can now
+% split mid-list across a page break, with the header staying attached to the bullets that
+% fit rather than the whole entry moving as one atomic block.
+\renewcommand*{\cventry}[7][.25em]{%
+  \cvitem[#1]{#2}{%
+    {\bfseries#3}%
+    \ifthenelse{\equal{#4}{}}{}{, {\slshape#4}}%
+    \ifthenelse{\equal{#5}{}}{}{, #5}%
+    \ifthenelse{\equal{#6}{}}{}{, #6}%
+  }%
+  \ifx&#7&%
+  \else
+    \begin{list}{}{%
+      \setlength{\leftmargin}{\hintscolumnwidth}%
+      \addtolength{\leftmargin}{\separatorcolumnwidth}%
+      \setlength{\rightmargin}{0pt}%
+      \setlength{\itemsep}{0pt}%
+      \setlength{\parsep}{0pt}%
+      \setlength{\topsep}{0pt}%
+    }
+    \item[]\small#7
+    \end{list}%
+  \fi}
+
 \usepackage[utf8]{inputenc}
 \usepackage{needspace}
 \usepackage{tabularx}
