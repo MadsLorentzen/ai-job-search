@@ -33,15 +33,19 @@ def ensure_profile_workspace(conn: sqlite3.Connection) -> dict[str, Any]:
         return get_workspace(conn, PROFILE_WORKSPACE_ID)
     return get_workspace(conn, PROFILE_WORKSPACE_ID)
 
-def create_workspace(conn: sqlite3.Connection, *, company: str, title: str) -> dict[str, Any]:
-    workspace_id = f"ws_{uuid.uuid4().hex[:20]}"
+def create_workspace(
+    conn: sqlite3.Connection, *, company: str, title: str,
+    workspace_id: str | None = None, commit: bool = True,
+) -> dict[str, Any]:
+    workspace_id = workspace_id or f"ws_{uuid.uuid4().hex[:20]}"
     now = _now()
     conn.execute(
         "INSERT INTO workspaces (id, kind, company, title, workflow_status, created_at, updated_at) "
         "VALUES (?, 'job', ?, ?, NULL, ?, ?)",
         (workspace_id, company, title, now, now),
     )
-    conn.commit()
+    if commit:
+        conn.commit()
     return get_workspace(conn, workspace_id)
 
 

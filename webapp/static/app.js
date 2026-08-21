@@ -13,7 +13,7 @@ async function api(url, options) {
 }
 
 document.addEventListener("click", async (event) => {
-  const button = event.target.closest("button[data-action], button.stage-action, button.review-action, button.confirm-pack, button.status-action");
+  const button = event.target.closest("button[data-action], button.stage-action, button.review-action, button.confirm-pack, button.status-action, button.discovery-status, button.discovery-promote, button.discovery-evaluate-selected");
   if (!button) return;
   button.disabled = true;
   try {
@@ -61,12 +61,46 @@ document.addEventListener("click", async (event) => {
         method: "PATCH", headers: {"Content-Type": "application/json"},
         body: JSON.stringify({new_status: button.dataset.status, effective_date: new Date().toISOString().slice(0, 10)})
       });
+    } else if (button.classList.contains("discovery-status")) {
+      const card = button.closest("[data-candidate-id]");
+      await api(`/api/discovery/candidates/${card.dataset.candidateId}`, {
+        method: "PATCH", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({status: button.dataset.status})
+      });
+    } else if (button.classList.contains("discovery-promote")) {
+      const card = button.closest("[data-candidate-id]");
+      const result = await api(`/api/discovery/candidates/${card.dataset.candidateId}/promote`, {method: "POST"});
+      window.location.assign(`/workspaces/${result.workspace.id}`);
+      return;
+    } else if (button.classList.contains("discovery-evaluate-selected")) {
+      const group = button.closest("[data-discovery-group]");
+      const ids = [...group.querySelectorAll(".candidate-select:checked")].map(input => input.closest("[data-candidate-id]").dataset.candidateId);
+      if (!ids.length) throw new Error("Select at least one job to evaluate.");
+      const evaluation = await api("/api/discovery/evaluate", {method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({candidate_ids: ids, extension_ids: [], request_id: `discovery_${Date.now()}`})});
+      const failed = evaluation.results.filter(result => result.status === "failed");
+      if (failed.length) throw new Error(`${failed.length} evaluation(s) failed: ${failed[0].error}`);
     }
     window.location.reload();
   } catch (error) {
     showMessage(error.message, true);
     button.disabled = false;
   }
+});
+
+const discoverySearchForm = document.getElementById("discovery-search-form");
+if (discoverySearchForm) discoverySearchForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  try {
+    await api("/api/discovery/search", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({
+      sources: checkedValues(form, "sources"), queries: profileLines(form, "queries"),
+      locations: profileLines(form, "locations"), limit_per_source: Number(new FormData(form).get("limit_per_source"))
+    })});
+    window.location.reload();
+  } catch (error) { showMessage(error.message, true); button.disabled = false; }
 });
 
 const jobForm = document.getElementById("new-job-form");

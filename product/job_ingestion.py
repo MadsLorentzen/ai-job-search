@@ -223,6 +223,12 @@ def validate_freehire_detail(detail: Any) -> None:
 def normalize_freehire_detail(detail: Any, captured_at: Any) -> dict[str, Any]:
     """Normalize one saved Freehire detail result; never fetch live data."""
 
+    return normalize_job_source_record(freehire_detail_to_source_record(detail, captured_at))
+
+
+def freehire_detail_to_source_record(detail: Any, captured_at: Any) -> dict[str, Any]:
+    """Adapt saved Freehire JSON to Job Source Record v0 without normalizing it away."""
+
     validate_freehire_detail(detail)
     capture_errors: list[str] = []
     _nonempty_string(captured_at, "$.captured_at", capture_errors)
@@ -272,7 +278,8 @@ def normalize_freehire_detail(detail: Any, captured_at: Any) -> dict[str, Any]:
     if saved.get("salary") is not None:
         source_record["compensation"] = {"text": saved["salary"]}
 
-    return normalize_job_source_record(source_record)
+    validate_job_source_record(source_record)
+    return source_record
 
 
 def _validate_evidence_collection(
