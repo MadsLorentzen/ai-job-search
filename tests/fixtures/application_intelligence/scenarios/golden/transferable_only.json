@@ -1,0 +1,40 @@
+{
+  "cover_letter_content": [
+    {
+      "status": "READY",
+      "text": "Built production data pipelines",
+      "unit_id": "cover-letter-1",
+      "unit_type": "cover_letter_paragraph"
+    }
+  ],
+  "cv_content": [
+    {
+      "status": "NEEDS_REVIEW",
+      "text": "Transferable capability supported by extension mapping (Limitations: Does not cover formal data warehousing certification requirements.)",
+      "unit_id": "unit-1",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "READY",
+      "text": "Python",
+      "unit_id": "unit-2",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "READY",
+      "text": "Synthetic MSc",
+      "unit_id": "unit-3",
+      "unit_type": "cv_bullet"
+    }
+  ],
+  "requirement_coverage": {
+    "covered": [
+      "juev_resp_3fd3604818702425f302"
+    ],
+    "required": [
+      "juev_resp_3fd3604818702425f302"
+    ],
+    "uncovered": []
+  },
+  "status": "NEEDS_REVIEW"
+}

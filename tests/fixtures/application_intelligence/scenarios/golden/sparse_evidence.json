@@ -1,0 +1,17 @@
+{
+  "cover_letter_content": [],
+  "cv_content": [
+    {
+      "status": "READY",
+      "text": "Python",
+      "unit_id": "unit-1",
+      "unit_type": "cv_bullet"
+    }
+  ],
+  "requirement_coverage": {
+    "covered": [],
+    "required": [],
+    "uncovered": []
+  },
+  "status": "NEEDS_REVIEW"
+}

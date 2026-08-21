@@ -1,0 +1,54 @@
+{
+  "cover_letter_content": [
+    {
+      "status": "READY",
+      "text": "Built production data pipelines",
+      "unit_id": "cover-letter-1",
+      "unit_type": "cover_letter_paragraph"
+    }
+  ],
+  "cv_content": [
+    {
+      "status": "READY",
+      "text": "Python",
+      "unit_id": "unit-2",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "READY",
+      "text": "Built production data pipelines",
+      "unit_id": "unit-4",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "READY",
+      "text": "Synthetic MSc",
+      "unit_id": "unit-5",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "NEEDS_REVIEW",
+      "text": "",
+      "unit_id": "unit-6",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "NEEDS_REVIEW",
+      "text": "",
+      "unit_id": "unit-7",
+      "unit_type": "cv_bullet"
+    }
+  ],
+  "requirement_coverage": {
+    "covered": [
+      "jobev_req_python",
+      "juev_resp_3fd3604818702425f302"
+    ],
+    "required": [
+      "jobev_req_python",
+      "juev_resp_3fd3604818702425f302"
+    ],
+    "uncovered": []
+  },
+  "status": "NEEDS_REVIEW"
+}

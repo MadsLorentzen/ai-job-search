@@ -1,0 +1,66 @@
+{
+  "cover_letter_content": [
+    {
+      "status": "READY",
+      "text": "Built production data pipelines Led a team of four engineers to migrate a legacy batch system onto a cloud-native streaming architecture, cutting data latency from hours to minutes Designed and operated CI/CD pipelines that reduced deployment failures by half across three production services",
+      "unit_id": "cover-letter-1",
+      "unit_type": "cover_letter_paragraph"
+    }
+  ],
+  "cv_content": [
+    {
+      "status": "READY",
+      "text": "Python",
+      "unit_id": "unit-2",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "READY",
+      "text": "Built production data pipelines",
+      "unit_id": "unit-4",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "READY",
+      "text": "Synthetic MSc",
+      "unit_id": "unit-5",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "READY",
+      "text": "Led a team of four engineers to migrate a legacy batch system onto a cloud-native streaming architecture, cutting data latency from hours to minutes",
+      "unit_id": "unit-6",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "READY",
+      "text": "Designed and operated CI/CD pipelines that reduced deployment failures by half across three production services",
+      "unit_id": "unit-7",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "READY",
+      "text": "SQL",
+      "unit_id": "unit-8",
+      "unit_type": "cv_bullet"
+    },
+    {
+      "status": "READY",
+      "text": "AWS Certified Data Engineer",
+      "unit_id": "unit-9",
+      "unit_type": "cv_bullet"
+    }
+  ],
+  "requirement_coverage": {
+    "covered": [
+      "jobev_req_python",
+      "juev_resp_3fd3604818702425f302"
+    ],
+    "required": [
+      "jobev_req_python",
+      "juev_resp_3fd3604818702425f302"
+    ],
+    "uncovered": []
+  },
+  "status": "READY"
+}

@@ -330,5 +330,26 @@ class TestPlanIssuesDiagnosticOnly(unittest.TestCase):
         self.assertGreater(len(result["cv_content"]), 0)
 
 
+GOLDEN_DIR = SCENARIO_DIR / "golden"
+
+
+class TestGoldenSnapshotsMatch(unittest.TestCase):
+    """Static in CI: compares against checked-in golden files, never rewrites
+    them. Refresh deliberately via
+    `python -m tests.fixtures.application_intelligence.scenarios.update_snapshots`."""
+
+    def test_all_scenarios_match_their_golden_snapshot(self):
+        from tests.fixtures.application_intelligence.scenarios.update_snapshots import SCENARIO_NAMES, _render_summary
+        for name in SCENARIO_NAMES:
+            with self.subTest(scenario=name):
+                payload = scenario(name)
+                request = build_request(payload, f"laneb-golden-check-{name}")
+                proposal = _canned_proposal_covering_all_evidence(payload)
+                result = analyze_application_intelligence(request, proposal)
+                actual = _render_summary(result)
+                expected = json.loads((GOLDEN_DIR / f"{name}.json").read_text(encoding="utf-8"))
+                self.assertEqual(actual, expected, f"{name} render drifted from golden snapshot -- if intentional, run update_snapshots.py")
+
+
 if __name__ == "__main__":
     unittest.main()
