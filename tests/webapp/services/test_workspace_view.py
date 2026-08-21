@@ -21,6 +21,8 @@ from webapp.services.workspace_view import (
     build_dashboard_view_model,
     build_profile_view_model,
     build_workspace_view_model,
+    resolve_next_action,
+    stage_state_label,
 )
 
 
@@ -109,6 +111,74 @@ def test_unprocessed_workspace_has_product_stage_states(tmp_path):
     assert view["stages"]["job"]["state"] == "current"
     assert view["stages"]["understanding"]["state"] == "unavailable"
     assert set(stage["state"] for stage in view["stages"].values()) <= {"complete", "current", "needs_review", "stale", "unavailable"}
+
+
+def test_internal_stage_states_have_one_canonical_user_facing_vocabulary():
+    assert {
+        state: stage_state_label(state)
+        for state in ("current", "needs_review", "complete", "stale", "unavailable")
+    } == {
+        "current": "Ready to run",
+        "needs_review": "Needs review",
+        "complete": "Complete",
+        "stale": "Stale",
+        "unavailable": "Unavailable",
+    }
+
+
+def test_next_action_resolver_uses_real_world_status_after_product_completion():
+    base = {
+        "workspace": {"id": "ws_action", "workflow_status": "drafted"},
+        "stages": {
+            key: {"label": key, "state": "complete"}
+            for key in ("job", "understanding", "fit", "application_intelligence", "review")
+        },
+    }
+    base["stages"]["status"] = {"label": "Status", "state": "current"}
+    assert resolve_next_action(base) == {
+        "label": "Mark applied", "href": "/workspaces/ws_action#status",
+    }
+
+    base["workspace"]["workflow_status"] = "applied"
+    base["stages"]["status"]["state"] = "complete"
+    assert resolve_next_action(base) == {
+        "label": "Update application status", "href": "/workspaces/ws_action#status",
+    }
+
+
+def test_dashboard_exposes_ready_stage_and_next_action(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_posting_snapshot",
+        content_id="job_ready", payload={"company": "Acme", "title": "Planner"},
+    )
+
+    dashboard = build_dashboard_view_model(conn, filter_name="active")
+
+    row = next(item for item in dashboard["workspaces"] if item["id"] == workspace_id)
+    assert row["computed_stage"] == "Understanding"
+    assert row["stage_state_label"] == "Ready to run"
+    assert row["next_action"] == {
+        "label": "Run Understanding",
+        "href": f"/workspaces/{workspace_id}#understanding",
+    }
+
+
+def test_dashboard_stale_application_has_obvious_recovery_action(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_evidence(conn, workspace_id)
+    save_artifact(
+        conn, workspace_id=PROFILE_WORKSPACE_ID, artifact_type="profile_snapshot",
+        payload={"claims": [], "conflicts": []}, content_id="profile_changed",
+    )
+
+    row = build_dashboard_view_model(conn, filter_name="active")["workspaces"][0]
+
+    assert row["stage_state_label"] == "Stale"
+    assert row["next_action"] == {
+        "label": "Recover: rerun Job Fit",
+        "href": f"/workspaces/{workspace_id}#job-fit",
+    }
 
 
 def test_all_six_evidence_concepts_are_classified_without_provider_rationale(tmp_path):
@@ -277,6 +347,7 @@ def test_omitting_all_usable_material_keeps_gate_four_incomplete(tmp_path, monke
 
     assert view["outstanding_review_count"] == 0
     assert view["stages"]["review"]["state"] == "needs_review"
+    assert view["review_completion_status"] == "INCOMPLETE"
     assert view["controls"]["can_confirm_pack"] is False
 
 

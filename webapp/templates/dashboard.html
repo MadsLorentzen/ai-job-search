@@ -12,10 +12,12 @@
 </nav>
 {% if workspaces %}
 <div class="table-wrap"><table>
-  <thead><tr><th>Company / role</th><th>Product stage</th><th>Fit</th><th>Recommendation</th><th>Trust state</th><th>Workflow</th><th>Updated</th></tr></thead>
+  <thead><tr><th>Company / role</th><th>Product stage</th><th>Next action</th><th>Fit</th><th>Recommendation</th><th>Trust state</th><th>Application status</th><th>Updated</th></tr></thead>
   <tbody>{% for ws in workspaces %}<tr>
     <td><a class="row-link" href="/workspaces/{{ ws.id }}">{{ ws.company }}<small>{{ ws.title }}</small></a></td>
-    <td>{{ ws.computed_stage }}</td>
+    <td><strong>{{ ws.computed_stage }}</strong><small class="stage-state-label">{{ ws.stage_state_label }}</small></td>
+    <td class="next-action">{% if ws.next_action %}<a class="button button-small secondary" href="{{ ws.next_action.href }}">{{ ws.next_action.label }}</a>{% else %}<span class="muted">No action required</span>{% endif %}
+      {% for action in ws.workflow_actions %}<button class="button button-small status-action" data-workspace-id="{{ ws.id }}" data-status="{{ action.status }}">{{ action.label }}</button>{% endfor %}</td>
     <td>{{ ws.fit_verdict or "—" }}</td><td>{{ ws.recommendation or "—" }}</td>
     <td>{% if ws.stale %}<span class="badge stale">Stale</span>{% endif %}
       {% if ws.review_count %}<span class="badge review">{{ ws.review_count }} to review</span>{% elif not ws.stale %}<span class="muted">Current</span>{% endif %}</td>

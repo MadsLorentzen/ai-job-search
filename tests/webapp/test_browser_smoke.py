@@ -306,6 +306,21 @@ def _refresh_profile(page, live_server) -> None:
 
 def _create_job(page, live_server, company="Browser Evidence Co") -> str:
     page.goto(f"{live_server.base_url}/new-job", wait_until="networkidle")
+    paste_panel = page.locator('[data-mode-panel="paste"]')
+    manual_panel = page.locator('[data-mode-panel="manual"]')
+    import_panel = page.locator('[data-mode-panel="import"]')
+    assert paste_panel.is_visible()
+    assert not manual_panel.is_visible()
+    assert not import_panel.is_visible()
+    page.locator('input[name="mode"][value="manual"]').check()
+    assert not paste_panel.is_visible()
+    assert manual_panel.is_visible()
+    assert not import_panel.is_visible()
+    page.locator('input[name="mode"][value="import"]').check()
+    assert not paste_panel.is_visible()
+    assert not manual_panel.is_visible()
+    assert import_panel.is_visible()
+    page.locator('input[name="mode"][value="paste"]').check()
     page.locator('input[name="company"]').fill(company)
     page.locator('input[name="title"]').fill("Evidence Data Engineer")
     page.locator('textarea[name="posting_text"]').fill(POSTING_TEXT)
@@ -356,6 +371,12 @@ def test_full_visible_journey_reaches_interview_with_explicit_submission(page, l
     assert unsupported.get_by_text("Unsupported — excluded from application material").is_visible()
     assert unsupported.locator("button").count() == 0
     assert page.locator('[data-item-id="cv-unsupported-only"]').count() == 0
+    assert page.get_by_role(
+        "button", name="Acknowledge — include in reviewed pack"
+    ).first.is_visible()
+    assert page.get_by_role(
+        "button", name="Omit — exclude from application material"
+    ).first.is_visible()
     assert page.locator("button.confirm-pack").is_disabled()
     assert page.locator('[data-status="drafted"]').count() == 0
     assert "applied" not in page.locator(".workspace-header").inner_text().casefold()
@@ -378,6 +399,12 @@ def test_full_visible_journey_reaches_interview_with_explicit_submission(page, l
     _click_reload(page, page.get_by_role("button", name="Create reviewed pack — does not submit"))
     assert page.get_by_text("Workflow status:").locator("strong").inner_text() == "drafted"
     assert page.get_by_text("Generating or reviewing material never means it was submitted.").is_visible()
+    assert page.get_by_role("heading", name="Reviewed application output").is_visible()
+    assert page.get_by_role("heading", name="CV content").is_visible()
+    assert page.get_by_role("heading", name="Cover letter content").is_visible()
+    assert page.locator('[data-copy-section="cv"]').is_visible()
+    assert page.get_by_text("No reviewed cover-letter content.").is_visible()
+    assert page.locator('[data-copy-section="cover-letter"]').count() == 0
 
     page.once("dialog", lambda dialog: dialog.accept())
     _click_reload(page, page.get_by_role("button", name="Mark applied — I submitted externally"))
@@ -385,10 +412,16 @@ def test_full_visible_journey_reaches_interview_with_explicit_submission(page, l
     _click_reload(page, page.get_by_role("button", name="Interview"))
     assert page.get_by_text("Workflow status:").locator("strong").inner_text() == "interview"
 
-    page.goto(f"{live_server.base_url}/?filter=interview", wait_until="networkidle")
+    page.goto(f"{live_server.base_url}/?filter=all", wait_until="networkidle")
+    assert "active" in page.get_by_role("link", name="All").get_attribute("class")
     assert page.get_by_text("Browser Evidence Co").is_visible()
     assert page.get_by_text("Evidence Data Engineer").is_visible()
     assert page.get_by_text("interview", exact=True).is_visible()
+    assert page.locator("th", has_text="Product stage").count() == 1
+    assert page.locator("th", has_text="Application status").count() == 1
+    assert page.locator("th", has_text="Next action").count() == 1
+    page.get_by_role("link", name="Browser Evidence Co Evidence Data Engineer").click()
+    assert page.url == workspace_url
     assert workspace_url.startswith(live_server.base_url + "/workspaces/")
     _assert_no_private_browser_content(page, live_server)
 
@@ -412,6 +445,7 @@ def test_stale_and_review_negative_paths_are_enforced_in_rendered_ui(page, live_
     else:
         raise AssertionError("omission review queue did not converge")
     assert page.get_by_text("0 outstanding", exact=True).is_visible()
+    assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
     assert page.locator("button.confirm-pack").is_disabled()
 
     workspace_id = workspace_url.rsplit("/", 1)[-1]
