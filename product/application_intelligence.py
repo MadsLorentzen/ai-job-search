@@ -429,6 +429,20 @@ TEMPLATE_TABLE: dict[tuple[str, str], dict[str, Any]] = {
         "eligible": lambda claims, all_claims: list(claims),
         "format": "{value}",
     },
+    ("employment", "AS_CAPABILITY_STATEMENT"): {
+        "eligible": lambda claims, all_claims: [
+            claim for claim in claims if _has_linked_responsibility(claim, all_claims)
+        ],
+        "format": "Experience as {value}",
+    },
+    ("employment", "AS_STRENGTH"): {
+        "eligible": lambda claims, all_claims: [
+            claim for claim in claims
+            if _has_linked_responsibility(claim, all_claims)
+            and any(_is_explicit_duration(other) for other in _linked_claims(claim, all_claims))
+        ],
+        "format": "Sustained, hands-on experience as {value}",
+    },
     ("responsibility", "PLAIN"): {
         "eligible": lambda claims, all_claims: list(claims),
         "format": "{value}",
@@ -443,6 +457,18 @@ TEMPLATE_TABLE: dict[tuple[str, str], dict[str, Any]] = {
         "format": "{value}",
     },
     ("certification", "PLAIN"): {
+        "eligible": lambda claims, all_claims: list(claims),
+        "format": "{value}",
+    },
+    ("education", "PLAIN"): {
+        "eligible": lambda claims, all_claims: list(claims),
+        "format": "{value}",
+    },
+    ("publication", "PLAIN"): {
+        "eligible": lambda claims, all_claims: list(claims),
+        "format": "{value}",
+    },
+    ("award", "PLAIN"): {
         "eligible": lambda claims, all_claims: list(claims),
         "format": "{value}",
     },
@@ -474,6 +500,13 @@ def _linked_claims(claim: dict[str, Any], all_claims: dict[str, dict[str, Any]])
     if not record_id:
         return []
     return [other for other in all_claims.values() if other.get("record_id") == record_id]
+
+
+def _has_linked_responsibility(claim: dict[str, Any], all_claims: dict[str, dict[str, Any]]) -> bool:
+    """True if this claim shares a record_id with a responsibility_or_achievement claim."""
+
+    linked = _linked_claims(claim, all_claims)
+    return any(item["category"] == "employment" and item["field"] == "responsibility_or_achievement" for item in linked)
 
 
 def _select_template(

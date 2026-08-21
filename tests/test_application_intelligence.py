@@ -993,13 +993,13 @@ class TestParkedFindingsFixed(unittest.TestCase):
         request = application_intelligence_request("job-fit-result-ready.json")
 
         # Case A: no template exists at all for this (assertion_type, variant).
-        # Uses clm_2222222222222222 (employment/job_title), which passes the
-        # category/field match for assertion_type "employment" -- so the
-        # rejection is reached via the template-table lookup, not an earlier
-        # category/field mismatch. (The brief's original choice of "award" +
-        # clm_1111111111111111, a skills/technical_skill claim, fails the
-        # category/field check before ever reaching the template lookup,
-        # since this fixture has no awards-category claim at all.)
+        # Uses clm_4444444444444444 (employment/responsibility_or_achievement),
+        # which passes the category/field match for assertion_type
+        # "responsibility" -- so the rejection is reached via the
+        # template-table lookup, not an earlier category/field mismatch.
+        # (("employment", "AS_STRENGTH") no longer demonstrates the "no
+        # template" branch now that Task 5 registered it; ("responsibility",
+        # "AS_CAPABILITY_STATEMENT") remains unregistered.)
         proposal_no_template = {
             "content_units": [
                 {
@@ -1009,9 +1009,9 @@ class TestParkedFindingsFixed(unittest.TestCase):
                         {
                             "atom_id": "atom-1",
                             "atom_kind": "candidate_fact",
-                            "assertion_type": "employment",
-                            "profile_evidence_ids": ["clm_2222222222222222"],
-                            "rendering_variant": "AS_STRENGTH",  # no ("employment", "AS_STRENGTH") entry exists
+                            "assertion_type": "responsibility",
+                            "profile_evidence_ids": ["clm_4444444444444444"],
+                            "rendering_variant": "AS_CAPABILITY_STATEMENT",  # no ("responsibility", "AS_CAPABILITY_STATEMENT") entry exists
                         }
                     ],
                     "connectives": [],
@@ -1262,6 +1262,72 @@ class TestResultContractV1(unittest.TestCase):
         v0_path = Path(__file__).parent.parent / "product" / "schemas" / "application-intelligence-contract.v0.schema.json"
         v0_schema = json.loads(v0_path.read_text(encoding="utf-8"))
         self.assertEqual(v0_schema["$defs"]["resultVersion"]["const"], "application-intelligence-result.v0")
+
+
+class TestNewTemplateEntries(unittest.TestCase):
+    def _claim(self, category, field, value, record_id="rec_x", concept_id="cpt_x"):
+        return {
+            "id": f"clm_{field}_{value}".replace(" ", "_"), "record_id": record_id, "concept_id": concept_id,
+            "category": category, "field": field, "value": value, "placeholder": False,
+        }
+
+    def test_education_plain_renders(self):
+        from product.application_intelligence import TEMPLATE_TABLE
+        claim = self._claim("education", "qualification", "MSc Computer Science")
+        template, qualifying = TEMPLATE_TABLE[("education", "PLAIN")]["eligible"], None
+        eligible = TEMPLATE_TABLE[("education", "PLAIN")]["eligible"]([claim], {claim["id"]: claim})
+        self.assertEqual(eligible, [claim])
+        self.assertEqual(TEMPLATE_TABLE[("education", "PLAIN")]["format"].format(value=claim["value"]), "MSc Computer Science")
+
+    def test_publication_plain_renders(self):
+        from product.application_intelligence import TEMPLATE_TABLE
+        claim = self._claim("publications", "publication", "A Paper (2024). Journal.")
+        eligible = TEMPLATE_TABLE[("publication", "PLAIN")]["eligible"]([claim], {claim["id"]: claim})
+        self.assertEqual(eligible, [claim])
+
+    def test_award_plain_renders(self):
+        from product.application_intelligence import TEMPLATE_TABLE
+        claim = self._claim("awards", "award", "Best Paper Award")
+        eligible = TEMPLATE_TABLE[("award", "PLAIN")]["eligible"]([claim], {claim["id"]: claim})
+        self.assertEqual(eligible, [claim])
+
+    def test_certification_has_no_new_variant_beyond_plain(self):
+        from product.application_intelligence import TEMPLATE_TABLE
+        keys = {key for key in TEMPLATE_TABLE if key[0] == "certification"}
+        self.assertEqual(keys, {("certification", "PLAIN")})
+
+    def test_employment_as_capability_statement_requires_linked_responsibility(self):
+        from product.application_intelligence import TEMPLATE_TABLE
+        job_title = self._claim("employment", "job_title", "Data Engineer", record_id="rec_1")
+        responsibility = self._claim("employment", "responsibility_or_achievement", "Built pipelines", record_id="rec_1")
+        all_claims = {job_title["id"]: job_title, responsibility["id"]: responsibility}
+        eligible = TEMPLATE_TABLE[("employment", "AS_CAPABILITY_STATEMENT")]["eligible"]([job_title], all_claims)
+        self.assertEqual(eligible, [job_title])
+        self.assertEqual(TEMPLATE_TABLE[("employment", "AS_CAPABILITY_STATEMENT")]["format"].format(value=job_title["value"]), "Experience as Data Engineer")
+
+    def test_employment_as_capability_statement_rejects_unlinked_job_title(self):
+        from product.application_intelligence import TEMPLATE_TABLE
+        job_title = self._claim("employment", "job_title", "Data Engineer", record_id="rec_1")
+        all_claims = {job_title["id"]: job_title}
+        eligible = TEMPLATE_TABLE[("employment", "AS_CAPABILITY_STATEMENT")]["eligible"]([job_title], all_claims)
+        self.assertEqual(eligible, [])
+
+    def test_employment_as_strength_requires_duration_and_responsibility(self):
+        from product.application_intelligence import TEMPLATE_TABLE
+        job_title = self._claim("employment", "job_title", "Data Engineer", record_id="rec_1")
+        date_range = self._claim("employment", "date_range", "2020-2023", record_id="rec_1")
+        responsibility = self._claim("employment", "responsibility_or_achievement", "Built pipelines", record_id="rec_1")
+        all_claims = {c["id"]: c for c in (job_title, date_range, responsibility)}
+        eligible = TEMPLATE_TABLE[("employment", "AS_STRENGTH")]["eligible"]([job_title], all_claims)
+        self.assertEqual(eligible, [job_title])
+
+    def test_employment_as_strength_rejects_missing_duration(self):
+        from product.application_intelligence import TEMPLATE_TABLE
+        job_title = self._claim("employment", "job_title", "Data Engineer", record_id="rec_1")
+        responsibility = self._claim("employment", "responsibility_or_achievement", "Built pipelines", record_id="rec_1")
+        all_claims = {c["id"]: c for c in (job_title, responsibility)}
+        eligible = TEMPLATE_TABLE[("employment", "AS_STRENGTH")]["eligible"]([job_title], all_claims)
+        self.assertEqual(eligible, [])
 
 
 if __name__ == "__main__":
