@@ -1,5 +1,9 @@
 # tests/webapp/services/test_semantic_proposal_adapter.py
-from product.semantic_job_fit import build_semantic_job_fit_request, validate_semantic_job_fit_request
+from product.semantic_job_fit import (
+    MATCH_CLASSIFICATIONS,
+    build_semantic_job_fit_request,
+    validate_semantic_job_fit_request,
+)
 
 from webapp.services.semantic_proposal_adapter import (
     SemanticProposalAdapter, FakeSemanticProposalAdapter, select_semantic_profile_evidence,
@@ -25,7 +29,7 @@ def _minimal_profile_snapshot():
         "sources": [{"file": "cv.md", "sha256": "4097889236a2af26c293033feb964c4cf118c0224e0d063fec0a89e9d0569ef2",
                       "line_count": 1}], "claims": [
             {"id": "clm_0000000000000001", "record_id": "rec_0000000000000001", "concept_id": "cpt_0000000000000001",
-             "category": "experience", "field": "responsibility", "value": "Led a data migration project",
+             "category": "employment", "field": "responsibility", "value": "Led a data migration project",
              "source": {"file": "cv.md", "section": None, "line_start": 1, "line_end": 1},
              "placeholder": False, "confidence": "high", "extraction_status": "explicit"},
         ],
@@ -104,6 +108,48 @@ def test_adapter_forbids_authoritative_keys_but_allows_required_gate_status():
     _assert_no_forbidden_keys(result)
 
 
+def test_adapter_fails_closed_on_unknown_evidence_references():
+    adapter = FakeSemanticProposalAdapter(canned_response={
+        "matches": [
+            {
+                "proposal_id": "valid", "job_evidence_id": "jobev_req_0000000000000001",
+                "profile_evidence_ids": ["clm_0000000000000001"],
+                "classification": "direct", "rationale": "Grounded.",
+            },
+            {
+                "proposal_id": "invented-profile", "job_evidence_id": "jobev_req_0000000000000001",
+                "profile_evidence_ids": ["clm_invented"],
+                "classification": "direct", "rationale": "Not grounded.",
+            },
+            {
+                "proposal_id": "invented-job", "job_evidence_id": "jobev_invented",
+                "profile_evidence_ids": ["clm_0000000000000001"],
+                "classification": "direct", "rationale": "Not grounded.",
+            },
+        ],
+        "gates": [{
+            "gate_id": "eligibility", "status": "PASS", "reason": "Claimed support.",
+            "job_evidence_ids": ["jobev_invented"],
+            "profile_evidence_ids": ["clm_invented"],
+        }],
+    })
+
+    proposals = adapter.propose(
+        profile_evidence=_minimal_profile_snapshot()["claims"],
+        resolved_job_evidence=_minimal_resolved_bundle(), active_extensions=[],
+    )
+
+    assert [match["proposal_id"] for match in proposals["matches"]] == ["valid"]
+    assert proposals["gates"][0]["job_evidence_ids"] == []
+    assert proposals["gates"][0]["profile_evidence_ids"] == []
+    request = build_semantic_job_fit_request(
+        request_id="req_unknown_refs", profile_snapshot=_minimal_profile_snapshot(),
+        job_snapshot=_minimal_job_snapshot(), resolved_job_evidence=_minimal_resolved_bundle(),
+        semantic_proposals=proposals,
+    )
+    validate_semantic_job_fit_request(request)
+
+
 def test_adapter_builds_prompt_context_with_extension_mapping_identity_not_raw_files():
     adapter = FakeSemanticProposalAdapter(canned_response={"matches": [], "gates": []})
     extension = {
@@ -120,6 +166,7 @@ def test_adapter_builds_prompt_context_with_extension_mapping_identity_not_raw_f
         resolved_job_evidence=_minimal_resolved_bundle(),
         active_extensions=[extension],
     )
+    assert context["allowed_classifications"] == list(MATCH_CLASSIFICATIONS)
     ext_context = context["active_extensions"][0]
     assert ext_context["extension_id"] == "ext_wellcontrol"
     assert ext_context["extension_version"] == "1.0.0"
@@ -145,12 +192,13 @@ def test_semantic_profile_subset_excludes_contact_identity_placeholders_and_conf
         {"id": "language", "concept_id": "c-language", "category": "languages", "field": "language", "value": "English", "placeholder": False},
         {"id": "location", "concept_id": "c-location", "category": "location", "field": "location", "value": "London", "placeholder": False},
         {"id": "status", "concept_id": "c-status", "category": "identity", "field": "employment_status", "value": "Employed", "placeholder": False},
+        {"id": "eligibility", "concept_id": "c-eligibility", "category": "eligibility", "field": "work_authorization", "value": "Right to work", "placeholder": False},
     ]
     selected = select_semantic_profile_evidence({
         "claims": claims,
         "conflicts": [{"id": "conf", "concept_id": "c-conflict"}],
     })
-    assert {item["id"] for item in selected} == {"skill", "language", "location", "status"}
+    assert {item["id"] for item in selected} == {"skill", "language", "location", "status", "eligibility"}
 
     adapter = FakeSemanticProposalAdapter({"matches": [], "gates": []})
     context = adapter.build_prompt_context(

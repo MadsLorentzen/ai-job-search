@@ -67,6 +67,30 @@ def test_new_job_offers_only_manual_paste_and_supported_import(tmp_path):
         assert "scrape" in text.lower() and "does not" in text.lower()
 
 
+def test_dashboard_and_workspace_direct_missing_profile_to_setup(tmp_path):
+    client, settings = _client(tmp_path)
+    with client:
+        dashboard = client.get("/").text
+        assert "Set up your Evidence Profile" in dashboard
+
+        conn = connect(settings.db_path)
+        ws = create_workspace(conn, company="Acme", title="Planner")
+        save_artifact(
+            conn, workspace_id=ws["id"], artifact_type="job_posting_snapshot",
+            content_id="job", payload={"raw_text": "Plan delivery."},
+        )
+        save_artifact(
+            conn, workspace_id=ws["id"], artifact_type="job_understanding_result",
+            content_id="understanding", payload={"status": "READY"},
+        )
+        conn.close()
+
+        workspace = client.get(f"/workspaces/{ws['id']}").text
+        assert "Evidence Profile required" in workspace
+        assert f"/profile?return_to=/workspaces/{ws['id']}" in workspace
+        assert "Run Job Fit" not in workspace
+
+
 def test_workspace_renders_stepper_all_evidence_and_safe_controls(tmp_path):
     client, settings = _client(tmp_path)
     with client:

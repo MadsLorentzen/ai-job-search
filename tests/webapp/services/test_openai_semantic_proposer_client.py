@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from product.semantic_job_fit import MATCH_CLASSIFICATIONS
 from webapp.services.semantic_proposer_errors import SemanticProposerProviderError
 from webapp.services.openai_semantic_proposer_client import OpenAISemanticProposerClient
 
@@ -72,6 +73,7 @@ def test_strict_schema_requires_all_optional_match_fields_present_as_nullable():
         "rationale", "confidence", "functional_basis", "extension_ref",
     }
     assert match_schema["properties"]["confidence"]["type"] == ["string", "null"]
+    assert match_schema["properties"]["classification"]["enum"] == list(MATCH_CLASSIFICATIONS)
     assert match_schema["properties"]["functional_basis"]["type"] == ["object", "null"]
     assert match_schema["properties"]["extension_ref"]["type"] == ["object", "null"]
     # the nested object schemas must still declare their own properties/required

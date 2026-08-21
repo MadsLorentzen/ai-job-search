@@ -631,6 +631,21 @@ class CandidateProfileSnapshotTests(unittest.TestCase):
         self.assertTrue(status_claims)
         self.assertTrue(all(not claim["placeholder"] for claim in status_claims))
 
+    def test_mixed_case_cv_template_tokens_are_placeholders(self):
+        from product.profile_snapshot import _contains_placeholder
+
+        for value in (
+            "[Your Address, City, Country]",
+            "[City, Country]",
+            "[your.email@example.com]",
+            "[https://linkedin.com/in/your-profile]",
+            "[+XX XXXXXXXXXX]",
+            "[Brief description or key topics.]",
+            "[Achievement or responsibility 1 - be specific, use numbers where possible]",
+        ):
+            with self.subTest(value=value):
+                self.assertTrue(_contains_placeholder(value))
+
     def test_validator_rejects_malformed_summary_and_groups(self):
         snapshot = build_snapshot(self.fixture.root)
         invalid_snapshots = []

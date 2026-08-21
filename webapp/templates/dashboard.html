@@ -6,6 +6,7 @@
   <p>Evidence, decisions, and real-world status remain separate and traceable.</p></div>
   <a class="button" href="/new-job">Add a job</a>
 </section>
+{% if not profile_ready %}<section class="panel review-surface"><h2>Set up your Evidence Profile</h2><p>Create or import a basic profile before running Job Fit.</p><a class="button" href="/profile">Set up Evidence Profile</a></section>{% endif %}
 <nav class="filters" aria-label="Application filters">
 {% for item in filters %}<a href="/?filter={{ item }}" class="filter {% if filter == item %}active{% endif %}">{{ item | replace('_', ' ') | title }}</a>{% endfor %}
 </nav>
