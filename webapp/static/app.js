@@ -13,7 +13,7 @@ async function api(url, options) {
 }
 
 document.addEventListener("click", async (event) => {
-  const button = event.target.closest("button[data-action], button.stage-action, button.review-action, button.confirm-pack, button.status-action, button.discovery-status, button.discovery-promote, button.discovery-evaluate-selected");
+  const button = event.target.closest("button[data-action], button.stage-action, button.review-action, button.review-batch-action, button.confirm-pack, button.status-action, button.discovery-status, button.discovery-promote, button.discovery-evaluate-selected");
   if (!button) return;
   button.disabled = true;
   try {
@@ -38,6 +38,21 @@ document.addEventListener("click", async (event) => {
         method: "POST", headers: {"Content-Type": "application/json"},
         body: JSON.stringify({review_item_type: button.dataset.itemType, source_artifact_id: button.dataset.artifactId,
           domain_item_id: button.dataset.itemId, disposition: button.dataset.disposition})
+      });
+    } else if (button.classList.contains("review-batch-action")) {
+      const reviewPanel = button.closest(".review-panel");
+      const decisions = [...reviewPanel.querySelectorAll(".batch-review-item")].map(item => ({
+        review_item_type: item.dataset.itemType, source_artifact_id: item.dataset.artifactId,
+        domain_item_id: item.dataset.domainItemId, disposition: button.dataset.disposition
+      }));
+      if (!decisions.length) throw new Error("There is no generated text awaiting a decision.");
+      const verb = button.dataset.disposition === "acknowledged_and_proceed" ? "use" : "leave out";
+      if (!window.confirm(`Confirm you want to ${verb} all ${decisions.length} generated text items?`)) {
+        button.disabled = false;
+        return;
+      }
+      await api(`/api/workspaces/${button.dataset.workspaceId}/review-decisions/batch`, {
+        method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({decisions})
       });
     } else if (button.classList.contains("confirm-pack")) {
       if (!window.confirm("Create an immutable reviewed pack? This does not submit an application.")) {

@@ -380,6 +380,7 @@ def _run_to_intelligence(page, live_server) -> str:
     assert page.get_by_text("Accepted job evidence", exact=True).count() == 6
     page.locator('input[name="extension_ids"][value="data-transfer"]').check()
     _click_reload(page, page.get_by_role("button", name="Run Job Fit"))
+    page.get_by_text("Technical details: evidence matches, gaps, and IDs", exact=True).click()
     assert page.get_by_text("Verified evidence", exact=True).is_visible()
     assert page.get_by_text("Accepted inference — functionally equivalent", exact=True).is_visible()
     assert page.get_by_text("Transferable evidence", exact=True).is_visible()
@@ -450,20 +451,28 @@ def test_full_visible_journey_reaches_interview_with_explicit_submission(page, l
     assert page.locator('[data-item-id="cv-ready"]').count() == 2
     assert page.locator('[data-item-id="cv-needs-review"]').count() == 2
     unsupported = page.locator(".unsupported-record").first
-    assert unsupported.is_visible()
-    assert unsupported.get_by_text("Unsupported — excluded from application material").is_visible()
+    assert not unsupported.is_visible()
+    assert page.get_by_text(
+        "Technical details: resolved decisions and excluded claims", exact=True
+    ).is_visible()
     assert unsupported.locator("button").count() == 0
     assert page.locator('[data-item-id="cv-unsupported-only"]').count() == 0
     assert page.get_by_role(
-        "button", name="Acknowledge — include in reviewed pack"
+        "button", name="Use this"
     ).first.is_visible()
     assert page.get_by_role(
-        "button", name="Omit — exclude from application material"
+        "button", name="Leave this out"
     ).first.is_visible()
     assert page.locator("button.confirm-pack").is_disabled()
     assert page.locator('[data-status="drafted"]').count() == 0
     assert "applied" not in page.locator(".workspace-header").inner_text().casefold()
     _assert_no_private_browser_content(page, live_server)
+
+    assert page.get_by_role("button", name="Use all generated text").is_visible()
+    page.once("dialog", lambda dialog: dialog.accept())
+    _click_reload(page, page.get_by_role("button", name="Use all generated text"))
+    assert page.get_by_role("heading", name="Reviewed CV content").is_visible()
+    assert page.locator("#reviewed-cv-content p").count() >= 2
 
     for _ in range(30):
         acknowledge = page.locator(
@@ -482,9 +491,10 @@ def test_full_visible_journey_reaches_interview_with_explicit_submission(page, l
     _click_reload(page, page.get_by_role("button", name="Create reviewed pack — does not submit"))
     assert page.get_by_text("Workflow status:").locator("strong").inner_text() == "drafted"
     assert page.get_by_text("Generating or reviewing material never means it was submitted.").is_visible()
-    assert page.get_by_role("heading", name="Reviewed application output").is_visible()
-    assert page.get_by_role("heading", name="CV content").is_visible()
-    assert page.get_by_role("heading", name="Cover letter content").is_visible()
+    assert page.get_by_role("heading", name="Is this application ready to send?").is_visible()
+    assert page.get_by_text("Yes — ready to send", exact=True).is_visible()
+    assert page.get_by_role("heading", name="Reviewed CV content").is_visible()
+    assert page.get_by_role("heading", name="Reviewed cover letter content").is_visible()
     assert page.locator('[data-copy-section="cv"]').is_visible()
     assert page.locator('[data-copy-section="cover-letter"]').is_visible()
 

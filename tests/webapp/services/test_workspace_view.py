@@ -96,8 +96,8 @@ def _seed_evidence(conn, workspace_id):
         record_dependency_fingerprint(conn, artifact_id=intelligence_request["id"], upstream_artifact_type=upstream_type, upstream_content_id=upstream_id)
     intelligence = save_artifact(conn, workspace_id=workspace_id, artifact_type="application_intelligence_result", content_id="ai_A", payload={
         "status": "NEEDS_REVIEW", "recommendation": "APPLY_WITH_CAUTION", "recommendation_reason": "Review open items",
-        "cv_content": [{"unit_id": "unit_ready", "text": "Python", "status": "READY", "profile_evidence_ids": ["clm_direct"]},
-                       {"unit_id": "unit_review", "text": "Review me", "status": "NEEDS_REVIEW", "profile_evidence_ids": ["clm_functional"]}],
+        "cv_content": [{"unit_id": "unit_ready", "unit_type": "cv_bullet", "text": "Python", "status": "READY", "profile_evidence_ids": ["clm_direct"]},
+                       {"unit_id": "unit_review", "unit_type": "cv_bullet", "text": "Review me", "status": "NEEDS_REVIEW", "profile_evidence_ids": ["clm_functional"]}],
         "cover_letter_content": [], "unsupported_claims": [{"claim_id": "uns_ai", "reason": "Rejected atom"}],
     })
     record_dependency_fingerprint(conn, artifact_id=intelligence["id"], upstream_artifact_type="profile_snapshot", upstream_content_id=profile["content_id"])
@@ -225,6 +225,14 @@ def test_review_queue_includes_ready_and_needs_review_units_with_exact_artifact_
     updated = build_workspace_view_model(conn, workspace_id)
     ready = next(item for item in updated["review_items"] if item["domain_item_id"] == "unit_ready")
     assert ready["decision"]["disposition"] == "acknowledged_and_proceed"
+    assert "unit_ready" not in {
+        item["domain_item_id"] for item in updated["pending_review_items"]
+    }
+    assert "unit_ready" in {
+        item["domain_item_id"] for item in updated["resolved_review_items"]
+    }
+    assert updated["reviewed_cv_content"][0]["unit_id"] == "unit_ready"
+    assert updated["readiness_answer"].startswith("Not yet")
 
 
 def test_fully_rejected_empty_unit_has_no_review_or_inclusion_control(tmp_path):
@@ -381,6 +389,30 @@ def test_acknowledging_unsafe_profile_item_does_not_resolve_ui_review(
 
     assert view["outstanding_review_count"] == 1
     assert view["controls"]["can_confirm_pack"] is False
+
+
+def test_leaving_unsafe_profile_item_out_resolves_that_ui_decision(tmp_path, monkeypatch):
+    from webapp.services import workspace_view
+
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_evidence(conn, workspace_id)
+    monkeypatch.setattr(
+        workspace_view,
+        "_build_review_items",
+        lambda *args, **kwargs: [{
+            "review_item_type": "profile_conflict",
+            "domain_item_id": "conflict_1",
+            "source_artifact_id": "profile_A",
+            "item": {},
+            "decision": {"disposition": "omit_from_positioning"},
+            "can_use": False,
+            "problem": "Conflicting profile evidence cannot be used in application material.",
+        }],
+    )
+
+    view = workspace_view.build_workspace_view_model(conn, workspace_id)
+
+    assert view["outstanding_review_count"] == 0
 
 
 def test_dashboard_has_required_summary_fields_and_filters(tmp_path):

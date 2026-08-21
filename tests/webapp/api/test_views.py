@@ -202,10 +202,13 @@ def test_workspace_renders_stepper_all_evidence_and_safe_controls(tmp_path):
         assert 'data-item-id="unit_ready"' in text
         assert 'data-item-id="unit_review"' in text
         assert "Audit only. No inclusion control is available." in text
-        assert "Acknowledge — include in reviewed pack" in text
-        assert "Omit — exclude from application material" in text
-        assert "Acknowledging allows this item to be used by the reviewed pack." in text
-        assert "Omitting keeps this item in the audit trail but excludes it from application material." in text
+        assert "Is this application ready to send?" in text
+        assert "Use this" in text
+        assert "Leave this out" in text
+        assert "Use this includes the item in reviewed application material." in text
+        assert "Leave this out preserves the audit record but excludes it from application material." in text
+        assert "Technical details: resolved decisions and excluded claims" in text
+        assert "Decide whether this wording should appear in your application." in text
         assert "Application material:" in text
         assert "INCOMPLETE" in text
         assert "insufficient_cv_units" in text
@@ -235,10 +238,10 @@ def test_workspace_presents_reviewed_cv_and_cover_letter_as_usable_output(tmp_pa
 
         text = client.get(f'/workspaces/{workspace["id"]}').text
 
-        assert "Reviewed application output" in text
-        assert "CV content" in text
+        assert "Yes — ready to send" in text
+        assert "Reviewed CV content" in text
         assert "Coordinated nine-rig planning." in text
-        assert "Cover letter content" in text
+        assert "Reviewed cover letter content" in text
         assert "I offer evidence-backed planning experience." in text
         assert 'data-copy-section="cv"' in text
         assert 'data-copy-section="cover-letter"' in text
@@ -263,7 +266,7 @@ def test_historical_pack_is_not_presented_as_revalidated_and_empty_copy_is_absen
         text = client.get(f'/workspaces/{workspace["id"]}').text
 
         assert "Legacy pack — not revalidated" in text
-        assert "No reviewed CV content." in text
+        assert "No CV wording has been approved yet." in text
         assert 'data-copy-section="cv"' not in text
         assert 'data-copy-section="cover-letter"' in text
 
