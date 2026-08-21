@@ -1,0 +1,494 @@
+{
+  "job_fit_result": {
+    "active_extension_versions": [],
+    "blocked": false,
+    "blocking_gate_ids": [],
+    "dimension_assessments": [
+      {
+        "dimension_id": "technical_skills",
+        "job_evidence_ids": [
+          "jobev_req_python"
+        ],
+        "required": true,
+        "score": 90.0,
+        "status": "READY",
+        "supporting_classifications": [
+          "direct"
+        ]
+      },
+      {
+        "dimension_id": "experience_match",
+        "job_evidence_ids": [
+          "juev_resp_3fd3604818702425f302"
+        ],
+        "required": true,
+        "score": 82.0,
+        "status": "READY",
+        "supporting_classifications": [
+          "functionally_equivalent"
+        ]
+      },
+      {
+        "dimension_id": "behavioral_fit",
+        "job_evidence_ids": [
+          "juev_resp_3fd3604818702425f302"
+        ],
+        "required": true,
+        "score": 80.0,
+        "status": "READY",
+        "supporting_classifications": [
+          "functionally_equivalent"
+        ]
+      },
+      {
+        "dimension_id": "career_alignment",
+        "job_evidence_ids": [
+          "jobev_req_python"
+        ],
+        "required": true,
+        "score": 90.0,
+        "status": "READY",
+        "supporting_classifications": [
+          "direct"
+        ]
+      }
+    ],
+    "dimension_scores": {
+      "behavioral_fit": 80.0,
+      "career_alignment": 90.0,
+      "experience_match": 82.0,
+      "technical_skills": 90.0
+    },
+    "direct_matches": [
+      {
+        "classification": "direct",
+        "confidence": "high",
+        "job_requirement_ids": [
+          "jobev_req_python"
+        ],
+        "match_id": "match_6c07a8fbd5c760d2",
+        "profile_evidence_ids": [
+          "clm_1111111111111111"
+        ],
+        "rationale": "Python is explicit on both sides.",
+        "status": "READY"
+      }
+    ],
+    "evaluation_policy_version": "evaluation-policy.v0",
+    "functionally_equivalent_matches": [
+      {
+        "classification": "functionally_equivalent",
+        "confidence": "high",
+        "functional_basis": {
+          "competency_alignment": [],
+          "responsibility_alignment": [
+            "Build reliable data pipelines",
+            "Built production data pipelines"
+          ],
+          "title_similarity_only": false
+        },
+        "job_requirement_ids": [
+          "juev_resp_3fd3604818702425f302"
+        ],
+        "match_id": "match_b39a51ced5acaf93",
+        "profile_evidence_ids": [
+          "clm_2222222222222222"
+        ],
+        "rationale": "Pipeline building responsibility aligns by function.",
+        "status": "READY"
+      }
+    ],
+    "gaps": [],
+    "gate_assessments": [
+      {
+        "gate_id": "eligibility",
+        "job_evidence_ids": [
+          "juev_elig_7f02c0e4c651bdd4897b"
+        ],
+        "profile_evidence_ids": [
+          "clm_4444444444444444"
+        ],
+        "reason": "Candidate has right-to-work evidence.",
+        "status": "PASS"
+      },
+      {
+        "gate_id": "language",
+        "job_evidence_ids": [
+          "juev_lang_93ea5610f7ddc18f1197"
+        ],
+        "profile_evidence_ids": [
+          "clm_5555555555555555"
+        ],
+        "reason": "Candidate has language evidence.",
+        "status": "PASS"
+      },
+      {
+        "gate_id": "location_logistics",
+        "job_evidence_ids": [
+          "juev_log_43de7440e4461e73cf71"
+        ],
+        "profile_evidence_ids": [
+          "clm_6666666666666666"
+        ],
+        "reason": "Candidate has logistics evidence.",
+        "status": "PASS"
+      }
+    ],
+    "gate_results": [
+      {
+        "gate_id": "eligibility",
+        "reason": "Candidate has right-to-work evidence.",
+        "status": "PASS"
+      },
+      {
+        "gate_id": "language",
+        "reason": "Candidate has language evidence.",
+        "status": "PASS"
+      },
+      {
+        "gate_id": "location_logistics",
+        "reason": "Candidate has logistics evidence.",
+        "status": "PASS"
+      }
+    ],
+    "human_judgment_questions": [],
+    "job_snapshot": {
+      "content_id": "jobsnap_55a3ea803c7a4882807f",
+      "job_id": "jobsrc_ticket6_fixture",
+      "schema_version": "job-posting-snapshot.v0"
+    },
+    "notes": [],
+    "overall_score": 86.5,
+    "profile_snapshot": {
+      "content_id": "profilesnap_3ee75c9b20470bd11622",
+      "schema_version": "candidate-profile-evidence-snapshot.v0"
+    },
+    "request_id": "laneb-conflicting-evidence",
+    "resolved_job_evidence": {
+      "content_id": "resolvedjobev_ef66324177cc374b4bea",
+      "schema_version": "resolved-job-evidence-bundle.v0"
+    },
+    "schema_version": "job-fit-result.v1",
+    "semantic_fit_policy": {
+      "content_id": "sempolicy_12eb2fb7ebbbf4575e5f",
+      "id": "default_semantic_fit_policy",
+      "schema_version": "semantic-fit-policy.v0"
+    },
+    "status": "READY",
+    "transferable_matches": [],
+    "unsupported_claims": [],
+    "verdict": {
+      "display_name": "Strong Fit",
+      "id": "strong_fit",
+      "score": 86.5
+    }
+  },
+  "profile_snapshot": {
+    "claims": [
+      {
+        "category": "skills",
+        "concept_id": "cpt_1111111111111111",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "technical_skill",
+        "id": "clm_1111111111111111",
+        "placeholder": false,
+        "record_id": "rec_1111111111111111",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 10,
+          "line_start": 10,
+          "section": "Candidate Profile > Skills"
+        },
+        "value": "Python"
+      },
+      {
+        "category": "employment",
+        "concept_id": "cpt_2222222222222222",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "responsibility_or_achievement",
+        "id": "clm_2222222222222222",
+        "placeholder": false,
+        "record_id": "rec_2222222222222222",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 20,
+          "line_start": 20,
+          "section": "Candidate Profile > Experience"
+        },
+        "value": "Built production data pipelines"
+      },
+      {
+        "category": "education",
+        "concept_id": "cpt_3333333333333333",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "qualification",
+        "id": "clm_3333333333333333",
+        "placeholder": false,
+        "record_id": "rec_3333333333333333",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 30,
+          "line_start": 30,
+          "section": "Candidate Profile > Education"
+        },
+        "value": "Synthetic MSc"
+      },
+      {
+        "category": "eligibility",
+        "concept_id": "cpt_4444444444444444",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "work_authorization",
+        "id": "clm_4444444444444444",
+        "placeholder": false,
+        "record_id": "rec_4444444444444444",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 41,
+          "line_start": 41,
+          "section": "Candidate Profile > Synthetic"
+        },
+        "value": "Right to work in the UK"
+      },
+      {
+        "category": "languages",
+        "concept_id": "cpt_5555555555555555",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "language",
+        "id": "clm_5555555555555555",
+        "placeholder": false,
+        "record_id": "rec_5555555555555555",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 41,
+          "line_start": 41,
+          "section": "Candidate Profile > Synthetic"
+        },
+        "value": "German"
+      },
+      {
+        "category": "constraints",
+        "concept_id": "cpt_6666666666666666",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "location",
+        "id": "clm_6666666666666666",
+        "placeholder": false,
+        "record_id": "rec_6666666666666666",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 41,
+          "line_start": 41,
+          "section": "Candidate Profile > Synthetic"
+        },
+        "value": "London hybrid"
+      },
+      {
+        "category": "employment",
+        "concept_id": "cpt_7777777777777777",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "date_range",
+        "id": "clm_7777777777777777",
+        "placeholder": false,
+        "record_id": "rec_7777777777777777",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 21,
+          "line_start": 21,
+          "section": "Candidate Profile > Experience"
+        },
+        "value": "2019-2021"
+      },
+      {
+        "category": "employment",
+        "concept_id": "cpt_7777777777777777",
+        "confidence": "medium",
+        "extraction_status": "explicit",
+        "field": "date_range",
+        "id": "clm_7777777777777778",
+        "placeholder": false,
+        "record_id": "rec_7777777777777778",
+        "source": {
+          "file": "linkedin.md",
+          "line_end": 5,
+          "line_start": 5,
+          "section": "Experience"
+        },
+        "value": "2019-2022"
+      }
+    ],
+    "conflicts": [
+      {
+        "category": "employment",
+        "concept_id": "cpt_7777777777777777",
+        "field": "date_range",
+        "id": "con_74fd15ada5c25555",
+        "variants": [
+          {
+            "claim_ids": [
+              "clm_7777777777777777"
+            ],
+            "provenance": [
+              {
+                "file": "CLAUDE.md",
+                "line_end": 21,
+                "line_start": 21,
+                "section": "Candidate Profile > Experience"
+              }
+            ],
+            "value": "2019-2021"
+          },
+          {
+            "claim_ids": [
+              "clm_7777777777777778"
+            ],
+            "provenance": [
+              {
+                "file": "linkedin.md",
+                "line_end": 5,
+                "line_start": 5,
+                "section": "Experience"
+              }
+            ],
+            "value": "2019-2022"
+          }
+        ]
+      }
+    ],
+    "corroborations": [],
+    "id_semantics": "deterministic content-derived identifiers; not durable persistent identifiers",
+    "schema_version": "candidate-profile-evidence-snapshot.v0",
+    "sources": [
+      {
+        "file": "CLAUDE.md",
+        "line_count": 40,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      {
+        "file": "linkedin.md",
+        "line_count": 10,
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    ],
+    "summary": {
+      "claim_count": 8,
+      "conflict_count": 1,
+      "corroboration_count": 0,
+      "placeholder_claim_count": 0,
+      "source_count": 2
+    }
+  },
+  "resolved_job_evidence": {
+    "aliases": [
+      {
+        "alias_id": "juev_req_5c1ce9fff65e265b6021",
+        "canonical_id": "jobev_req_python",
+        "reason": "exact_duplicate"
+      }
+    ],
+    "evidence": [
+      {
+        "category": "requirements",
+        "id": "jobev_req_python",
+        "kind": "required",
+        "origin": "job_posting_snapshot",
+        "source_section": "Requirements",
+        "status": "EXPLICIT",
+        "text": "Python is required."
+      },
+      {
+        "category": "eligibility_requirements",
+        "citations": [
+          {
+            "end": 108,
+            "occurrence": 0,
+            "quote": "Applicants must already have the right to work in the UK.",
+            "source_content_id": "jobtext_1d9df91304131a455d67ebf478edfe77d4f8a2193056f8ab7ebcde41f568e240",
+            "source_field": "raw_text",
+            "start": 51
+          }
+        ],
+        "id": "juev_elig_7f02c0e4c651bdd4897b",
+        "kind": "required",
+        "origin": "job_understanding",
+        "status": "ACCEPTED",
+        "text": "Applicants must already have the right to work in the UK."
+      },
+      {
+        "category": "language_requirements",
+        "citations": [
+          {
+            "end": 138,
+            "occurrence": 0,
+            "quote": "German would be an advantage.",
+            "source_content_id": "jobtext_1d9df91304131a455d67ebf478edfe77d4f8a2193056f8ab7ebcde41f568e240",
+            "source_field": "raw_text",
+            "start": 109
+          }
+        ],
+        "id": "juev_lang_93ea5610f7ddc18f1197",
+        "kind": "preferred",
+        "origin": "job_understanding",
+        "status": "ACCEPTED",
+        "text": "German would be an advantage."
+      },
+      {
+        "category": "logistics_requirements",
+        "citations": [
+          {
+            "end": 214,
+            "occurrence": 0,
+            "quote": "Hybrid role: two days per week in London.",
+            "source_content_id": "jobtext_1d9df91304131a455d67ebf478edfe77d4f8a2193056f8ab7ebcde41f568e240",
+            "source_field": "raw_text",
+            "start": 173
+          }
+        ],
+        "id": "juev_log_43de7440e4461e73cf71",
+        "kind": "required",
+        "origin": "job_understanding",
+        "status": "ACCEPTED",
+        "text": "Hybrid role: two days per week in London."
+      },
+      {
+        "category": "responsibilities",
+        "citations": [
+          {
+            "end": 50,
+            "occurrence": 0,
+            "quote": "Build reliable data pipelines.",
+            "source_content_id": "jobtext_1d9df91304131a455d67ebf478edfe77d4f8a2193056f8ab7ebcde41f568e240",
+            "source_field": "raw_text",
+            "start": 20
+          }
+        ],
+        "id": "juev_resp_3fd3604818702425f302",
+        "kind": "required",
+        "origin": "job_understanding",
+        "status": "ACCEPTED",
+        "text": "Build reliable data pipelines."
+      }
+    ],
+    "excluded": {
+      "ambiguous_statements": "not_semantic_fit_evidence",
+      "raw_text": "not_semantic_fit_evidence",
+      "suggestions": "not_semantic_fit_evidence",
+      "warnings": "not_semantic_fit_evidence"
+    },
+    "job_snapshot": {
+      "content_id": "jobsnap_55a3ea803c7a4882807f",
+      "job_id": "jobsrc_ticket6_fixture",
+      "schema_version": "job-posting-snapshot.v0"
+    },
+    "schema_version": "resolved-job-evidence-bundle.v0",
+    "summary": {
+      "alias_count": 1,
+      "evidence_count": 5
+    }
+  }
+}
