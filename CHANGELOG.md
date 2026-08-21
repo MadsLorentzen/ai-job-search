@@ -15,6 +15,147 @@ per-file diff commands.
 
 ### Added
 
+- **Commit-level upstream triage for forks** (#305). A new `tools/upstream_triage.py` walks the
+  commits a fork is behind upstream and sorts them into "worth reviewing" vs "probably skip":
+  cherry-picks already applied drop off on their own (matched by `git patch-id`, so ported work
+  needs no bookkeeping), commits that only touch files the fork removed are set aside, and SHAs in
+  a flat `.github/upstream-wontport.txt` stop resurfacing. It's the commit-history companion to
+  `check_upstream_updates.py`'s version stamps - the two cross-reference each other in their output.
+  Report-only by design: it prints ready-to-run `git cherry-pick` lines but never merges, pushes, or
+  opens a PR, because on a fork "applies cleanly" isn't "correct". A `.github/workflows/upstream-watch.yml`
+  runs it weekly into a rolling issue, guarded to no-op on the upstream template (pinned by a test) and
+  scoped to the built-in `GITHUB_TOKEN` so it can never write outside its own fork. SETUP.md 8
+  introduces both tools side by side. Offline tests cover patch-id matching, relevance filtering, the
+  won't-port list, and the workflow guard. Thanks @anjolok1997.
+
+- **`security_guards.py` now holds `.claude/settings.json` hooks to an allowlist** - the
+  guard read `permissions.allow` and nothing else, so a `hooks` block in the same file
+  passed silently. A hook is strictly more dangerous than a pre-approved permission: a
+  permission pre-approves something Claude *may* choose to do, while a hook runs
+  unconditionally when its event fires, with no prompt and no model decision in between.
+  This is not hypothetical - it is the vector the Shai-Hulud worm used in its August 2026
+  wave, planting a `SessionStart` hook in `.claude/settings.json` that executed on session
+  start ([JFrog research](https://research.jfrog.com/post/shai-hulud-is-back-august/)).
+  For a template thousands of people are invited to fork, that is the riskiest key in the
+  file the guard already parses. `ALLOWED_HOOKS` ships empty (the template has no hooks),
+  the check runs *before* the permissions shape guards so a malformed permissions block
+  cannot return early and skip it, and unrecognised hook layouts fail closed rather than
+  being skipped. Eight new `HookGuardTests` cases; 14 of the suite's 26 tests fail against
+  the unpatched guard.
+
+### Changed
+
+- **`/add-portal` now specifies how a generated skill handles an API token** (#304) - the command
+  could already scaffold a skill for a portal reachable only through a paid fetching
+  service, but said nothing about the credential such a skill needs. It now checks for that
+  case during reconnaissance and raises the per-call cost with the user *before*
+  scaffolding. That check is explicitly subordinate to the `robots.txt`/terms decision
+  in Step 2.4 - a paid fetching service never launders a refusal, and the credential
+  path exists only for portals whose `robots.txt` permits access but whose bot
+  protection blocks ordinary fetches. The portal-skill contract requires the token to come from a
+  `<SERVICE>_API_TOKEN` environment variable (never a CLI flag, never a fixture) and to
+  fail with `MISSING_CREDENTIALS` when unset; and such a skill's `SKILL.md` must carry a
+  Setup section naming the service, the variable, and the billing. Spec only - no shipped
+  portal needs a credential, so no existing skill changes. Thanks @Haseeb-1698.
+
+- **`/add-portal`'s fetching contract line now states the honest-UA posture** - it read
+  "browser User-Agent", predating the repo-wide shift to honest self-identification
+  (#283, #277 and the portal-CLI fixes that followed). A generated skill now defaults to
+  `Mozilla/5.0 (compatible; <portal>-cli/1.0)` - the convention every shipped portal CLI
+  follows - and escalation to browser headers goes through the robots.txt gate in
+  `09-web-research.md`, never the CLI's default.
+
+- **CI discovers portal CLIs instead of hardcoding them** (#310). The `cli-checks` matrix
+  is now emitted by a `discover-clis` job that finds every `.agents/skills/*/cli/package.json`,
+  so a portal skill added with `/add-portal` gets its `typecheck` and `test` scripts run by CI
+  automatically - on this repo and on any fork - without editing the workflow. Upstream
+  coverage is unchanged (the discovered list on `master` is exactly the six shipped portals).
+  `/add-portal`'s Register step now says so. Thanks @ayobamiseun.
+
+### Fixed
+
+- **`/upskill` reports are now gitignored at the path the skill actually writes them to.**
+  The ignore rule `upskill/*.md` is rooted (a middle slash anchors a gitignore pattern to the
+  repo root), but `/upskill` is a *skill*, and skills resolve bare relative paths against
+  their own directory - the same observed behavior the `**/job_scraper/*` rules exist for.
+  A report written to `.claude/skills/upskill/upskill/report-*.md` was therefore not ignored
+  (`git check-ignore` confirms it on the unpatched tree), and an upskill report is the
+  candidate's skill gaps and weaknesses measured against named employers - among the most
+  sensitive files the workflow generates. The obvious widening, `**/upskill/*.md`, would have
+  ignored the template's own `.claude/skills/upskill/SKILL.md` (the skill directory shares
+  the name), so the new rule pins the report-file prefix instead: `**/upskill/report-*.md`.
+  Added to `.gitignore` and `security_guards.py`'s `REQUIRED_IGNORE_RULES`, with a
+  `check-ignore`-based test pinning both properties - reports ignored at both depths,
+  `SKILL.md` still tracked - which presence checks alone cannot see.
+
+- **Dropped the phantom `evaluated` value from `seen_jobs.json`'s status vocabulary** (#315).
+  The schema block in the job-scraper skill documented `new/skipped/evaluated/ranked/expired`,
+  but `evaluated` has had no writer and no reader since the initial release - `new`/`skipped`
+  come from `/scrape`, `ranked`/`expired` from `/rank`, and nothing ever set or selected
+  `evaluated`. Post-#269 the tracker owns all lifecycle state after drafting, so the value had
+  no future role either; it is now removed rather than wired up. `/rank` Step 1's `--all`
+  wording ("all non-applied entries") leaned on an `applied` status the schema deliberately
+  lacks and now names what it means: entries of any status, minus the tracker exclusion set.
+  Forks that wrote their own tooling against the documented vocabulary should note the value
+  was never produced by any shipped command.
+
+- **`/apply` archives the job posting while it still holds it** (#306). `/apply` drafted two
+  documents and a tracker row from the full posting, then let the text die with the session;
+  `/outcome` Step 3.2 tried to recover it by re-fetching a `source` URL the spec itself expects
+  to be dead, and a posting pasted from an email or a PDF had no `source` to re-fetch at all.
+  Step 6b item 7 now writes the posting verbatim to
+  `documents/applications/<company>_<role>/job_posting.md`, never a re-fetch or a
+  reconstruction from memory; an existing file is left alone (a re-application to the same
+  company and role keeps the earlier posting) and named in the report. Step 0 and the `/scrape`
+  path (`job-application-assistant` SKILL.md Step 1) retain the full posting text, not a
+  summary. Pinned by `tests/test_apply_records_application.py`.
+
+- **Tracker status enum defined once; `offer declined`/`no response` now reach the correct
+  `/html-report` bucket and `/gmail-sync` correctly marks them final** (#298). The tracker
+  CSV `status` column had no single authoritative definition. Six command files restated it
+  independently with inconsistent spellings, producing two concrete bugs:
+
+  - `/outcome` Step 4 wrote `no response` and `offer declined` (with spaces). `/html-report`
+    Step 1 normalised only `no_response` / `offer_declined` (underscores), so any row written
+    with spaces matched no bucket and was silently dropped from the rejection-rate denominator.
+  - `/gmail-sync` Step 2 defined the "final" set with the space forms, so a row written with
+    underscores was never recognised as final and the sync kept chasing closed applications.
+  - `/html-report` included `interview_only` in the tracker bucket map; that value belongs to
+    the archive `outcome.md` `Status:` field, not the CSV `status` column.
+
+  Fix: a `## Tracker status vocabulary` block in `/outcome` (the only writer of the CSV)
+  now defines the canonical set once with underscore spellings and the **Final** set by
+  explicit list — everything else, `drafted` included, is **Open**. The legacy space
+  spellings are the same values, not separate statuses: equally **Final**, and every rule
+  that names one form applies to the other — readers must accept them on read, and never
+  write them. Every reader that makes final/open decisions references that block (`/apply`
+  Step 6b, `/interview` Step 0, `/gmail-sync` Step 2, `/html-report` Step 1, `/notion-sync`
+  Steps 3-4). `/outcome` Step 4 writes `no_response` / `offer_declined`; `/notion-sync`
+  normalises both forms to the canonical spellings before setting the Status property;
+  `/html-report`'s bucket map loses `interview_only`, keeps both spellings, and gains a
+  case-insensitive catch-all that maps unrecognised values to **Rejected/Closed** and names
+  them once in the status breakdown. Pinned by `tests/test_tracker_status_vocab.py`.
+
+  **Fork heads-up:** if your personalized `/outcome` adds `no response` or `offer declined`
+  (space forms) to the tracker write path, swap them for the underscore forms. Existing rows
+  keep working because every reader now accepts both spellings on read. If your Notion
+  database already carries space-form Status options, they simply go unused — Notion never
+  auto-removes select options.
+
+## [1.4.0] - 2026-08-07
+
+### Added
+
+- **`--jobage-minutes` on linkedin-search for sub-day freshness windows** (#302) - LinkedIn
+  filters its `f_TPR` parameter server-side at second granularity, so the CLI can now ask
+  for postings from the last N minutes instead of whole-day windows only. Conflicts with
+  `--jobage` are rejected explicitly (`CONFLICTING_AGE_FLAGS`). Useful for early-applicant
+  freshness on high-volume searches; URL construction only, no parsing change.
+
+- **README: video walkthrough link in Quick start** - The Next New Thing's hands-on
+  walkthrough of the workflow (recorded August 2026), for newcomers who want to see the
+  setup-to-application flow before reading. Docs only.
+
 - **Spec-pinning tests for the Language Gate's `/rank` contract** (#278) - four regression
   guards in `tests/test_rank_command.py` pinning the `language_gate`/`language_note` fields
   through Steps 2-5 of `/rank`, including the Step 4 persistence rule that was live-debugged
