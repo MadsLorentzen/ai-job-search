@@ -43,13 +43,56 @@ from product.semantic_job_fit import (
 )
 
 from tests.fixtures.application_intelligence.generate_fixtures import _base_bundle_and_profile
-from tests.test_semantic_job_fit import fully_scoring_policy, proposals_for_full_fit
+from tests.test_semantic_job_fit import claim, fully_scoring_policy, proposals_for_full_fit
 
 OUTPUT_DIR = Path(__file__).parent
 
 
 def build_strong_evidence() -> dict:
+    """Strong-evidence scenario: the same real direct+functional matches as
+    _base_bundle_and_profile()'s Ticket 7 path, PLUS additional real,
+    non-placeholder profile claims that are not cited by any match.
+
+    _base_bundle_and_profile()'s rich_profile() supplies only terse claim
+    values (e.g. "Python", "Built production data pipelines", "Synthetic
+    MSc") -- realistic as discrete extracted facts, but genuinely too few
+    words in total (7, across every renderable claim) to represent a
+    "strong evidence" candidate against Ticket 8's real
+    substantive-completion contract (MIN_CV_WORDS=20,
+    MIN_COVER_LETTER_WORDS=40). Task 11 confirmed this empirically: even a
+    proposal helper that cites every single renderable claim in the base
+    rich_profile() tops out at 7 CV words.
+
+    These extra claims are additional genuine evidence in the same shape
+    Ticket 7's own test fixtures already use (test_semantic_job_fit.py's
+    `claim()` helper) -- explicit, non-placeholder, high-confidence
+    employment/skill facts a real candidate profile would plausibly
+    contain alongside the base rich_profile() claims. They are not cited
+    by any Ticket 7 match (job_requirement_ids stay exactly as
+    proposals_for_full_fit() defines them) so requirement_coverage is
+    unaffected -- they exist purely to give a genuinely evidence-rich
+    candidate enough real material to clear the contract, the same way a
+    real candidate with more than two profile facts would.
+    """
     job, bundle, profile = _base_bundle_and_profile()
+    extra_claims = [
+        claim(
+            "clm_8888888888888888", "employment", "responsibility_or_achievement",
+            "Led a team of four engineers to migrate a legacy batch system onto a "
+            "cloud-native streaming architecture, cutting data latency from hours to minutes",
+        ),
+        claim(
+            "clm_9999999999999999", "employment", "responsibility_or_achievement",
+            "Designed and operated CI/CD pipelines that reduced deployment failures by half "
+            "across three production services",
+        ),
+        claim("clm_aaaaaaaaaaaaaaaa", "skills", "technical_skill", "SQL"),
+        claim("clm_bbbbbbbbbbbbbbbb", "certifications", "certification", "AWS Certified Data Engineer"),
+    ]
+    profile = copy.deepcopy(profile)
+    profile["claims"].extend(extra_claims)
+    profile["summary"]["claim_count"] = len(profile["claims"])
+    validate_snapshot(profile)  # must still be a structurally valid snapshot
     proposals = proposals_for_full_fit(bundle)
     request = build_semantic_job_fit_request(
         request_id="laneb-strong-evidence", profile_snapshot=profile, job_snapshot=job,

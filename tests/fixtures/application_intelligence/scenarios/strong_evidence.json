@@ -160,7 +160,7 @@
     "notes": [],
     "overall_score": 86.5,
     "profile_snapshot": {
-      "content_id": "profilesnap_db68e7b2b88a0f1a2e2e",
+      "content_id": "profilesnap_191495c433783eda37dd",
       "schema_version": "candidate-profile-evidence-snapshot.v0"
     },
     "request_id": "laneb-strong-evidence",
@@ -286,6 +286,74 @@
           "section": "Candidate Profile > Synthetic"
         },
         "value": "London hybrid"
+      },
+      {
+        "category": "employment",
+        "concept_id": "cpt_8888888888888888",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "responsibility_or_achievement",
+        "id": "clm_8888888888888888",
+        "placeholder": false,
+        "record_id": "rec_8888888888888888",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 41,
+          "line_start": 41,
+          "section": "Candidate Profile > Synthetic"
+        },
+        "value": "Led a team of four engineers to migrate a legacy batch system onto a cloud-native streaming architecture, cutting data latency from hours to minutes"
+      },
+      {
+        "category": "employment",
+        "concept_id": "cpt_9999999999999999",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "responsibility_or_achievement",
+        "id": "clm_9999999999999999",
+        "placeholder": false,
+        "record_id": "rec_9999999999999999",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 41,
+          "line_start": 41,
+          "section": "Candidate Profile > Synthetic"
+        },
+        "value": "Designed and operated CI/CD pipelines that reduced deployment failures by half across three production services"
+      },
+      {
+        "category": "skills",
+        "concept_id": "cpt_aaaaaaaaaaaaaaaa",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "technical_skill",
+        "id": "clm_aaaaaaaaaaaaaaaa",
+        "placeholder": false,
+        "record_id": "rec_aaaaaaaaaaaaaaaa",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 41,
+          "line_start": 41,
+          "section": "Candidate Profile > Synthetic"
+        },
+        "value": "SQL"
+      },
+      {
+        "category": "certifications",
+        "concept_id": "cpt_bbbbbbbbbbbbbbbb",
+        "confidence": "high",
+        "extraction_status": "explicit",
+        "field": "certification",
+        "id": "clm_bbbbbbbbbbbbbbbb",
+        "placeholder": false,
+        "record_id": "rec_bbbbbbbbbbbbbbbb",
+        "source": {
+          "file": "CLAUDE.md",
+          "line_end": 41,
+          "line_start": 41,
+          "section": "Candidate Profile > Synthetic"
+        },
+        "value": "AWS Certified Data Engineer"
       }
     ],
     "conflicts": [],
@@ -300,7 +368,7 @@
       }
     ],
     "summary": {
-      "claim_count": 6,
+      "claim_count": 10,
       "conflict_count": 0,
       "corroboration_count": 0,
       "placeholder_claim_count": 0,
