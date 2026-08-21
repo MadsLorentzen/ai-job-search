@@ -437,7 +437,10 @@ TEMPLATE_TABLE: dict[tuple[str, str], dict[str, Any]] = {
         "eligible": lambda claims, all_claims: [
             claim for claim in claims if _is_explicit_hands_on(claim, all_claims)
         ],
-        "format": "Hands-on delivery of {value}",
+        # Responsibility evidence is already candidate-authored prose. A
+        # generic prefix can turn a valid sentence into malformed text (for
+        # example, "Hands-on delivery of Planned..."). Preserve it verbatim.
+        "format": "{value}",
     },
     ("certification", "PLAIN"): {
         "eligible": lambda claims, all_claims: list(claims),
@@ -784,11 +787,21 @@ def analyze_application_intelligence(request: dict[str, Any], proposal: dict[str
             )
 
     all_units = cv_content + cover_letter_content
+    usable_units = [unit for unit in all_units if isinstance(unit.get("text"), str) and unit["text"].strip()]
     result_status = "READY"
     if job_fit_result["blocked"] or job_fit_result["status"] == "UNAVAILABLE":
         result_status = "UNAVAILABLE"
-    elif job_fit_result["status"] == "NEEDS_REVIEW" or any(unit["status"] != "READY" for unit in all_units) or unsupported_claims:
+    elif (
+        not usable_units
+        or job_fit_result["status"] == "NEEDS_REVIEW"
+        or any(unit["status"] != "READY" for unit in all_units)
+        or unsupported_claims
+    ):
         result_status = "NEEDS_REVIEW"
+
+    notes = []
+    if not usable_units:
+        notes.append("No usable application material was generated.")
 
     result = {
         "schema_version": RESULT_VERSION,
@@ -811,7 +824,7 @@ def analyze_application_intelligence(request: dict[str, Any], proposal: dict[str
         "cover_letter_content": cover_letter_content,
         "unsupported_claims": unsupported_claims,
         "status": result_status,
-        "notes": [],
+        "notes": notes,
     }
     validate_application_intelligence_result(request, result)
     return result
@@ -895,7 +908,7 @@ def _validate_unit_proposal_shape(unit_proposal: Any) -> str | None:
 
 
 def _adjudicate_content_unit(unit_proposal: dict[str, Any], context: dict[str, Any]) -> dict[str, Any]:
-    rendered_fragments: list[str] = []
+    rendered_by_index: dict[int, str] = {}
     unit_status = "READY"
     unsupported: list[dict[str, Any]] = []
     atom_evidence_ids: list[str] = []
@@ -966,15 +979,9 @@ def _adjudicate_content_unit(unit_proposal: dict[str, Any], context: dict[str, A
                 continue
             atom_evidence_ids.extend(match.get("profile_evidence_ids", []))
             rendered = _render_transferability_atom(match)
-            rendered_fragments.append(rendered["text"])
+            rendered_by_index[index] = rendered["text"]
             if match["status"] != "READY":
                 unit_status = "NEEDS_REVIEW"
-            connective_text = connectives_by_index.get(index)
-            if connective_text is not None:
-                if not _validate_connective(connective_text):
-                    unit_status = "NEEDS_REVIEW"
-                else:
-                    rendered_fragments.append(connective_text)
             continue
 
         if atom_kind == "job_reference":
@@ -994,13 +1001,7 @@ def _adjudicate_content_unit(unit_proposal: dict[str, Any], context: dict[str, A
                     }
                 )
                 continue
-            rendered_fragments.append(rendered["text"])
-            connective_text = connectives_by_index.get(index)
-            if connective_text is not None:
-                if not _validate_connective(connective_text):
-                    unit_status = "NEEDS_REVIEW"
-                else:
-                    rendered_fragments.append(connective_text)
+            rendered_by_index[index] = rendered["text"]
             continue
 
         # atom_kind is guaranteed to be "candidate_fact" here: _validate_atom_shape
@@ -1019,14 +1020,28 @@ def _adjudicate_content_unit(unit_proposal: dict[str, Any], context: dict[str, A
             )
             continue
         atom_evidence_ids.extend(atom.get("profile_evidence_ids", []))
-        rendered_fragments.append(rendered["text"])
+        rendered_by_index[index] = rendered["text"]
 
+    rendered_fragments: list[str] = []
+    for index in sorted(rendered_by_index):
+        rendered_fragments.append(rendered_by_index[index])
         connective_text = connectives_by_index.get(index)
-        if connective_text is not None:
-            if not _validate_connective(connective_text):
-                unit_status = "NEEDS_REVIEW"
-                continue
-            rendered_fragments.append(connective_text)
+        if connective_text is None:
+            continue
+        if not _validate_connective(connective_text):
+            unit_status = "NEEDS_REVIEW"
+            continue
+        if index + 1 not in rendered_by_index:
+            unit_status = "NEEDS_REVIEW"
+            unsupported.append({
+                "claim_id": _stable_id(
+                    "uns", f"dangling-connective:{unit_proposal.get('unit_id', '')}:{index}"
+                ),
+                "reason": f"connective after atom index {index} has no following rendered atom",
+                "rejected_atom_ids": [],
+            })
+            continue
+        rendered_fragments.append(connective_text)
 
     unit = {
         "unit_id": unit_proposal.get("unit_id"),

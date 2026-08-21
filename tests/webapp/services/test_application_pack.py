@@ -237,9 +237,29 @@ def test_explicit_omission_is_excluded_and_preserved_in_audit(tmp_path):
     decision = _decide(conn, workspace_id, intelligence, "content_unit", "cv_1", "omit_from_positioning")
     pack = build_application_pack(conn, workspace_id)
     assert pack["cv_content"] == []
+    assert pack["completion_status"] == "INCOMPLETE"
+    assert pack["completion_issues"] == ["no_reviewed_usable_application_material"]
     assert pack["review_record"]["exclusions"][0]["domain_item_id"] == "cv_1"
     assert pack["review_record"]["exclusions"][0]["source_artifact_id"] == intelligence["id"]
     assert decision in pack["review_record"]["decisions_consulted"]
+
+
+def test_gate4_does_not_persist_or_draft_an_incomplete_pack(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _, _, _, intelligence = _seed(conn, workspace_id)
+    _decide(
+        conn, workspace_id, intelligence, "content_unit", "cv_1",
+        "omit_from_positioning",
+    )
+
+    with pytest.raises(PipelineError, match="no reviewed usable application material"):
+        confirm_application_pack(
+            conn, workspace_id, effective_date="2026-08-20", documents_root=tmp_path,
+        )
+
+    assert get_current_artifact(conn, workspace_id, "application_pack") is None
+    assert list_workflow_events(conn, workspace_id) == []
+    assert get_workspace(conn, workspace_id)["workflow_status"] is None
 
 
 def test_unsupported_content_never_enters_pack_but_remains_auditable(tmp_path):

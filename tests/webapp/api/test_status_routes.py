@@ -35,12 +35,24 @@ def test_applied_ignores_client_pack_id_and_binds_current_pack_server_side(tmp_p
     client, settings, workspace_id = _client_workspace(tmp_path)
     with client:
         conn = connect(settings.db_path)
-        old_pack = save_artifact(conn, workspace_id=workspace_id, artifact_type="application_pack", payload={"pack": "A"})
+        old_pack = save_artifact(
+            conn, workspace_id=workspace_id, artifact_type="application_pack",
+            payload={
+                "pack": "A", "cv_content": [{"text": "Reviewed A"}],
+                "cover_letter_content": [],
+            },
+        )
         record_status_change(
             conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-18",
             submitted_pack_artifact_id=old_pack["id"], _allow_drafted=True,
         )
-        current_pack = save_artifact(conn, workspace_id=workspace_id, artifact_type="application_pack", payload={"pack": "B"})
+        current_pack = save_artifact(
+            conn, workspace_id=workspace_id, artifact_type="application_pack",
+            payload={
+                "pack": "B", "cv_content": [{"text": "Reviewed B"}],
+                "cover_letter_content": [],
+            },
+        )
         conn.close()
         response = client.patch(f"/api/workspaces/{workspace_id}/status", json={
             "new_status": "applied", "effective_date": "2026-08-20"

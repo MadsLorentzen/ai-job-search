@@ -4,6 +4,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_artifact, get_current_artifact, save_artifact
 from webapp.persistence.review import list_review_decisions
 from webapp.persistence.workflow import record_status_change
@@ -260,7 +261,7 @@ def build_application_pack(
         "job_fit_result": _artifact_ref(fit_artifact),
         "application_intelligence_result": _artifact_ref(intelligence_artifact),
     }
-    return {
+    pack = {
         "schema_version": "application-pack.v0",
         "source_artifacts": source_artifacts,
         "job": job_artifact["payload"],
@@ -298,6 +299,10 @@ def build_application_pack(
             },
         },
     }
+    completion = application_material_completion(pack)
+    pack["completion_status"] = completion["status"]
+    pack["completion_issues"] = completion["issues"]
+    return pack
 
 
 def confirm_application_pack(
@@ -322,6 +327,11 @@ def confirm_application_pack(
             )
 
         pack = build_application_pack(conn, workspace_id, extensions_dir=extensions_dir)
+        if pack["completion_status"] != "READY":
+            raise PipelineError(
+                "cannot complete Gate 4: no reviewed usable application material; "
+                "the Application Intelligence result remains incomplete"
+            )
         artifact = save_artifact(
             conn, workspace_id=workspace_id, artifact_type="application_pack", payload=pack,
             commit=False,
