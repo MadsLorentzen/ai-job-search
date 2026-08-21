@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Discover jobs · Job Search Workspace{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <div><p class="eyebrow">Before the application workspace</p><h1>Discover and rank jobs</h1>
+  <p>Search installed sources, keep promising jobs, and compare them using the same evidence-grounded Job Fit used by applications.</p></div>
+  <a class="button secondary" href="/user-profile">Edit search preferences</a>
+</section>
+{% if not user_profile %}
+<section class="panel review-surface"><h2>Set up your User Profile first</h2><p>Discovery needs your target roles, locations, sources, and recency preference. These preferences never become career evidence.</p><a class="button" href="/user-profile">Set up User Profile</a></section>
+{% else %}
+{% if search_stale %}<section class="panel review-surface"><strong>Search preferences changed.</strong><p>Run discovery again to use the current User Profile. Existing saved jobs and decisions are preserved.</p></section>{% endif %}
+{% if latest_run %}<section class="summary-strip" aria-label="Latest search status"><strong>Latest search: {{ latest_run.status }}</strong>
+  {% for source, status in latest_run.source_status.items() %}<span><strong>{{ source }}</strong>: {{ status.status }}{% if status.accepted is defined %} · {{ status.accepted }} accepted{% endif %}</span>{% endfor %}
+</section>
+{% for source, status in latest_run.source_status.items() %}{% if status.error or status.limitations %}<section class="panel form-note"><strong>{{ source }}</strong>{% if status.error %}<p>{{ status.error }}</p>{% endif %}{% for limitation in status.limitations or [] %}<p>{{ limitation }}</p>{% endfor %}</section>{% endif %}{% endfor %}{% endif %}
+<form id="discovery-search-form" class="panel form-panel">
+  <div class="panel-heading"><div><p class="eyebrow">Search setup</p><h2>Find candidates</h2><p>Adjusting this search does not change Job Fit scoring.</p></div></div>
+  <div class="form-grid">
+    <label>Search terms, one per line<textarea name="queries" rows="4">{{ preferences.search_terms | join('\n') }}</textarea></label>
+    <label>Locations, one per line<textarea name="locations" rows="4">{{ preferences.locations | join('\n') }}</textarea></label>
+  </div>
+  <fieldset class="extension-picker"><legend>Sources</legend>
+    {% for source in sources %}<label><input type="checkbox" name="sources" value="{{ source }}" {% if not preferences.source_preferences or source in preferences.source_preferences %}checked{% endif %}> {{ source }}</label>{% endfor %}
+  </fieldset>
+  <label>Maximum results per source<input type="number" name="limit_per_source" min="1" max="50" value="20"></label>
+  <button class="button" type="submit">Search jobs</button>
+</form>
+{% endif %}
+
+{% set labels = {'scored': 'Scored', 'unresolved': 'Needs evaluation or review', 'blocked': 'Blocked', 'expired_unavailable': 'Expired or unavailable'} %}
+{% for group_name, candidates in groups.items() %}
+<section class="panel discovery-group" data-discovery-group="{{ group_name }}">
+  <div class="panel-heading"><div><p class="eyebrow">{{ candidates | length }} jobs</p><h2>{{ labels[group_name] }}</h2></div>
+    {% if group_name in ['scored', 'unresolved', 'blocked'] and candidates %}<button class="button secondary discovery-evaluate-selected" type="button">Evaluate selected</button>{% endif %}
+  </div>
+  {% if candidates %}<div class="discovery-list">
+  {% for candidate in candidates %}<article class="discovery-card" data-candidate-id="{{ candidate.id }}">
+    <input class="candidate-select" type="checkbox" aria-label="Select {{ candidate.title }} at {{ candidate.company }}">
+    <div><h3>{{ candidate.title }}</h3><p>{{ candidate.company }}{% if candidate.location %} · {{ candidate.location }}{% endif %}</p>
+      <small>{{ candidate.canonical_source_record.source }} · seen {{ candidate.occurrence_count }} time{% if candidate.occurrence_count != 1 %}s{% endif %}</small> <span class="badge neutral">{{ candidate.lifecycle_status }}</span>
+      {% if candidate.fit_stale %}<span class="badge stale">Fit is stale</span>{% endif %}</div>
+    <div class="discovery-score">{% if candidate.fit and candidate.fit.result.overall_score is not none %}<strong>{{ candidate.fit.result.overall_score }}</strong><small>{{ candidate.fit.result.verdict.display_name if candidate.fit.result.verdict else 'Job Fit' }}</small>{% else %}<strong>—</strong><small>No invented score</small>{% endif %}</div>
+    <div class="review-actions">
+      {% if candidate.lifecycle_status == 'new' %}<button class="button button-small discovery-status" data-status="saved">Save</button>{% endif %}
+      {% if candidate.lifecycle_status in ['new', 'saved'] %}<button class="button button-small secondary discovery-status" data-status="dismissed">Dismiss</button>{% endif %}
+      {% if candidate.lifecycle_status in ['new', 'saved'] %}<button class="button button-small secondary discovery-status" data-status="expired">Mark unavailable</button>{% endif %}
+      {% if candidate.lifecycle_status in ['dismissed', 'expired'] %}<button class="button button-small secondary discovery-status" data-status="new">Resurface</button>{% endif %}
+      {% if candidate.lifecycle_status in ['new', 'saved'] %}<button class="button button-small discovery-promote">Create application</button>{% endif %}
+    </div>
+  </article>{% endfor %}
+  </div>{% else %}<p class="muted">No jobs in this group.</p>{% endif %}
+</section>
+{% endfor %}
+{% endblock %}

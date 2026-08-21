@@ -8,6 +8,9 @@ from fastapi.responses import HTMLResponse
 from webapp.api.dependencies import get_conn
 from product.user_profile import normalize_user_profile
 from webapp.persistence.user_profile import get_current_user_profile
+from product.discovery_search import SUPPORTED_DISCOVERY_SOURCES
+from webapp.persistence.discovery import get_latest_discovery_run
+from webapp.services.discovery import discovery_run_is_stale, grouped_discovery_candidates
 from webapp.services.http_api import JobWorkspaceNotFound
 from webapp.services.workspace_view import (
     build_dashboard_view_model,
@@ -57,6 +60,27 @@ def user_profile_page(request: Request, conn: sqlite3.Connection = Depends(get_c
         {
             "user_profile": record,
             "preferences": record["payload"] if record else normalize_user_profile({}),
+        },
+    )
+
+
+@router.get("/discover", response_class=HTMLResponse)
+def discovery_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+    profile = get_current_user_profile(conn)
+    preferences = profile["payload"] if profile else normalize_user_profile({})
+    latest_run = get_latest_discovery_run(conn)
+    return request.app.state.templates.TemplateResponse(
+        request,
+        "discovery.html",
+        {
+            "user_profile": profile,
+            "preferences": preferences,
+            "sources": SUPPORTED_DISCOVERY_SOURCES,
+            "groups": grouped_discovery_candidates(
+                conn, extensions_dir=request.app.state.settings.extensions_dir
+            ),
+            "latest_run": latest_run,
+            "search_stale": discovery_run_is_stale(conn, latest_run),
         },
     )
 

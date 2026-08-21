@@ -78,17 +78,20 @@ def get_current_profile_snapshot(conn: sqlite3.Connection) -> dict[str, Any] | N
 
 
 def create_job_from_source_record(
-    conn: sqlite3.Connection, *, company: str, title: str, source_record: dict[str, Any]
+    conn: sqlite3.Connection, *, company: str, title: str, source_record: dict[str, Any],
+    workspace_id: str | None = None, commit: bool = True,
 ) -> dict[str, Any]:
     try:
         job_snapshot = normalize_job_source_record(source_record)
     except Exception as exc:
         raise PipelineError(f"job ingestion failed: {exc}") from exc
-    workspace = create_workspace(conn, company=company, title=title)
+    workspace = create_workspace(
+        conn, company=company, title=title, workspace_id=workspace_id, commit=commit
+    )
     content_id = job_snapshot_content_id(job_snapshot)
     artifact = save_artifact(
         conn, workspace_id=workspace["id"], artifact_type="job_posting_snapshot",
-        payload=job_snapshot, content_id=content_id,
+        payload=job_snapshot, content_id=content_id, commit=commit,
     )
     return {"workspace": workspace, "artifact": artifact}
 

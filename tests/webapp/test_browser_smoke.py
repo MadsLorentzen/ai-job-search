@@ -272,6 +272,24 @@ class _ApplicationIntelligenceProvider:
         ]})
 
 
+class _DiscoveryRunner:
+    def search(self, source, **kwargs):
+        assert source == "freehire-search"
+        return [{
+            "id": "browser-discovery-1",
+            "title": "Evidence Data Engineer",
+            "company": "Discovery Evidence Co",
+            "location": "London, UK",
+            "date": "2026-08-20",
+            "url": "https://freehire.me/jobs/browser-discovery-1",
+            "work_mode": "hybrid",
+            "regions": ["eu"],
+            "countries": ["GB"],
+            "skills": ["Python"],
+            "description": POSTING_TEXT,
+        }]
+
+
 @pytest.fixture
 def live_server(tmp_path, monkeypatch):
     profile_root = tmp_path / "profile"
@@ -294,6 +312,7 @@ def live_server(tmp_path, monkeypatch):
     app.state.job_understanding_provider = _UnderstandingProvider()
     app.state.semantic_adapter = _SemanticAdapter()
     app.state.application_intelligence_provider = _ApplicationIntelligenceProvider()
+    app.state.discovery_portal_runner = _DiscoveryRunner()
     server = uvicorn.Server(uvicorn.Config(
         app, host="127.0.0.1", port=port, log_level="warning", access_log=False,
     ))
@@ -542,7 +561,6 @@ def test_stale_and_review_negative_paths_are_enforced_in_rendered_ui(page, live_
     assert page.get_by_role("button", name="Rerun Application Intelligence").count() == 0
     assert page.locator('[data-status="drafted"]').count() == 0
     _assert_no_private_browser_content(page, live_server)
-
     page.locator('input[name="extension_ids"][value="data-transfer"]').check()
     _click_reload(page, page.get_by_role("button", name="Rerun Job Fit"))
     assert page.get_by_role("button", name="Rerun Application Intelligence").is_visible()
@@ -564,4 +582,41 @@ def test_stale_and_review_negative_paths_are_enforced_in_rendered_ui(page, live_
         raise AssertionError("recovered review queue did not converge")
     assert page.get_by_text("0 outstanding", exact=True).is_visible()
     assert page.locator("button.confirm-pack").is_enabled()
+    _assert_no_private_browser_content(page, live_server)
+
+
+def test_discovery_search_evaluate_and_promote_browser_lifecycle(page, live_server):
+    _refresh_profile(page, live_server)
+    page.goto(f"{live_server.base_url}/user-profile", wait_until="networkidle")
+    page.locator('textarea[name="target_roles"]').fill("Data Engineer")
+    page.locator('textarea[name="locations"]').fill("London, UK")
+    page.locator('textarea[name="search_terms"]').fill("Python data pipelines")
+    page.locator('textarea[name="source_preferences"]').fill("freehire-search")
+    _click_reload(page, page.get_by_role("button", name="Save User Profile"))
+
+    page.goto(f"{live_server.base_url}/discover", wait_until="networkidle")
+    assert page.get_by_role("heading", name="Discover and rank jobs").is_visible()
+    assert page.get_by_text("Adjusting this search does not change Job Fit scoring.").is_visible()
+    _click_reload(page, page.get_by_role("button", name="Search jobs"))
+
+    card = page.locator('[data-candidate-id]').filter(has_text="Discovery Evidence Co")
+    assert card.get_by_text("Evidence Data Engineer").is_visible()
+    assert card.get_by_text("No invented score").is_visible()
+    card.locator(".candidate-select").check()
+    _click_reload(page, page.get_by_role("button", name="Evaluate selected").first)
+
+    card = page.locator('[data-candidate-id]').filter(has_text="Discovery Evidence Co")
+    assert card.get_by_text("No invented score").is_visible()
+    _click_reload(page, card.get_by_role("button", name="Save"))
+    card = page.locator('[data-candidate-id]').filter(has_text="Discovery Evidence Co")
+    with page.expect_navigation(wait_until="networkidle"):
+        card.get_by_role("button", name="Create application").click()
+    assert "/workspaces/" in page.url
+    assert page.get_by_text("Discovery Evidence Co", exact=True).is_visible()
+    assert page.get_by_role("heading", name="Evidence Data Engineer").is_visible()
+
+    page.goto(f"{live_server.base_url}/discover", wait_until="networkidle")
+    assert page.locator('[data-candidate-id]').filter(has_text="Discovery Evidence Co").count() == 1
+    applications = page.request.get(f"{live_server.base_url}/api/workspaces").json()["workspaces"]
+    assert len([item for item in applications if item["company"] == "Discovery Evidence Co"]) == 1
     _assert_no_private_browser_content(page, live_server)
