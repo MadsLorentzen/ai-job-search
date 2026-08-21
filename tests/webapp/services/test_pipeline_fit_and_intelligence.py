@@ -1,10 +1,14 @@
+import json
+
 import pytest
 
 from webapp.persistence.db import init_db, connect
 from webapp.persistence.artifacts import save_artifact, get_current_artifact
 from webapp.persistence.workspaces import create_workspace
 from webapp.persistence.provider_audits import list_provider_audits
+from webapp.persistence.user_profile import save_user_profile
 from webapp.services.pipeline import refresh_profile, run_job_fit, run_application_intelligence, PipelineError
+from webapp.services.staleness import check_staleness
 from webapp.services.semantic_proposal_adapter import FakeSemanticProposalAdapter
 from webapp.services.semantic_proposer_errors import SemanticProposerProviderError
 from webapp.services.input_identity import content_identity
@@ -88,6 +92,48 @@ def test_run_job_fit_uses_global_profile_not_a_workspace_local_one(tmp_path, web
     saved = run_job_fit(conn, workspace_id, adapter, request_id="req_fit_2")
     assert saved["artifact_type"] == "job_fit_result"
     conn.close()
+
+
+def test_user_profile_preferences_never_enter_or_stale_job_fit(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace_with_profile_and_job(tmp_path, webapp_profile_root)
+    evidence_before = get_current_artifact(conn, "profile", "profile_snapshot")
+    save_user_profile(conn, {
+        "target_roles": ["Project Manager"],
+        "locations": ["Aberdeen, UK"],
+        "remote_preference": "remote_or_hybrid",
+        "recency_days": 14,
+    })
+    adapter = FakeSemanticProposalAdapter(canned_response={"matches": [], "gates": []})
+    fit = run_job_fit(conn, workspace_id, adapter, request_id="req_fit_preferences")
+    request = get_current_artifact(conn, workspace_id, "job_fit_request")
+
+    assert "user_profile" not in json.dumps(request["payload"])
+    fingerprint_types = {
+        row["upstream_artifact_type"]
+        for row in conn.execute(
+            "SELECT upstream_artifact_type FROM dependency_fingerprints WHERE artifact_id = ?",
+            (request["id"],),
+        ).fetchall()
+    }
+    assert not any("user_profile" in item for item in fingerprint_types)
+    staleness_before_preference_change = check_staleness(
+        conn, workspace_id, "job_fit_result"
+    )
+
+    save_user_profile(conn, {
+        "target_roles": ["Programme Director"],
+        "locations": ["Remote"],
+        "remote_preference": "remote_only",
+        "recency_days": 7,
+    })
+
+    evidence_after = get_current_artifact(conn, "profile", "profile_snapshot")
+    assert evidence_after["id"] == evidence_before["id"]
+    assert evidence_after["content_id"] == evidence_before["content_id"]
+    assert get_current_artifact(conn, workspace_id, "job_fit_result")["id"] == fit["id"]
+    assert check_staleness(
+        conn, workspace_id, "job_fit_result"
+    ) == staleness_before_preference_change
 
 
 def test_run_job_fit_without_profile_raises_pipeline_error(tmp_path):

@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from webapp.api.dependencies import get_conn
+from product.user_profile import normalize_user_profile
+from webapp.persistence.user_profile import get_current_user_profile
 from webapp.services.http_api import JobWorkspaceNotFound
 from webapp.services.workspace_view import (
     build_dashboard_view_model,
@@ -43,6 +45,19 @@ def profile_page(request: Request, conn: sqlite3.Connection = Depends(get_conn))
             ),
             "return_to": return_to,
         }
+    )
+
+
+@router.get("/user-profile", response_class=HTMLResponse)
+def user_profile_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+    record = get_current_user_profile(conn)
+    return request.app.state.templates.TemplateResponse(
+        request,
+        "user_profile.html",
+        {
+            "user_profile": record,
+            "preferences": record["payload"] if record else normalize_user_profile({}),
+        },
     )
 
 
