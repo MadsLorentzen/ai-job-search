@@ -5,6 +5,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
+from webapp.application_material import application_material_is_completion_ready
+from webapp.persistence.artifacts import get_artifact
 from webapp.persistence.workspaces import get_workspace
 
 TRACKER_STATUSES = (
@@ -39,6 +41,20 @@ def record_status_change(
     workspace = get_workspace(conn, workspace_id)
     previous_status = workspace["workflow_status"] if workspace else None
 
+    if new_status == "drafted":
+        if submitted_pack_artifact_id is None:
+            raise ValueError("drafted requires a reviewed application pack binding")
+        pack = get_artifact(conn, submitted_pack_artifact_id)
+        if (
+            pack is None
+            or pack["workspace_id"] != workspace_id
+            or pack["artifact_type"] != "application_pack"
+            or not application_material_is_completion_ready(pack["payload"])
+        ):
+            raise ValueError(
+                "drafted requires an application pack with reviewed usable application material"
+            )
+
     if new_status == "applied":
         if previous_status != "drafted":
             raise ValueError(
@@ -51,6 +67,17 @@ def record_status_change(
                 "applied requires submitted_pack_artifact_id: the event must identify exactly "
                 "which reviewed application pack was submitted, since multiple Gate-4 "
                 "confirmations may have occurred while the workspace was still 'drafted'"
+            )
+        pack = get_artifact(conn, submitted_pack_artifact_id)
+        if (
+            pack is None
+            or pack["workspace_id"] != workspace_id
+            or pack["artifact_type"] != "application_pack"
+            or not application_material_is_completion_ready(pack["payload"])
+        ):
+            raise ValueError(
+                "applied is blocked because the bound application pack has no reviewed "
+                "usable application material"
             )
 
     event_id = f"evt_{uuid.uuid4().hex[:20]}"

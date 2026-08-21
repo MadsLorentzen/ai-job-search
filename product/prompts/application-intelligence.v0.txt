@@ -14,9 +14,11 @@ positioning statement), select:
   paraphrase or invent an id);
 - the order to present them in;
 - one bounded rendering_variant per atom, chosen only from the enumerated list
-  provided to you for that assertion type (never invent a new variant name);
+  in available_rendering_templates for that assertion type (never invent a new
+  variant name or use a variant registered for a different assertion type);
 - optional connective text between atoms, chosen only from the provided
   closed-class connective list (never write your own transition wording).
+  A connective must sit between two atoms: never place one after the final atom.
 
 Do not write free-text sentences. Do not describe the candidate's experience,
 strength, proficiency, or duration in your own words. All wording of the final

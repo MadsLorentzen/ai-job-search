@@ -45,7 +45,10 @@ def test_record_status_change_rejects_applied_without_prior_drafted(tmp_path):
 def test_record_status_change_rejects_applied_without_pack_binding(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
     from webapp.persistence.artifacts import save_artifact
-    pack = save_artifact(conn, workspace_id=workspace_id, artifact_type="application_pack", payload={})
+    pack = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="application_pack",
+        payload={"cv_content": [{"text": "Reviewed material"}], "cover_letter_content": []},
+    )
     record_status_change(conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-18",
                           submitted_pack_artifact_id=pack["id"], _allow_drafted=True)
     with pytest.raises(ValueError, match="applied requires submitted_pack_artifact_id"):
@@ -56,7 +59,10 @@ def test_record_status_change_rejects_applied_without_pack_binding(tmp_path):
 def test_record_status_change_allows_applied_after_drafted_with_pack_binding(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
     from webapp.persistence.artifacts import save_artifact
-    pack = save_artifact(conn, workspace_id=workspace_id, artifact_type="application_pack", payload={})
+    pack = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="application_pack",
+        payload={"cv_content": [{"text": "Reviewed material"}], "cover_letter_content": []},
+    )
     record_status_change(conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-18",
                           submitted_pack_artifact_id=pack["id"], _allow_drafted=True)
     record_status_change(conn, workspace_id=workspace_id, new_status="applied", effective_date="2026-08-19",
@@ -68,10 +74,36 @@ def test_record_status_change_allows_applied_after_drafted_with_pack_binding(tmp
     conn.close()
 
 
+def test_record_status_change_rejects_applied_with_incomplete_pack_binding(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    from webapp.persistence.artifacts import save_artifact
+    pack = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="application_pack",
+        payload={"cv_content": [], "cover_letter_content": []},
+    )
+    # Simulate a legacy row created before completion gating existed. The
+    # applied transition must still defend the invariant independently.
+    conn.execute(
+        "UPDATE workspaces SET workflow_status = 'drafted' WHERE id = ?", (workspace_id,)
+    )
+    conn.commit()
+
+    with pytest.raises(ValueError, match="no reviewed usable application material"):
+        record_status_change(
+            conn, workspace_id=workspace_id, new_status="applied", effective_date="2026-08-19",
+            submitted_pack_artifact_id=pack["id"],
+        )
+
+    assert get_workspace(conn, workspace_id)["workflow_status"] == "drafted"
+
+
 def test_record_status_change_allows_drafted_with_internal_flag_and_pack_binding(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
     from webapp.persistence.artifacts import save_artifact
-    pack = save_artifact(conn, workspace_id=workspace_id, artifact_type="application_pack", payload={})
+    pack = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="application_pack",
+        payload={"cv_content": [{"text": "Reviewed material"}], "cover_letter_content": []},
+    )
     record_status_change(
         conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-18",
         submitted_pack_artifact_id=pack["id"], _allow_drafted=True,

@@ -22,6 +22,7 @@ from product.application_intelligence import (
     ASSERTION_TYPES,
     CONNECTIVE_ALLOWLIST,
     RENDERING_VARIANTS,
+    TEMPLATE_TABLE,
     UNIT_TYPES,
 )
 from product.application_intelligence_providers import (
@@ -181,6 +182,14 @@ def _hosted_input(request: dict[str, Any]) -> str:
         ],
         "available_assertion_types": sorted(ASSERTION_TYPES),
         "available_rendering_variants": sorted(RENDERING_VARIANTS),
+        "available_rendering_templates": {
+            assertion_type: sorted(
+                variant
+                for candidate_type, variant in TEMPLATE_TABLE
+                if candidate_type == assertion_type
+            )
+            for assertion_type in sorted(ASSERTION_TYPES)
+        },
         "available_unit_types": sorted(UNIT_TYPES),
     }
     return json.dumps(minimized, ensure_ascii=False, separators=(",", ":"))

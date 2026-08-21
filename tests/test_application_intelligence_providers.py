@@ -1,5 +1,6 @@
 """Tests for the Ticket 8 provider-neutral boundary."""
 
+import json
 import unittest
 
 from product.application_intelligence_providers import (
@@ -125,6 +126,14 @@ class TestOpenAIProviderCredential(unittest.TestCase):
 
         self.assertEqual(response.payload, {"content_units": []})
         self.assertEqual(recorded["kwargs"]["model"], "gpt-5.4-mini-2026-03-17")
+        hosted_input = json.loads(recorded["kwargs"]["input"])
+        self.assertEqual(
+            hosted_input["available_rendering_templates"]["responsibility"],
+            ["AS_STRENGTH", "PLAIN"],
+        )
+        self.assertEqual(
+            hosted_input["available_rendering_templates"]["certification"], ["PLAIN"]
+        )
         self.assertEqual(provider.last_audit.provider_id, "openai")
 
 

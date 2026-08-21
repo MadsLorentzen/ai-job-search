@@ -272,6 +272,14 @@ def build_workspace_view_model(
             and item["decision"]["disposition"] != "omit"
         )
     ]
+    has_reviewed_usable_material = any(
+        item["review_item_type"] == "content_unit"
+        and isinstance(item["item"].get("text"), str)
+        and bool(item["item"]["text"].strip())
+        and item["decision"] is not None
+        and item["decision"]["disposition"] == "acknowledged_and_proceed"
+        for item in review_items
+    )
     profile_ready = profile_snapshot_is_ready(artifacts["profile"])
     job_state = "complete" if artifacts["job"] else "current"
     understanding_state = _result_state(artifacts["understanding"], stale["understanding"])
@@ -294,7 +302,9 @@ def build_workspace_view_model(
     elif not artifacts["fit"] or not artifacts["intelligence"]:
         review_state = "unavailable"
     else:
-        review_state = "needs_review" if outstanding else "current"
+        review_state = (
+            "needs_review" if outstanding or not has_reviewed_usable_material else "current"
+        )
     status_state = (
         "unavailable" if not artifacts["pack"] else
         "current" if workspace["workflow_status"] == "drafted" else "complete"
@@ -329,7 +339,7 @@ def build_workspace_view_model(
             "can_understand": bool(artifacts["job"]),
             "can_fit": understanding_state == "complete" and profile_ready,
             "can_intelligence": fit_state in {"complete", "needs_review"},
-            "can_confirm_pack": review_state == "current",
+            "can_confirm_pack": review_state == "current" and has_reviewed_usable_material,
         },
     }
 

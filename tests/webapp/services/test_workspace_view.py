@@ -207,7 +207,11 @@ def test_submitted_pack_remains_non_stale_history_after_profile_refresh(tmp_path
     _, fit, intelligence = _seed_evidence(conn, workspace_id)
     pack = save_artifact(
         conn, workspace_id=workspace_id, artifact_type="application_pack",
-        payload={"source_artifacts": {}}, content_id="pack_A",
+        payload={
+            "source_artifacts": {},
+            "cv_content": [{"text": "Reviewed material"}],
+            "cover_letter_content": [],
+        }, content_id="pack_A",
     )
     record_dependency_fingerprint(
         conn, artifact_id=pack["id"], upstream_artifact_type="job_fit_result",
@@ -252,6 +256,30 @@ def test_blocking_review_disposition_keeps_gate_four_disabled(tmp_path):
     assert view["controls"]["can_confirm_pack"] is False
 
 
+def test_omitting_all_usable_material_keeps_gate_four_incomplete(tmp_path, monkeypatch):
+    from webapp.services import workspace_view
+
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_evidence(conn, workspace_id)
+    monkeypatch.setattr(
+        workspace_view,
+        "_build_review_items",
+        lambda *args, **kwargs: [{
+            "review_item_type": "content_unit",
+            "domain_item_id": "unit_ready",
+            "source_artifact_id": "ai_A",
+            "item": {"text": "Reviewed material"},
+            "decision": {"disposition": "omit_from_positioning"},
+        }],
+    )
+
+    view = workspace_view.build_workspace_view_model(conn, workspace_id)
+
+    assert view["outstanding_review_count"] == 0
+    assert view["stages"]["review"]["state"] == "needs_review"
+    assert view["controls"]["can_confirm_pack"] is False
+
+
 def test_acknowledging_unsafe_profile_item_does_not_resolve_ui_review(
     tmp_path, monkeypatch,
 ):
@@ -283,7 +311,10 @@ def test_dashboard_has_required_summary_fields_and_filters(tmp_path):
     active = build_dashboard_view_model(conn, filter_name="active")
     row = active["workspaces"][0]
     assert {"company", "title", "computed_stage", "fit_verdict", "recommendation", "stale", "review_count", "workflow_status", "updated_at"} <= set(row)
-    pack = save_artifact(conn, workspace_id=workspace_id, artifact_type="application_pack", payload={})
+    pack = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="application_pack",
+        payload={"cv_content": [{"text": "Reviewed material"}], "cover_letter_content": []},
+    )
     record_status_change(conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-20", submitted_pack_artifact_id=pack["id"], _allow_drafted=True)
     assert build_dashboard_view_model(conn, filter_name="active")["workspaces"] == []
     assert build_dashboard_view_model(conn, filter_name="drafted")["workspaces"][0]["id"] == workspace_id

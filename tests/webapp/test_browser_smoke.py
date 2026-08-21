@@ -401,6 +401,33 @@ def test_stale_and_review_negative_paths_are_enforced_in_rendered_ui(page, live_
     assert page.locator('[data-status="drafted"]').count() == 0
     assert "applied" not in page.locator(".workspace-header").inner_text().casefold()
 
+    for _ in range(30):
+        omit = page.locator(
+            'article.review-item:not(:has(.decision)) '
+            'button.review-action[data-disposition="omit_from_positioning"]'
+        ).first
+        if omit.count() == 0:
+            break
+        _click_reload(page, omit)
+    else:
+        raise AssertionError("omission review queue did not converge")
+    assert page.get_by_text("0 outstanding", exact=True).is_visible()
+    assert page.locator("button.confirm-pack").is_disabled()
+
+    workspace_id = workspace_url.rsplit("/", 1)[-1]
+    pack_response = page.request.post(
+        f"{live_server.base_url}/api/workspaces/{workspace_id}/application-pack",
+        data={"confirmed": True, "effective_date": "2026-08-21"},
+    )
+    assert pack_response.status == 400
+    assert "no reviewed usable application material" in pack_response.json()["detail"]
+    applied_response = page.request.patch(
+        f"{live_server.base_url}/api/workspaces/{workspace_id}/status",
+        data={"new_status": "applied", "effective_date": "2026-08-21"},
+    )
+    assert applied_response.status == 400
+    assert page.locator('[data-status="drafted"]').count() == 0
+
     candidate_path = (
         live_server.profile_root
         / ".claude/skills/job-application-assistant/01-candidate-profile.md"

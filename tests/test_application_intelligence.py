@@ -252,7 +252,7 @@ class TestBareSkillClaimCannotReachHandsOnTemplate(unittest.TestCase):
 
         unit = result["cv_content"][0]
         self.assertEqual(unit["status"], "READY")
-        self.assertIn("Hands-on delivery of", unit["text"])
+        self.assertEqual(unit["text"], "Built production data pipelines in Python")
 
 
 class TestJobReferenceAtom(unittest.TestCase):
@@ -412,6 +412,41 @@ class TestResultStatusPropagation(unittest.TestCase):
         self.assertEqual(result["cv_content"], [])
         self.assertEqual(result["cover_letter_content"], [])
         self.assertEqual(result["recommendation"], "proceed")
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+        self.assertIn("No usable application material was generated.", result["notes"])
+
+
+class TestCompositionQuality(unittest.TestCase):
+    def test_connective_after_final_atom_is_rejected_without_dangling_prose(self):
+        request = application_intelligence_request("job-fit-result-ready.json")
+        proposal = {
+            "content_units": [{
+                "unit_id": "cv-no-dangling-connective",
+                "unit_type": "cv_bullet",
+                "atoms": [{
+                    "atom_id": "atom-1", "atom_kind": "candidate_fact",
+                    "assertion_type": "responsibility",
+                    "profile_evidence_ids": ["clm_4444444444444444"],
+                    "rendering_variant": "AS_STRENGTH",
+                }, {
+                    "atom_id": "atom-2", "atom_kind": "candidate_fact",
+                    "assertion_type": "technical_skill",
+                    "profile_evidence_ids": ["clm_1111111111111111"],
+                    "rendering_variant": "AS_STRENGTH",
+                }],
+                "connectives": [{"after_atom_index": 0, "text": "with"}],
+            }],
+        }
+
+        result = analyze_application_intelligence(request, proposal)
+
+        unit = result["cv_content"][0]
+        self.assertEqual(unit["status"], "NEEDS_REVIEW")
+        self.assertEqual(unit["text"], "Built production data pipelines in Python")
+        self.assertTrue(any(
+            "following rendered atom" in claim["reason"]
+            for claim in result["unsupported_claims"]
+        ))
 
 
 class TestExtensionOnlyFactsRejected(unittest.TestCase):
