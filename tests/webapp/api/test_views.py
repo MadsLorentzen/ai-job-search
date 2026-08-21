@@ -2,6 +2,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
+from tests.webapp.fixtures.application_material import completion_ready_pack_payload
 from webapp.app import create_app
 from webapp.config import Settings
 from webapp.persistence.artifacts import save_artifact
@@ -70,11 +71,7 @@ def test_dashboard_offers_only_valid_real_world_status_control(tmp_path):
         workspace = create_workspace(conn, company="Drafted Co", title="Planner")
         pack = save_artifact(
             conn, workspace_id=workspace["id"], artifact_type="application_pack",
-            payload={
-                "completion_status": "READY",
-                "cv_content": [{"text": "Reviewed material"}],
-                "cover_letter_content": [],
-            },
+            payload=completion_ready_pack_payload("dashboard_action"),
         )
         record_status_change(
             conn, workspace_id=workspace["id"], new_status="drafted",
@@ -209,6 +206,10 @@ def test_workspace_renders_stepper_all_evidence_and_safe_controls(tmp_path):
         assert "Omit — exclude from application material" in text
         assert "Acknowledging allows this item to be used by the reviewed pack." in text
         assert "Omitting keeps this item in the audit trail but excludes it from application material." in text
+        assert "Application material:" in text
+        assert "INCOMPLETE" in text
+        assert "insufficient_cv_units" in text
+        assert "insufficient_cover_letter_words" in text
 
 
 def test_workspace_presents_reviewed_cv_and_cover_letter_as_usable_output(tmp_path):
@@ -218,16 +219,17 @@ def test_workspace_presents_reviewed_cv_and_cover_letter_as_usable_output(tmp_pa
         ensure_profile_workspace(conn)
         workspace = create_workspace(conn, company="Acme", title="Planner")
         _seed_evidence(conn, workspace["id"])
+        payload = completion_ready_pack_payload("reviewed")
+        payload["cv_content"][0]["text"] = (
+            "Coordinated nine-rig planning. " + payload["cv_content"][0]["text"]
+        )
+        payload["cover_letter_content"][0]["text"] = (
+            "I offer evidence-backed planning experience. "
+            + payload["cover_letter_content"][0]["text"]
+        )
         save_artifact(
             conn, workspace_id=workspace["id"], artifact_type="application_pack",
-            content_id="pack_reviewed", payload={
-                "completion_status": "READY",
-                "cv_content": [{"unit_id": "cv-reviewed", "text": "Coordinated nine-rig planning."}],
-                "cover_letter_content": [{
-                    "unit_id": "cover-reviewed", "text": "I offer evidence-backed planning experience."
-                }],
-                "review_record": {"exclusions": []},
-            },
+            content_id="pack_reviewed", payload=payload,
         )
         conn.close()
 
@@ -240,6 +242,7 @@ def test_workspace_presents_reviewed_cv_and_cover_letter_as_usable_output(tmp_pa
         assert "I offer evidence-backed planning experience." in text
         assert 'data-copy-section="cv"' in text
         assert 'data-copy-section="cover-letter"' in text
+        assert "Legacy pack" not in text
 
 
 def test_historical_pack_is_not_presented_as_revalidated_and_empty_copy_is_absent(tmp_path):
@@ -250,6 +253,7 @@ def test_historical_pack_is_not_presented_as_revalidated_and_empty_copy_is_absen
         save_artifact(
             conn, workspace_id=workspace["id"], artifact_type="application_pack",
             content_id="pack_legacy", payload={
+                "completion_status": "READY",
                 "cv_content": [],
                 "cover_letter_content": [{"text": "A historical fragment."}],
             },

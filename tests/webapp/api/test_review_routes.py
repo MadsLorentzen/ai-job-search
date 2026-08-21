@@ -7,7 +7,7 @@ from webapp.persistence.db import connect
 from webapp.persistence.review import list_review_decisions
 from webapp.persistence.workflow import list_workflow_events
 from webapp.persistence.workspaces import ensure_profile_workspace
-from tests.webapp.services.test_application_pack import _decide, _seed
+from tests.webapp.services.test_application_pack import _decide, _seed, _completion_ready_units
 
 
 def _app_with_pack_chain(tmp_path):
@@ -20,8 +20,10 @@ def _app_with_pack_chain(tmp_path):
         ensure_profile_workspace(conn)
         from webapp.persistence.workspaces import create_workspace
         workspace = create_workspace(conn, company="Acme", title="Backend Engineer")
-        _, _, _, intelligence = _seed(conn, workspace["id"])
-        _decide(conn, workspace["id"], intelligence, "content_unit", "cv_1")
+        units = _completion_ready_units()
+        _, _, _, intelligence = _seed(conn, workspace["id"], units=units)
+        for unit in units:
+            _decide(conn, workspace["id"], intelligence, "content_unit", unit["unit_id"])
         conn.close()
     return app, settings, workspace["id"]
 
@@ -39,7 +41,13 @@ def test_review_view_and_decision_route(tmp_path):
         })
         assert response.status_code == 201
         conn = connect(settings.db_path)
-        assert len(list_review_decisions(conn, workspace_id, intelligence["id"])) == 2
+        decisions = list_review_decisions(conn, workspace_id, intelligence["id"])
+        assert len(decisions) == 4
+        cv_decisions = [item for item in decisions if item["domain_item_id"] == "cv_1"]
+        assert [item["disposition"] for item in cv_decisions] == [
+            "omit_from_positioning",
+            "acknowledged_and_proceed",
+        ]
         conn.close()
 
 

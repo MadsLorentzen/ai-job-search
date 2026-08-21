@@ -1,3 +1,4 @@
+from tests.webapp.fixtures.application_material import completion_ready_pack_payload
 from webapp.persistence.artifacts import save_artifact
 from webapp.persistence.db import connect, init_db
 from webapp.persistence.review import save_review_decision
@@ -279,8 +280,7 @@ def test_submitted_pack_remains_non_stale_history_after_profile_refresh(tmp_path
         conn, workspace_id=workspace_id, artifact_type="application_pack",
         payload={
             "source_artifacts": {},
-            "cv_content": [{"text": "Reviewed material"}],
-            "cover_letter_content": [],
+            **completion_ready_pack_payload("submitted"),
         }, content_id="pack_A",
     )
     record_dependency_fingerprint(
@@ -348,6 +348,13 @@ def test_omitting_all_usable_material_keeps_gate_four_incomplete(tmp_path, monke
     assert view["outstanding_review_count"] == 0
     assert view["stages"]["review"]["state"] == "needs_review"
     assert view["review_completion_status"] == "INCOMPLETE"
+    assert view["review_completion"]["issues"] == [
+        "insufficient_cv_units",
+        "missing_cv_bullet",
+        "insufficient_cv_words",
+        "insufficient_cover_letter_paragraphs",
+        "insufficient_cover_letter_words",
+    ]
     assert view["controls"]["can_confirm_pack"] is False
 
 
@@ -384,7 +391,7 @@ def test_dashboard_has_required_summary_fields_and_filters(tmp_path):
     assert {"company", "title", "computed_stage", "fit_verdict", "recommendation", "stale", "review_count", "workflow_status", "updated_at"} <= set(row)
     pack = save_artifact(
         conn, workspace_id=workspace_id, artifact_type="application_pack",
-        payload={"cv_content": [{"text": "Reviewed material"}], "cover_letter_content": []},
+        payload=completion_ready_pack_payload("dashboard"),
     )
     record_status_change(conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-20", submitted_pack_artifact_id=pack["id"], _allow_drafted=True)
     assert build_dashboard_view_model(conn, filter_name="active")["workspaces"] == []

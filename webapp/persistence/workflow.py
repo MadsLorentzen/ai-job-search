@@ -5,7 +5,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from webapp.application_material import application_material_is_completion_ready
+from product.application_material_contract import COMPLETION_CONTRACT_VERSION
+from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_artifact
 from webapp.persistence.workspaces import get_workspace
 
@@ -45,14 +46,29 @@ def record_status_change(
         if submitted_pack_artifact_id is None:
             raise ValueError("drafted requires a reviewed application pack binding")
         pack = get_artifact(conn, submitted_pack_artifact_id)
+        completion = (
+            application_material_completion(pack["payload"])
+            if pack is not None
+            and pack["workspace_id"] == workspace_id
+            and pack["artifact_type"] == "application_pack"
+            else None
+        )
+        contract_is_current = (
+            pack is not None
+            and pack["payload"].get("completion_contract_version")
+            == COMPLETION_CONTRACT_VERSION
+        )
         if (
             pack is None
             or pack["workspace_id"] != workspace_id
             or pack["artifact_type"] != "application_pack"
-            or not application_material_is_completion_ready(pack["payload"])
+            or not contract_is_current
+            or completion["status"] != "READY"
         ):
             raise ValueError(
-                "drafted requires an application pack with reviewed usable application material"
+                "drafted requires an application pack validated under the current "
+                "substantive-completion contract with reviewed usable application material"
+                + (f": {', '.join(completion['issues'])}" if completion else "")
             )
 
     if new_status == "applied":
@@ -69,15 +85,30 @@ def record_status_change(
                 "confirmations may have occurred while the workspace was still 'drafted'"
             )
         pack = get_artifact(conn, submitted_pack_artifact_id)
+        completion = (
+            application_material_completion(pack["payload"])
+            if pack is not None
+            and pack["workspace_id"] == workspace_id
+            and pack["artifact_type"] == "application_pack"
+            else None
+        )
+        contract_is_current = (
+            pack is not None
+            and pack["payload"].get("completion_contract_version")
+            == COMPLETION_CONTRACT_VERSION
+        )
         if (
             pack is None
             or pack["workspace_id"] != workspace_id
             or pack["artifact_type"] != "application_pack"
-            or not application_material_is_completion_ready(pack["payload"])
+            or not contract_is_current
+            or completion["status"] != "READY"
         ):
             raise ValueError(
                 "applied is blocked because the bound application pack has no reviewed "
-                "usable application material"
+                "usable application material validated under the current "
+                "substantive-completion contract"
+                + (f": {', '.join(completion['issues'])}" if completion else "")
             )
 
     event_id = f"evt_{uuid.uuid4().hex[:20]}"

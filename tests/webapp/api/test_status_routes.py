@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from tests.webapp.fixtures.application_material import completion_ready_pack_payload
 from webapp.app import create_app
 from webapp.config import Settings
 from webapp.persistence.artifacts import save_artifact
@@ -37,10 +38,7 @@ def test_applied_ignores_client_pack_id_and_binds_current_pack_server_side(tmp_p
         conn = connect(settings.db_path)
         old_pack = save_artifact(
             conn, workspace_id=workspace_id, artifact_type="application_pack",
-            payload={
-                "pack": "A", "cv_content": [{"text": "Reviewed A"}],
-                "cover_letter_content": [],
-            },
+            payload={"pack": "A", **completion_ready_pack_payload("old")},
         )
         record_status_change(
             conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-18",
@@ -48,10 +46,7 @@ def test_applied_ignores_client_pack_id_and_binds_current_pack_server_side(tmp_p
         )
         current_pack = save_artifact(
             conn, workspace_id=workspace_id, artifact_type="application_pack",
-            payload={
-                "pack": "B", "cv_content": [{"text": "Reviewed B"}],
-                "cover_letter_content": [],
-            },
+            payload={"pack": "B", **completion_ready_pack_payload("current")},
         )
         conn.close()
         response = client.patch(f"/api/workspaces/{workspace_id}/status", json={

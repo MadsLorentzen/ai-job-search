@@ -27,6 +27,7 @@ from webapp.services.semantic_proposer_errors import SemanticProposerProviderErr
 from webapp.services.staleness import check_staleness
 
 from tests.webapp.fixtures.acceptance.fixtures import (
+    completion_ready_content_units,
     extension,
     full_fit_proposals,
     provider_candidate,
@@ -214,7 +215,7 @@ def _close(client: TestClient) -> None:
 
 def test_real_ticket7_and_8_chain_surfaces_direct_functional_transferable_and_review(tmp_path):
     client, _, _, workspace_id = _build_chain(
-        tmp_path, ai_units=[ready_content_unit()], conditional_extension=True
+        tmp_path, ai_units=completion_ready_content_units(), conditional_extension=True
     )
     try:
         view = _review(client, workspace_id)
@@ -270,7 +271,9 @@ def test_affirmative_blocking_gate_nulls_score_and_verdict(tmp_path):
 def test_needs_review_content_requires_explicit_current_artifact_disposition(tmp_path):
     needs_review = ready_content_unit("cv-needs-review")
     needs_review["atoms"].append(unsupported_content_unit()["atoms"][0])
-    client, _, _, workspace_id = _build_chain(tmp_path, ai_units=[needs_review])
+    client, _, _, workspace_id = _build_chain(
+        tmp_path, ai_units=completion_ready_content_units(needs_review)
+    )
     try:
         view = _decide_current_review_surface(client, workspace_id)
         intelligence = view["application_intelligence_result"]["payload"]
@@ -289,7 +292,7 @@ def test_needs_review_content_requires_explicit_current_artifact_disposition(tmp
 
 def test_unsupported_application_content_is_audit_only_and_never_enters_pack(tmp_path):
     client, _, _, workspace_id = _build_chain(
-        tmp_path, ai_units=[ready_content_unit(), unsupported_content_unit()]
+        tmp_path, ai_units=completion_ready_content_units() + [unsupported_content_unit()]
     )
     try:
         view = _decide_current_review_surface(client, workspace_id)
@@ -446,7 +449,7 @@ def test_missing_required_dependency_fingerprint_fails_safe(tmp_path):
 
 def test_pack_a_pack_b_are_immutable_and_applied_binds_exact_current_pack_b(tmp_path):
     client, _, settings, workspace_id = _build_chain(
-        tmp_path, ai_units=[ready_content_unit()], conditional_extension=False,
+        tmp_path, ai_units=completion_ready_content_units(), conditional_extension=False,
     )
     try:
         _decide_current_review_surface(client, workspace_id)

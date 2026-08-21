@@ -45,6 +45,7 @@ from unittest import mock
 
 from product.application_intelligence_providers import ApplicationIntelligenceProviderError
 from product.openai_application_intelligence_provider import (
+    INSTRUCTIONS,
     OpenAIApplicationIntelligenceProvider,
     openai_atom_proposal_schema,
     openai_call_parameters,
@@ -52,6 +53,14 @@ from product.openai_application_intelligence_provider import (
 
 
 class TestOpenAIProviderSchema(unittest.TestCase):
+    def test_provider_receives_the_locked_substantive_completion_contract(self):
+        normalized = " ".join(INSTRUCTIONS.split())
+        self.assertIn("at least 2 CV units", normalized)
+        self.assertIn("at least 1 cv_bullet", normalized)
+        self.assertIn("at least 20 normalized words", normalized)
+        self.assertIn("at least 1 cover_letter_paragraph", normalized)
+        self.assertIn("at least 40 normalized words", normalized)
+
     def test_atom_proposal_schema_has_no_free_text_field_for_content(self):
         schema = openai_atom_proposal_schema()
         atom_properties = schema["properties"]["content_units"]["items"]["properties"]["atoms"]["items"]["properties"]
@@ -134,6 +143,15 @@ class TestOpenAIProviderCredential(unittest.TestCase):
         self.assertEqual(
             hosted_input["available_rendering_templates"]["certification"], ["PLAIN"]
         )
+        self.assertEqual(hosted_input["completion_contract"], {
+            "version": "substantive-completion.v1",
+            "minimum_cv_units": 2,
+            "requires_cv_bullet": True,
+            "minimum_cv_words": 20,
+            "minimum_cover_letter_paragraphs": 1,
+            "minimum_cover_letter_words": 40,
+            "word_normalization": "NFKC; collapse Unicode whitespace; trim Unicode punctuation at token edges",
+        })
         self.assertEqual(provider.last_audit.provider_id, "openai")
 
 

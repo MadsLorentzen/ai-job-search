@@ -12,6 +12,7 @@ from product.job_posting import validate_job_posting_snapshot
 from product.profile_snapshot import validate_snapshot
 from tests.test_job_fit import extension as _extension
 from tests.test_semantic_job_fit import (
+    claim as _claim,
     job_snapshot as _job_snapshot,
     proposals_for_full_fit,
     ready_candidate as _ready_candidate,
@@ -21,6 +22,21 @@ from tests.test_semantic_job_fit import (
 
 def rich_profile() -> dict:
     value = copy.deepcopy(_rich_profile())
+    value["claims"].extend([
+        _claim(
+            "clm_7777777777777777", "employment", "responsibility_or_achievement",
+            " ".join(f"cvbullet{index}" for index in range(10)),
+        ),
+        _claim(
+            "clm_8888888888888888", "employment", "responsibility_or_achievement",
+            " ".join(f"cvsummary{index}" for index in range(19)),
+        ),
+        _claim(
+            "clm_aaaaaaaaaaaaaaaa", "employment", "responsibility_or_achievement",
+            " ".join(f"coverword{index}" for index in range(40)),
+        ),
+    ])
+    value["summary"]["claim_count"] = len(value["claims"])
     validate_snapshot(value)
     return value
 
@@ -110,6 +126,34 @@ def ready_content_unit(unit_id: str = "cv-ready") -> dict:
         }],
         "connectives": [],
     }
+
+
+def completion_ready_content_units(first_unit: dict | None = None) -> list[dict]:
+    def responsibility_unit(unit_id: str, unit_type: str, claim_id: str) -> dict:
+        return {
+            "unit_id": unit_id,
+            "unit_type": unit_type,
+            "atoms": [{
+                "atom_id": f"atom-{unit_id}",
+                "atom_kind": "candidate_fact",
+                "assertion_type": "responsibility",
+                "profile_evidence_ids": [claim_id],
+                "rendering_variant": "PLAIN",
+            }],
+            "connectives": [],
+        }
+
+    return [
+        first_unit or responsibility_unit(
+            "cv-ready", "cv_bullet", "clm_7777777777777777"
+        ),
+        responsibility_unit(
+            "cv-summary-ready", "cv_summary_line", "clm_8888888888888888"
+        ),
+        responsibility_unit(
+            "cover-ready", "cover_letter_paragraph", "clm_aaaaaaaaaaaaaaaa"
+        ),
+    ]
 
 
 def unsupported_content_unit(unit_id: str = "cv-unsupported") -> dict:
