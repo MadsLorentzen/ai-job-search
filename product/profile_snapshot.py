@@ -47,7 +47,8 @@ PLACEHOLDER_NAMES = {
     "YEAR", "YEAR_END", "YEAR_START", "YEARS",
 }
 MIXED_CASE_PLACEHOLDER_RE = re.compile(
-    r"^(?:Achievement or responsibility \d+|Award Name|Company|Degree|Field|First|"
+    r"^(?:Achievement or responsibility \d+(?:\s+-.*)?|Award Name|"
+    r"Brief description or key topics\.|City, Country|Company|Degree|Field|First|"
     r"Institution|Job Title|Language \d+|Last|Skill Category \d+|Thesis Title|Title|"
     r"Year|YYYY-(?:Present|YYYY))$"
 )
@@ -571,6 +572,31 @@ def _parse_candidate_markdown(
                 _add_record_fields(builder, "education", record_key, fields, location)
             continue
 
+        if section == "Education" and line.lstrip().startswith("-"):
+            value = line.split("-", 1)[1].strip()
+            match = re.match(r"^\*\*(.+?)\*\*\s*(?:-\s*(.+))?$", value)
+            qualification = match.group(1) if match else value
+            institution = match.group(2) if match and match.group(2) else ""
+            record_key = f"education:profile-line:{index}"
+            _add_record_fields(
+                builder, "education", record_key,
+                {"qualification": qualification, "institution": institution},
+                location,
+            )
+            continue
+
+        if section == "Professional Experience" and line.lstrip().startswith("-"):
+            value = line.split("-", 1)[1].strip()
+            builder.add_claim(
+                category="employment",
+                field="responsibility_or_achievement",
+                value=value,
+                record_key="employment:general-profile-evidence",
+                source=location,
+                concept_discriminator=f"line:{index}",
+            )
+            continue
+
         if len(path) >= 2 and path[-2] == "Professional Experience":
             heading = MARKDOWN_HEADING_RE.match(line)
             if heading and len(heading.group(1)) == 3:
@@ -623,6 +649,18 @@ def _parse_candidate_markdown(
 
         if section == "Awards" and line.lstrip().startswith("-"):
             _add_award_claim(builder, line, location)
+            continue
+
+        if section == "Certifications" and line.lstrip().startswith("-"):
+            value = line.split("-", 1)[1].strip()
+            value = re.sub(r"^\*\*(.+?)\*\*$", r"\1", value)
+            builder.add_claim(
+                category="certifications",
+                field="certification",
+                value=value,
+                record_key=f"certification:{_semantic_token(value)}",
+                source=location,
+            )
             continue
 
 
@@ -1267,6 +1305,9 @@ def _contains_placeholder(value: Any) -> bool:
 
 
 def _is_placeholder_token(token: str) -> bool:
+    lowered = token.casefold()
+    if "your" in lowered or lowered.startswith("+xx "):
+        return True
     if MIXED_CASE_PLACEHOLDER_RE.fullmatch(token):
         return True
     if token.startswith("YOUR_"):

@@ -3,7 +3,29 @@
 {% block content %}
 <section class="hero compact"><div><p class="eyebrow">Trust inspection</p><h1>Candidate evidence profile</h1>
 <p>This page shows what the product can cite. Update source profile files outside this interface, then refresh the snapshot.</p></div>
-<button class="button secondary" data-action="refresh-profile">Refresh snapshot</button></section>
+{% if not setup_required %}<button class="button secondary" data-action="refresh-profile">Refresh snapshot</button>{% endif %}</section>
+{% if setup_required %}
+<section class="panel form-panel profile-setup"><div class="panel-heading"><div><p class="eyebrow">First-time setup</p><h2>Create your Evidence Profile</h2></div></div>
+<p>Add only facts you can personally confirm. The application saves them as a source-backed candidate profile, builds the global snapshot, and then returns you to the job workflow.</p>
+<fieldset class="mode-picker"><legend>Setup method</legend>
+  <label><input type="radio" name="profile_setup_mode" value="basic" checked> Create basic profile</label>
+  <label><input type="radio" name="profile_setup_mode" value="import"> Import profile Markdown</label>
+</fieldset>
+<form id="basic-profile-form" data-return-to="{{ return_to }}">
+  <div class="form-grid"><label>Name<input name="name" required autocomplete="name"></label><label>Location<input name="location" autocomplete="address-level2"></label></div>
+  <div class="form-grid"><label>Work status or authorisation<input name="status"></label><label>Location or work constraints<input name="constraints"></label></div>
+  <label>Education <small>One verified qualification per line</small><textarea name="education" rows="4"></textarea></label>
+  <label>Professional experience <small>One verified responsibility or achievement per line</small><textarea name="experience" rows="7"></textarea></label>
+  <label>Skills and tools <small>One verified skill per line</small><textarea name="skills" rows="5"></textarea></label>
+  <label>Certifications <small>One verified certification per line</small><textarea name="certifications" rows="4"></textarea></label>
+  <button class="button" type="submit">Create Evidence Profile</button>
+</form>
+<form id="import-profile-form" data-return-to="{{ return_to }}" hidden>
+  <label>Candidate Profile Markdown<textarea name="markdown" rows="18" required placeholder="# Candidate Profile&#10;&#10;## Identity&#10;- **Name:** Your name"></textarea></label>
+  <p class="form-note">Import only facts you can confirm. The import must contain a Candidate Profile heading and an explicit name.</p>
+  <button class="button" type="submit">Import Evidence Profile</button>
+</form></section>
+{% endif %}
 {% if profile %}
 <div class="summary-strip"><span>Snapshot</span><code>{{ profile.content_id }}</code><span>{{ claims | length }} claims</span><span>{{ profile.payload.conflicts | length }} conflicts</span></div>
 <section class="panel"><div class="panel-heading"><h2>Evidence claims</h2><p>No editing or conflict resolution occurs here.</p></div>
@@ -16,5 +38,5 @@
 </article>{% endfor %}</div></section>
 {% if profile.payload.conflicts %}<section class="panel danger-panel"><div class="panel-heading"><h2>Conflicts requiring source correction</h2></div>
 {% for conflict in profile.payload.conflicts %}<article><span class="badge review">NEEDS_REVIEW</span> <strong>{{ conflict.field | replace('_', ' ') | title }}</strong><code>{{ conflict.id }}</code></article>{% endfor %}</section>{% endif %}
-{% else %}<section class="empty-state"><h2>No evidence snapshot yet</h2><p>Refresh to read the current profile sources. This does not edit them.</p></section>{% endif %}
+{% elif not setup_required %}<section class="empty-state"><h2>Profile source found</h2><p>Select Refresh snapshot to build the Evidence Profile from the existing source. This does not edit it.</p></section>{% endif %}
 {% endblock %}

@@ -25,6 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
+from product.semantic_job_fit import MATCH_CLASSIFICATIONS
 from webapp.services.semantic_proposer_errors import SemanticProposerProviderError
 
 OPENAI_MODEL = "gpt-5.4-mini-2026-03-17"
@@ -79,7 +80,10 @@ _RESPONSE_SCHEMA = {
                     "proposal_id": {"type": "string"},
                     "job_evidence_id": {"type": "string"},
                     "profile_evidence_ids": {"type": "array", "items": {"type": "string"}},
-                    "classification": {"type": "string"},
+                    "classification": {
+                        "type": "string",
+                        "enum": list(MATCH_CLASSIFICATIONS),
+                    },
                     "rationale": {"type": "string"},
                     "confidence": {"type": ["string", "null"]},
                     "functional_basis": {**_FUNCTIONAL_BASIS_SCHEMA, "type": ["object", "null"]},

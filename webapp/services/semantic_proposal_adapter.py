@@ -15,10 +15,12 @@ from __future__ import annotations
 import copy
 from typing import Any, Protocol
 
+from product.semantic_job_fit import MATCH_CLASSIFICATIONS
+
 FORBIDDEN_KEYS = {"overall_score", "verdict", "recommendation", "blocked", "blocking_gate_ids"}
 SEMANTIC_CATEGORIES = frozenset({
     "employment", "education", "skills", "languages", "projects",
-    "publications", "awards", "constraints", "location",
+    "publications", "awards", "constraints", "location", "eligibility",
 })
 SEMANTIC_IDENTITY_FIELDS = frozenset({"employment_status"})
 
@@ -29,6 +31,57 @@ def _strip_forbidden(value: Any) -> Any:
     if isinstance(value, list):
         return [_strip_forbidden(item) for item in value]
     return value
+
+
+def _discard_unknown_evidence_references(
+    proposals: dict[str, Any], context: dict[str, Any],
+    resolved_job_evidence: dict[str, Any],
+) -> dict[str, Any]:
+    """Fail closed when the untrusted proposer invents evidence identifiers."""
+    profile_ids = {
+        item["id"] for item in context["profile_evidence"]
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    }
+    job_ids = {
+        item["id"] for item in context["job_evidence"]
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    }
+    job_ids.update(
+        alias["alias_id"] for alias in resolved_job_evidence.get("aliases", [])
+        if isinstance(alias, dict) and isinstance(alias.get("alias_id"), str)
+    )
+
+    matches = []
+    for match in proposals.get("matches", []):
+        if not isinstance(match, dict):
+            matches.append(match)
+            continue
+        proposed_profile_ids = match.get("profile_evidence_ids")
+        if (
+            match.get("job_evidence_id") not in job_ids
+            or not isinstance(proposed_profile_ids, list)
+            or any(profile_id not in profile_ids for profile_id in proposed_profile_ids)
+        ):
+            continue
+        matches.append(match)
+
+    gates = []
+    for gate in proposals.get("gates", []):
+        if not isinstance(gate, dict):
+            gates.append(gate)
+            continue
+        filtered = copy.deepcopy(gate)
+        proposed_job_ids = filtered.get("job_evidence_ids")
+        if isinstance(proposed_job_ids, list) and any(job_id not in job_ids for job_id in proposed_job_ids):
+            filtered["job_evidence_ids"] = []
+        proposed_profile_ids = filtered.get("profile_evidence_ids")
+        if (
+            isinstance(proposed_profile_ids, list)
+            and any(profile_id not in profile_ids for profile_id in proposed_profile_ids)
+        ):
+            filtered["profile_evidence_ids"] = []
+        gates.append(filtered)
+    return {"matches": matches, "gates": gates}
 
 
 class ProposerClient(Protocol):
@@ -44,6 +97,7 @@ class SemanticProposalAdapter:
         active_extensions: list[dict[str, Any]],
     ) -> dict[str, Any]:
         return {
+            "allowed_classifications": list(MATCH_CLASSIFICATIONS),
             "profile_evidence": [
                 {"id": item["id"], "category": item.get("category"), "field": item.get("field"),
                  "value": item.get("value")}
@@ -84,7 +138,8 @@ class SemanticProposalAdapter:
         )
         raw = self._client.complete(context)
         cleaned = _strip_forbidden(copy.deepcopy(raw))
-        return {"matches": cleaned.get("matches", []), "gates": cleaned.get("gates", [])}
+        proposals = {"matches": cleaned.get("matches", []), "gates": cleaned.get("gates", [])}
+        return _discard_unknown_evidence_references(proposals, context, resolved_job_evidence)
 
     @property
     def last_audit(self) -> dict[str, Any] | None:

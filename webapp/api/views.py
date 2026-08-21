@@ -33,8 +33,16 @@ def dashboard(
 
 @router.get("/profile", response_class=HTMLResponse)
 def profile_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+    return_to = request.query_params.get("return_to", "")
+    if not return_to.startswith("/workspaces/"):
+        return_to = ""
     return request.app.state.templates.TemplateResponse(
-        request, "profile.html", build_profile_view_model(conn)
+        request, "profile.html", {
+            **build_profile_view_model(
+                conn, profile_root=request.app.state.settings.profile_root
+            ),
+            "return_to": return_to,
+        }
     )
 
 

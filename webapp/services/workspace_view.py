@@ -11,6 +11,7 @@ from webapp.persistence.workflow import list_workflow_events
 from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID, list_workspaces
 from webapp.services.extension_registry import list_installed_extensions
 from webapp.services.http_api import require_job_workspace
+from webapp.services.profile_setup import profile_setup_state, profile_snapshot_is_ready
 from webapp.services.staleness import check_staleness
 
 STAGE_ORDER = (
@@ -201,7 +202,9 @@ def _build_review_items(
     return review_items
 
 
-def build_profile_view_model(conn: sqlite3.Connection) -> dict[str, Any]:
+def build_profile_view_model(
+    conn: sqlite3.Connection, *, profile_root: Path = Path(".")
+) -> dict[str, Any]:
     profile = get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
     conflicted = build_conflicted_concept_ids(profile)
     claims = []
@@ -213,7 +216,11 @@ def build_profile_view_model(conn: sqlite3.Connection) -> dict[str, Any]:
         else:
             label = "Verified evidence"
         claims.append({"claim": claim, "label": label})
-    return {"profile": profile, "claims": claims, "conflicted_concept_ids": conflicted}
+    return {
+        "profile": profile, "claims": claims,
+        "conflicted_concept_ids": conflicted,
+        **profile_setup_state(profile_root, profile),
+    }
 
 
 def build_workspace_view_model(
@@ -265,6 +272,7 @@ def build_workspace_view_model(
             and item["decision"]["disposition"] != "omit"
         )
     ]
+    profile_ready = profile_snapshot_is_ready(artifacts["profile"])
     job_state = "complete" if artifacts["job"] else "current"
     understanding_state = _result_state(artifacts["understanding"], stale["understanding"])
     if artifacts["understanding"] is None:
@@ -316,9 +324,10 @@ def build_workspace_view_model(
         "review_items": review_items, "outstanding_review_count": len(outstanding),
         "submitted_pack_artifact_ids": sorted(submitted_pack_ids),
         "available_extensions": public_extensions,
+        "profile_ready": profile_ready,
         "controls": {
             "can_understand": bool(artifacts["job"]),
-            "can_fit": understanding_state == "complete",
+            "can_fit": understanding_state == "complete" and profile_ready,
             "can_intelligence": fit_state in {"complete", "needs_review"},
             "can_confirm_pack": review_state == "current",
         },
@@ -358,4 +367,7 @@ def build_dashboard_view_model(
     return {
         "workspaces": [row for row in rows if include(row)], "filter": filter_name,
         "filters": ("active", "drafted", "applied", "interview", "offer", "final"),
+        "profile_ready": profile_snapshot_is_ready(
+            get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
+        ),
     }

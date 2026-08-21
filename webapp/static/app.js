@@ -92,3 +92,47 @@ if (jobForm) {
     } catch (error) { showMessage(error.message, true); }
   });
 }
+
+const profileSetupModes = document.querySelectorAll('input[name="profile_setup_mode"]');
+profileSetupModes.forEach(input => input.addEventListener("change", event => {
+  document.getElementById("basic-profile-form").hidden = event.target.value !== "basic";
+  document.getElementById("import-profile-form").hidden = event.target.value !== "import";
+}));
+
+function profileLines(form, name) {
+  return String(new FormData(form).get(name) || "").split(/\r?\n/).map(item => item.trim()).filter(Boolean);
+}
+
+function finishProfileSetup(form) {
+  const returnTo = form.dataset.returnTo;
+  window.location.assign(returnTo && returnTo.startsWith("/workspaces/") ? returnTo : "/profile");
+}
+
+const basicProfileForm = document.getElementById("basic-profile-form");
+if (basicProfileForm) basicProfileForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const data = new FormData(form);
+  button.disabled = true;
+  try {
+    await api("/api/profile/setup/basic", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({
+      name: data.get("name"), location: data.get("location"), status: data.get("status"), constraints: data.get("constraints"),
+      education: profileLines(form, "education"), experience: profileLines(form, "experience"),
+      skills: profileLines(form, "skills"), certifications: profileLines(form, "certifications")
+    })});
+    finishProfileSetup(form);
+  } catch (error) { showMessage(error.message, true); button.disabled = false; }
+});
+
+const importProfileForm = document.getElementById("import-profile-form");
+if (importProfileForm) importProfileForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  try {
+    await api("/api/profile/setup/import", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({markdown: new FormData(form).get("markdown")})});
+    finishProfileSetup(form);
+  } catch (error) { showMessage(error.message, true); button.disabled = false; }
+});
