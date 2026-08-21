@@ -687,7 +687,7 @@ def validate_application_intelligence_result(request: dict[str, Any], result: An
         "schema_version", "request_id", "job_fit_result_ref", "profile_snapshot",
         "recommendation", "recommendation_reason", "positioning", "cv_emphasis_plan",
         "cv_content", "cover_letter_plan", "cover_letter_content", "unsupported_claims",
-        "status", "notes",
+        "plan_issues", "status", "notes",
     }
     if not _object_shape(result, required, required, "$.result", errors):
         raise ApplicationIntelligenceValidationError(errors)
@@ -733,6 +733,10 @@ def validate_application_intelligence_result(request: dict[str, Any], result: An
         path = f"$.result.unsupported_claims[{index}]"
         claim_required = {"claim_id", "reason", "rejected_atom_ids"}
         _object_shape(claim, claim_required, claim_required, path, errors)
+    for index, issue in enumerate(_list(result.get("plan_issues"), "$.result.plan_issues", errors)):
+        path = f"$.result.plan_issues[{index}]"
+        issue_required = {"field", "index", "reason"}
+        _object_shape(issue, issue_required, issue_required, path, errors)
 
     if errors:
         raise ApplicationIntelligenceValidationError(errors)
@@ -808,6 +812,10 @@ def analyze_application_intelligence(request: dict[str, Any], proposal: dict[str
     if not usable_units:
         notes.append("No usable application material was generated.")
 
+
+    cv_emphasis_plan, cv_plan_issues = _validate_plan((proposal or {}).get("cv_emphasis_plan"), "cv_emphasis_plan")
+    cover_letter_plan, cover_letter_plan_issues = _validate_plan((proposal or {}).get("cover_letter_plan"), "cover_letter_plan")
+    plan_issues = cv_plan_issues + cover_letter_plan_issues
     result = {
         "schema_version": RESULT_VERSION,
         "request_id": request["request_id"],
@@ -823,11 +831,12 @@ def analyze_application_intelligence(request: dict[str, Any], proposal: dict[str
         "recommendation": recommendation,
         "recommendation_reason": recommendation_reason,
         "positioning": positioning,
-        "cv_emphasis_plan": (proposal or {}).get("cv_emphasis_plan", []),
+        "cv_emphasis_plan": cv_emphasis_plan,
         "cv_content": cv_content,
-        "cover_letter_plan": (proposal or {}).get("cover_letter_plan", []),
+        "cover_letter_plan": cover_letter_plan,
         "cover_letter_content": cover_letter_content,
         "unsupported_claims": unsupported_claims,
+        "plan_issues": plan_issues,
         "status": result_status,
         "notes": notes,
     }

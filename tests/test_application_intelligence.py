@@ -690,6 +690,34 @@ class TestFullResultContract(unittest.TestCase):
         validate_application_intelligence_result(request, result)  # must not raise
 
 
+    def test_result_now_includes_plan_issues_field(self):
+        request = application_intelligence_request("job-fit-result-ready.json")
+        result = analyze_application_intelligence(request, None)
+        self.assertIn("plan_issues", result)
+        self.assertEqual(result["plan_issues"], [])
+
+    def test_malformed_plan_entry_is_dropped_and_reported_not_treated_as_unsupported_claim(self):
+        request = application_intelligence_request("job-fit-result-ready.json")
+        proposal = {
+            "content_units": [],
+            "cv_emphasis_plan": [{"plan_id": "p1", "target_unit_type": "not_real", "target_job_requirement_ids": [], "rationale_kind": "covers_uncovered_requirement"}],
+            "cover_letter_plan": [],
+        }
+        result = analyze_application_intelligence(request, proposal)
+        self.assertEqual(len(result["plan_issues"]), 1)
+        self.assertEqual(result["plan_issues"][0]["field"], "cv_emphasis_plan")
+        self.assertEqual(result["cv_emphasis_plan"], [])
+        self.assertEqual(result["unsupported_claims"], [])
+
+    def test_well_formed_plan_entries_survive_into_result(self):
+        request = application_intelligence_request("job-fit-result-ready.json")
+        entry = {"plan_id": "p1", "target_unit_type": "cv_bullet", "target_job_requirement_ids": ["jobev_req_python"], "rationale_kind": "covers_uncovered_requirement"}
+        proposal = {"content_units": [], "cv_emphasis_plan": [entry], "cover_letter_plan": []}
+        result = analyze_application_intelligence(request, proposal)
+        self.assertEqual(result["cv_emphasis_plan"], [entry])
+        self.assertEqual(result["plan_issues"], [])
+
+
 class TestNoStrengthCrossLeakage(unittest.TestCase):
     def test_bare_skill_claim_cannot_get_capability_statement(self):
         """Regression for the fixed bug: bare technical_skill claims must not
