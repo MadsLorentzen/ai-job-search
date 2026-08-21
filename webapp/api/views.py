@@ -21,7 +21,7 @@ def dashboard(
     request: Request, filter: str = "active",
     conn: sqlite3.Connection = Depends(get_conn),
 ):
-    if filter not in {"active", "drafted", "applied", "interview", "offer", "final"}:
+    if filter not in {"all", "active", "drafted", "applied", "interview", "offer", "final"}:
         filter = "active"
     return request.app.state.templates.TemplateResponse(
         request, "dashboard.html", build_dashboard_view_model(

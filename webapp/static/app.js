@@ -19,6 +19,13 @@ document.addEventListener("click", async (event) => {
   try {
     if (button.dataset.action === "refresh-profile") {
       await api("/api/profile/refresh", {method: "POST"});
+    } else if (button.dataset.action === "copy-reviewed-output") {
+      const target = document.getElementById(button.dataset.copyTarget);
+      if (!target) throw new Error("Reviewed output is unavailable");
+      await navigator.clipboard.writeText(target.innerText.trim());
+      showMessage("Reviewed application content copied.");
+      button.disabled = false;
+      return;
     } else if (button.classList.contains("stage-action")) {
       const extensionIds = [...document.querySelectorAll('input[name="extension_ids"]:checked')].map(item => item.value);
       const payload = {request_id: `web_${Date.now()}`};

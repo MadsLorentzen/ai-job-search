@@ -5,6 +5,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_current_artifact
 from webapp.persistence.review import list_review_decisions
 from webapp.persistence.workflow import list_workflow_events
@@ -18,6 +19,89 @@ STAGE_ORDER = (
     "job", "understanding", "fit", "application_intelligence", "review", "status"
 )
 FINAL_STATUSES = frozenset({"hired", "rejected", "no_response", "offer_declined", "withdrawn"})
+STAGE_STATE_LABELS = {
+    "current": "Ready to run",
+    "needs_review": "Needs review",
+    "complete": "Complete",
+    "stale": "Stale",
+    "unavailable": "Unavailable",
+}
+STAGE_ANCHORS = {
+    "job": "job-posting",
+    "understanding": "understanding",
+    "fit": "job-fit",
+    "application_intelligence": "application-intelligence",
+    "review": "review",
+    "status": "status",
+}
+RUN_ACTION_LABELS = {
+    "job": "Add job posting",
+    "understanding": "Run Understanding",
+    "fit": "Run Job Fit",
+    "application_intelligence": "Run Application Intelligence",
+    "review": "Create reviewed pack",
+}
+POST_SUBMISSION_ACTIONS = (
+    ("interview", "Interview"),
+    ("offer", "Offer"),
+    ("hired", "Hired"),
+    ("rejected", "Rejected"),
+    ("no_response", "No response"),
+    ("offer_declined", "Decline offer"),
+    ("withdrawn", "Withdraw"),
+)
+
+
+def stage_state_label(state: str) -> str:
+    return STAGE_STATE_LABELS[state]
+
+
+def _dashboard_focus(view: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    for key in STAGE_ORDER:
+        stage = view["stages"][key]
+        if stage["state"] in {"stale", "needs_review", "current"}:
+            return key, stage
+    return None
+
+
+def resolve_next_action(view: dict[str, Any]) -> dict[str, str] | None:
+    focus = _dashboard_focus(view)
+    if focus is None:
+        status = view["workspace"].get("workflow_status")
+        if status in {"applied", "interview", "offer"}:
+            return {
+                "label": "Update application status",
+                "href": f"/workspaces/{view['workspace']['id']}#{STAGE_ANCHORS['status']}",
+            }
+        return None
+    key, stage = focus
+    href = f"/workspaces/{view['workspace']['id']}#{STAGE_ANCHORS[key]}"
+    if stage["state"] == "stale":
+        label = (
+            f"Recover: rerun {stage['label']}"
+            if key in {"understanding", "fit", "application_intelligence"}
+            else f"Recover {stage['label']}"
+        )
+    elif stage["state"] == "needs_review":
+        label = "Review outstanding items"
+        href = f"/workspaces/{view['workspace']['id']}#{STAGE_ANCHORS['review']}"
+    elif key == "status" and view["workspace"].get("workflow_status") == "drafted":
+        label = "Mark applied"
+    else:
+        label = RUN_ACTION_LABELS.get(key, f"Open {stage['label']}")
+    return {"label": label, "href": href}
+
+
+def resolve_workflow_actions(workflow_status: str | None) -> list[dict[str, str]]:
+    if workflow_status == "drafted":
+        return [{"status": "applied", "label": "Mark applied"}]
+    if workflow_status in {"applied", "interview", "offer"}:
+        return [
+            {"status": status, "label": label}
+            for status, label in POST_SUBMISSION_ACTIONS
+            if status != workflow_status
+        ]
+    return []
 
 
 def build_conflicted_concept_ids(profile_artifact: dict[str, Any] | None) -> set[str]:
@@ -203,7 +287,7 @@ def _build_review_items(
 
 
 def build_profile_view_model(
-    conn: sqlite3.Connection, *, profile_root: Path = Path(".")
+    conn: sqlite3.Connection, *, profile_root: str | Path = "."
 ) -> dict[str, Any]:
     profile = get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
     conflicted = build_conflicted_concept_ids(profile)
@@ -280,6 +364,14 @@ def build_workspace_view_model(
         and item["decision"]["disposition"] == "acknowledged_and_proceed"
         for item in review_items
     )
+    review_completion_status = "READY" if has_reviewed_usable_material else "INCOMPLETE"
+    reviewed_output_status = None
+    if artifacts["pack"]:
+        pack_payload = artifacts["pack"]["payload"]
+        if "completion_status" not in pack_payload:
+            reviewed_output_status = "Legacy pack — not revalidated"
+        else:
+            reviewed_output_status = application_material_completion(pack_payload)["status"]
     profile_ready = profile_snapshot_is_ready(artifacts["profile"])
     job_state = "complete" if artifacts["job"] else "current"
     understanding_state = _result_state(artifacts["understanding"], stale["understanding"])
@@ -317,6 +409,8 @@ def build_workspace_view_model(
         "review": {"label": "Review", "state": review_state, "artifact": artifacts["pack"], "staleness": stale["review"]},
         "status": {"label": "Status", "state": status_state, "artifact": None},
     }
+    for stage in stages.values():
+        stage["state_label"] = stage_state_label(stage["state"])
     public_extensions = []
     if extensions_dir is not None:
         public_extensions = [
@@ -335,6 +429,8 @@ def build_workspace_view_model(
         "submitted_pack_artifact_ids": sorted(submitted_pack_ids),
         "available_extensions": public_extensions,
         "profile_ready": profile_ready,
+        "review_completion_status": review_completion_status,
+        "reviewed_output_status": reviewed_output_status,
         "controls": {
             "can_understand": bool(artifacts["job"]),
             "can_fit": understanding_state == "complete" and profile_ready,
@@ -345,10 +441,8 @@ def build_workspace_view_model(
 
 
 def _dashboard_stage(view: dict[str, Any]) -> str:
-    for name in STAGE_ORDER:
-        if view["stages"][name]["state"] in {"stale", "needs_review", "current"}:
-            return view["stages"][name]["label"]
-    return "Complete"
+    focus = _dashboard_focus(view)
+    return focus[1]["label"] if focus else "Complete"
 
 
 def build_dashboard_view_model(
@@ -360,10 +454,14 @@ def build_dashboard_view_model(
         view = build_workspace_view_model(
             conn, workspace["id"], extensions_dir=extensions_dir,
         )
+        focus = _dashboard_focus(view)
         fit = _artifact_payload(view["stages"]["fit"]["artifact"])
         intelligence = _artifact_payload(view["stages"]["application_intelligence"]["artifact"])
         rows.append({
             **workspace, "computed_stage": _dashboard_stage(view),
+            "stage_state_label": focus[1]["state_label"] if focus else "Complete",
+            "next_action": resolve_next_action(view),
+            "workflow_actions": resolve_workflow_actions(workspace["workflow_status"]),
             "fit_verdict": (fit.get("verdict") or {}).get("display_name"),
             "recommendation": intelligence.get("recommendation"),
             "stale": any(stage["state"] == "stale" for stage in view["stages"].values()),
@@ -371,12 +469,13 @@ def build_dashboard_view_model(
         })
     def include(row):
         status = row["workflow_status"]
+        if filter_name == "all": return True
         if filter_name == "active": return status is None
         if filter_name == "final": return status in FINAL_STATUSES
         return status == filter_name
     return {
         "workspaces": [row for row in rows if include(row)], "filter": filter_name,
-        "filters": ("active", "drafted", "applied", "interview", "offer", "final"),
+        "filters": ("all", "active", "drafted", "applied", "interview", "offer", "final"),
         "profile_ready": profile_snapshot_is_ready(
             get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
         ),

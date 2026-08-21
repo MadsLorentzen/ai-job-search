@@ -6,6 +6,7 @@ from webapp.app import create_app
 from webapp.config import Settings
 from webapp.persistence.artifacts import save_artifact
 from webapp.persistence.db import connect
+from webapp.persistence.workflow import record_status_change
 from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID, create_workspace, ensure_profile_workspace
 from tests.webapp.services.test_workspace_view import _seed_evidence
 
@@ -23,10 +24,88 @@ def test_dashboard_renders_required_columns_and_all_filters(tmp_path):
         conn.close()
         response = client.get("/")
         assert response.status_code == 200
-        for text in ("Acme", "Backend Engineer", "Product stage", "Fit", "Recommendation", "Trust state", "Workflow", "Updated"):
+        for text in (
+            "Acme", "Backend Engineer", "Product stage", "Next action", "Fit",
+            "Recommendation", "Trust state", "Application status", "Updated",
+        ):
             assert text in response.text
-        for filter_name in ("Active", "Drafted", "Applied", "Interview", "Offer", "Final"):
+        for filter_name in ("All", "Active", "Drafted", "Applied", "Interview", "Offer", "Final"):
             assert filter_name in response.text
+
+
+def test_dashboard_all_view_separates_stage_status_and_management_actions(tmp_path):
+    client, settings = _client(tmp_path)
+    with client:
+        conn = connect(settings.db_path)
+        active = create_workspace(conn, company="Active Co", title="Planner")
+        save_artifact(
+            conn, workspace_id=active["id"], artifact_type="job_posting_snapshot",
+            content_id="job_active", payload={"company": "Active Co", "title": "Planner"},
+        )
+        interview = create_workspace(conn, company="Interview Co", title="Coordinator")
+        record_status_change(
+            conn, workspace_id=interview["id"], new_status="interview",
+            effective_date="2026-08-21",
+        )
+        conn.close()
+
+        response = client.get("/?filter=all")
+        text = response.text
+
+        assert response.status_code == 200
+        assert "All" in text
+        assert "Active Co" in text and "Interview Co" in text
+        assert "Product stage" in text
+        assert "Application status" in text
+        assert "Next action" in text
+        assert "Ready to run" in text
+        assert "Run Understanding" in text
+        assert f'href="/workspaces/{active["id"]}"' in text
+
+
+def test_dashboard_offers_only_valid_real_world_status_control(tmp_path):
+    client, settings = _client(tmp_path)
+    with client:
+        conn = connect(settings.db_path)
+        workspace = create_workspace(conn, company="Drafted Co", title="Planner")
+        pack = save_artifact(
+            conn, workspace_id=workspace["id"], artifact_type="application_pack",
+            payload={
+                "completion_status": "READY",
+                "cv_content": [{"text": "Reviewed material"}],
+                "cover_letter_content": [],
+            },
+        )
+        record_status_change(
+            conn, workspace_id=workspace["id"], new_status="drafted",
+            effective_date="2026-08-21", submitted_pack_artifact_id=pack["id"],
+            _allow_drafted=True,
+        )
+        conn.close()
+
+        text = client.get("/?filter=all").text
+
+        assert 'data-workspace-id="' + workspace["id"] + '"' in text
+        assert 'data-status="applied"' in text
+        assert "Mark applied" in text
+        assert 'data-status="interview"' not in text
+
+
+def test_workspace_uses_user_facing_stage_language(tmp_path):
+    client, settings = _client(tmp_path)
+    with client:
+        conn = connect(settings.db_path)
+        workspace = create_workspace(conn, company="Acme", title="Planner")
+        save_artifact(
+            conn, workspace_id=workspace["id"], artifact_type="job_posting_snapshot",
+            content_id="job", payload={"company": "Acme", "title": "Planner"},
+        )
+        conn.close()
+
+        text = client.get(f'/workspaces/{workspace["id"]}').text
+
+        assert "Ready to run" in text
+        assert ">current<" not in text.casefold()
 
 
 def test_dashboard_uses_configured_extension_registry(tmp_path, monkeypatch):
@@ -65,6 +144,19 @@ def test_new_job_offers_only_manual_paste_and_supported_import(tmp_path):
         text = client.get("/new-job").text
         assert "Paste posting" in text and "Manual details" in text and "Supported JSON import" in text
         assert "scrape" in text.lower() and "does not" in text.lower()
+
+
+def test_add_job_hidden_mode_panels_have_css_precedence(tmp_path):
+    client, _ = _client(tmp_path)
+    with client:
+        page = client.get("/new-job").text
+        css = client.get("/static/app.css").text
+
+        assert 'data-mode-panel="paste"' in page
+        assert 'data-mode-panel="manual" hidden' in page
+        assert 'data-mode-panel="import" hidden' in page
+        assert "[hidden]" in css
+        assert "display:none!important" in css.replace(" ", "")
 
 
 def test_dashboard_and_workspace_direct_missing_profile_to_setup(tmp_path):
@@ -113,6 +205,63 @@ def test_workspace_renders_stepper_all_evidence_and_safe_controls(tmp_path):
         assert 'data-item-id="unit_ready"' in text
         assert 'data-item-id="unit_review"' in text
         assert "Audit only. No inclusion control is available." in text
+        assert "Acknowledge — include in reviewed pack" in text
+        assert "Omit — exclude from application material" in text
+        assert "Acknowledging allows this item to be used by the reviewed pack." in text
+        assert "Omitting keeps this item in the audit trail but excludes it from application material." in text
+
+
+def test_workspace_presents_reviewed_cv_and_cover_letter_as_usable_output(tmp_path):
+    client, settings = _client(tmp_path)
+    with client:
+        conn = connect(settings.db_path)
+        ensure_profile_workspace(conn)
+        workspace = create_workspace(conn, company="Acme", title="Planner")
+        _seed_evidence(conn, workspace["id"])
+        save_artifact(
+            conn, workspace_id=workspace["id"], artifact_type="application_pack",
+            content_id="pack_reviewed", payload={
+                "completion_status": "READY",
+                "cv_content": [{"unit_id": "cv-reviewed", "text": "Coordinated nine-rig planning."}],
+                "cover_letter_content": [{
+                    "unit_id": "cover-reviewed", "text": "I offer evidence-backed planning experience."
+                }],
+                "review_record": {"exclusions": []},
+            },
+        )
+        conn.close()
+
+        text = client.get(f'/workspaces/{workspace["id"]}').text
+
+        assert "Reviewed application output" in text
+        assert "CV content" in text
+        assert "Coordinated nine-rig planning." in text
+        assert "Cover letter content" in text
+        assert "I offer evidence-backed planning experience." in text
+        assert 'data-copy-section="cv"' in text
+        assert 'data-copy-section="cover-letter"' in text
+
+
+def test_historical_pack_is_not_presented_as_revalidated_and_empty_copy_is_absent(tmp_path):
+    client, settings = _client(tmp_path)
+    with client:
+        conn = connect(settings.db_path)
+        workspace = create_workspace(conn, company="Legacy Co", title="Planner")
+        save_artifact(
+            conn, workspace_id=workspace["id"], artifact_type="application_pack",
+            content_id="pack_legacy", payload={
+                "cv_content": [],
+                "cover_letter_content": [{"text": "A historical fragment."}],
+            },
+        )
+        conn.close()
+
+        text = client.get(f'/workspaces/{workspace["id"]}').text
+
+        assert "Legacy pack — not revalidated" in text
+        assert "No reviewed CV content." in text
+        assert 'data-copy-section="cv"' not in text
+        assert 'data-copy-section="cover-letter"' in text
 
 
 def test_provider_rationale_is_not_rendered_as_candidate_evidence(tmp_path):
