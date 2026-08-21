@@ -661,6 +661,43 @@ def _build_positioning(job_fit_result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _compute_requirement_coverage(
+    job_fit_result: dict[str, Any], accepted_units: list[dict[str, Any]],
+) -> dict[str, list[str]]:
+    """required: union of job_requirement_ids across direct/functionally_equivalent/
+    transferable matches. covered: the subset backed by at least one accepted
+    unit (status READY, non-empty text) citing a profile_evidence_id that
+    belongs to a match carrying that requirement id. Computed strictly from
+    accepted_units -- never from a raw provider proposal or plan entry."""
+
+    required: set[str] = set()
+    requirement_to_evidence: dict[str, set[str]] = {}
+    for match_list_key in ("direct_matches", "functionally_equivalent_matches", "transferable_matches"):
+        for match in job_fit_result.get(match_list_key, []):
+            evidence_ids = set(match.get("profile_evidence_ids", []))
+            for requirement_id in match.get("job_requirement_ids", []):
+                required.add(requirement_id)
+                requirement_to_evidence.setdefault(requirement_id, set()).update(evidence_ids)
+
+    cited_evidence_ids: set[str] = set()
+    for unit in accepted_units:
+        if unit.get("status") != "READY" or not isinstance(unit.get("text"), str) or not unit["text"].strip():
+            continue
+        cited_evidence_ids.update(unit.get("profile_evidence_ids", []))
+
+    covered = {
+        requirement_id
+        for requirement_id, evidence_ids in requirement_to_evidence.items()
+        if evidence_ids & cited_evidence_ids
+    }
+    uncovered = required - covered
+    return {
+        "required": sorted(required),
+        "covered": sorted(covered),
+        "uncovered": sorted(uncovered),
+    }
+
+
 def _job_fit_result_content_id(job_fit_result: dict[str, Any]) -> str:
     """Content-derived identifier for the exact consumed Job Fit Result.
 

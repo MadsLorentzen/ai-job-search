@@ -1196,5 +1196,55 @@ class TestValidatePlan(unittest.TestCase):
         self.assertEqual(issues, [])
 
 
+from product.application_intelligence import _compute_requirement_coverage
+
+
+class TestComputeRequirementCoverage(unittest.TestCase):
+    def _job_fit_result(self):
+        return {
+            "direct_matches": [
+                {"match_id": "m1", "job_requirement_ids": ["req_python"], "profile_evidence_ids": ["clm_1"]},
+            ],
+            "functionally_equivalent_matches": [
+                {"match_id": "m2", "job_requirement_ids": ["req_sql"], "profile_evidence_ids": ["clm_2"]},
+            ],
+            "transferable_matches": [
+                {"match_id": "m3", "job_requirement_ids": ["req_etl"], "profile_evidence_ids": ["clm_3"]},
+            ],
+        }
+
+    def test_required_is_union_of_all_three_match_lists(self):
+        coverage = _compute_requirement_coverage(self._job_fit_result(), [])
+        self.assertEqual(coverage["required"], ["req_etl", "req_python", "req_sql"])
+        self.assertEqual(coverage["covered"], [])
+        self.assertEqual(coverage["uncovered"], ["req_etl", "req_python", "req_sql"])
+
+    def test_accepted_unit_citing_matched_evidence_covers_its_requirement(self):
+        accepted = [{"status": "READY", "text": "Python expert", "profile_evidence_ids": ["clm_1"]}]
+        coverage = _compute_requirement_coverage(self._job_fit_result(), accepted)
+        self.assertEqual(coverage["covered"], ["req_python"])
+        self.assertEqual(coverage["uncovered"], ["req_etl", "req_sql"])
+
+    def test_non_ready_unit_does_not_count_as_coverage(self):
+        accepted = [{"status": "NEEDS_REVIEW", "text": "Python expert", "profile_evidence_ids": ["clm_1"]}]
+        coverage = _compute_requirement_coverage(self._job_fit_result(), accepted)
+        self.assertEqual(coverage["covered"], [])
+
+    def test_empty_text_unit_does_not_count_as_coverage(self):
+        accepted = [{"status": "READY", "text": "", "profile_evidence_ids": ["clm_1"]}]
+        coverage = _compute_requirement_coverage(self._job_fit_result(), accepted)
+        self.assertEqual(coverage["covered"], [])
+
+    def test_unit_citing_unmatched_evidence_covers_nothing(self):
+        accepted = [{"status": "READY", "text": "Something else", "profile_evidence_ids": ["clm_999"]}]
+        coverage = _compute_requirement_coverage(self._job_fit_result(), accepted)
+        self.assertEqual(coverage["covered"], [])
+
+    def test_transferable_match_evidence_covers_its_requirement_same_as_direct(self):
+        accepted = [{"status": "READY", "text": "ETL work", "profile_evidence_ids": ["clm_3"]}]
+        coverage = _compute_requirement_coverage(self._job_fit_result(), accepted)
+        self.assertEqual(coverage["covered"], ["req_etl"])
+
+
 if __name__ == "__main__":
     unittest.main()
