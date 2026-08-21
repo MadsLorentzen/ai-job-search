@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { formatDetailPlain, type DetailApiResponse } from "../src/commands/detail";
+import { formatDetailPlain, prepareDetail, type DetailApiResponse } from "../src/commands/detail";
 
 function detail(overrides: Partial<DetailApiResponse> = {}): DetailApiResponse {
   return {
@@ -91,5 +91,31 @@ describe("formatDetailPlain", () => {
     expect(formatted).toContain("Location: -, Danmark");
     expect(formatted).toContain("Deadline: -");
     expect(formatted).not.toContain("Apply:");
+  });
+});
+
+
+describe("prepareDetail deadline sentinel", () => {
+  // The API's "deadline not disclosed" sentinel is 1900-01-01 (paired with
+  // isApplicationDeadlineASAP / applicationDeadlineStatus). search maps it to
+  // null and has a test pinning that; detail dumped the raw response, so an
+  // undisclosed deadline read as 126 years expired and /rank's sweep would
+  // retire the job instantly (review finding F33, 2026-08-19).
+  test("maps the 1900-01-01 undisclosed sentinel to null", () => {
+    const data = detail();
+    data.application.deadlineDate = "1900-01-01T00:00:00+01:00";
+    expect(prepareDetail(data).application.deadlineDate).toBeNull();
+  });
+
+  test("keeps a real deadline unchanged", () => {
+    const data = detail();
+    data.application.deadlineDate = "2026-09-01T00:00:00+02:00";
+    expect(prepareDetail(data).application.deadlineDate).toBe("2026-09-01T00:00:00+02:00");
+  });
+
+  test("keeps a null deadline null", () => {
+    const data = detail();
+    data.application.deadlineDate = null;
+    expect(prepareDetail(data).application.deadlineDate).toBeNull();
   });
 });

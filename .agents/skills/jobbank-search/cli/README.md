@@ -247,6 +247,7 @@ bun run src/cli.ts search --education 24 --suitable-for 2 --since 2026-03-01
       "description": "Fuldtidsjob hos Novo Nordisk, Bagsværd (Ansøgningsfrist: 12.04.2026)",
       "url": "https://jobbank.dk/job/1234567/novo-nordisk/senior-data-scientist",
       "posted": "2026-03-02T00:00:00+01:00",
+      "date": "2026-03-02",
       "deadline": "2026-04-12"
     }
   ]
@@ -265,7 +266,8 @@ bun run src/cli.ts search --education 24 --suitable-for 2 --since 2026-03-01
 | `description` | string | Raw RSS description field (single-line summary) |
 | `url` | string | Full URL to job posting |
 | `posted` | string | Publication date in ISO 8601 |
-| `deadline` | string \| null | Application deadline as `DD.MM.YYYY` string, or `null` if "løbende" / not present |
+| `date` | string \| null | Publication date as `YYYY-MM-DD` (derived from `posted`), or `null` if absent |
+| `deadline` | string \| null | Application deadline as `YYYY-MM-DD` (converted from the feed's `DD.MM.YYYY`), or `null` if "løbende" / not present |
 
 > `meta.total` is fetched from the HTML page `<title>` in a secondary request (pattern: `"{N} relevante job og karriereopslag"`). If the secondary request fails, `meta.total` is `null`.
 

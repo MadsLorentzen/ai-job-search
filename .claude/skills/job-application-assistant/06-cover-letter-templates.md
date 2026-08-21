@@ -1,5 +1,5 @@
 ---
-framework_version: 1.0.1
+framework_version: 1.0.2
 ---
 
 # Cover Letter Templates and Tailoring Guide
@@ -92,9 +92,9 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 
 {\raggedright\fontspec[Path = OpenFonts/fonts/raleway/]{Raleway-Medium}\fontsize{11pt}{13pt}\selectfont
 \begin{itemize}
-    \item [Concrete achievement/skill 1]
-    \item [Concrete achievement/skill 2]
-    \item [Concrete achievement/skill 3]
+    \item {[Concrete achievement/skill 1]}
+    \item {[Concrete achievement/skill 2]}
+    \item {[Concrete achievement/skill 3]}
 \end{itemize}\par}
 
 \lettercontent{[Connection to company - why this role, why this company specifically]}
@@ -146,10 +146,14 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 - 3-5 bullets is ideal
 - Start each bullet with bold label or action verb
 - Use `\textbf{Label:}` for category-style bullets
+- A bullet whose text begins with a literal `[` must be braced: `\item {[text]}`. Unbraced, LaTeX parses `[text]` as `\item`'s optional label and renders it off the left page edge, missing from the PDF text layer entirely
 
 ### LaTeX Special Characters
-- Underscore: `\_`
-- Ampersand: `\&`
+Escape these wherever they appear in body text:
+- Ampersand: `\&` (company names: Brüel \& Kjær, H\&M) - unescaped, the compile fails loudly
+- Percent: `\%` ("grew revenue 30\%") - unescaped, it does **not** fail: everything after the `%` on that line is silently eaten as a LaTeX comment
+- Dollar: `\$`, hash: `\#`, underscore: `\_`
+- Tilde: `\textasciitilde{}`, caret: `\textasciicircum{}`, backslash: `\textbackslash{}`
 
 ### Non-English Cover Letters
 - Same template structure, just write content in the posting's language

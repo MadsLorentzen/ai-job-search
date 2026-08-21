@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { htmlFetch, writeError, extractDivContent } from "../helpers.js"
+import { htmlFetch, writeError } from "../helpers.js"
 
 const BASE_URL = "https://www.jobindex.dk"
 
@@ -39,6 +39,13 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&apos;/g, "'")
+    // Danish letters appear as named entities in employer-hosted ad markup.
+    .replace(/&oslash;/g, "ø")
+    .replace(/&Oslash;/g, "Ø")
+    .replace(/&aelig;/g, "æ")
+    .replace(/&AElig;/g, "Æ")
+    .replace(/&aring;/g, "å")
+    .replace(/&Aring;/g, "Å")
     // Numeric character references: decimal (&#233;) and hexadecimal (&#xE9;).
     .replace(/&#(\d+);/g, (_, dec) => numericEntity(parseInt(dec, 10)))
     .replace(/&#[xX]([0-9a-fA-F]+);/g, (_, hex) => numericEntity(parseInt(hex, 16)))
@@ -72,150 +79,169 @@ function buildUrl(idOrUrl: string): { url: string; id: string } {
   return { url, id: idOrUrl }
 }
 
-/**
- * Parse the detail HTML page using regex to avoid node-html-parser nesting bugs.
- */
-function parseDetailPage(html: string, url: string, id: string): DetailResult {
-  // Title: extract from <h1> tag
-  const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)
-  const title = h1Match ? decodeHtmlEntities(stripTags(h1Match[1])) : ""
+const DANISH_MONTHS: Record<string, string> = {
+  januar: "01", februar: "02", marts: "03", april: "04", maj: "05", juni: "06",
+  juli: "07", august: "08", september: "09", oktober: "10", november: "11", december: "12",
+}
 
+/**
+ * Normalize a date found on a detail page to YYYY-MM-DD, or null.
+ * Live pages carry three shapes: ISO, DD-MM-YYYY (the hr-manager widget),
+ * and Danish long form ("13. september 2026", the jobindex-native facts box).
+ */
+export function toIsoDate(value: string | null | undefined): string | null {
+  if (!value) return null
+  const text = value.trim()
+  let m = text.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`
+  m = text.match(/^(\d{2})-(\d{2})-(\d{4})/)
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`
+  m = text.match(/^(\d{1,2})\.?\s+([a-zæøå]+)\s+(\d{4})/i)
+  if (m) {
+    const month = DANISH_MONTHS[m[2].toLowerCase()]
+    if (month) return `${m[3]}-${month}-${m[1].padStart(2, "0")}`
+  }
+  return null
+}
+
+function metaContent(html: string, matcher: string): string | null {
+  const re = new RegExp(
+    `<meta[^>]+(?:property|name|itemprop)="${matcher}"[^>]+content="([^"]*)"|<meta[^>]+content="([^"]*)"[^>]+(?:property|name|itemprop)="${matcher}"`,
+    "i",
+  )
+  const m = html.match(re)
+  const value = m ? (m[1] ?? m[2]) : null
+  return value ? decodeHtmlEntities(value).trim() || null : null
+}
+
+/** The text of the <p> inside a jobindex-native jd-* facts block. */
+function jdBlockValue(html: string, cls: string): string | null {
+  const m = html.match(new RegExp(`class="${cls}"[^>]*>[\\s\\S]*?<p[^>]*>([\\s\\S]*?)</p>`, "i"))
+  return m ? decodeHtmlEntities(stripTags(m[1])).replace(/\s+/g, " ").trim() || null : null
+}
+
+/** Drop head/script/style content so text scans never read CSS or JS. */
+function visibleHtml(html: string): string {
+  return html
+    .replace(/<head[\s\S]*?<\/head>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<!--[\s\S]*?-->/g, "")
+}
+
+function bodyText(html: string): string | null {
+  const text = decodeHtmlEntities(stripTags(visibleHtml(html).replace(/<(br|\/p|\/div|\/li|\/h[1-6])[^>]*>/gi, "\n")))
+    .split("\n")
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .join("\n")
+  return text || null
+}
+
+/**
+ * Parse a live detail page. Jobindex serves two shapes (verified live
+ * 2026-08-19; the selectors the previous parser used exist in neither):
+ *
+ * - the jobindex-native shape, recognisable by its `jd-*` facts blocks
+ *   (jd-deadline, jd-location, ...), with the company as the `<title>`
+ *   prefix ("COMPANY - Job title");
+ * - an external ATS passthrough (hr-manager/Talentech and similar), where
+ *   the page IS the employer's hosted ad: `og:url` points at the ATS,
+ *   `og:site_name` is the ATS brand, and there is no reliable company
+ *   anchor at all - so `company` is honestly null there, never the ATS.
+ *
+ * `id` and `url` are always the caller's jobindex id and its jobannonce
+ * URL: the canonical/og:url on these pages is the external ATS, and
+ * storing that broke /scrape's "store a URL that resolves to the posting".
+ */
+export function parseDetailPage(html: string, url: string, id: string): DetailResult {
+  const isNative = html.includes('class="jd-')
+
+  const ogTitle = metaContent(html, "og:title")
+  const itempropName = metaContent(html, "name")
+  const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)
+  const h1Title = h1 ? decodeHtmlEntities(stripTags(h1[1])).replace(/\s+/g, " ").trim() : null
+  const title = ogTitle ?? itempropName ?? h1Title ?? ""
   if (!title) {
     throw new Error("Failed to parse job listing HTML")
   }
 
-  // Company and companyUrl from jix-toolbar-top__company section
+  // Company: only the native shape carries one - as the <title> prefix,
+  // "VELLIV - Udvikler til Camunda/AWS". Require the suffix to be the job
+  // title so an unrelated <title> never becomes a company name.
   let company: string | null = null
-  let companyUrl: string | null = null
-
-  const companySection = html.match(/class="jix-toolbar-top__company"[^>]*>([\s\S]*?)<\/div>/i)
-  if (companySection) {
-    const linkMatch = companySection[1].match(/<[Aa][^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/[Aa]>/i)
-    if (linkMatch) {
-      company = decodeHtmlEntities(stripTags(linkMatch[2])) || null
-      companyUrl = linkMatch[1] || null
+  if (isNative) {
+    const titleTag = html.match(/<title>([\s\S]*?)<\/title>/i)
+    const pageTitle = titleTag ? decodeHtmlEntities(titleTag[1]).replace(/\s+/g, " ").trim() : ""
+    if (pageTitle.endsWith(` - ${title}`)) {
+      company = pageTitle.slice(0, -(title.length + 3)).trim() || null
     }
   }
 
-  // Location from jix_robotjob--area span
   let location: string | null = null
-  const locMatch = html.match(/<span[^>]+class="jix_robotjob--area"[^>]*>([\s\S]*?)<\/span>/i)
-  if (locMatch) {
-    location = decodeHtmlEntities(stripTags(locMatch[1])) || null
-  }
-
-  // Date from <time datetime="..."> element
-  let date: string | null = null
-  const timeMatch = html.match(/<time[^>]+datetime="([^"]+)"/)
-  if (timeMatch) {
-    date = timeMatch[1] || null
-  }
-
-  // Employment type and hours from jix-info section
+  let deadline: string | null = null
   let employmentType: string | null = null
   let hours: string | null = null
-  let deadline: string | null = null
-
-  const jixInfoMatch = html.match(/class="jix-info"[^>]*>([\s\S]*?)<\/div>/i)
-  if (jixInfoMatch) {
-    const jixInfoHtml = jixInfoMatch[1]
-
-    // Parse p elements with bold labels
-    const pMatches = [...jixInfoHtml.matchAll(/<p[^>]*><b>([^<]+)<\/b>\s*([\s\S]*?)<\/p>/gi)]
-    for (const pm of pMatches) {
-      const label = pm[1].toLowerCase().trim()
-      const value = stripTags(pm[2]).trim()
-
-      if (label.includes("ansættelsestype") || label.includes("employment type")) {
-        employmentType = decodeHtmlEntities(value) || null
-      } else if (label.includes("ugentlig arbejdstid") || label.includes("weekly working time") || label.includes("arbejdstid")) {
-        hours = decodeHtmlEntities(value) || null
-      } else if (label.includes("ansøgningsfrist") || label.includes("deadline") || label.includes("application deadline")) {
-        deadline = decodeHtmlEntities(value) || null
-      }
-    }
-  }
-
-  // If not found in jix-info, try broader text patterns
-  if (!employmentType) {
-    const emtMatch = html.match(/<b>(?:Ansættelsestype|Employment\s*type):<\/b>\s*([^<\n]+)/i)
-    if (emtMatch) {
-      employmentType = decodeHtmlEntities(emtMatch[1].trim()) || null
-    }
-  }
-
-  if (!hours) {
-    const hoursMatch = html.match(/<b>(?:Ugentlig\s*arbejdstid|Weekly\s*working\s*time):<\/b>\s*([^<\n]+)/i)
-    if (hoursMatch) {
-      hours = decodeHtmlEntities(hoursMatch[1].trim()) || null
-    }
-  }
-
-  // Deadline from application section
-  if (!deadline) {
-    // Look for "senest den" or "Ansøgningsfrist" patterns in text
-    const deadlineMatch = html.match(/Ansøgningsfrist[^:]*:\s*([^<\n,]+)/i)
-    if (deadlineMatch) {
-      deadline = decodeHtmlEntities(deadlineMatch[1].trim()) || null
-    }
-  }
-
-  // Apply URL: look for /c?t= redirect links in jix_onlineapplication_button
-  let applyUrl: string | null = null
-  const applySection = html.match(/class="jix_onlineapplication_button"[^>]*>[\s\S]*?href="([^"]+)"/i)
-  if (applySection) {
-    const href = decodeHtmlEntities(applySection[1])
-    applyUrl = href.startsWith("http") ? href : `${BASE_URL}${href}`
-  }
-
-  // If not found, look for any /c?t= link
-  if (!applyUrl) {
-    const ctMatch = html.match(/href="(\/c\?t=[^"]+)"/)
-    if (ctMatch) {
-      applyUrl = `${BASE_URL}${decodeHtmlEntities(ctMatch[1])}`
-    }
-  }
-
-  // Description: job text section
   let description: string | null = null
 
-  // Try job-text class first
-  const jobTextHtml = extractDivContent(html, "job-text")
-  if (jobTextHtml) {
-    description = decodeHtmlEntities(stripTags(jobTextHtml)).replace(/\s+/g, " ").trim() || null
-  }
+  if (isNative) {
+    location = jdBlockValue(html, "jd-location")
+    deadline = toIsoDate(jdBlockValue(html, "jd-deadline"))
+    employmentType = jdBlockValue(html, "jd-type")
+    hours = jdBlockValue(html, "jd-workhours")
+    const desc = html.match(/class="jd-description"[^>]*>([\s\S]*?)<\/div>/i)
+    description = desc
+      ? decodeHtmlEntities(stripTags(desc[1])).replace(/\s+/g, " ").trim() || null
+      : null
+  } else {
+    // hr-manager-style widget: a rowheader label followed by the value span.
+    const workplace = visibleHtml(html).match(
+      /class="workplace[^"]*"[\s\S]*?<span class="empty">([\s\S]*?)<\/span>/i,
+    )
+    location = workplace
+      ? decodeHtmlEntities(stripTags(workplace[1])).replace(/\s+/g, " ").trim() || null
+      : null
 
-  // Fallback: try og:description meta tag for a brief description
-  if (!description) {
-    const ogDescMatch = html.match(/property="og:description"[^>]+content="([^"]+)"/i) ||
-                        html.match(/content="([^"]+)"[^>]+property="og:description"/i)
-    if (ogDescMatch) {
-      description = decodeHtmlEntities(ogDescMatch[1]) || null
+    // Deadline: label + a real date within range, scanned only over visible
+    // markup - the label also appears inside a CSS comment on these pages,
+    // which the previous parser captured verbatim as the deadline.
+    const due = visibleHtml(html).match(
+      /(?:Ansøgningsfrist|Application\s*due|Frist)[\s\S]{0,300}?(\d{2}-\d{2}-\d{4}|\d{4}-\d{2}-\d{2}|\d{1,2}\.?\s+[a-zæøå]+\s+\d{4})/i,
+    )
+    deadline = due ? toIsoDate(due[1]) : null
+
+    description = bodyText(html)
+    if (!description || description.length < 100) {
+      description = metaContent(html, "og:description") ?? metaContent(html, "description") ?? description
     }
   }
 
-  // Get canonical URL or use the fetched URL
-  const canonicalMatch = html.match(/<link[^>]+rel="canonical"[^>]+href="([^"]+)"/i) ||
-                         html.match(/property="og:url"[^>]+content="([^"]+)"/i) ||
-                         html.match(/content="([^"]+)"[^>]+property="og:url"/i)
-  const canonicalUrl = canonicalMatch ? canonicalMatch[1] : url
+  if (!description) {
+    description = metaContent(html, "og:description")
+  }
 
-  // Extract ID from canonical URL, fall back to the provided ID
-  const canonicalId = extractIdFromUrl(canonicalUrl) || id
+  // Apply URL: jobindex's own /c?t= redirect when present.
+  let applyUrl: string | null = null
+  const ctMatch = html.match(/href="(\/c\?t=[^"]+)"/)
+  if (ctMatch) {
+    applyUrl = `${BASE_URL}${decodeHtmlEntities(ctMatch[1])}`
+  }
+
+  const timeMatch = html.match(/<time[^>]+datetime="([^"]+)"/)
 
   return {
-    id: canonicalId,
+    id,
     title,
-    company: company || null,
-    companyUrl: companyUrl || null,
-    location: location || null,
-    date: date || null,
-    deadline: deadline || null,
-    employmentType: employmentType || null,
-    hours: hours || null,
-    applyUrl: applyUrl || null,
-    url: canonicalUrl,
-    description: description || null,
+    company,
+    companyUrl: null,
+    location,
+    date: timeMatch ? toIsoDate(timeMatch[1]) : null,
+    deadline,
+    employmentType,
+    hours,
+    applyUrl,
+    url,
+    description,
   }
 }
 
@@ -242,13 +268,6 @@ export const detail = defineCommand({
       const html = await htmlFetch(url)
 
       if (signal.aborted) return
-
-      // Check if page is not a valid job listing
-      // A valid job listing has an <h1> tag
-      if (!html.includes("<h1>") && !html.includes("<h1 ")) {
-        writeError("Job not found", "NOT_FOUND")
-        process.exit(1)
-      }
 
       let data: DetailResult
       try {

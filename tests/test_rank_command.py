@@ -20,6 +20,9 @@ except ImportError:
 REPO = Path(__file__).resolve().parent.parent
 COMMAND = REPO / ".claude" / "commands" / "rank.md"
 SCRAPER_SKILL = REPO / ".claude" / "skills" / "job-scraper" / "SKILL.md"
+EVALUATION = (
+    REPO / ".claude" / "skills" / "job-application-assistant" / "04-job-evaluation.md"
+)
 
 
 def _sections(text: str) -> dict[str, str]:
@@ -100,6 +103,92 @@ class RankCommandSpec(unittest.TestCase):
             text,
             "the note must say the deadline is written when the job is first seen, "
             "not only when /rank re-scores it",
+        )
+
+    def test_verdict_is_written_to_location_verdict_not_bare_location(self):
+        """`location` meant two incompatible things in seen_jobs.json: a place
+        (scraper search output, driving the commute filter) and a PASS/FAIL/FLAG
+        verdict (/rank Step 4), so a ranked entry could overwrite "Aarhus,
+        Denmark" with "PASS" and no reader could tell which meaning a stored
+        value carried (review finding F27B, 2026-08-19)."""
+        text = COMMAND.read_text(encoding="utf-8")
+        self.assertIn('"location_verdict"', text, "Step 2's agent JSON must use location_verdict")
+        self.assertIn(
+            '"location_verdict": "PASS"/"FAIL"/"FLAG"',
+            text,
+            "Step 4 must persist the verdict under location_verdict",
+        )
+        self.assertNotIn(
+            '"location":',
+            text,
+            "the PASS/FAIL/FLAG verdict must never be written to the bare "
+            "location key, which the scraper uses for a place",
+        )
+        self.assertIn(
+            "legacy",
+            text,
+            "Step 4 must carry a migration rule for entries that stored the "
+            "verdict under the old location key",
+        )
+
+    def test_job_scraper_schema_note_enumerates_the_veto_fields(self):
+        """SKILL.md's "do not drop any of these fields" instruction cannot
+        protect fields it does not name - and it omitted exactly the three
+        rank.md calls as important to persist as the score itself (review
+        finding F27 Part A, 2026-08-19)."""
+        text = SCRAPER_SKILL.read_text(encoding="utf-8")
+        for field in ("location_verdict", "language_gate", "language_note"):
+            self.assertIn(
+                field,
+                text,
+                f"the seen_jobs schema note must enumerate {field} so the "
+                "do-not-drop instruction covers it",
+            )
+
+    def test_evaluation_framework_acknowledges_language_gate_tracking(self):
+        """04-job-evaluation.md is the authoritative file /rank tells its agents
+        to read. Its Language Gate preamble once said the gate result "is not a
+        field /scrape or /rank track" - written before the gate was wired into
+        both consumers, and never updated. An agent reading that learns the
+        opposite of what rank.md itself insists on ("These veto fields are as
+        important to persist as the score itself"). The framework text must name
+        the tracked fields and must not claim they are untracked."""
+        text = EVALUATION.read_text(encoding="utf-8")
+        gate = text.partition("## Language Gate")[2].partition("\n## ")[0]
+        self.assertTrue(gate, "04-job-evaluation.md has no Language Gate section")
+        self.assertIn(
+            "language_gate",
+            gate,
+            "the Language Gate section must name the language_gate field /rank persists",
+        )
+        self.assertIn(
+            "language_note",
+            gate,
+            "the Language Gate section must name the language_note field /rank persists",
+        )
+        self.assertNotIn(
+            "not a field",
+            gate,
+            "stale claim: the gate result IS tracked by /scrape and /rank now",
+        )
+
+    def test_sweep_parses_stored_deadlines_defensively(self):
+        """Rule 6's expiry sweep mutates status automatically from stored
+        deadline values, and portals have shipped non-ISO shapes into
+        seen_jobs.json ("ASAP" from jobindex, DD.MM.YYYY from jobbank,
+        free text from jobdanmark's detail fallback). /outcome carries a
+        defensive date-parse rule for mere display; the command that
+        silently changes state needs one at least as much."""
+        text = COMMAND.read_text(encoding="utf-8")
+        self.assertIn(
+            "Parse stored deadlines defensively",
+            text,
+            "rule 6's sweep must state the defensive-parse rule",
+        )
+        self.assertRegex(
+            text,
+            r"not a `YYYY-MM-DD` date[^.]*treated exactly like an absent one",
+            "a non-ISO stored deadline must be handled as absent, not compared or guessed at",
         )
 
     def test_step2_schema_includes_language_gate_fields(self):

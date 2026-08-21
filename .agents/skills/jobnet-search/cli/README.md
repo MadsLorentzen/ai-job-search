@@ -147,13 +147,20 @@ bun run src/cli.ts search \
       "workPlaceAddress": "",
       "conceptUriDa": "http://data.star.dk/esco/occupation/426e017f-ebe5-4bea-b1eb-7d2d5ab3c6db",
       "isSeen": false,
-      "isFavorite": false
+      "isFavorite": false,
+      "company": "Region Midtjylland",
+      "location": "Viborg",
+      "date": "2026-03-13",
+      "deadline": "2026-04-05",
+      "url": "https://jobnet.dk/find-job/9ef43bce-d82b-4ea1-a098-7ff6520f99be"
     }
   ]
 }
 ```
 
 > **Note**: The `description` field (raw HTML) is intentionally omitted from `search` results for brevity. Use `detail` to retrieve the full job description.
+
+> **Note**: Every result also carries the cross-portal contract fields `company`, `location`, `date`, `deadline` and `url` — derived respectively from `hiringOrgName`, `postalDistrictName`/`municipality`, and the jobnet detail page URL. `/scrape` Step 2 expects search output to include title, company, location, date, and URL, and dates follow the `YYYY-MM-DD` convention of the other portal CLIs. The API's `1900-01-01` deadline sentinel (deadline not disclosed) maps to `null`. The native fields above are preserved unchanged.
 
 > **Note**: `resultsPerPage` and `pageNumber` must always be provided — omitting them while also providing `searchString` causes the API to return error 1014 ("Fejl i formatering af inputs").
 
@@ -350,8 +357,13 @@ All errors are written to **stderr** in JSON format and exit with code `1`:
 Job ad detail pages on jobnet.dk:
 
 ```
-https://jobnet.dk/job/{jobAdId}
+https://jobnet.dk/find-job/{jobAdId}
 ```
+
+The legacy `https://jobnet.dk/job/{jobAdId}` route redirects anonymous visitors into the
+MitID login flow, so it is never emitted. External ads (`isExternal: true`, jobAdIds with an
+`E` prefix) 404 on `/find-job/` and hit the login wall on `/job/` - neither route serves them
+anonymously; `/find-job/` is still strictly better and external ads are left as-is.
 
 Company logo images (prefix relative logoUrl from API):
 

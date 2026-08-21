@@ -95,7 +95,10 @@ posting's complete text, so a search of 20 roles is 1 request rather than 1 + 20
 Do **not** loop `detail` over search hits to read their descriptions — reach for
 `detail` only to look one posting up by slug (e.g. from the tracker, or a posting
 already closed and therefore absent from search). Full descriptions are verbose:
-keep `--limit` modest, and pre-filter on title/company before reading bodies.
+keep `--limit` modest, and pre-filter on title/company before reading bodies -
+or pass `--no-description` for a cheap discovery pass that keeps every other
+field and drops the bodies entirely (fetch a shortlisted job's body with
+`detail`, or re-run the search without the flag).
 
 Facet filters (values come from freehire's controlled vocabularies; comma-separate for OR within a facet):
 - `--region <codes>` — macro-region, e.g. `global`, `eu`, `us`, `apac`, `latam`, `cis`. `--region eu,us`. Use `none` to match jobs whose region could **not** be resolved (see "Partial data" below).

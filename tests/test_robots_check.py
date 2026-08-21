@@ -52,6 +52,13 @@ class TestPathRules(unittest.TestCase):
         """Cautious tie-break: Google resolves ties to Allow, we do not."""
         self.assertFalse(allowed("User-agent: *\nDisallow: /a\nAllow: /a\n", "*", "/a"))
 
+    def test_equal_specificity_tie_goes_to_disallow_when_allow_listed_first(self):
+        """The only ordering that exercises the tie-break clause: with Allow
+        first, deleting the clause makes the first rule at a given length win
+        and Allow would leak through. The Disallow-first sibling above cannot
+        detect that mutation (review finding F21, 2026-08-19)."""
+        self.assertFalse(allowed("User-agent: *\nAllow: /a\nDisallow: /a\n", "*", "/a"))
+
     def test_api_block_and_sibling_path(self):
         self.assertFalse(allowed(JOBUP, "*", "/api/v1/public/search"))
         self.assertTrue(allowed(JOBUP, "*", "/en/jobs/"))
@@ -129,6 +136,49 @@ class TestSoftTwoHundred(unittest.TestCase):
             robots_check._fetch = original
         self.assertEqual(rc, 1)
         self.assertIn("not a robots.txt", msg)
+
+    def test_gate_reads_policy_as_browser_when_honest_request_is_refused(self):
+        """09-web-research.md's Barclays-class recovery: the policy file itself
+        returns 403 to Claude-User and 200 to a browser, and the checker must
+        then read it as a browser and obey it strictly. This is gate()'s UA
+        fallback loop, previously untested despite the doc's coverage claim
+        (review finding F30, 2026-08-19)."""
+        import robots_check
+
+        original = robots_check._fetch
+
+        def waf(url, ua):
+            if ua == robots_check.BROWSER:
+                return ("User-agent: *\nAllow: /\n", 200)
+            return ("<html>403 Forbidden</html>", 403)
+
+        robots_check._fetch = waf
+        try:
+            rc, msg = robots_check.gate("https://waf.example/jobs")
+        finally:
+            robots_check._fetch = original
+        self.assertEqual(rc, 0)
+        self.assertIn("ALLOWED", msg)
+
+    def test_gate_obeys_a_browser_fetched_policy_strictly(self):
+        """The fallback must not fail open: a policy readable only as a browser
+        still disallows what it disallows."""
+        import robots_check
+
+        original = robots_check._fetch
+
+        def waf(url, ua):
+            if ua == robots_check.BROWSER:
+                return ("User-agent: *\nDisallow: /jobs\n", 200)
+            return ("<html>403 Forbidden</html>", 403)
+
+        robots_check._fetch = waf
+        try:
+            rc, msg = robots_check.gate("https://waf.example/jobs")
+        finally:
+            robots_check._fetch = original
+        self.assertEqual(rc, 1)
+        self.assertIn("DISALLOWED", msg)
 
     def test_a_genuinely_empty_robots_is_still_allow_all(self):
         """RFC 9309: an empty file permits everything. Do not over-correct."""

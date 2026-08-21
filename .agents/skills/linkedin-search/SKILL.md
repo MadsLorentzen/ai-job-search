@@ -64,7 +64,7 @@ bun run .agents/skills/linkedin-search/cli/src/cli.ts detail <id|url> [--format 
 
 `id` is the job ID from `search` results (e.g. `4426311357`). You may also pass a full
 LinkedIn `jobs/view/...` URL or a `urn:li:jobPosting:...` URN. Returns the full description,
-seniority, employment type, job function, industries, and apply link.
+seniority, employment type, job function, and industries.
 
 ## Usage examples
 

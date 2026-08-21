@@ -68,13 +68,14 @@ describe("LinkedIn CLI flag validation", () => {
       // parseFlags in cli.ts treats a next-token starting with "-" as absent
       // (`next.startsWith("-")` → flag becomes boolean `true`), and there is no
       // `--flag=value` syntax. So "-5" never reaches --jobage-minutes as a value;
-      // parseInt("true") is NaN, and BAD_ARG comes from the NaN branch, not the
-      // `v <= 0` guard. Negatives are unreachable through the CLI as currently parsed.
+      // it parses as a stray flag named "5", which the unknown-flag guard now
+      // rejects before the NaN branch can. Either way the invariant holds: a
+      // negative value fails loudly with exit 1 and a JSON error, never a
+      // silent unfiltered search.
       const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "-5"]);
       expect(result.exitCode).not.toBe(0);
       const err = parsedStderr(result.stderr);
-      expect(err.code).toBe("BAD_ARG");
-      expect(err.error).toMatch(/jobage-minutes/);
+      expect(err.code).toBe("UNKNOWN_FLAG");
     });
   });
 
@@ -124,5 +125,22 @@ describe("LinkedIn CLI flag validation", () => {
       const err = parsedStderr(result.stderr);
       expect(err.code).not.toBe("BAD_ARG");
     });
+  });
+});
+
+
+describe("unknown flag rejection", () => {
+  // add-portal.md's contract: "a bogus flag or missing required arg exits 1
+  // with a JSON error on stderr". A silently discarded flag is worse than an
+  // error: on jobdanmark a wrong flag name returned the entire database
+  // (13,862 results) as if it matched the query (review finding F13,
+  // 2026-08-19). Rejection happens before dispatch, so these are network-free.
+  test("a bogus --flag exits 1 with a JSON error instead of being silently discarded", async () => {
+    const result = await runCLI(["search", "-l", "Denmark", "-q", "test", "--bogus-flag", "xyz"]);
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toBe("");
+    const error = JSON.parse(result.stderr);
+    expect(error.code).toBe("UNKNOWN_FLAG");
+    expect(error.error).toContain("--bogus-flag");
   });
 });

@@ -59,6 +59,23 @@ export interface DetailApiResponse {
   user: string | null
 }
 
+/**
+ * Normalize a raw detail response before any output format sees it.
+ *
+ * The API's "deadline not disclosed" sentinel is 1900-01-01 (it arrives with
+ * isApplicationDeadlineASAP / an applicationDeadlineStatus of NotDisclosed).
+ * The search command already maps that sentinel to null; detail must agree,
+ * or an undisclosed deadline reads as 126 years expired and /rank's expiry
+ * sweep retires the job the moment it is stored.
+ */
+export function prepareDetail(data: DetailApiResponse): DetailApiResponse {
+  const deadline = data.application.deadlineDate
+  if (deadline && deadline.startsWith("1900-01-01")) {
+    data.application.deadlineDate = null
+  }
+  return data
+}
+
 export const detail = defineCommand({
   name: "detail",
   description: "Full detail for a single job ad",
@@ -77,9 +94,10 @@ export const detail = defineCommand({
     }
 
     try {
-      const data = await apiFetch<DetailApiResponse>(
-        `/FindJob/JobAdDetails/${id}`,
-        { incrementViews: "false" }
+      const data = prepareDetail(
+        await apiFetch<DetailApiResponse>(`/FindJob/JobAdDetails/${id}`, {
+          incrementViews: "false",
+        }),
       )
 
       if (signal.aborted) return

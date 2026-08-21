@@ -144,7 +144,8 @@ jobs:
           python3 tools/verify_pdf.py cv/main_example.pdf \
             --pages 2 \
             --contains '[your.email@example.com]' \
-            --contains 'Professional Experience'
+            --contains 'Professional Experience' \
+            --contains 'Achievement'
           python3 tools/verify_pdf.py cover_letters/cover_example.pdf \
             --pages 1 \
             --contains 'your.email@example.com' \
@@ -209,8 +210,9 @@ jobs:
             fi
           }
           check CLAUDE.md '\[YOUR_NAME\]'
-          check cv/main_example.tex '\[YOUR_NAME\]'
+          check cv/main_example.tex '\\name{\[First\]}{\[Last\]}'
+          check cv/main_example.tex '\\email{\[your\.email@example\.com\]}'
           check cover_letters/cover_example.tex '\[YOUR NAME\]'
-          check .claude/skills/job-application-assistant/01-candidate-profile.md '<!-- SETUP'
+          check .claude/skills/job-application-assistant/01-candidate-profile.md '\[YOUR_EMAIL\]'
           check .claude/skills/job-application-assistant/04-job-evaluation.md '\[YOUR_PRIMARY_SKILLS\]'
           exit $fail

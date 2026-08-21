@@ -160,7 +160,11 @@ export function parseSearchPage(html: string): SearchPageResult {
       }
     }
     let deadline: string | null = null
-    if (r.apply_deadline_asap) deadline = "ASAP"
+    // apply_deadline_asap means the posting states no fixed deadline ("apply
+    // now"). The /scrape contract represents that as null, and consumers do
+    // date arithmetic on this field - so the flag maps to null, and wins over
+    // any date field that happens to be present.
+    if (r.apply_deadline_asap) deadline = null
     else if (typeof r.apply_deadline === "string") deadline = r.apply_deadline.slice(0, 10)
     else if (typeof r.lastdate === "string") deadline = r.lastdate
 

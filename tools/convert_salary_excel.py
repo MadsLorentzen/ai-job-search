@@ -65,7 +65,13 @@ def parse_numeric_cell(value):
     if not text:
         raise ValueError("not numeric")
     if "," in text and "." in text:
-        text = text.replace(".", "").replace(",", ".")
+        # The separator that appears last is the decimal separator: European
+        # "1.234,56" and US "1,234.56" are both unambiguous here, unlike the
+        # single-separator cases below.
+        if text.rfind(",") > text.rfind("."):
+            text = text.replace(".", "").replace(",", ".")
+        else:
+            text = text.replace(",", "")
     elif "," in text:
         if re.fullmatch(r"[+-]?\d+,\d{3}", text):
             raise ValueError("ambiguous comma separator")
@@ -95,10 +101,18 @@ def header_matches(header, patterns):
 
 
 def strip_type_patterns(header, patterns):
-    """Remove count/index words from a header to derive a category name."""
+    """Remove count/index words from a header to derive a category name.
+
+    Mirrors ``header_matches``: patterns strip as whole tokens, and any
+    pattern also listed in ``COMPOUND_PATTERNS`` additionally strips as a
+    substring - otherwise a compound header like "Lønindeks alle" keeps the
+    type word in its category name and can never pair with "Antal alle".
+    """
     name = header.lower()
     for p in patterns:
         name = re.sub(rf"(?<![a-zæøåöäü0-9]){re.escape(p)}(?![a-zæøåöäü0-9])", "", name)
+        if p in COMPOUND_PATTERNS:
+            name = name.replace(p, "")
     return name.strip(" _-")
 
 

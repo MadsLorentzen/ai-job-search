@@ -2,6 +2,7 @@ import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
 import { parse } from "node-html-parser"
 import { BASE_URL, writeError } from "../helpers.js"
+import { extractCity, toContractDate } from "./search.js"
 
 interface JsonLdJobPosting {
   "@context"?: string
@@ -119,6 +120,21 @@ function fromJsonLd(jobPosting: JsonLdJobPosting, slug: string, url: string): De
   }
 }
 
+/**
+ * Normalize a date read from the rendered page's overview list. The page
+ * writes DD-MM-YYYY (sometimes with a trailing time, "02-08-2026 23.59"),
+ * and the deadline can be the free-text "Løbende" (rolling) - jobbank maps
+ * its equivalent to null, and every consumer does date arithmetic on the
+ * value. The JSON-LD branch gets schema.org ISO dates and needs none of this.
+ */
+function normalizeOverviewDate(value: string | null): string | null {
+  if (!value) return null
+  const trimmed = value.trim()
+  if (/^løbende$/iu.test(trimmed)) return null
+  const match = trimmed.match(/^(\d{2})-(\d{2})-(\d{4})/)
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : toContractDate(trimmed)
+}
+
 function overviewValue(root: ReturnType<typeof parse>, label: string): string | null {
   const normalizedLabel = label.toLowerCase()
   for (const item of root.querySelectorAll(".job-overview li")) {
@@ -174,8 +190,8 @@ function fromRenderedHtml(root: ReturnType<typeof parse>, slug: string, url: str
     slug,
     url,
     title,
-    datePosted: overviewValue(root, "Udgivet") ?? "",
-    validThrough: overviewValue(root, "Ansøgningsfrist"),
+    datePosted: normalizeOverviewDate(overviewValue(root, "Udgivet")) ?? "",
+    validThrough: normalizeOverviewDate(overviewValue(root, "Ansøgningsfrist")),
     employmentType: employmentType ? [employmentType] : [],
     hiringOrganization: {
       name: companyName,
@@ -183,7 +199,7 @@ function fromRenderedHtml(root: ReturnType<typeof parse>, slug: string, url: str
     },
     jobLocation: {
       streetAddress: workplace,
-      addressLocality: null,
+      addressLocality: extractCity(workplace),
       addressRegion: null,
       postalCode: null,
       addressCountry: "DK",

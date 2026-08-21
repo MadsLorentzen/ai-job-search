@@ -135,7 +135,11 @@ export function parseRssDescription(desc: string): ParsedDescription {
     if (deadlineStr.toLowerCase() === "løbende" || deadlineStr.toLowerCase() === "lobende") {
       deadline = null
     } else {
-      deadline = deadlineStr
+      // The feed writes DD.MM.YYYY; the /scrape contract (and this CLI's own
+      // detail command) use YYYY-MM-DD. Convert the known shape; anything else
+      // passes through so an unexpected value stays visible downstream.
+      const dmy = deadlineStr.match(/^(\d{2})\.(\d{2})\.(\d{4})$/)
+      deadline = dmy ? `${dmy[3]}-${dmy[2]}-${dmy[1]}` : deadlineStr
     }
     // Remove the deadline portion from rest
     rest = rest.substring(0, deadlineMatch.index).trim()

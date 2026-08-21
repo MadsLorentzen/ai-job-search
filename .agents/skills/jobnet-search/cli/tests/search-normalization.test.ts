@@ -127,4 +127,37 @@ describe("Jobnet search normalization", () => {
     });
     expect("description" in output.results[0]).toBe(false);
   });
+
+  test("additively emits the /scrape contract fields (company, location, date, deadline, url)", () => {
+    const output = createSearchOutput(apiResponse(), { ...flags, limit: undefined });
+
+    expect(output.results).toHaveLength(2);
+    expect(output.results[0]).toMatchObject({
+      company: "Acme",
+      location: null,
+      date: "2026-07-01",
+      deadline: null,
+      url: "https://jobnet.dk/find-job/job-1",
+    });
+    expect(output.results[1]).toMatchObject({
+      company: "Example Co",
+      location: "København Ø",
+      date: "2026-07-02",
+      deadline: "2026-08-01",
+      url: "https://jobnet.dk/find-job/job-2",
+    });
+    expect(output.results[0].hiringOrgName).toBe("Acme");
+    expect(output.results[1].applicationDeadline).toBe("2026-08-01T23:59:00+02:00");
+  });
+
+  test("maps Jobnet's undisclosed-deadline sentinel (1900-01-01) to null", () => {
+    const response = apiResponse();
+    response.jobAds[0].applicationDeadline = "1900-01-01T00:00:00+01:00";
+    response.jobAds[0].applicationDeadlineStatus = "NotDisclosed";
+
+    const output = createSearchOutput(response, { ...flags, limit: undefined });
+
+    expect(output.results[0].deadline).toBeNull();
+    expect(output.results[1].deadline).toBe("2026-08-01");
+  });
 });

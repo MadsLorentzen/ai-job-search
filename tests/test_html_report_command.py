@@ -94,6 +94,43 @@ class HtmlReportTrackerFieldTests(unittest.TestCase):
 class HtmlReportGitignoreTests(unittest.TestCase):
     """reports/ must be gitignored — it holds personal generated output."""
 
+    def test_funnel_is_computed_from_stage_history_not_current_status(self):
+        """status is a current state, not a history: an application that
+        interviewed and was then rejected carries status `rejected` and would
+        never count as having reached Interview, so a finished search reads
+        as though nobody ever interviewed (review finding F10, 2026-08-19).
+        The stage checkboxes merged from outcome.md in Step 1.2 are the
+        history; the funnel must be told to use them."""
+        text = COMMAND_FILE.read_text(encoding="utf-8")
+        self.assertIn(
+            "stage checkboxes",
+            text.split("## Step 3")[0].split("## Step 2")[1],
+            "Step 2's funnel definition must derive stage-reached from the "
+            "merged outcome.md stage checkboxes",
+        )
+        self.assertIn(
+            "not current status",
+            text,
+            "the funnel rule must say explicitly that current status alone undercounts",
+        )
+
+    def test_rejection_rate_excludes_declined_offers_and_withdrawals(self):
+        """offer_declined is the candidate turning an offer down (a success)
+        and withdrawn is candidate-initiated; counting either as a rejection
+        inflates the rejection rate on a self-assessment dashboard (review
+        finding F11, 2026-08-19)."""
+        text = COMMAND_FILE.read_text(encoding="utf-8")
+        self.assertIn(
+            "`offer_declined`",
+            text.split("## Step 3")[0].split("## Step 2")[1],
+            "the rejection-rate definition must address offer_declined",
+        )
+        self.assertIn(
+            "not rejections",
+            text,
+            "the rate must exclude candidate-initiated outcomes explicitly",
+        )
+
     def test_reports_folder_is_gitignored(self):
         rules = {line.strip() for line in GITIGNORE.read_text(encoding="utf-8").splitlines()}
         self.assertIn(

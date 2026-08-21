@@ -56,8 +56,15 @@ describe("parseRssDescription", () => {
       jobType: "Fuldtidsjob, Graduate/trainee",
       company: "Acme A/S",
       location: "København",
-      deadline: "31.07.2026",
+      deadline: "2026-07-31",
     });
+  });
+
+  test("passes an unrecognized deadline shape through for downstream defensive parsing", () => {
+    const parsed = parseRssDescription(
+      "Fuldtidsjob hos Acme A/S, Odense (Ansøgningsfrist: snarest muligt)",
+    );
+    expect(parsed.deadline).toBe("snarest muligt");
   });
 
   test("normalizes a rolling deadline to null", () => {

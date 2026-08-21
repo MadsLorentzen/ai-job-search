@@ -66,7 +66,7 @@ For each **enabled** portal skill:
 
 1. Read its `SKILL.md` to find the correct `bun run …` invocation and supported flags.
 2. Translate the query terms from `search-queries.md` into that portal's flag format (e.g. `--key`, `--search-string`, `--query`, filter codes — whatever the portal's SKILL.md specifies).
-3. Scope to the last 14 days using the portal's supported recency flag (`--jobage`, `--since <YYYY-MM-DD>`, `--order PublicationDate`, etc. — as documented per portal).
+3. Scope to the last 14 days using the portal's supported recency **filter** flag (`--jobage`, `--since <YYYY-MM-DD>`, etc. — as documented per portal). A portal with **no recency flag** (jobdanmark offers none) still gets scoped: every portal's search output carries a `date` field, so filter client-side — drop results whose `date` is older than 14 days after the call returns, and never invent a flag the portal's SKILL.md does not document (the CLIs reject unknown flags). `--order PublicationDate` is a sort, and a sort is not a filter — pairing it with a `--limit` is a defensible approximation on a portal that offers nothing better (jobnet), but apply the client-side date filter on top all the same.
 4. Cap results to ~20 per call using the portal's limit flag.
 5. Use `--format json` for machine-readable output.
 
@@ -82,6 +82,8 @@ Use `WebSearch` for:
 - When bun is unavailable (Step 1a failed)
 
 Use the site-specific query strings from `search-queries.md` directly as WebSearch queries for these portals.
+
+Tag each fallback result as WebSearch-sourced, keeping the portal tag when the fallback stands in for an installed portal whose CLI failed. Step 4 persists this as the entry's `source`, and Step 5 reports which portals ran on the fallback this run.
 
 ### Step 2: Fetch & Parse
 
@@ -224,7 +226,11 @@ Scraper-based portal CLIs rot silently: when a portal changes its markup, the pa
 Present new jobs in a table sorted by fit (high first). When Step 1b skipped
 portals (`enabled: false`), report them with the `skipped (disabled):` line below
 so opting one out stays visible rather than silent; omit the line when nothing
-was skipped. When Step 4.75 found a portal degraded, broken, or inconclusive,
+was skipped. When any portal's results came from the Step 1c fallback this run
+(bun unavailable, or its CLI failed at runtime), report it with the
+`fallback (websearch):` line - fallback results come from a search index that
+can be stale, so the reader should know which rows carry that caveat; omit the
+line when every portal ran its CLI. When Step 4.75 found a portal degraded, broken, or inconclusive,
 add one `health:` line per suspect portal (healthy portals get no line); after
 the report, offer to set that portal's `enabled: false` so `/scrape` stops
 running it (and covers it via the Step 1c fallback) until it is fixed - only
@@ -237,6 +243,8 @@ the skill.
 Found X new positions (Y high, Z medium, W low match).
 
 skipped (disabled): <portal-name>, <portal-name>
+
+fallback (websearch): <portal-name>, <portal-name>
 
 health: <portal-name> - degraded (company null on all 12 results); parsing anchors in .agents/skills/<portal-name>/url-reference.md
 health: <portal-name> - broken (0 results for the SKILL.md test query and a broader retry); parsing anchors in .agents/skills/<portal-name>/url-reference.md

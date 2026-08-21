@@ -63,7 +63,6 @@ export interface JobDetail extends JobCard {
   employmentType: string | null
   jobFunction: string | null
   industries: string | null
-  applyUrl: string | null
 }
 
 /**
@@ -228,9 +227,6 @@ export function parseJobDetail(html: string, id: string): JobDetail {
     criteria[clean(cm[1]).toLowerCase()] = clean(cm[2])
   }
 
-  const applyMatch = html.match(/class="topcard__link[^"]*"[^>]*href="([^"]+)"/i)
-  const applyUrl = applyMatch ? decodeHtmlEntities(applyMatch[1]).split("?")[0] : null
-
   return {
     id,
     title: title ? clean(title) : "(untitled)",
@@ -244,7 +240,6 @@ export function parseJobDetail(html: string, id: string): JobDetail {
     employmentType: criteria["employment type"] ?? null,
     jobFunction: criteria["job function"] ?? null,
     industries: criteria["industries"] ?? null,
-    applyUrl,
   }
 }
 

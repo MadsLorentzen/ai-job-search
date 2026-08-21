@@ -18,6 +18,10 @@ export interface SearchOpts {
   limit: number
   format: "json" | "table" | "plain"
   descriptionFormat: DescriptionFormat
+  // Hydrate full description bodies (the documented default). False keeps a
+  // discovery pass cheap: bodies are ~73% of a default search payload, and
+  // /scrape pre-filters by title before reading bodies anyway.
+  includeDescription?: boolean
   // Facet filters (already parsed into value lists; empty means unset).
   regions: string[]
   countries: string[]
@@ -38,9 +42,11 @@ function buildQuery(opts: SearchOpts): URLSearchParams {
   p.set("offset", String((opts.page - 1) * opts.limit))
   p.set("semantic_ratio", "0") // keyword search; the semantic index is opt-in
   // The agent endpoint serves the index's truncated preview unless asked to
-  // rehydrate each hit from the database, so both params travel together.
-  p.set("include_description", "true")
-  p.set("description_format", opts.descriptionFormat)
+  // rehydrate each hit from the database, so both params travel together -
+  // unless the caller opted out of hydration entirely (--no-description).
+  const hydrate = opts.includeDescription !== false
+  p.set("include_description", hydrate ? "true" : "false")
+  if (hydrate) p.set("description_format", opts.descriptionFormat)
   if (opts.jobage > 0 && opts.jobage < 9999) p.set("posted_within_days", String(opts.jobage))
   if (opts.workMode) p.set("work_mode", opts.workMode)
   if (opts.company) p.set("company_slug", opts.company)
@@ -117,7 +123,14 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
       )
       return 1
     }
-    const rows = (env.data ?? []).map(toResult)
+    let rows = (env.data ?? []).map(toResult)
+    // The API currently returns description bodies regardless of
+    // include_description=false (verified live 2026-08-19), and the cost this
+    // flag exists to avoid is the ~73% of CLI output the bodies occupy in
+    // agent context - so the lean mode strips them client-side either way.
+    if (opts.includeDescription === false) {
+      rows = rows.map((r) => ({ ...r, description: null }))
+    }
     const total = env.meta?.total ?? rows.length
 
     if (opts.format === "table") {

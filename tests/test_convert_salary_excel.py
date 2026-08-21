@@ -5,6 +5,7 @@ from tools.convert_salary_excel import (
     INDEX_PATTERNS,
     detect_column_type,
     header_matches,
+    parse_numeric_cell,
     parse_sheet,
 )
 
@@ -288,3 +289,54 @@ class DetectColumnTypeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ParseNumericCellLocaleTests(unittest.TestCase):
+    # The separator that appears LAST is the decimal separator. Assuming
+    # European ("." thousands, "," decimal) for every both-separator string
+    # turned a US "1,234.56" into 1.23456 - a silent 1000x corruption that
+    # flowed into salary_data.json and negotiation advice.
+
+    def test_us_thousands_and_decimal_string(self):
+        self.assertEqual(parse_numeric_cell("1,234.56"), 1234.56)
+
+    def test_us_multiple_thousands_groups(self):
+        self.assertEqual(parse_numeric_cell("1,234,567.89"), 1234567.89)
+
+    def test_european_thousands_and_decimal_string(self):
+        self.assertEqual(parse_numeric_cell("1.234,56"), 1234.56)
+
+    def test_european_multiple_thousands_groups(self):
+        self.assertEqual(parse_numeric_cell("1.234.567,89"), 1234567.89)
+
+
+class CompoundCategoryPairingTests(unittest.TestCase):
+    def test_parse_sheet_pairs_danish_compound_index_with_count(self):
+        # "Lønindeks alle" is *detected* as an index column via
+        # COMPOUND_PATTERNS, but the derived category name must also lose the
+        # compound word or it can never pair with "Antal alle" ("alle" vs
+        # "lønindeks alle") - exactly the locale the compound support exists for.
+        ws = FakeWorksheet([
+            ("Firma", "Antal alle", "Lønindeks alle"),
+            ("Example Corp", 12, 118.0),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(
+            companies[0]["categories"]["alle"],
+            {"count": 12, "index": 118.0},
+        )
+
+    def test_parse_sheet_sheet_level_us_locale_value(self):
+        ws = FakeWorksheet([
+            ("Company", "Salary Index"),
+            ("Example Corp", "1,234.56"),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(
+            companies[0]["categories"]["salary_index"],
+            {"index": 1234.56},
+        )

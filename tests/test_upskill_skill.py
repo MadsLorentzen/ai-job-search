@@ -82,6 +82,26 @@ class UpskillSkillSpec(unittest.TestCase):
         self.assertIn("(100 - fit_rating) / 100", step3)
         self.assertIn("(100 - rank_score) / 100", step3)
 
+    def test_step3_handles_blank_fit_rating(self):
+        """/outcome creates tracker rows for applications made outside the
+        workflow, and no rule anywhere fills fit_rating on that path - yet
+        Step 3.3 divides by it. A naive read of blank as 0 yields weight 1.0
+        (the maximum), making the one job the framework knows nothing about
+        dominate the heatmap. The skill already handles missing gaps with
+        skip+count+report; the same pattern must cover fit_rating."""
+        sections = _sections(SKILL.read_text(encoding="utf-8"))
+        step3 = sections.get("Step 3: Pass 1 — Hard Skill Diff", "")
+        self.assertIn(
+            "blank or non-numeric `fit_rating`",
+            step3,
+            "Step 3.3 must state what happens to a row whose fit_rating is blank",
+        )
+        self.assertIn(
+            "Never treat a blank as 0",
+            step3,
+            "the blank-as-0 reading (weight 1.0, maximum) is the failure mode and must be forbidden explicitly",
+        )
+
     def test_step5_heatmap_shows_gap_provenance(self):
         sections = _sections(SKILL.read_text(encoding="utf-8"))
         step5 = sections.get("Step 5: Build Gap Heatmap", "")

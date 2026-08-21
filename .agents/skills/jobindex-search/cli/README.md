@@ -169,12 +169,29 @@ bun run src/cli.ts detail h1647303 --format plain
 ```
 
 **Field notes:**
-- `deadline` — application deadline date string; `null` if not listed.
-- `employmentType` — e.g. `"Fastansættelse"`, `"Midlertidig ansættelse"`; `null` if not listed.
-- `hours` — e.g. `"Fuldtid"`, `"Deltid"`; `null` if not listed.
-- `applyUrl` — the external application URL (resolved from the Jobindex redirect link `/c?t=...`); `null` if not available.
-- `description` — full plain-text job description (HTML stripped).
-- All fields may be `null` if not present in the HTML.
+
+Jobindex serves detail pages in two shapes, and field availability differs:
+a **jobindex-native** page (recognisable by its `jd-*` facts blocks) carries
+company, location, an ISO deadline, employment type and hours; an **external
+ATS passthrough** (the employer's hosted ad, e.g. hr-manager/Talentech, served
+through jobindex) has no reliable company anchor, so `company` is `null` there
+rather than the ATS brand, and location/deadline come from the ad's own
+widgets when present.
+
+- `id` / `url` — always the jobindex id and its `jobannonce` URL, never the
+  page's `og:url`/canonical (on passthrough pages those point at the external
+  ATS, not the posting).
+- `deadline` — `YYYY-MM-DD` or `null`; Danish long dates ("13. september
+  2026") and `DD-MM-YYYY` widget dates are converted.
+- `employmentType` / `hours` — from the native facts blocks; `null` on
+  passthrough pages.
+- `companyUrl` — currently always `null`; no page shape carries a usable
+  company link.
+- `applyUrl` — the Jobindex redirect link (`/c?t=...`) when present; `null`
+  otherwise.
+- `description` — plain text of the ad body (HTML stripped), falling back to
+  the page's meta description when the body is empty.
+- All fields except `id`, `title`, and `url` may be `null`.
 
 ---
 

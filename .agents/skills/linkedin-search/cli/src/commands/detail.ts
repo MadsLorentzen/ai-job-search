@@ -43,7 +43,6 @@ export async function runDetail(opts: DetailOpts): Promise<number> {
         job.description || "(no description)",
         "",
         `URL: ${job.url}`,
-        job.applyUrl ? `Apply: ${job.applyUrl}` : "",
       ].filter((l) => l !== "")
       process.stdout.write(lines.join("\n") + "\n")
     } else {
