@@ -29,6 +29,8 @@ bun run job_scraper/serve_dashboard.js
 
 (Prefix with `PORT=<port>` if a non-default port was requested in `$ARGUMENTS`, e.g. `PORT=5000 bun run job_scraper/serve_dashboard.js`.)
 
+**If this fails with exit code 127 ("command not found"):** `bun` is very likely installed but not on this shell's `PATH` (confirmed 2026-08-21 — this exact failure happened 7 separate times across two earlier session dates before being diagnosed). Retry with the full path instead: `"$USERPROFILE/.bun/bin/bun.exe" run job_scraper/serve_dashboard.js` (Windows) or check `~/.bun/bin/bun` on macOS/Linux. Don't retry the bare `bun run ...` command a second time on a 127 — go straight to the full-path form.
+
 Check the background output for the line `Job Search Dashboard running at http://127.0.0.1:<port>/` before proceeding, to confirm it actually started. If it failed instead (port already in use by something unrelated, a syntax error in the server code, etc.), report the real error to the user rather than silently opening a browser tab to a dead server.
 
 ---

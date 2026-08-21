@@ -31,6 +31,9 @@ confidential_client_info.md
 # UK Home Office sponsor register cache (10MB+, refreshed regularly from gov.uk -
 # see 04-job-evaluation.md's UK Sponsor Register Check; never commit, always re-fetch)
 **/job_scraper/uk_sponsor_register.csv
+
+# Agent token-usage log (personal session analytics, not repo content)
+**/job_scraper/agent_token_log.csv
 *_BehavioralReport.pdf
 linkedin_Profile.pdf
 
@@ -76,6 +79,7 @@ documents/diplomas/**
 documents/references/**
 documents/applications/**
 documents/postings/**
+documents/company_research/**
 # Interview prep and experience records: these name the employers applied to,
 # quote what was submitted, and set out the candidate's weak points.
 documents/interview/**
