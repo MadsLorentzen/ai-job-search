@@ -254,6 +254,9 @@ def _build_review_items(
             "review_item_type": item_type, "domain_item_id": item_id,
             "source_artifact_id": source_artifact["id"], "item": item,
             "decision": decision,
+            "can_use": item_type not in {"profile_conflict", "profile_placeholder"},
+            "problem": _review_problem(item_type),
+            "display_label": _review_label(item_type, item),
         })
 
     if profile:
@@ -285,6 +288,48 @@ def _build_review_items(
                 continue
             add("content_unit", unit["unit_id"], intelligence, unit, intelligence_decisions)
     return review_items
+
+
+def _review_problem(item_type: str) -> str:
+    return {
+        "content_unit": "Decide whether this wording should appear in your application.",
+        "functionally_equivalent_match": "Confirm whether this experience is close enough to use for this role.",
+        "transferable_match": "Confirm whether this transferable experience should support your positioning.",
+        "gate_flag": "Confirm this requirement before the application relies on it.",
+        "human_judgment_question": "Answer this unresolved fit question before proceeding.",
+        "profile_conflict": "Conflicting profile evidence cannot be used in application material.",
+        "profile_placeholder": "Placeholder profile evidence cannot be used in application material.",
+    }.get(item_type, "Make the required decision before proceeding.")
+
+
+def _review_label(item_type: str, item: dict[str, Any]) -> str:
+    if item_type == "content_unit":
+        return {
+            "cv_bullet": "CV bullet",
+            "cv_summary_line": "CV summary",
+            "cover_letter_paragraph": "Cover-letter paragraph",
+            "positioning_statement": "Positioning statement",
+        }.get(item.get("unit_type"), "Application wording")
+    return {
+        "functionally_equivalent_match": "Experience match",
+        "transferable_match": "Transferable experience",
+        "gate_flag": "Requirement check",
+        "human_judgment_question": "Fit question",
+        "profile_conflict": "Conflicting evidence",
+        "profile_placeholder": "Missing profile evidence",
+    }.get(item_type, "Decision needed")
+
+
+def _is_outstanding_review_item(item: dict[str, Any]) -> bool:
+    decision = item["decision"]
+    return (
+        decision is None
+        or decision["disposition"] in {"requires_upstream_change", "resolved_by_rerun"}
+        or (
+            item["review_item_type"] in {"profile_conflict", "profile_placeholder"}
+            and decision["disposition"] != "omit_from_positioning"
+        )
+    )
 
 
 def build_profile_view_model(
@@ -348,15 +393,8 @@ def build_workspace_view_model(
     review_items = _build_review_items(
         conn, workspace_id, artifacts["profile"], artifacts["fit"], artifacts["intelligence"]
     )
-    outstanding = [
-        item for item in review_items
-        if item["decision"] is None
-        or item["decision"]["disposition"] in {"requires_upstream_change", "resolved_by_rerun"}
-        or (
-            item["review_item_type"] in {"profile_conflict", "profile_placeholder"}
-            and item["decision"]["disposition"] != "omit"
-        )
-    ]
+    outstanding = [item for item in review_items if _is_outstanding_review_item(item)]
+    resolved_review_items = [item for item in review_items if item not in outstanding]
     acknowledged_content_items = [
         item for item in review_items
         if item["review_item_type"] == "content_unit"
@@ -387,6 +425,18 @@ def build_workspace_view_model(
             reviewed_output_status = "Legacy pack — not revalidated"
         else:
             reviewed_output_status = application_material_completion(pack_payload)["status"]
+    if artifacts["pack"]:
+        reviewed_cv_content = artifacts["pack"]["payload"].get("cv_content", [])
+        reviewed_cover_letter_content = artifacts["pack"]["payload"].get("cover_letter_content", [])
+    else:
+        reviewed_cv_content = [
+            item["item"] for item in acknowledged_content_items
+            if item["item"].get("unit_type") in {"cv_bullet", "cv_summary_line"}
+        ]
+        reviewed_cover_letter_content = [
+            item["item"] for item in acknowledged_content_items
+            if item["item"].get("unit_type") in {"cover_letter_paragraph", "positioning_statement"}
+        ]
     profile_ready = profile_snapshot_is_ready(artifacts["profile"])
     job_state = "complete" if artifacts["job"] else "current"
     understanding_state = _result_state(artifacts["understanding"], stale["understanding"])
@@ -426,6 +476,24 @@ def build_workspace_view_model(
     }
     for stage in stages.values():
         stage["state_label"] = stage_state_label(stage["state"])
+    if artifacts["pack"] and reviewed_output_status == "READY":
+        readiness_answer = "Yes — ready to send"
+        readiness_problem = "The reviewed CV and cover letter satisfy the completion contract."
+    elif artifacts["pack"]:
+        readiness_answer = "No — reviewed output is incomplete"
+        readiness_problem = "This pack is historical or does not satisfy the current completion contract."
+    elif review_state == "stale":
+        readiness_answer = "No — results need refreshing"
+        readiness_problem = "Rerun the stale stage before relying on this application material."
+    elif outstanding:
+        readiness_answer = "Not yet — decisions required"
+        readiness_problem = f"Resolve {len(outstanding)} remaining review decision{'s' if len(outstanding) != 1 else ''}."
+    elif not has_reviewed_usable_material:
+        readiness_answer = "No — application material is incomplete"
+        readiness_problem = "The reviewed CV and cover letter do not yet satisfy the completion contract."
+    else:
+        readiness_answer = "Not yet — create the reviewed pack"
+        readiness_problem = "The material is sufficient, but the immutable reviewed pack has not been created."
     public_extensions = []
     if extensions_dir is not None:
         public_extensions = [
@@ -440,13 +508,24 @@ def build_workspace_view_model(
             artifacts["profile"], artifacts["bundle"], artifacts["fit"],
             artifacts["intelligence"], artifacts["pack"],
         ),
-        "review_items": review_items, "outstanding_review_count": len(outstanding),
+        "review_items": review_items,
+        "pending_review_items": outstanding,
+        "resolved_review_items": resolved_review_items,
+        "pending_content_review_items": [
+            item for item in outstanding
+            if item["review_item_type"] == "content_unit" and item["can_use"]
+        ],
+        "outstanding_review_count": len(outstanding),
         "submitted_pack_artifact_ids": sorted(submitted_pack_ids),
         "available_extensions": public_extensions,
         "profile_ready": profile_ready,
         "review_completion": review_completion,
         "review_completion_status": review_completion_status,
         "reviewed_output_status": reviewed_output_status,
+        "reviewed_cv_content": reviewed_cv_content,
+        "reviewed_cover_letter_content": reviewed_cover_letter_content,
+        "readiness_answer": readiness_answer,
+        "readiness_problem": readiness_problem,
         "controls": {
             "can_understand": bool(artifacts["job"]),
             "can_fit": understanding_state == "complete" and profile_ready,

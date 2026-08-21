@@ -11,6 +11,7 @@ from webapp.services.http_api import (
     JobWorkspaceNotFound,
     confirm_job_application_pack,
     record_review_decision,
+    record_review_decisions,
     retry_job_application_pack_projection,
 )
 from webapp.services.pipeline import PipelineError
@@ -29,6 +30,10 @@ class ReviewDecisionBody(StrictBody):
     domain_item_id: str | None = None
     disposition: str
     note: str | None = None
+
+
+class ReviewDecisionBatchBody(StrictBody):
+    decisions: list[ReviewDecisionBody]
 
 
 class ApplicationPackBody(StrictBody):
@@ -63,6 +68,22 @@ def post_review_decision(
             domain_item_id=body.domain_item_id, disposition=body.disposition,
             note=body.note,
         )
+    except (PipelineError, JobWorkspaceNotFound) as exc:
+        raise _translate(exc) from exc
+
+
+@router.post("/review-decisions/batch", status_code=201)
+def post_review_decisions_batch(
+    workspace_id: str, body: ReviewDecisionBatchBody,
+    conn: sqlite3.Connection = Depends(get_conn),
+):
+    if not 1 <= len(body.decisions) <= 100:
+        raise HTTPException(status_code=400, detail="batch must contain from 1 to 100 decisions")
+    try:
+        decisions = record_review_decisions(
+            conn, workspace_id, [item.model_dump() for item in body.decisions]
+        )
+        return {"decisions": decisions}
     except (PipelineError, JobWorkspaceNotFound) as exc:
         raise _translate(exc) from exc
 

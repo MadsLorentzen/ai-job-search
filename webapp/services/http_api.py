@@ -138,7 +138,7 @@ def generate_application_intelligence(
 def record_review_decision(
     conn: sqlite3.Connection, workspace_id: str, *, review_item_type: str,
     source_artifact_id: str, domain_item_id: str | None, disposition: str,
-    note: str | None,
+    note: str | None, commit: bool = True,
 ) -> dict[str, Any]:
     require_job_workspace(conn, workspace_id)
     if disposition not in DISPOSITIONS:
@@ -149,8 +149,36 @@ def record_review_decision(
     return save_review_decision(
         conn, workspace_id=workspace_id, review_item_type=review_item_type,
         source_artifact_id=source_artifact_id, domain_item_id=domain_item_id,
-        disposition=disposition, note=note,
+        disposition=disposition, note=note, commit=commit,
     )
+
+
+def record_review_decisions(
+    conn: sqlite3.Connection, workspace_id: str, decisions: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    require_job_workspace(conn, workspace_id)
+    if not decisions:
+        raise PipelineError("at least one review decision is required")
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        saved = [
+            record_review_decision(
+                conn,
+                workspace_id,
+                review_item_type=item["review_item_type"],
+                source_artifact_id=item["source_artifact_id"],
+                domain_item_id=item.get("domain_item_id"),
+                disposition=item["disposition"],
+                note=item.get("note"),
+                commit=False,
+            )
+            for item in decisions
+        ]
+        conn.commit()
+        return saved
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def confirm_job_application_pack(

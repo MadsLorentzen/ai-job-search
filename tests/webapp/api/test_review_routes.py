@@ -51,6 +51,43 @@ def test_review_view_and_decision_route(tmp_path):
         conn.close()
 
 
+def test_batch_review_records_existing_dispositions_atomically(tmp_path):
+    app, settings, workspace_id = _app_with_pack_chain(tmp_path)
+    with TestClient(app) as client:
+        intelligence = client.get(
+            f"/api/workspaces/{workspace_id}/review"
+        ).json()["application_intelligence_result"]
+        decisions = [
+            {
+                "review_item_type": "content_unit",
+                "source_artifact_id": intelligence["id"],
+                "domain_item_id": item_id,
+                "disposition": "omit_from_positioning",
+            }
+            for item_id in ("cv_1", "cv_2")
+        ]
+        response = client.post(
+            f"/api/workspaces/{workspace_id}/review-decisions/batch",
+            json={"decisions": decisions},
+        )
+        assert response.status_code == 201
+        assert [item["disposition"] for item in response.json()["decisions"]] == [
+            "omit_from_positioning", "omit_from_positioning",
+        ]
+
+        conn = connect(settings.db_path)
+        before = len(list_review_decisions(conn, workspace_id))
+        conn.close()
+        invalid = client.post(
+            f"/api/workspaces/{workspace_id}/review-decisions/batch",
+            json={"decisions": [decisions[0], {**decisions[1], "source_artifact_id": "missing"}]},
+        )
+        assert invalid.status_code == 400
+        conn = connect(settings.db_path)
+        assert len(list_review_decisions(conn, workspace_id)) == before
+        conn.close()
+
+
 def test_profile_pseudo_workspace_rejected_by_review_and_pack_routes(tmp_path):
     app, settings, _ = _app_with_pack_chain(tmp_path)
     with TestClient(app) as client:

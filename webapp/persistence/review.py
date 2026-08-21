@@ -20,6 +20,7 @@ def _now() -> str:
 def save_review_decision(
     conn: sqlite3.Connection, *, workspace_id: str, review_item_type: str, source_artifact_id: str,
     domain_item_id: str | None, disposition: str, note: str | None = None,
+    commit: bool = True,
 ) -> dict[str, Any]:
     if disposition not in DISPOSITIONS:
         raise ValueError(f"unknown disposition: {disposition!r}")
@@ -30,7 +31,8 @@ def save_review_decision(
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         (decision_id, workspace_id, review_item_type, source_artifact_id, domain_item_id, disposition, note, _now()),
     )
-    conn.commit()
+    if commit:
+        conn.commit()
     return dict(conn.execute("SELECT * FROM review_decisions WHERE id = ?", (decision_id,)).fetchone())
 
 
