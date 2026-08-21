@@ -25,6 +25,7 @@ from product.application_intelligence import (
     TEMPLATE_TABLE,
     UNIT_TYPES,
 )
+from product.application_material_contract import substantive_completion_contract
 from product.application_intelligence_providers import (
     ApplicationIntelligenceProviderError,
     ProviderCallAudit,
@@ -191,6 +192,7 @@ def _hosted_input(request: dict[str, Any]) -> str:
             for assertion_type in sorted(ASSERTION_TYPES)
         },
         "available_unit_types": sorted(UNIT_TYPES),
+        "completion_contract": substantive_completion_contract(),
     }
     return json.dumps(minimized, ensure_ascii=False, separators=(",", ":"))
 

@@ -83,6 +83,8 @@ def _write_profile_root(root: Path) -> None:
 ### Data Engineer - Evidence Works (2020-01 - Present)
 London
 - Built production data pipelines
+- Coordinated complex engineering schedules resources risks milestones recovery actions reporting delivery planning controls stakeholder communication governance assurance oversight
+- I bring evidence backed project planning experience across complex engineering operations coordinating schedules resources risks milestones recovery actions field teams leadership reporting data analysis delivery governance quality controls stakeholder communication continuous improvement operational readiness tender planning lessons learned and critical path protection
 
 ## Technical Skills
 
@@ -219,6 +221,12 @@ class _ApplicationIntelligenceProvider:
 
     def propose(self, request):
         python_claim = _claim_id(request["profile_snapshot"]["claims"], "Python")
+        summary_claim = _claim_id(
+            request["profile_snapshot"]["claims"], "Coordinated complex engineering schedules"
+        )
+        cover_claim = _claim_id(
+            request["profile_snapshot"]["claims"], "I bring evidence backed project planning"
+        )
         valid_atom = {
             "atom_id": "browser-valid", "atom_kind": "candidate_fact",
             "assertion_type": "technical_skill",
@@ -238,6 +246,24 @@ class _ApplicationIntelligenceProvider:
             {
                 "unit_id": "cv-needs-review", "unit_type": "cv_bullet",
                 "atoms": [valid_atom, unknown_atom], "connectives": [],
+            },
+            {
+                "unit_id": "cv-summary-ready", "unit_type": "cv_summary_line",
+                "atoms": [{
+                    "atom_id": "browser-summary", "atom_kind": "candidate_fact",
+                    "assertion_type": "responsibility",
+                    "profile_evidence_ids": [summary_claim], "rendering_variant": "PLAIN",
+                }],
+                "connectives": [],
+            },
+            {
+                "unit_id": "cover-ready", "unit_type": "cover_letter_paragraph",
+                "atoms": [{
+                    "atom_id": "browser-cover", "atom_kind": "candidate_fact",
+                    "assertion_type": "responsibility",
+                    "profile_evidence_ids": [cover_claim], "rendering_variant": "PLAIN",
+                }],
+                "connectives": [],
             },
             {
                 "unit_id": "cv-unsupported-only", "unit_type": "cv_bullet",
@@ -403,8 +429,7 @@ def test_full_visible_journey_reaches_interview_with_explicit_submission(page, l
     assert page.get_by_role("heading", name="CV content").is_visible()
     assert page.get_by_role("heading", name="Cover letter content").is_visible()
     assert page.locator('[data-copy-section="cv"]').is_visible()
-    assert page.get_by_text("No reviewed cover-letter content.").is_visible()
-    assert page.locator('[data-copy-section="cover-letter"]').count() == 0
+    assert page.locator('[data-copy-section="cover-letter"]').is_visible()
 
     page.once("dialog", lambda dialog: dialog.accept())
     _click_reload(page, page.get_by_role("button", name="Mark applied — I submitted externally"))

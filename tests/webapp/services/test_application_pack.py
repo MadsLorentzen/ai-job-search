@@ -147,11 +147,19 @@ def _seed(conn, workspace_id, *, profile=None, fit=None, units=None, unsupported
             conn, artifact_id=intelligence_request["id"], upstream_artifact_type=upstream_type,
             upstream_content_id=upstream_id,
         )
+    cv_units = [
+        unit for unit in ai_units
+        if unit.get("unit_type") in {"cv_bullet", "cv_summary_line"}
+    ]
+    cover_letter_units = [
+        unit for unit in ai_units
+        if unit.get("unit_type") in {"cover_letter_paragraph", "positioning_statement"}
+    ]
     intelligence = save_artifact(
         conn, workspace_id=workspace_id, artifact_type="application_intelligence_result",
         payload={
             "recommendation": "APPLY", "recommendation_reason": "Evidence-backed fit.",
-            "cv_content": ai_units, "cover_letter_content": [],
+            "cv_content": cv_units, "cover_letter_content": cover_letter_units,
             "unsupported_claims": unsupported or [],
         }, content_id="aiintel_A",
     )
@@ -177,6 +185,27 @@ def _decide(conn, workspace_id, artifact, item_type, item_id, disposition="ackno
         source_artifact_id=artifact["id"], domain_item_id=item_id,
         disposition=disposition, note=f"Reviewed {item_id}",
     )
+
+
+def _completion_ready_units() -> list[dict]:
+    def words(count, prefix):
+        return " ".join(f"{prefix}{index}" for index in range(count))
+
+    return [
+        {"unit_id": "cv_1", "unit_type": "cv_bullet", "text": words(10, "bullet"),
+         "status": "READY", "profile_evidence_ids": ["clm_1"]},
+        {"unit_id": "cv_2", "unit_type": "cv_summary_line", "text": words(10, "summary"),
+         "status": "READY", "profile_evidence_ids": ["clm_1"]},
+        {"unit_id": "cover_1", "unit_type": "cover_letter_paragraph", "text": words(40, "cover"),
+         "status": "READY", "profile_evidence_ids": ["clm_1"]},
+    ]
+
+
+def _seed_completion_ready(conn, workspace_id):
+    *_, intelligence = _seed(conn, workspace_id, units=_completion_ready_units())
+    for unit in _completion_ready_units():
+        _decide(conn, workspace_id, intelligence, "content_unit", unit["unit_id"])
+    return intelligence
 
 
 def test_requires_complete_current_chain(tmp_path):
@@ -238,7 +267,13 @@ def test_explicit_omission_is_excluded_and_preserved_in_audit(tmp_path):
     pack = build_application_pack(conn, workspace_id)
     assert pack["cv_content"] == []
     assert pack["completion_status"] == "INCOMPLETE"
-    assert pack["completion_issues"] == ["no_reviewed_usable_application_material"]
+    assert pack["completion_issues"] == [
+        "insufficient_cv_units",
+        "missing_cv_bullet",
+        "insufficient_cv_words",
+        "insufficient_cover_letter_paragraphs",
+        "insufficient_cover_letter_words",
+    ]
     assert pack["review_record"]["exclusions"][0]["domain_item_id"] == "cv_1"
     assert pack["review_record"]["exclusions"][0]["source_artifact_id"] == intelligence["id"]
     assert decision in pack["review_record"]["decisions_consulted"]
@@ -252,7 +287,7 @@ def test_gate4_does_not_persist_or_draft_an_incomplete_pack(tmp_path):
         "omit_from_positioning",
     )
 
-    with pytest.raises(PipelineError, match="no reviewed usable application material"):
+    with pytest.raises(PipelineError, match="insufficient_cv_units"):
         confirm_application_pack(
             conn, workspace_id, effective_date="2026-08-20", documents_root=tmp_path,
         )
@@ -436,10 +471,16 @@ def test_missing_dependency_identity_cannot_masquerade_as_fresh_chain(tmp_path):
 
 def test_gate4_binds_exact_immutable_pack_and_allows_redraft_before_submission(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
-    _, _, _, intelligence = _seed(conn, workspace_id)
-    _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
+    _seed_completion_ready(conn, workspace_id)
     first = confirm_application_pack(conn, workspace_id, effective_date="2026-08-20", documents_root=tmp_path / "documents")
     first_payload = copy.deepcopy(get_artifact(conn, first["artifact"]["id"])["payload"])
+    assert first_payload["completion_contract_version"] == "substantive-completion.v1"
+    assert first_payload["completion_metrics"] == {
+        "qualifying_cv_unit_count": 2,
+        "cv_word_count": 20,
+        "qualifying_cover_letter_paragraph_count": 1,
+        "cover_letter_word_count": 40,
+    }
     second = confirm_application_pack(conn, workspace_id, effective_date="2026-08-21", documents_root=tmp_path / "documents")
     assert first["artifact"]["id"] != second["artifact"]["id"]
     events = list_workflow_events(conn, workspace_id)
@@ -463,8 +504,7 @@ def test_gate4_binds_exact_immutable_pack_and_allows_redraft_before_submission(t
 
 def test_after_submission_applied_binds_current_pack_and_reconfirmation_fails(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
-    _, _, _, intelligence = _seed(conn, workspace_id)
-    _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
+    _seed_completion_ready(conn, workspace_id)
     confirmed = confirm_application_pack(conn, workspace_id, effective_date="2026-08-20", documents_root=tmp_path)
     applied = record_status_change(
         conn, workspace_id=workspace_id, new_status="applied", effective_date="2026-08-21",
@@ -477,8 +517,7 @@ def test_after_submission_applied_binds_current_pack_and_reconfirmation_fails(tm
 
 def test_projection_failure_is_partial_success_and_retry_targets_exact_pack(tmp_path, monkeypatch):
     conn, workspace_id = _workspace(tmp_path)
-    _, _, _, intelligence = _seed(conn, workspace_id)
-    _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
+    _seed_completion_ready(conn, workspace_id)
 
     from webapp.services import archive_projection
 
@@ -524,8 +563,7 @@ def test_projection_failure_is_partial_success_and_retry_targets_exact_pack(tmp_
 
 def test_projection_retry_is_idempotent_for_exact_pack_artifact(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
-    _, _, _, intelligence = _seed(conn, workspace_id)
-    _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
+    _seed_completion_ready(conn, workspace_id)
     confirmed = confirm_application_pack(
         conn, workspace_id, effective_date="2026-08-20", documents_root=tmp_path
     )
@@ -540,8 +578,7 @@ def test_projection_retry_is_idempotent_for_exact_pack_artifact(tmp_path):
 @pytest.mark.parametrize("failure_point", ["first_fingerprint", "second_fingerprint", "status"])
 def test_gate4_database_steps_are_atomic_and_retry_safe(tmp_path, monkeypatch, failure_point):
     conn, workspace_id = _workspace(tmp_path)
-    _, _, _, intelligence = _seed(conn, workspace_id)
-    _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
+    _seed_completion_ready(conn, workspace_id)
 
     from webapp.services import application_pack as module
 

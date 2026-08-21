@@ -1,5 +1,6 @@
 import pytest
 
+from tests.webapp.fixtures.application_material import completion_ready_pack_payload
 from webapp.persistence.db import init_db, connect
 from webapp.persistence.workspaces import create_workspace, get_workspace
 from webapp.persistence.workflow import (
@@ -47,7 +48,7 @@ def test_record_status_change_rejects_applied_without_pack_binding(tmp_path):
     from webapp.persistence.artifacts import save_artifact
     pack = save_artifact(
         conn, workspace_id=workspace_id, artifact_type="application_pack",
-        payload={"cv_content": [{"text": "Reviewed material"}], "cover_letter_content": []},
+        payload=completion_ready_pack_payload("missing_binding"),
     )
     record_status_change(conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-18",
                           submitted_pack_artifact_id=pack["id"], _allow_drafted=True)
@@ -61,7 +62,7 @@ def test_record_status_change_allows_applied_after_drafted_with_pack_binding(tmp
     from webapp.persistence.artifacts import save_artifact
     pack = save_artifact(
         conn, workspace_id=workspace_id, artifact_type="application_pack",
-        payload={"cv_content": [{"text": "Reviewed material"}], "cover_letter_content": []},
+        payload=completion_ready_pack_payload("applied"),
     )
     record_status_change(conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-18",
                           submitted_pack_artifact_id=pack["id"], _allow_drafted=True)
@@ -88,7 +89,7 @@ def test_record_status_change_rejects_applied_with_incomplete_pack_binding(tmp_p
     )
     conn.commit()
 
-    with pytest.raises(ValueError, match="no reviewed usable application material"):
+    with pytest.raises(ValueError, match="insufficient_cv_units"):
         record_status_change(
             conn, workspace_id=workspace_id, new_status="applied", effective_date="2026-08-19",
             submitted_pack_artifact_id=pack["id"],
@@ -97,12 +98,32 @@ def test_record_status_change_rejects_applied_with_incomplete_pack_binding(tmp_p
     assert get_workspace(conn, workspace_id)["workflow_status"] == "drafted"
 
 
+def test_record_status_change_does_not_silently_revalidate_a_legacy_pack(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    from webapp.persistence.artifacts import save_artifact
+
+    legacy_payload = completion_ready_pack_payload("legacy")
+    legacy_payload.pop("completion_contract_version")
+    pack = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="application_pack",
+        payload=legacy_payload,
+    )
+
+    with pytest.raises(ValueError, match="current substantive-completion contract"):
+        record_status_change(
+            conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-18",
+            submitted_pack_artifact_id=pack["id"], _allow_drafted=True,
+        )
+
+    assert get_workspace(conn, workspace_id)["workflow_status"] is None
+
+
 def test_record_status_change_allows_drafted_with_internal_flag_and_pack_binding(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
     from webapp.persistence.artifacts import save_artifact
     pack = save_artifact(
         conn, workspace_id=workspace_id, artifact_type="application_pack",
-        payload={"cv_content": [{"text": "Reviewed material"}], "cover_letter_content": []},
+        payload=completion_ready_pack_payload("drafted"),
     )
     record_status_change(
         conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-18",

@@ -5,6 +5,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from product.application_material_contract import COMPLETION_CONTRACT_VERSION
 from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_current_artifact
 from webapp.persistence.review import list_review_decisions
@@ -356,19 +357,33 @@ def build_workspace_view_model(
             and item["decision"]["disposition"] != "omit"
         )
     ]
-    has_reviewed_usable_material = any(
-        item["review_item_type"] == "content_unit"
-        and isinstance(item["item"].get("text"), str)
-        and bool(item["item"]["text"].strip())
+    acknowledged_content_items = [
+        item for item in review_items
+        if item["review_item_type"] == "content_unit"
         and item["decision"] is not None
         and item["decision"]["disposition"] == "acknowledged_and_proceed"
-        for item in review_items
-    )
-    review_completion_status = "READY" if has_reviewed_usable_material else "INCOMPLETE"
+    ]
+    review_completion = application_material_completion({
+        "cv_content": [
+            item["item"] for item in acknowledged_content_items
+            if item["item"].get("unit_type") in {"cv_bullet", "cv_summary_line"}
+        ],
+        "cover_letter_content": [
+            item["item"] for item in acknowledged_content_items
+            if item["item"].get("unit_type") in {
+                "cover_letter_paragraph", "positioning_statement"
+            }
+        ],
+        "review_record": {
+            "decisions_consulted": [item["decision"] for item in acknowledged_content_items]
+        },
+    })
+    has_reviewed_usable_material = review_completion["status"] == "READY"
+    review_completion_status = review_completion["status"]
     reviewed_output_status = None
     if artifacts["pack"]:
         pack_payload = artifacts["pack"]["payload"]
-        if "completion_status" not in pack_payload:
+        if pack_payload.get("completion_contract_version") != COMPLETION_CONTRACT_VERSION:
             reviewed_output_status = "Legacy pack — not revalidated"
         else:
             reviewed_output_status = application_material_completion(pack_payload)["status"]
@@ -429,6 +444,7 @@ def build_workspace_view_model(
         "submitted_pack_artifact_ids": sorted(submitted_pack_ids),
         "available_extensions": public_extensions,
         "profile_ready": profile_ready,
+        "review_completion": review_completion,
         "review_completion_status": review_completion_status,
         "reviewed_output_status": reviewed_output_status,
         "controls": {
