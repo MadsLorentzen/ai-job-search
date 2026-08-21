@@ -186,5 +186,23 @@ class TestOpenAIProviderCredential(unittest.TestCase):
         self.assertEqual(provider.last_audit.provider_id, "openai")
 
 
+class TestPromptCoversLaneBAdditions(unittest.TestCase):
+    def test_prompt_mentions_coverage(self):
+        from product.openai_application_intelligence_provider import INSTRUCTIONS
+        self.assertIn("coverage", INSTRUCTIONS.lower())
+
+    def test_prompt_mentions_cv_emphasis_plan(self):
+        from product.openai_application_intelligence_provider import INSTRUCTIONS
+        self.assertIn("cv_emphasis_plan", INSTRUCTIONS)
+
+    def test_prompt_mentions_rationale_kind(self):
+        from product.openai_application_intelligence_provider import INSTRUCTIONS
+        self.assertIn("rationale_kind", INSTRUCTIONS)
+
+    def test_prompt_still_forbids_free_text(self):
+        from product.openai_application_intelligence_provider import INSTRUCTIONS
+        self.assertIn("Do not write free-text sentences", INSTRUCTIONS)
+
+
 if __name__ == "__main__":
     unittest.main()
