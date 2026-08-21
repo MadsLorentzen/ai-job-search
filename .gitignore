@@ -61,12 +61,20 @@ skills-lock.json
 # Extension-agnostic on the ignore side: a custom template registered via
 # /add-template (e.g. Typst) writes main_<company>_<role>.typ instead of
 # .tex, and it must be ignored just as reliably as the stock LaTeX output.
-# The negations stay .tex-only - the stock example files are always LaTeX,
-# and a wildcard negation (!cv/main_example.*) would also re-include build
-# artifacts like main_example.pdf/.aux.
+#
+# main_example.tex / main_example_lebenslauf.tex are NOT excepted here, unlike
+# upstream (where they ship as generic [First]/[Last] placeholder templates).
+# In THIS fork /setup filled them in with the real candidate's actual name,
+# DOB, nationality, and marital status to serve as the live grounding-audit
+# reference every CV reviewer checks facts against - that's real personal
+# data, not a template, so it must never be tracked. Discovered and fixed
+# 2026-08-21: these two files had been committed since the fork's very first
+# commits with real PII already pushed to the public remote (see git history
+# / consider a history rewrite if that exposure needs fully scrubbing, not
+# just stopped going forward). The local files stay on disk unchanged and
+# fully populated - only git tracking stops - since the CV-drafting workflow
+# still reads them every time as one of its three fact sources.
 cv/main_*.*
-!cv/main_example.tex
-!cv/main_example_lebenslauf.tex
 cv/*.txt
 cover_letters/cover_*.*
 cover_letters/Cover_*.*
