@@ -383,6 +383,44 @@ def _assert_no_private_browser_content(page, live_server) -> None:
     assert "extension.json" not in combined
 
 
+def test_user_profile_preferences_are_editable_in_browser(page, live_server):
+    page.goto(f"{live_server.base_url}/user-profile", wait_until="networkidle")
+    assert page.get_by_role("heading", name="Job search preferences").is_visible()
+    assert page.get_by_text(
+        "These preferences do not become candidate evidence and do not change Job Fit scoring."
+    ).is_visible()
+
+    page.locator('textarea[name="target_roles"]').fill("Project Manager\nProject Planner")
+    page.locator('textarea[name="locations"]').fill("Aberdeen, UK\nRemote")
+    page.locator('select[name="remote_preference"]').select_option("remote_or_hybrid")
+    page.locator('input[name="recency_days"]').fill("30")
+    page.locator('input[name="seniority_levels"][value="senior"]').check()
+    page.locator('input[name="seniority_levels"][value="lead"]').check()
+    page.locator('input[name="employment_types"][value="full_time"]').check()
+    page.locator('textarea[name="industries"]').fill("Energy\nEngineering")
+    page.locator('textarea[name="search_terms"]').fill("Primavera P6\nproject controls")
+    page.locator('textarea[name="source_preferences"]').fill(
+        "linkedin-search\nfreehire-search"
+    )
+    page.locator('input[name="compensation_currency"]').fill("GBP")
+    page.locator('input[name="compensation_minimum"]').fill("60000")
+    with page.expect_navigation(wait_until="networkidle"):
+        page.get_by_role("button", name="Save User Profile").click()
+
+    assert page.locator('textarea[name="target_roles"]').input_value() == (
+        "Project Manager\nProject Planner"
+    )
+    assert page.locator('input[name="seniority_levels"][value="senior"]').is_checked()
+    response = page.request.get(f"{live_server.base_url}/api/user-profile")
+    assert response.status == 200
+    payload = response.json()["user_profile"]["payload"]
+    assert payload["target_roles"] == ["Project Manager", "Project Planner"]
+    assert payload["compensation"] == {
+        "currency": "GBP", "minimum": 60000, "period": "year",
+    }
+    _assert_no_private_browser_content(page, live_server)
+
+
 def test_full_visible_journey_reaches_interview_with_explicit_submission(page, live_server):
     page.goto(live_server.base_url, wait_until="networkidle")
     assert page.get_by_role("heading", name="Your job pipeline").is_visible()

@@ -79,3 +79,19 @@ CREATE TABLE IF NOT EXISTS provider_audits (
 
 CREATE INDEX IF NOT EXISTS idx_provider_audits_workspace_stage
     ON provider_audits(workspace_id, stage);
+
+-- User Profile is mutable search intent, deliberately separate from the
+-- source-backed Evidence Profile and its claim artifacts. Versions are
+-- append-only so discovery runs can fingerprint the exact preferences used.
+CREATE TABLE IF NOT EXISTS user_profile_versions (
+    id TEXT PRIMARY KEY,
+    content_id TEXT NOT NULL UNIQUE,
+    payload_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS current_user_profile (
+    id TEXT PRIMARY KEY CHECK (id = 'current'),
+    version_id TEXT NOT NULL REFERENCES user_profile_versions(id),
+    updated_at TEXT NOT NULL
+);

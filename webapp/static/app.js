@@ -110,6 +110,44 @@ function profileLines(form, name) {
   return String(new FormData(form).get(name) || "").split(/\r?\n/).map(item => item.trim()).filter(Boolean);
 }
 
+function checkedValues(form, name) {
+  return [...form.querySelectorAll(`input[name="${name}"]:checked`)].map(item => item.value);
+}
+
+const userProfileForm = document.getElementById("user-profile-form");
+if (userProfileForm) userProfileForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const data = new FormData(form);
+  const currency = String(data.get("compensation_currency") || "").trim();
+  const minimum = String(data.get("compensation_minimum") || "").trim();
+  button.disabled = true;
+  try {
+    if ((currency && !minimum) || (!currency && minimum)) {
+      throw new Error("Enter both compensation currency and minimum, or leave both empty.");
+    }
+    await api("/api/user-profile", {
+      method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify({
+        target_roles: profileLines(form, "target_roles"),
+        locations: profileLines(form, "locations"),
+        remote_preference: data.get("remote_preference"),
+        seniority_levels: checkedValues(form, "seniority_levels"),
+        industries: profileLines(form, "industries"),
+        employment_types: checkedValues(form, "employment_types"),
+        search_terms: profileLines(form, "search_terms"),
+        source_preferences: profileLines(form, "source_preferences"),
+        recency_days: Number(data.get("recency_days")),
+        compensation: currency ? {
+          currency, minimum: Number(minimum), period: data.get("compensation_period")
+        } : null
+      })
+    });
+    showMessage("User Profile saved.");
+    window.location.reload();
+  } catch (error) { showMessage(error.message, true); button.disabled = false; }
+});
+
 function finishProfileSetup(form) {
   const returnTo = form.dataset.returnTo;
   window.location.assign(returnTo && returnTo.startsWith("/workspaces/") ? returnTo : "/profile");

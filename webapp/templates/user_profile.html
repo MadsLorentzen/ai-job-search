@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}User Profile · Job Search Workspace{% endblock %}
+{% block content %}
+<section class="hero compact"><div><p class="eyebrow">Search intent</p><h1>Job search preferences</h1>
+<p>Tell the product what work you want to find. These preferences do not become candidate evidence and do not change Job Fit scoring.</p></div></section>
+{% if user_profile %}<div class="summary-strip"><span>Current preferences</span><code>{{ user_profile.content_id }}</code><span>Saved {{ user_profile.created_at }}</span></div>{% endif %}
+<section class="panel form-panel"><form id="user-profile-form">
+  <div class="panel-heading"><div><h2>Discovery preferences</h2><p>Put the most important values first. Enter one value per line.</p></div></div>
+  <div class="form-grid">
+    <label>Target roles<textarea name="target_roles" rows="5" placeholder="Project Manager&#10;Project Planner">{{ preferences.target_roles | join('\n') }}</textarea></label>
+    <label>Locations<textarea name="locations" rows="5" placeholder="Aberdeen, UK&#10;United Kingdom">{{ preferences.locations | join('\n') }}</textarea></label>
+  </div>
+  <div class="form-grid">
+    <label>Remote preference<select name="remote_preference">
+      {% for value, label in [("no_preference", "No preference"), ("remote_only", "Remote only"), ("remote_preferred", "Remote preferred"), ("hybrid_preferred", "Hybrid preferred"), ("onsite_preferred", "On-site preferred"), ("remote_or_hybrid", "Remote or hybrid")] %}
+      <option value="{{ value }}" {% if preferences.remote_preference == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select></label>
+    <label>Posting recency <small>Days</small><input name="recency_days" type="number" min="1" max="365" value="{{ preferences.recency_days }}" required></label>
+  </div>
+  <fieldset><legend>Seniority</legend><div class="choice-grid">
+    {% for value, label in [("intern", "Intern"), ("graduate", "Graduate"), ("entry", "Entry"), ("junior", "Junior"), ("associate", "Associate"), ("mid", "Mid-level"), ("senior", "Senior"), ("staff", "Staff"), ("principal", "Principal"), ("lead", "Lead"), ("manager", "Manager"), ("head", "Head"), ("director", "Director"), ("vp", "VP"), ("executive", "Executive")] %}
+    <label><input type="checkbox" name="seniority_levels" value="{{ value }}" {% if value in preferences.seniority_levels %}checked{% endif %}> {{ label }}</label>{% endfor %}
+  </div></fieldset>
+  <fieldset><legend>Employment type</legend><div class="choice-grid">
+    {% for value, label in [("full_time", "Full time"), ("part_time", "Part time"), ("contract", "Contract"), ("temporary", "Temporary"), ("freelance", "Freelance"), ("internship", "Internship"), ("apprenticeship", "Apprenticeship"), ("graduate", "Graduate programme"), ("volunteer", "Volunteer")] %}
+    <label><input type="checkbox" name="employment_types" value="{{ value }}" {% if value in preferences.employment_types %}checked{% endif %}> {{ label }}</label>{% endfor %}
+  </div></fieldset>
+  <div class="form-grid">
+    <label>Industries<textarea name="industries" rows="4" placeholder="Energy&#10;Engineering">{{ preferences.industries | join('\n') }}</textarea></label>
+    <label>Additional search terms<textarea name="search_terms" rows="4" placeholder="Primavera P6&#10;project controls">{{ preferences.search_terms | join('\n') }}</textarea></label>
+  </div>
+  <label>Preferred job sources <small>Portal skill IDs in priority order; leave empty to use enabled defaults</small><textarea name="source_preferences" rows="4" placeholder="linkedin-search&#10;freehire-search">{{ preferences.source_preferences | join('\n') }}</textarea></label>
+  {% set compensation = preferences.compensation or {} %}
+  <fieldset><legend>Optional minimum compensation</legend><div class="form-grid compensation-grid">
+    <label>Currency<input name="compensation_currency" maxlength="3" value="{{ compensation.get('currency', '') }}" placeholder="GBP"></label>
+    <label>Minimum<input name="compensation_minimum" type="number" min="0" value="{{ compensation.get('minimum', '') }}" placeholder="60000"></label>
+    <label>Period<select name="compensation_period">
+      {% for value, label in [("year", "Per year"), ("month", "Per month"), ("day", "Per day"), ("hour", "Per hour")] %}<option value="{{ value }}" {% if compensation.get('period', 'year') == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select></label>
+  </div><p class="form-note">Leave currency and minimum empty when compensation should not filter discovery.</p></fieldset>
+  <button class="button" type="submit">Save User Profile</button>
+</form></section>
+{% endblock %}
