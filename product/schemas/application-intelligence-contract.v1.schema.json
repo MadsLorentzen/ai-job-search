@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/smbabalola/ai-job-search/product/schemas/application-intelligence-contract.v1.schema.json",
+  "title": "Application Intelligence Contract v1",
+  "description": "Ticket 8 / Lane B contract constants for evidence-grounded application strategy generation. Adds typed cv_emphasis_plan/cover_letter_plan entries, plan_issues diagnostics, and requirement_coverage over the v0 contract. The Python validator owns relational checks against the consumed Job Fit Result v1, Profile Snapshot, and Extension Package contracts.",
+  "type": "object",
+  "$defs": {
+    "requestVersion": {"type": "string", "const": "application-intelligence-request.v0"},
+    "resultVersion": {"type": "string", "const": "application-intelligence-result.v1"},
+    "policyVersion": {"type": "string", "const": "application-intelligence-policy.v0"},
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"},
+    "contentId": {"type": "string", "pattern": "^[a-z]+_[0-9a-f]{20,64}$"},
+    "assertionType": {
+      "enum": [
+        "skill", "technical_skill", "employment", "responsibility",
+        "certification", "education", "publication", "award", "language"
+      ]
+    },
+    "renderingVariant": {
+      "enum": [
+        "PLAIN", "AS_STRENGTH", "AS_CAPABILITY_STATEMENT",
+        "AS_REQUIREMENT", "AS_MOTIVATION", "AS_CONTEXT",
+        "WITH_CONDITIONS_INLINE", "WITH_CONDITIONS_FOOTNOTED"
+      ]
+    },
+    "strengthLevel": {
+      "enum": [
+        "STATED", "EXPLICIT_PROFICIENCY", "EXPLICIT_DURATION",
+        "EXPLICIT_HANDS_ON", "EXPLICIT_LEADERSHIP"
+      ]
+    },
+    "unitType": {
+      "enum": ["cv_bullet", "cv_summary_line", "cover_letter_paragraph", "positioning_statement"]
+    },
+    "unitStatus": {"enum": ["READY", "NEEDS_REVIEW"]},
+    "resultStatus": {"enum": ["READY", "NEEDS_REVIEW", "UNAVAILABLE"]},
+    "recommendation": {"enum": ["proceed", "proceed_with_review", "do_not_proceed"]},
+    "planRationaleKind": {
+      "enum": [
+        "covers_uncovered_requirement", "reinforces_required_dimension",
+        "strengthens_direct_match", "addresses_gap_context"
+      ]
+    }
+  }
+}

@@ -30,7 +30,7 @@ from product.profile_snapshot import SnapshotValidationError, validate_snapshot
 
 
 MODULE_DIR = Path(__file__).parent
-SCHEMA_PATH = MODULE_DIR / "schemas" / "application-intelligence-contract.v0.schema.json"
+SCHEMA_PATH = MODULE_DIR / "schemas" / "application-intelligence-contract.v1.schema.json"
 POLICY_PATH = MODULE_DIR / "application_intelligence_policy.v0.json"
 SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
 DEFAULT_POLICY = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
@@ -724,7 +724,7 @@ def validate_application_intelligence_result(request: dict[str, Any], result: An
         "schema_version", "request_id", "job_fit_result_ref", "profile_snapshot",
         "recommendation", "recommendation_reason", "positioning", "cv_emphasis_plan",
         "cv_content", "cover_letter_plan", "cover_letter_content", "unsupported_claims",
-        "plan_issues", "status", "notes",
+        "plan_issues", "requirement_coverage", "status", "notes",
     }
     if not _object_shape(result, required, required, "$.result", errors):
         raise ApplicationIntelligenceValidationError(errors)
@@ -774,6 +774,13 @@ def validate_application_intelligence_result(request: dict[str, Any], result: An
         path = f"$.result.plan_issues[{index}]"
         issue_required = {"field", "index", "reason"}
         _object_shape(issue, issue_required, issue_required, path, errors)
+
+    coverage = result.get("requirement_coverage")
+    if not isinstance(coverage, dict) or set(coverage.keys()) != {"required", "covered", "uncovered"}:
+        errors.append("$.result.requirement_coverage: must be an object with exactly required/covered/uncovered")
+    else:
+        for key in ("required", "covered", "uncovered"):
+            _string_list(coverage.get(key), f"$.result.requirement_coverage.{key}", errors)
 
     if errors:
         raise ApplicationIntelligenceValidationError(errors)
@@ -853,6 +860,7 @@ def analyze_application_intelligence(request: dict[str, Any], proposal: dict[str
     cv_emphasis_plan, cv_plan_issues = _validate_plan((proposal or {}).get("cv_emphasis_plan"), "cv_emphasis_plan")
     cover_letter_plan, cover_letter_plan_issues = _validate_plan((proposal or {}).get("cover_letter_plan"), "cover_letter_plan")
     plan_issues = cv_plan_issues + cover_letter_plan_issues
+    requirement_coverage = _compute_requirement_coverage(job_fit_result, all_units)
     result = {
         "schema_version": RESULT_VERSION,
         "request_id": request["request_id"],
@@ -874,6 +882,7 @@ def analyze_application_intelligence(request: dict[str, Any], proposal: dict[str
         "cover_letter_content": cover_letter_content,
         "unsupported_claims": unsupported_claims,
         "plan_issues": plan_issues,
+        "requirement_coverage": requirement_coverage,
         "status": result_status,
         "notes": notes,
     }

@@ -6,14 +6,14 @@ import unittest
 from pathlib import Path
 
 
-SCHEMA_PATH = Path(__file__).parent.parent / "product" / "schemas" / "application-intelligence-contract.v0.schema.json"
+SCHEMA_PATH = Path(__file__).parent.parent / "product" / "schemas" / "application-intelligence-contract.v1.schema.json"
 
 
 class TestSchemaLoads(unittest.TestCase):
     def test_schema_file_is_valid_json_with_expected_defs(self):
         schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
         self.assertEqual(schema["$defs"]["requestVersion"]["const"], "application-intelligence-request.v0")
-        self.assertEqual(schema["$defs"]["resultVersion"]["const"], "application-intelligence-result.v0")
+        self.assertEqual(schema["$defs"]["resultVersion"]["const"], "application-intelligence-result.v1")
         self.assertEqual(schema["$defs"]["policyVersion"]["const"], "application-intelligence-policy.v0")
         self.assertEqual(
             set(schema["$defs"]["strengthLevel"]["enum"]),
@@ -659,7 +659,7 @@ class TestFullResultContract(unittest.TestCase):
         for field in (
             "job_fit_result_ref", "profile_snapshot", "recommendation", "positioning",
             "cv_emphasis_plan", "cv_content", "cover_letter_plan", "cover_letter_content",
-            "unsupported_claims", "status", "notes",
+            "unsupported_claims", "plan_issues", "requirement_coverage", "status", "notes",
         ):
             self.assertIn(field, result, f"missing {field}")
 
@@ -1244,6 +1244,24 @@ class TestComputeRequirementCoverage(unittest.TestCase):
         accepted = [{"status": "READY", "text": "ETL work", "profile_evidence_ids": ["clm_3"]}]
         coverage = _compute_requirement_coverage(self._job_fit_result(), accepted)
         self.assertEqual(coverage["covered"], ["req_etl"])
+
+
+class TestResultContractV1(unittest.TestCase):
+    def test_result_version_is_v1(self):
+        from product.application_intelligence import RESULT_VERSION
+        self.assertEqual(RESULT_VERSION, "application-intelligence-result.v1")
+
+    def test_result_includes_requirement_coverage(self):
+        request = application_intelligence_request("job-fit-result-ready.json")
+        result = analyze_application_intelligence(request, None)
+        self.assertIn("requirement_coverage", result)
+        for key in ("required", "covered", "uncovered"):
+            self.assertIn(key, result["requirement_coverage"])
+
+    def test_v0_schema_file_is_retained_unmodified(self):
+        v0_path = Path(__file__).parent.parent / "product" / "schemas" / "application-intelligence-contract.v0.schema.json"
+        v0_schema = json.loads(v0_path.read_text(encoding="utf-8"))
+        self.assertEqual(v0_schema["$defs"]["resultVersion"]["const"], "application-intelligence-result.v0")
 
 
 if __name__ == "__main__":
