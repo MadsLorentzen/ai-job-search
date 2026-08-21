@@ -212,14 +212,19 @@ the current schema**, full stop. Both contracts move together:
 - **Historical v0 artifacts stay immutable and viewable, never silently reinterpreted
   as v1.** Persisted `application_intelligence_result` artifacts already carry their
   own `schema_version` field and are stored as immutable JSON payloads
-  (`webapp/persistence`) — nothing in Lane B rewrites history. A stored v0 result is
-  read back and displayed using v0-shaped access (no `requirement_coverage`, no
-  typed plans, no `plan_issues` — those keys are simply absent, which the webapp
-  display layer must treat as "not available for this historical artifact," not as
-  a validation error or a silent zero/empty substitute presented as if it were
-  freshly computed). Any code path that reads `application_intelligence_result`
-  payloads (webapp services, `application_pack.py`, review views) branches on the
-  stored `schema_version` rather than assuming v1 shape unconditionally.
+  (`webapp/persistence`) — nothing in Lane B rewrites history. Verified against the
+  actual webapp read paths (`workspace_view.py:207,241-242,280,367,371`,
+  `application_pack.py:130,252-253,289-290`): every existing consumer already reads
+  `cv_content`/`cover_letter_content` defensively via `.get(...)`, and **none reads
+  `cv_emphasis_plan`, `cover_letter_plan`, `plan_issues`, or `requirement_coverage`
+  today**. So no new `schema_version`-branching code is required for these
+  read paths to keep working against a v0 artifact — the new fields are simply
+  absent on a v0 payload, `.get(field, [])`/`.get(field, {})` on an absent key
+  already degrades correctly, and nothing currently treats their absence as an
+  error. If a *future* Lane B follow-up adds a webapp view that surfaces
+  `requirement_coverage` or the typed plans to the user, that view is the one that
+  must branch on `schema_version` (or default-render "not available" for a v0
+  artifact) — not existing code, which needs no change for this reason.
 
 ### 4. Generation-contract staleness
 
@@ -306,17 +311,40 @@ claims → bounded rendering → existing evidence/conflict validation. `educati
 filling those in is in scope as "existing category, missing variant," not "new
 assertion type."
 
-Confirmed gaps to fill (exact eligibility predicates pinned during implementation,
-following the existing pattern of specific-claim predicates, not scalar strength):
+Confirmed gaps to fill. Eligibility predicates below are pinned against the
+**actual** claim shapes `product/profile_snapshot.py` extracts today (verified,
+not sketched): `education` records are multi-field (`qualification`,
+`date_range`, `institution` sharing one `record_id` — see
+`_parse_markdown_source`'s `"Education"` branch), but `publication`, `award`, and
+`certification` are each extracted as a **single claim, single field, no linked
+date/issuer claim on the same `record_id`** (`_add_publication_claim`,
+`_add_award_claim`, and the `"Certifications"` markdown branch each call
+`builder.add_claim` exactly once per bullet line, with no companion claim). There
+is therefore no structural evidence anywhere in the extraction pipeline to build a
+`certification` `AS_CAPABILITY_STATEMENT` (or any) variant beyond `PLAIN` — that
+line item from the earlier draft of this table is **removed**, not deferred; it
+would have been a template with no claim shape it could ever legitimately render
+against evidence-preserving grounds. `employment` variants remain in scope since
+`employment` records are already multi-field today (`job_title`/`employer`/
+`date_range`/`responsibility_or_achievement` on one `record_id`, per
+`_has_employment_linkage`/`_is_explicit_duration`/`_is_explicit_hands_on`, already
+proven eligibility helpers).
 
-| assertion_type | rendering_variant | eligibility predicate (sketch) | format |
+| assertion_type | rendering_variant | eligibility predicate (verified against actual claim shape) | format |
 |---|---|---|---|
-| `education` | `PLAIN` | claim present (qualification/institution/date_range) | `{value}` |
+| `education` | `PLAIN` | claim present (any of qualification/institution/date_range) | `{value}` |
 | `publication` | `PLAIN` | claim present | `{value}` |
 | `award` | `PLAIN` | claim present | `{value}` |
-| `certification` | `AS_CAPABILITY_STATEMENT` | structural: linked date_range or issuing context on the same `record_id` (mirrors `_has_employment_linkage`'s pattern — exact linkage field confirmed against `profile_snapshot.py`'s certification shape at implementation time) | `"Certified in {value}"` |
-| `employment` | `AS_CAPABILITY_STATEMENT` | claim is `job_title` or `employer` with a linked `responsibility_or_achievement` claim on the same `record_id` | `"Experience as {value}"` |
+| `employment` | `AS_CAPABILITY_STATEMENT` | claim is `job_title` or `employer` with a linked `responsibility_or_achievement` claim on the same `record_id` (reuses `_has_employment_linkage`) | `"Experience as {value}"` |
 | `employment` | `AS_STRENGTH` | claim linked to an explicit `date_range` **and** at least one `responsibility_or_achievement` on the same `record_id` (reuses `_is_explicit_duration` + `_is_explicit_hands_on`) | `"Sustained, hands-on experience as {value}"` |
+
+`certification` stays at `PLAIN` only in this iteration — no gap to fill there,
+since no eligibility-worthy structural variant exists given the current
+single-claim extraction. (A future iteration could extend
+`product/profile_snapshot.py`'s certification extraction to capture a linked date
+or issuing-body claim, which would then make an `AS_CAPABILITY_STATEMENT` variant
+legitimately buildable — out of scope here, since Lane B does not touch evidence
+extraction.)
 
 Each new `(assertion_type, rendering_variant)` entry gets:
 - a positive regression case (correct evidence shape → renders as expected), and
@@ -480,9 +508,10 @@ works as a standalone script rather than test-time generation.
   `_server_input_identity` gains the matching branch.
 - `webapp/services/pipeline.py` — `run_application_intelligence` records the new
   fingerprint.
-- Any webapp read path for `application_intelligence_result` payloads (review
-  views, `application_pack.py`) — branch on stored `schema_version` so a
-  historical v0 artifact displays correctly rather than assuming v1 shape.
+- No changes needed to existing webapp read paths (`workspace_view.py`,
+  `application_pack.py`) — verified they only ever read `cv_content`/
+  `cover_letter_content` via `.get(...)`, never the new fields, so v0 artifacts
+  keep rendering correctly with zero new branching code.
 - `tests/test_application_intelligence.py` — unit coverage for new templates,
   connectives, plan validation, coverage computation, v0/v1 result-shape handling.
 - `tests/webapp/services/test_staleness.py` — coverage for the new generation-
