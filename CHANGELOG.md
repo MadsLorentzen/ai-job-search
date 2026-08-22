@@ -101,6 +101,23 @@ per-file diff commands.
 
 ### Fixed
 
+- **`main_example.tex` compiles on apt-packaged moderncv** (#242) - the banking template
+  set its name styling through `\firstnamestyle`/`\lastnamestyle`, which moderncv 2.3.1
+  (Debian/Ubuntu apt) does not have, so a fresh fork could not compile its own example CV
+  on that toolchain. Name styling now routes through `\namefont`, the hook every name-style
+  macro shares: a true no-op on moderncv 2.4+ (where head iii typesets via
+  `\firstnamestyle`/`\lastnamestyle` and never calls `\namefont`'s replacements), and the
+  only option on 2.3.1 where those macros do not exist. Two review follow-ups landed in the
+  same change: the `\hypersetup` comment now names the real clash mechanism
+  (`\RequirePackage[unicode]{hyperref}` on < 2.4; `\PassOptionsToPackage`, introduced in
+  2.4.0, is what removes the clash), and the metadata block sets `pdfpagemode=UseNone` - a
+  `FullScreen` value there would win over the class's own `\AtEndPreamble` default and make
+  every CV open in fullscreen presentation mode. `05-cv-templates.md`'s preamble copy stays
+  in lockstep (framework_version 1.5.1 -> 1.5.2). This fork compiles via lualatex+MiKTeX,
+  not the apt-packaged toolchain the fix targets, but the preamble is version-agnostic and
+  was applied to this fork's own (untracked) `cv/main_example.tex` to keep the master
+  reference in lockstep with the taught pattern.
+
 - **Example-CV bullets no longer swallowed as LaTeX optional labels** - every placeholder
   bullet written as `\item [text]` (11 in `cv/main_example.tex`, 3 in
   `06-cover-letter-templates.md`'s taught template) let LaTeX parse the bracketed text as
