@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { parseJobCards, parseJobDetail, extractDivContent } from "../src/helpers";
+import { parseJobCards, parseJobDetail, extractDivContent, minutesToTPR } from "../src/helpers";
 
 // Minimal search-card markup: parseJobCards splits on the job-posting URN and
 // needs an id, a base-search-card__title, and a full-link. Everything else is
@@ -109,5 +109,18 @@ describe("extractDivContent", () => {
     expect(job.description).toContain("5 years Python");
     expect(job.description).toContain("About Us:");
     expect(job.description).toContain("We are hiring!");
+  });
+});
+
+describe("minutesToTPR", () => {
+  test("converts minutes to an f_TPR seconds window", () => {
+    expect(minutesToTPR(30)).toBe("r1800");
+    expect(minutesToTPR(1)).toBe("r60");
+    expect(minutesToTPR(1440)).toBe("r86400"); // matches jobageToTPR(1)
+  });
+
+  test("returns null for non-positive input", () => {
+    expect(minutesToTPR(0)).toBeNull();
+    expect(minutesToTPR(-5)).toBeNull();
   });
 });

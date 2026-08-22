@@ -47,6 +47,48 @@ describe("LinkedIn CLI flag validation", () => {
     });
   });
 
+  describe("--jobage-minutes validation", () => {
+    test("non-numeric string exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "foo"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage-minutes/);
+    });
+
+    test("zero exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "0"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage-minutes/);
+    });
+
+    test("negative value is parsed as a missing value and exits 1 with BAD_ARG", async () => {
+      // parseFlags in cli.ts treats a next-token starting with "-" as absent
+      // (`next.startsWith("-")` → flag becomes boolean `true`), and there is no
+      // `--flag=value` syntax. So "-5" never reaches --jobage-minutes as a value;
+      // parseInt("true") is NaN, and BAD_ARG comes from the NaN branch, not the
+      // `v <= 0` guard. Negatives are unreachable through the CLI as currently parsed.
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "-5"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage-minutes/);
+    });
+  });
+
+  describe("--jobage / --jobage-minutes conflict", () => {
+    test("both set exits 1 with CONFLICTING_AGE_FLAGS", async () => {
+      const result = await runCLI([
+        "search", "-l", LOCATION, "--jobage", "7", "--jobage-minutes", "30",
+      ]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("CONFLICTING_AGE_FLAGS");
+    });
+  });
+
   describe("--page NaN validation", () => {
     test("non-numeric string exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "-l", LOCATION, "--page", "abc"]);
