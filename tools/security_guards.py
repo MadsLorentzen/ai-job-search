@@ -12,7 +12,10 @@ reviewable rather than buried.
 Checks:
 1. .claude/settings.json — every permissions.allow entry must be in the exact
    allowlist below. Catches permission widening (e.g. Bash(*), Bash(curl:*)),
-   which would auto-approve commands on every fork.
+   which would auto-approve commands on every fork. The same file's `hooks`
+   key is held to an allowlist too: a hook runs automatically when its event
+   fires, with no prompt, so it is strictly more dangerous than a pre-approved
+   permission.
 2. .gitignore — the personal-data ignore rules must all still be present,
    and no un-allowlisted negation (!pattern) may re-include them. Catches
    weakening that would make future users silently commit their tracker,
@@ -86,7 +89,43 @@ ALLOWED_IGNORE_NEGATIONS = {
     "!documents/**/.gitkeep",
 }
 
+# Hook commands the template legitimately ships, as "<Event>:<command>" strings.
+# Empty by design - the template ships no hooks at all.
+#
+# A hook is strictly more dangerous than a permissions.allow entry. A permission
+# pre-approves something Claude may choose to do; a hook runs unconditionally when
+# its event fires, with no prompt and no model decision in between. Cloning a repo
+# and opening it is enough. This is the vector the Shai-Hulud worm used in its
+# August 2026 wave, planting a SessionStart hook in .claude/settings.json that
+# executed on session start:
+# https://research.jfrog.com/post/shai-hulud-is-back-august/
+ALLOWED_HOOKS: set[str] = set()
+
 FORBIDDEN_SCRIPTS = {"preinstall", "install", "postinstall", "prepare", "prepack"}
+
+
+def _hook_commands(event: str, entries: object):
+    """Yield "<Event>:<command>" for every command a hook event would run.
+
+    Fails closed: any shape this does not recognise yields a marker that cannot
+    be in the allowlist, so an unfamiliar hook layout is rejected rather than
+    silently skipped.
+    """
+    unrecognised = f"{event}:<unrecognised hook shape>"
+    if not isinstance(entries, list):
+        yield unrecognised
+        return
+    for entry in entries:
+        if not isinstance(entry, dict):
+            yield unrecognised
+            continue
+        inner = entry.get("hooks")
+        if not isinstance(inner, list):
+            yield unrecognised
+            continue
+        for hook in inner:
+            command = hook.get("command") if isinstance(hook, dict) else None
+            yield f"{event}:{command}" if isinstance(command, str) else unrecognised
 
 
 def check_permissions() -> None:
@@ -99,6 +138,26 @@ def check_permissions() -> None:
     if not isinstance(data, dict):
         errors.append(".claude/settings.json: top-level JSON value must be an object")
         return
+
+    # Checked before the permissions shape guards below, so a file that pairs a
+    # malformed permissions block with a hook cannot return early and skip this.
+    hooks = data.get("hooks", {})
+    if hooks:
+        if not isinstance(hooks, dict):
+            errors.append(".claude/settings.json: hooks must be an object")
+        else:
+            for event, entries in hooks.items():
+                for command in _hook_commands(str(event), entries):
+                    if command not in ALLOWED_HOOKS:
+                        errors.append(
+                            f".claude/settings.json: hook not in the reviewed allowlist: "
+                            f"{command!r}. A hook runs automatically when its event fires - it "
+                            "is never gated by the permissions prompt, so it executes on every "
+                            "fork without the user agreeing to anything. If this hook is "
+                            "intentional, add it to ALLOWED_HOOKS in tools/security_guards.py "
+                            "in the same PR so the addition is explicit and reviewable."
+                        )
+
     permissions = data.get("permissions", {})
     if not isinstance(permissions, dict):
         errors.append(".claude/settings.json: permissions must be an object")
@@ -190,7 +249,10 @@ def main() -> int:
         for err in errors:
             print(f"  - {err}")
         return 1
-    print("security_guards: OK (permissions allowlist, gitignore rules, package manifests)")
+    print(
+        "security_guards: OK (permissions allowlist, hooks allowlist, gitignore rules, "
+        "package manifests)"
+    )
     return 0
 
 
