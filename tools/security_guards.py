@@ -56,7 +56,6 @@ REQUIRED_IGNORE_RULES = [
     "*_BehavioralReport.pdf",
     "linkedin_Profile.pdf",
     "cv/main_*.*",
-    "!cv/main_example.tex",
     # ATS text extractions (/apply step 5d) carry the CV's full text.
     "cv/*.txt",
     "cover_letters/cover_*.*",
@@ -96,7 +95,6 @@ REQUIRED_IGNORE_RULES = [
 # ALLOWED_PERMISSIONS, so the widening is explicit and reviewable.
 ALLOWED_IGNORE_NEGATIONS = {
     "!cover_letters/OpenFonts/fonts/**",
-    "!cv/main_example.tex",
     "!cover_letters/cover_example.tex",
     "!documents/**/.gitkeep",
 }
