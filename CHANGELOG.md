@@ -193,6 +193,12 @@ per-file diff commands.
 
 ### Fixed
 
+- **The linkedin-search CLI identifies honestly** - its `User-Agent` was a full Chrome
+  browser string, the last portal CLI still spoofing after #283 and the jobbank/jobdanmark
+  fix. It now sends `Mozilla/5.0 (compatible; linkedin-search-cli/1.0)`, the same token
+  format as every other portal. Verified live on both the search and detail endpoints:
+  identical 200 responses with full content under the honest token.
+
 - **A `.env` was committable** (`.gitignore`, `tools/security_guards.py`). `/add-portal`
   can generate a skill for a portal that only returns usable content through a paid
   fetching service, and such a skill reads an API token from the environment - but
