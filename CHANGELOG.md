@@ -63,6 +63,22 @@ per-file diff commands.
 
 ### Changed
 
+- **`/rank` persists its location verdict as `location_verdict`** - the bare `location`
+  key meant two incompatible things in `seen_jobs.json`: a place (scraper search output,
+  driving the commute filter) and a PASS/FAIL/FLAG verdict (`/rank` Step 4), so ranking
+  could overwrite "Aarhus, Denmark" with "PASS" and no reader could tell which meaning a
+  stored value carried. Legacy entries are read compatibly (a PASS/FAIL/FLAG string in
+  `location` counts as the verdict when `location_verdict` is absent) and migrated on
+  re-write. The `seen_jobs` schema note in `job-scraper/SKILL.md` now also enumerates
+  `location_verdict`/`language_gate`/`language_note`, so its "do not drop any of these
+  fields" instruction finally covers the fields `/rank` calls as important as the score.
+  This fork's own `location_text`/`location` split already avoided the actual collision
+  (place always went to `location_text`), so this is a naming-clarity adoption rather than
+  a live-bug fix here; `job_scraper/dashboard_lib.js` (fork-only) is updated in the same
+  commit to read `location_verdict` with a fallback to the legacy `location` key, so
+  already-ranked entries keep rendering correctly on the dashboard. Pinned by two new
+  tests in `tests/test_rank_command.py`.
+
 - **BREAKING (scripts passing stray flags): all six portal CLIs reject unknown flags**
   with exit 1 and `{"error", "code": "UNKNOWN_FLAG"}` on stderr, instead of silently
   discarding them. A discarded filter changes what a search returns with no error - a

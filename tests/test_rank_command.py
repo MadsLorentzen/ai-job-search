@@ -81,6 +81,46 @@ class RankCommandSpec(unittest.TestCase):
             "schema note must say old entries lacking strengths/gaps are tolerated, never backfilled",
         )
 
+    def test_verdict_is_written_to_location_verdict_not_bare_location(self):
+        """`location` meant two incompatible things in seen_jobs.json: a place
+        (scraper search output, driving the commute filter) and a PASS/FAIL/FLAG
+        verdict (/rank Step 4), so a ranked entry could overwrite "Aarhus,
+        Denmark" with "PASS" and no reader could tell which meaning a stored
+        value carried (review finding F27B, 2026-08-19)."""
+        text = COMMAND.read_text(encoding="utf-8")
+        self.assertIn('"location_verdict"', text, "Step 2's agent JSON must use location_verdict")
+        self.assertIn(
+            '"location_verdict": "PASS"/"FAIL"/"FLAG"',
+            text,
+            "Step 4 must persist the verdict under location_verdict",
+        )
+        self.assertNotIn(
+            '"location":',
+            text,
+            "the PASS/FAIL/FLAG verdict must never be written to the bare "
+            "location key, which the scraper uses for a place",
+        )
+        self.assertIn(
+            "legacy",
+            text,
+            "Step 4 must carry a migration rule for entries that stored the "
+            "verdict under the old location key",
+        )
+
+    def test_job_scraper_schema_note_enumerates_the_veto_fields(self):
+        """SKILL.md's "do not drop any of these fields" instruction cannot
+        protect fields it does not name - and it omitted exactly the three
+        rank.md calls as important to persist as the score itself (review
+        finding F27 Part A, 2026-08-19)."""
+        text = SCRAPER_SKILL.read_text(encoding="utf-8")
+        for field in ("location_verdict", "language_gate", "language_note"):
+            self.assertIn(
+                field,
+                text,
+                f"the seen_jobs schema note must enumerate {field} so the "
+                "do-not-drop instruction covers it",
+            )
+
     def test_evaluation_framework_acknowledges_language_gate_tracking(self):
         """04-job-evaluation.md is the authoritative file /rank tells its agents
         to read. Its Language Gate preamble once said the gate result "is not a

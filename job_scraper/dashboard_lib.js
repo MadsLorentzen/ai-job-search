@@ -175,7 +175,8 @@ function toDashboardLink(path) {
  * the Location badge, so this stays a single targeted note rather than a full column.
  */
 function visaNote(entry, market, visaDeadline) {
-  if (market !== "UK" || entry.location !== "FLAG") return null
+  const locationVerdict = entry.location_verdict ?? entry.location
+  if (market !== "UK" || locationVerdict !== "FLAG") return null
   const deadline = visaDeadline ? `your visa expires ${visaDeadline}` : "check your own visa timeline"
   return `Verify this employer holds an active UK sponsor licence — ${deadline}.`
 }
@@ -214,7 +215,10 @@ function buildJobs(seen, trackerByKey, visaDeadline) {
       rank_score: typeof entry.rank_score === "number" ? entry.rank_score : null,
       rank_verdict: entry.rank_verdict ?? null,
       rank_date: entry.rank_date ?? null,
-      location_gate: entry.location ?? null,
+      // /rank now writes location_verdict (fix(rank): the bare `location` key
+      // collided with the scraper's own place field). Entries ranked before
+      // that rename still carry the verdict under `location`; fall back to it.
+      location_gate: entry.location_verdict ?? entry.location ?? null,
       language_gate: entry.language_gate ?? null,
       language_note: entry.language_note ?? null,
       visa_note: visaNote(entry, market, visaDeadline),

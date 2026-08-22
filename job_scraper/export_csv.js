@@ -157,7 +157,10 @@ function visaFlagStatus(entry, visaDeadline) {
   if (entry.status !== "ranked") return "Not yet ranked"
 
   const market = inferMarket(entry.location_text)
-  const gate = entry.location // "PASS" | "FAIL" | "FLAG"
+  // /rank now writes location_verdict (fix(rank): the bare `location` key
+  // collided with the scraper's own place field). Entries ranked before
+  // that rename still carry the verdict under `location`; fall back to it.
+  const gate = entry.location_verdict ?? entry.location // "PASS" | "FAIL" | "FLAG"
 
   if (market === "DE") return "PASS (Independent relocation)"
   if (market === "UK") {
