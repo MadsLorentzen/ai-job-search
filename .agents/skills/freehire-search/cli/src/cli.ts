@@ -81,6 +81,8 @@ SEARCH FLAGS
   --page <n>              1-indexed page. Default 1.
   --limit, -n <n>         Results per page (API limit). Default 25.
   --format <fmt>          json (default) | table | plain.
+  --no-description        Skip description hydration for a cheap discovery pass
+                          (results keep every other field; detail fetches the body).
   --description-format    markdown (default) | text | html — how each result's
                           full description is rendered (json output only).
 
@@ -124,7 +126,7 @@ function parseIntFlag(name: string, raw: string | boolean | string[]): number | 
 const KNOWN_FLAGS: Record<string, Set<string>> = {
   search: new Set([
     "query", "category", "city", "company", "country", "facet", "format", "jobage", "limit",
-    "page", "region", "remote", "seniority", "skill", "description-format", "help", "h",
+    "page", "region", "remote", "seniority", "skill", "description-format", "no-description", "help", "h",
   ]),
   detail: new Set(["format", "description-format", "help", "h"]),
 }
@@ -202,6 +204,7 @@ async function main(): Promise<number> {
       limit: flags.limit ? Math.max(1, parseInt(flags.limit as string, 10)) : 25,
       format: (["json", "table", "plain"].includes(fmt) ? fmt : "json") as SearchOpts["format"],
       descriptionFormat: descFmt as DescriptionFormat,
+      includeDescription: flags["no-description"] === undefined,
       regions: commaList(flags.region),
       countries: commaList(flags.country),
       cities: commaList(flags.city),

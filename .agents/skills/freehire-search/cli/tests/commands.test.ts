@@ -112,6 +112,24 @@ describe("runSearch (mocked fetch)", () => {
     expect(requestedParams(mock).get("description_format")).toBe("markdown");
   });
 
+  test("skips description hydration when includeDescription is false", async () => {
+    // A default search hydrates ~20k tokens of description bodies per query,
+    // while /scrape's Step 2 says to pre-filter by title/snippet before
+    // reading bodies. --no-description keeps the discovery pass cheap;
+    // hydration stays the default (review opportunity O1, 2026-08-19).
+    const mock = mockFetch(200, { data: [job()], meta: { total: 1 } });
+
+    const out = captureStdout();
+    await runSearch({ ...searchOpts, query: "backend", includeDescription: false });
+
+    expect(requestedParams(mock).get("include_description")).toBe("false");
+    expect(requestedParams(mock).get("description_format")).toBeNull();
+    // The live API ignores include_description=false and sends bodies anyway
+    // (verified 2026-08-19), so the lean guarantee is enforced client-side.
+    const parsed = JSON.parse(out.get());
+    expect(parsed.results[0].description).toBeNull();
+  });
+
   test("asks for the requested description format", async () => {
     const mock = mockFetch(200, { data: [job()], meta: { total: 1 } });
     captureStdout();
