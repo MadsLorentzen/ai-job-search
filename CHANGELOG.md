@@ -91,6 +91,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **Language Gate preamble no longer claims the gate is untracked** (`framework_version`
+  1.2.3 -> 1.2.4 in `04-job-evaluation.md`) - the paragraph still said the result "is not
+  a field `/scrape` or `/rank` track", written before the gate was wired into both
+  consumers. An agent reading the authoritative framework file learned the opposite of
+  what `rank.md` itself insists on ("These veto fields are as important to persist as
+  the score itself"). The preamble now names `language_gate`/`language_note` and how each
+  consumer uses them; a coupling test in `tests/test_rank_command.py` keeps the framework
+  text honest about the tracking.
+
 - **Onboarding warns about public forks at the point of decision** (#345) - the quick
   start walked a new user into `gh repo fork` (forks of public repos are always public)
   and two steps later had `/setup` write personal data into tracked files, with the only

@@ -20,6 +20,9 @@ except ImportError:
 REPO = Path(__file__).resolve().parent.parent
 COMMAND = REPO / ".claude" / "commands" / "rank.md"
 SCRAPER_SKILL = REPO / ".claude" / "skills" / "job-scraper" / "SKILL.md"
+EVALUATION = (
+    REPO / ".claude" / "skills" / "job-application-assistant" / "04-job-evaluation.md"
+)
 
 
 def _sections(text: str) -> dict[str, str]:
@@ -76,6 +79,33 @@ class RankCommandSpec(unittest.TestCase):
             "readers tolerate their absence",
             text,
             "schema note must say old entries lacking strengths/gaps are tolerated, never backfilled",
+        )
+
+    def test_evaluation_framework_acknowledges_language_gate_tracking(self):
+        """04-job-evaluation.md is the authoritative file /rank tells its agents
+        to read. Its Language Gate preamble once said the gate result "is not a
+        field /scrape or /rank track" - written before the gate was wired into
+        both consumers, and never updated. An agent reading that learns the
+        opposite of what rank.md itself insists on ("These veto fields are as
+        important to persist as the score itself"). The framework text must name
+        the tracked fields and must not claim they are untracked."""
+        text = EVALUATION.read_text(encoding="utf-8")
+        gate = text.partition("## Language Gate")[2].partition("\n## ")[0]
+        self.assertTrue(gate, "04-job-evaluation.md has no Language Gate section")
+        self.assertIn(
+            "language_gate",
+            gate,
+            "the Language Gate section must name the language_gate field /rank persists",
+        )
+        self.assertIn(
+            "language_note",
+            gate,
+            "the Language Gate section must name the language_note field /rank persists",
+        )
+        self.assertNotIn(
+            "not a field",
+            gate,
+            "stale claim: the gate result IS tracked by /scrape and /rank now",
         )
 
     def test_step2_schema_includes_language_gate_fields(self):
