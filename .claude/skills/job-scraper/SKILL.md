@@ -157,6 +157,8 @@ The `source` field records which mechanism produced the entry: `cli` for Step 1b
 
 2. Only present jobs NOT already in the seen list or tracker.
 
+3. No separate export step is needed. A live, filterable, write-back-capable dashboard is also available - see `job_scraper/serve_dashboard.js` (`bun run job_scraper/serve_dashboard.js`, then bookmark the URL it prints, or use `/dashboard`); it reads `seen_jobs.json` and `job_search_tracker.csv` fresh on every page load, so nothing here needs to stay in sync with a separate file.
+
 ### Step 4.5: Generate Referral Contact Links (High & Medium Fit Only)
 
 For every job from this run with `fit` of **high** or **medium** (skip low-fit jobs),

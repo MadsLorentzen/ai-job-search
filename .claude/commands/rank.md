@@ -92,6 +92,8 @@ Store both arrays **verbatim** as the agent returned them (1-3 bullets each) - n
 
 Do not modify `job_search_tracker.csv` - that file records applications, and `/rank` never applies. Re-running `/rank` never re-scores an already-`ranked` job unless `--all` says so, so scoring is idempotent. **Rule 6's sweep is the deliberate exception and still runs**: it re-reads stored deadlines for exactly those skipped entries and may retire one to `expired`. That is not a re-score and costs no fetch, and skipping it because the entry was "already ranked" is what would leave a closed posting on the shortlist indefinitely.
 
+A live, filterable, write-back-capable dashboard is also available - see `job_scraper/serve_dashboard.js` (`bun run job_scraper/serve_dashboard.js`, then bookmark the URL it prints, or use `/dashboard`); it reads `seen_jobs.json` fresh on every page load, so nothing needs to be run here to keep it in sync.
+
 ---
 
 ## Step 5: Present the Shortlist
