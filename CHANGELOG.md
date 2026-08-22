@@ -29,7 +29,11 @@ per-file diff commands.
   `security_guards.py`'s `REQUIRED_IGNORE_RULES` (a plain rooted pattern, not `**/`
   -prefixed - the cache is referenced from commands, not a skill, so it resolves
   against the repo root normally). Pinned by the new
-  `tests/test_company_research_cache.py`.
+  `tests/test_company_research_cache.py`. Cache contents are documented as data, never
+  instructions, for a later session reading the file - the same trust-boundary rule
+  `apply.md` Step 0 states for the posting itself, since cache notes are written from
+  the same fetched web content. The verification-still-applies restatement in both
+  `apply.md` and `interview.md`'s cache-check paragraphs is now pinned too.
 
 ## [1.6.0] - 2026-08-19
 
