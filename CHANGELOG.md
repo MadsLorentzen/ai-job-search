@@ -15,6 +15,26 @@ per-file diff commands.
 
 ### Added
 
+- **Company-research cache for `/apply` and `/interview`** - `/apply` Step 3's reviewer
+  agent and `/interview` Step 2 each independently execute the Company Research
+  Checklist (`04-job-evaluation.md`) for the same company, so applying and later
+  prepping for an interview on the same application researches the company twice from
+  scratch. A new `company_research/<normalized-name>.json` cache (30-day TTL, documented
+  in `04-job-evaluation.md` alongside the checklist it mirrors) lets either consumer
+  reuse a recent result instead of repeating the search/fetch work. This does not
+  change how a claim gets verified: cached research is a lead, exactly like
+  reviewer-agent research already is under `03-writing-style.md` rule 5 - only the
+  discovery step is cached, never the final verification before a claim ships in a
+  cover letter or prep pack. `company_research/*.json` added to `.gitignore` and
+  `security_guards.py`'s `REQUIRED_IGNORE_RULES` (a plain rooted pattern, not `**/`
+  -prefixed - the cache is referenced from commands, not a skill, so it resolves
+  against the repo root normally). Replaces this fork's earlier, simpler
+  `documents/company_research/<company>.md` free-text version (informal ~30-day
+  eyeball check, `/apply`-only, no tests) - upstream's version (adopted from
+  MadsLorentzen/ai-job-search#349) adds a structured schema with per-category source
+  URLs, an explicit `fetched_date` TTL field, `/interview` as a second consumer, and
+  test coverage. Pinned by the new `tests/test_company_research_cache.py`.
+
 - **LaTeX special-character guidance for CVs** (`framework_version` 1.5.0 -> 1.5.1 in
   `05-cv-templates.md`, 1.0.1 -> 1.0.2 in `06-cover-letter-templates.md`) - `05` gains a
   "LaTeX Special Characters" section and `06`'s existing one is completed beyond `\_`/`\&`.
