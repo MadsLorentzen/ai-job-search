@@ -84,6 +84,7 @@ per-file diff commands.
   confirm-first warning instead of a note after every file is already on disk. Reported
   by @basilevs with a complete reproduction and fix analysis. Pinned by the new
   `tests/test_onboarding_privacy.py`.
+
 - **`/upskill` reports are now gitignored at the path the skill actually writes them to.**
   The ignore rule `upskill/*.md` is rooted (a middle slash anchors a gitignore pattern to the
   repo root), but `/upskill` is a *skill*, and skills resolve bare relative paths against
