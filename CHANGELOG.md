@@ -117,6 +117,33 @@ per-file diff commands.
 
 ### Fixed
 
+- **Tracker status enum defined once in `/outcome`, every reader normalised** (#299) - six
+  command files restated the tracker CSV `status` column's spellings inconsistently.
+  `/outcome` Step 4 wrote `no response`/`offer declined` (spaces); `/html-report` only
+  normalised the underscore forms, so those rows matched no bucket and were silently
+  dropped from the rejection-rate denominator; `/gmail-sync` hardcoded the final-status
+  set with space spellings, so a row written with underscores was never recognised as
+  final and the sync kept chasing closed applications; `/html-report` also included
+  `interview_only` in its tracker bucket map, a value that belongs to the archive
+  `outcome.md` `Status:` field, not the CSV column. A new **Tracker status vocabulary**
+  section in `/outcome` defines the canonical underscore spellings once (`hired` /
+  `rejected` / `no_response` / `offer_declined` / `withdrawn` as Final, everything else -
+  `drafted` included - as Open); every reader now references that block or explicitly
+  reads both spelling forms as read-tolerance. `/outcome` Step 4 writes `no_response`/
+  `offer_declined`; `/html-report` drops `interview_only`, reads `offer declined` as a
+  tolerance variant, and gains a case-insensitive catch-all (anything unrecognised →
+  Rejected/Closed, named once in the breakdown) instead of silently dropping it;
+  `/notion-sync` aligns its Status select options and normalises legacy space spellings
+  before writing, so a raw push can't auto-create a duplicate select option; `/apply`
+  Step 6b and `/interview` Step 0 anchor their final/open decisions to the vocabulary
+  block. This fork's own `expired`/`skipped` tracker statuses (not in upstream's
+  vocabulary - `expired` mirrors `/rank`'s `seen_jobs.json` status for a posting that
+  went dead, `skipped` marks a fully-evaluated role deliberately not pursued) are folded
+  into the **Final** list alongside the canonical five, since real tracker rows already
+  carry them and neither implies a submission happened. `job-application-assistant/
+  SKILL.md` framework_version 1.3.0 -> 1.3.1. Pinned by
+  `tests/test_tracker_status_vocab.py`.
+
 - **`main_example.tex` compiles on apt-packaged moderncv** (#242) - the banking template
   set its name styling through `\firstnamestyle`/`\lastnamestyle`, which moderncv 2.3.1
   (Debian/Ubuntu apt) does not have, so a fresh fork could not compile its own example CV

@@ -32,10 +32,28 @@ Follow these steps **in order**.
    date,company,sector,role,role_type,channel,status,contact_person,fit_rating,notes,cv_file,cover_letter_file,source
    ```
 2. **With an argument:** match rows case-insensitively on company (and role, if given). One match → proceed. Several → list them and ask. None → the application was made outside the workflow; collect company, role, date applied, channel, and posting URL from the user and add a tracker row.
-3. **Without an argument:** list all rows whose status is not final (not hired / rejected / no response / withdrawn / offer declined) as a numbered table (company, role, date applied, current status, days quiet, follow-ups sent) and ask which to update. The two derived columns come straight from existing data: **days quiet** counts from the row's `date` or the latest dated entry in `notes`, whichever is more recent; **follow-ups sent** counts the `followed up YYYY-MM-DD` markers in `notes`. If any open row is 10+ days quiet with fewer than two follow-ups sent, add one line under the table: "Some of these have gone quiet - want a follow-up draft? (Step 2b)". If every row is resolved, say so and stop.
+3. **Without an argument:** list all rows whose status is not final (see **Tracker status vocabulary** below) as a numbered table (company, role, date applied, current status, days quiet, follow-ups sent) and ask which to update. The two derived columns come straight from existing data: **days quiet** counts from the row's `date` or the latest dated entry in `notes`, whichever is more recent; **follow-ups sent** counts the `followed up YYYY-MM-DD` markers in `notes`. If any open row is 10+ days quiet with fewer than two follow-ups sent, add one line under the table: "Some of these have gone quiet - want a follow-up draft? (Step 2b)". If every row is resolved, say so and stop.
 
    **`drafted` rows are listed but never counted as quiet** - nothing was sent, so nobody is late replying. List them under their own heading ("Drafted, not yet submitted"), leave **days quiet** and **follow-ups sent** blank, and keep them out of the follow-up offer above.
 4. Derive the archive folder name: `documents/applications/<company>_<role>/` - lowercase, underscores for spaces (the convention documented in `documents/README.md`). Check whether the folder and an `outcome.md` already exist - if so, you are updating, not creating.
+
+---
+
+## Tracker status vocabulary
+
+Canonical spellings for the tracker CSV `status` column (underscores, never spaces):
+
+`drafted` | `applied` | `interview` | `offer` | `hired` | `rejected` | `no_response` | `offer_declined` | `withdrawn` | `expired` | `skipped`
+
+- **Final** (application closed): `hired`, `rejected`, `no_response`, `offer_declined`, `withdrawn`, `expired`, `skipped`. The last two are a fork-specific extension, not in upstream's vocabulary: `expired` marks a row whose posting went dead before or after drafting (mirrors `/rank`'s `seen_jobs.json` status of the same name); `skipped` marks a row that was fully evaluated and deliberately not pursued (a language/location gate failure, a Weak Fit verdict). Neither implies a submission happened — both are closed for the same reason `hired`/`rejected`/etc. are: no further action is ever due on the row.
+- **Open**: everything else, `drafted` included — a row is active until its status is one of the **Final** values.
+- **`drafted`** is open but distinct — nothing was sent, so no follow-up is ever due.
+- Readers must also accept the legacy space spellings `no response` and `offer declined` on read, so that existing trackers keep working without a migration. Never write them — they are the same values as `no_response` and `offer_declined`, not separate statuses, equally **Final**, and every rule that names one applies to the other.
+
+> Distinct from the archive `Status:` enum in `documents/README.md`
+> (`in_progress` | `hired` | `offer_declined` | `rejected` | `no_response` | `interview_only`),
+> which describes the per-application `outcome.md` file, not this column. The two enums
+> are never written to the same field.
 
 ---
 
@@ -47,7 +65,7 @@ Ask the user what happened, then classify:
 - Interview invitation / stage scheduled or completed (phone screen, technical, case, final round)
 - Offer received (not yet accepted or declined)
 
-**Resolutions** (application closed) - these map to the status enum in `documents/README.md` that `/setup` parses:
+**Resolutions** (application closed) — these map to the archive `Status:` enum in `documents/README.md` that `/setup` parses (distinct from the tracker CSV column; see **Tracker status vocabulary** above):
 - `hired` - accepted an offer
 - `offer_declined` - received an offer, turned it down
 - `rejected` - explicit rejection at any stage
@@ -123,7 +141,7 @@ Update rules: tick stage checkboxes as they are reached (add the date in parenth
 
 ## Step 4: Update the Tracker
 
-Update the matched row's `status` column (e.g. `drafted` → `applied` → `interview` → `offer` → `hired` / `rejected` / `no response` / `offer declined` / `withdrawn`) and append a short dated note to the `notes` column. Never restructure the CSV, reorder rows, or touch other rows.
+Update the matched row's `status` column using the canonical spellings from **Tracker status vocabulary** above (e.g. `drafted` → `applied` → `interview` → `offer` → `hired` / `rejected` / `no_response` / `offer_declined` / `withdrawn`) and append a short dated note to the `notes` column. Never restructure the CSV, reorder rows, or touch other rows.
 
 **Moving a row off `drafted`:** rows written by `/apply` Step 6b carry the date the documents were drafted, not the date they were sent. Whenever this step advances such a row to any other status - `applied`, or straight to `interview` or `rejected` when the user reports an outcome for something they submitted without recording it - overwrite its `date` column with the actual submission date. The `date` column is read as "applied on" by `/notion-sync` and drives `/html-report`'s year/season grouping and this command's own days-quiet count, so leaving the draft date in place would misreport the application.
 
