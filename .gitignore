@@ -98,6 +98,9 @@ reports/
 upskill/*.md
 **/upskill/report-*.md
 
+# Agent token-usage log (personal session analytics, not repo content)
+**/job_scraper/agent_token_log.csv
+
 # Agent skills: track the source, ignore only deps and logs.
 # (A blanket `.agents/` ignore silently drops the job-search CLI skills from the repo.)
 .agents/**/node_modules/
