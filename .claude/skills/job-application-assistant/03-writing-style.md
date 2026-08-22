@@ -1,5 +1,5 @@
 ---
-framework_version: 1.2.0
+framework_version: 1.3.0
 ---
 
 # Writing Style Guide
@@ -105,6 +105,29 @@ The cover letter is **not a CV repetition**. It should be forward-looking:
 ### Leadership/Senior roles
 - Lead with project management, mentoring, course development
 - Frame advanced degrees as evidence of independent project delivery
+
+## Natural Voice Calibration (candidate-specific)
+
+Modeled on the candidate's own published writing (blog samples reviewed 2026-08-22),
+to close the gap between generic AI-cover-letter prose and his authentic voice.
+
+- **State claims directly, don't hedge.** "My experience runs to thirteen years," not
+  "I have accumulated significant experience over approximately thirteen years."
+- **Vary sentence length deliberately.** Real writing mixes long, multi-clause
+  sentences that build toward a conclusion with short, flat declaratives dropped in
+  for emphasis. Don't default to uniformly long sentences (reads as run-on and
+  exhausting) or uniformly short ones (reads as choppy and robotic) - alternate.
+- **Back claims with named specifics, not adjectives.** A stat, a date, a named
+  product or founder - reach for these over "innovative," "leading," "results-driven."
+- **Name a real structural gap directly and early, once** - rather than burying a
+  single soft caveat mid-letter. Only applies to a genuine, named mismatch (years
+  band, missing domain), not a habit to reach for by default.
+- **Never make comparative claims about other candidates.** "I'd ramp faster than
+  someone at the posting's intended level" reads as presumptuous. State your own
+  capability, not a comparison to an unknown applicant pool.
+- **Em-dashes stay banned (Critical Rule 1).** The candidate's natural writing uses
+  occasional em-dashes for emphasis, but get the same emphatic pause through a colon
+  or a short second sentence instead - same directness, no banned punctuation.
 
 ## Multi-language Applications
 - Default to the language of the job posting

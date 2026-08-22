@@ -137,7 +137,8 @@ Mumbai, India · India's Largest Securities Depository (NSDL)
 - Business Case Development, Bid Management (RFP/RFI), Commercial Modelling (TCV >$100M), Pricing Strategy, Go-to-Market Strategy, Market & Competitor Research
 
 ### AI Tools
-- Gemini (daily use: epic / story drafting, acceptance criteria refinement, stakeholder communication, requirements analysis)
+- Gemini (daily use at work: epic / story drafting, acceptance criteria refinement, stakeholder communication, requirements analysis)
+- Claude (extensive personal-side use, including hands-on work with Claude Code) - not yet the on-the-job tool at Cognizant (Gemini is), but a genuine, current skill worth naming for roles where the employer's own AI tooling is Claude-based, or where broader AI-tool fluency across platforms (not just one vendor) is being assessed
 
 ### Software & Tools
 - Jira, Confluence, SQL, Microsoft Office 365

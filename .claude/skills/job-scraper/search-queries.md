@@ -58,6 +58,16 @@ site:linkedin.com/jobs "Senior Product Owner" OR "Lead Product Owner" payments U
 site:linkedin.com/jobs "Delivery Manager" OR "Agile Delivery Lead" payments OR fintech UK OR Germany
 ```
 
+**Germany-weighted Delivery Manager net (added 2026-08-22).** The candidate's own current/recent title is "Product Owner (Proxy) & Onsite Delivery Manager" - this side of the role has never had its own dedicated search, only the payments/fintech-scoped line above. Germany is the current top-priority market (Chancenkarte relocation timeline; German PR expected in ~21 months, after which the search can return to product-only roles), and per the candidate profile's Germany domain-openness override, these queries deliberately drop the payments/fintech domain restriction rather than carrying it over from the line above:
+
+```
+site:linkedin.com/jobs "Onsite Delivery Manager" OR "Engagement Delivery Manager" Germany
+site:linkedin.com/jobs "Delivery Lead" OR "Client Delivery Manager" Germany
+site:linkedin.com/jobs "Service Delivery Manager" OR "Programme Delivery Manager" Germany
+```
+
+These stay broader by design - unlike the payments-scoped query above, do not add a domain filter (banking, fintech, etc.) to these three when running them, since the whole point is to surface delivery-management roles outside the payments domain while Germany-landing urgency outweighs domain fit (see CLAUDE.md's Germany/Ireland domain-openness note). UK and Ireland do not get this broadened treatment - the UK's constraint is the Feb 2027 visa deadline (speed, not first-foothold urgency) and Ireland has no independent relocation route, so both keep the narrower payments/fintech-scoped query above.
+
 ### Priority 4: Pre-Sales / Solutions Consulting (fintech)
 
 Wider net, leaning into the pre-sales/commercial background instead.
