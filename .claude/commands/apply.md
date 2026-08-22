@@ -256,12 +256,12 @@ Do not proceed to Step 6 until both PDFs pass inspection.
 
 An ATS parser reads the PDF's embedded **text layer**, not the rendered page — a CV that passed visual inspection can still extract as garbage (icon glyphs where the contact details should be, scrambled reading order in multi-column layouts). This step verifies what a parser actually sees. It applies to the **CV only**; cover letters rarely go through keyword screening.
 
-**Availability check:** run `pdftotext -v`. `pdftotext` (poppler) is an optional dependency, not part of TeX distributions. If it is missing, print a one-line warning that the mechanical parse check is skipped, do the keyword-coverage check (item 3 below) against your visual Read of the PDF instead, and note the degraded mode in the Step 6 report. Same graceful-skip pattern as the salary lookup.
+**Availability check:** run `pdftotext -v`. `pdftotext` (poppler) is an optional dependency, not part of TeX distributions. If it is missing, print a one-line warning that the mechanical parse check is skipped, do the keyword-coverage check (item 3 below) against your visual Read of the PDF instead, and note the degraded mode in the Step 6 report. Same graceful-skip pattern as the salary lookup. Keep the `-enc UTF-8` flag: Xpdf-based builds default to Latin-1 output, and without it a correct non-ASCII CV fails the replacement-character check below.
 
 **1. Extract the text layer:**
 
 ```bash
-cd cv && pdftotext -layout main_<company>_<role>.pdf main_<company>_<role>.txt
+cd cv && pdftotext -layout -enc UTF-8 main_<company>_<role>.pdf main_<company>_<role>.txt
 ```
 
 Read the `.txt` file.

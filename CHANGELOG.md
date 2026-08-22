@@ -15,6 +15,16 @@ per-file diff commands.
 
 ### Added
 
+- **LaTeX special-character guidance for CVs** (`framework_version` 1.5.0 -> 1.5.1 in
+  `05-cv-templates.md`, 1.0.1 -> 1.0.2 in `06-cover-letter-templates.md`) - `05` gains a
+  "LaTeX Special Characters" section and `06`'s existing one is completed beyond `\_`/`\&`.
+  The load-bearing case is an unescaped `%` in a quantified achievement bullet: it starts a
+  LaTeX comment, so "cut latency by 40% and saved DKK 2M" compiles with zero errors and
+  renders as "cut latency by 40" - silent content loss in the deliverable, on exactly the
+  content the guidance steers users to write. `&` in employer names (Bang & Olufsen, H&M)
+  fails loudly at compile time and is now documented alongside. Pinned by
+  `tests/test_latex_guidance.py`.
+
 - **`freehire-search` gains `--no-description` for cheap discovery passes** - a default
   search hydrates full description bodies (~73% of the payload, ~20k tokens per query)
   while `/scrape` is told to pre-filter by title before reading bodies. The new flag
@@ -90,6 +100,25 @@ per-file diff commands.
   `/add-portal`'s Register step now says so. Thanks @ayobamiseun.
 
 ### Fixed
+
+- **Example-CV bullets no longer swallowed as LaTeX optional labels** - every placeholder
+  bullet written as `\item [text]` (11 in `cv/main_example.tex`, 3 in
+  `06-cover-letter-templates.md`'s taught template) let LaTeX parse the bracketed text as
+  `\item`'s optional argument: a shipped example CV would render all Professional Experience
+  bullets clipped off the left page edge, with the word "Achievement" appearing 9 times in
+  the source and 0 times in the PDF text layer - a clean compile, green CI. Bullets are now
+  braced (`\item {[text]}`) in the cover-letter guide's taught template, and CI's stock
+  PDF assertions additionally require `Achievement` to survive `pdftotext`. This fork's own
+  `cv/main_example.tex` is untracked (holds the real candidate's personal data, not
+  upstream's placeholder text) and was left untouched by this cherry-pick - the fix applies
+  to the taught template and CI assertions only. Pinned by `tests/test_latex_guidance.py`.
+- **Documented ATS extraction commands pin `-enc UTF-8`** - `pdftotext -layout` without an
+  encoding flag emits Latin-1 on Xpdf builds, so every non-ASCII character in a correct CV
+  (Rambøll, Ingeniør, København) read back as a replacement character and failed the
+  parseability checklist, steering the agent to "fix" a healthy document. The commands in
+  `apply.md`, `05-cv-templates.md`, and `CLAUDE.md`'s verification checklist now carry
+  `-enc UTF-8`, which is deterministic on both poppler and Xpdf. Pinned by
+  `tests/test_latex_guidance.py`.
 
 - **Language Gate preamble no longer claims the gate is untracked** (`framework_version`
   1.2.3 -> 1.2.4 in `04-job-evaluation.md`) - the paragraph still said the result "is not

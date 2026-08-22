@@ -144,7 +144,8 @@ jobs:
           python3 tools/verify_pdf.py cv/main_example.pdf \
             --pages 2 \
             --contains '[your.email@example.com]' \
-            --contains 'Professional Experience'
+            --contains 'Professional Experience' \
+            --contains 'Achievement'
           python3 tools/verify_pdf.py cover_letters/cover_example.pdf \
             --pages 1 \
             --contains 'your.email@example.com' \
