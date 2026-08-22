@@ -11,6 +11,19 @@ prefer updating to a tagged release over pulling raw `master` (see
 files a release touched; `python3 tools/check_upstream_updates.py` lists them with
 per-file diff commands.
 
+## [Unreleased]
+
+### Added
+
+- **`09-web-research.md` states the confirmed-403 list's purpose explicitly** - the
+  confirmed-403/200-on-curl domain list existed, but the reason to consult it (skip the
+  first `WebFetch` attempt on an already-confirmed domain, since it reliably wastes a
+  tool call and a timeout/403 diagnosis rediscovering a known pattern) was never actually
+  written down. The rule also scopes itself precisely to the failure class the list
+  documents: a confirmed 403 client-refusal, not a timeout or other failure observed once
+  - those are a different problem and don't belong in this list on a single observation.
+  `framework_version` 1.1.0 -> 1.1.1.
+
 ## [1.6.0] - 2026-08-19
 
 ### Added
