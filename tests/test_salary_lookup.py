@@ -102,6 +102,12 @@ class TestMatchScoreExactMatch(unittest.TestCase):
     def test_exact_match_after_suffix_stripping(self):
         self.assertEqual(match_score("Mærsk", "Mærsk A/S"), 100)
 
+    def test_exact_match_after_dotted_amba_suffix_stripping(self):
+        # "A.M.B.A." (dotted) is the same legal-suffix family as the
+        # undotted "amba" pattern above it in STRIP_PATTERNS and must
+        # strip just as cleanly.
+        self.assertEqual(match_score("Arla Foods", "Arla Foods A.M.B.A."), 100)
+
 
 class TestMatchScoreSubstring(unittest.TestCase):
     def test_query_contained_in_entry_gives_high_score(self):
@@ -331,6 +337,14 @@ class UtilityTests(unittest.TestCase):
         self.assertEqual(normalize("Ørsted (VG) Holding"), "ørsted")
         self.assertEqual(normalize("Chr. Hansen, Denmark Division"), "chrhansen")
         self.assertEqual(normalize("Simple Corp ApS"), "simplecorp")
+
+    def test_normalize_strips_dotted_amba_suffix_same_as_undotted(self):
+        # The dotted form ("A.M.B.A.") must normalize identically to the
+        # undotted form ("amba"), same as A/S vs ApS variants above.
+        self.assertEqual(
+            normalize("Arla Foods A.M.B.A."), normalize("Arla Foods amba")
+        )
+        self.assertEqual(normalize("Arla Foods A.M.B.A."), "arlafoods")
 
     def test_anglicize_replaces_danish_chars(self):
         self.assertEqual(anglicize("ørsted"), "orsted")

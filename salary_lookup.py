@@ -35,7 +35,7 @@ SPELLING_VARIANTS = {
 # Legal suffixes and noise to strip when matching company names
 STRIP_PATTERNS = [
     r"\ba/s\b", r"\baps\b", r"\bi/s\b", r"\bp/s\b", r"\bk/s\b",
-    r"\bivs\b", r"\bamba\b", r"\ba\.m\.b\.a\.\b",
+    r"\bivs\b", r"\bamba\b", r"\ba\.m\.b\.a\.?\b",
     r"\(vg\)", r"\(.*?\)",  # (VG) and other parentheticals
     r"\bdanmark\b", r"\bdenmark\b", r"\bscandinavia\b", r"\bnordic\b",
     r"\bgroup\b", r"\bholding\b",
