@@ -118,6 +118,17 @@ function parseIntFlag(name: string, raw: string | boolean | string[]): number | 
   return val
 }
 
+// Long-form flag names each command accepts (parseFlags resolves the short
+// aliases q/n to these before validation). "help"/"h" pass so `search --help`
+// still prints usage.
+const KNOWN_FLAGS: Record<string, Set<string>> = {
+  search: new Set([
+    "query", "category", "city", "company", "country", "facet", "format", "jobage", "limit",
+    "page", "region", "remote", "seniority", "skill", "description-format", "help", "h",
+  ]),
+  detail: new Set(["format", "description-format", "help", "h"]),
+}
+
 async function main(): Promise<number> {
   const argv = process.argv.slice(2)
   const flags = parseFlags(argv)
@@ -126,6 +137,25 @@ async function main(): Promise<number> {
   if (!cmd || flags.help || flags.h) {
     process.stdout.write(HELP)
     return cmd ? 0 : 1
+  }
+
+  // Reject unknown flags instead of silently discarding them: a discarded
+  // filter changes what the search returns with no error (a wrong flag name
+  // once returned an entire portal's database as if it matched the query).
+  // add-portal.md's contract requires a bogus flag to exit 1 with a JSON
+  // error on stderr.
+  const knownFlags = KNOWN_FLAGS[cmd]
+  if (knownFlags) {
+    for (const key of Object.keys(flags)) {
+      if (key === "_" || knownFlags.has(key)) continue
+      process.stderr.write(
+        JSON.stringify({
+          error: `unknown flag --${key} for '${cmd}' - flags are never silently ignored, because a discarded filter changes what the search returns; see --help for the supported flags`,
+          code: "UNKNOWN_FLAG",
+        }) + "\n",
+      )
+      return 1
+    }
   }
 
   if (cmd === "search") {

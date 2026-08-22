@@ -45,6 +45,15 @@ per-file diff commands.
 
 ### Changed
 
+- **BREAKING (scripts passing stray flags): all six portal CLIs reject unknown flags**
+  with exit 1 and `{"error", "code": "UNKNOWN_FLAG"}` on stderr, instead of silently
+  discarding them. A discarded filter changes what a search returns with no error - a
+  wrong flag name on jobdanmark returned the entire database (13,862 results, none
+  matching) as if it matched the query, and the six portals use four different names for
+  the free-text flag, so cross-portal guessing is likely. `add-portal.md` already
+  required contributed portals to exit 1 on a bogus flag; the reference CLIs now meet
+  their own bar. Pinned by nine new cases across the six `cli-flag-validation` suites.
+
 - **`/add-portal` now specifies how a generated skill handles an API token** (#304) - the command
   could already scaffold a skill for a portal reachable only through a paid fetching
   service, but said nothing about the credential such a skill needs. It now checks for that
