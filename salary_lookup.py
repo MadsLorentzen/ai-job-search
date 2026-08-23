@@ -43,7 +43,102 @@ STRIP_PATTERNS = [
 ]
 
 
-def load_data():
+def fail_data_error(message):
+    """Exit with a user-facing salary data setup error."""
+    print(f"Error: invalid salary_data.json: {message}", file=sys.stderr)
+    print("", file=sys.stderr)
+    print("See tools/README_SALARY_TOOL.md for the expected format.", file=sys.stderr)
+    sys.exit(1)
+
+
+def collect_validation_issues(data):
+    """Return (errors, warnings) for the salary data shape.
+
+    errors   -> hard problems that make lookups crash or emit wrong output
+                (these cause validate_data() to exit(1)).
+    warnings -> usability concerns that still work (e.g. duplicate company
+                names); --validate reports them but exits 0.
+    """
+    errors = []
+    warnings = []
+
+    if not isinstance(data, dict):
+        errors.append("top-level JSON value must be an object")
+        return errors, warnings
+
+    metadata = data.get("metadata", {})
+    if metadata is not None and not isinstance(metadata, dict):
+        errors.append("'metadata' must be an object when provided")
+
+    companies = data.get("companies")
+    if not isinstance(companies, list):
+        errors.append("'companies' must be a list")
+        return errors, warnings
+
+    seen_companies = {}
+    for index, entry in enumerate(companies, start=1):
+        if not isinstance(entry, dict):
+            errors.append(f"companies[{index}] must be an object")
+            continue
+
+        company = entry.get("company")
+        if not isinstance(company, str) or not company.strip():
+            errors.append(f"companies[{index}].company must be a non-empty string")
+        else:
+            key = company.lower()
+            if key in seen_companies:
+                warnings.append(
+                    f"Duplicate company name '{company}' "
+                    f"(companies[{seen_companies[key]}] and companies[{index}])"
+                )
+            else:
+                seen_companies[key] = index
+
+        city = entry.get("city")
+        if city is not None and not isinstance(city, str):
+            errors.append(f"companies[{index}].city must be a string when provided")
+
+        categories = entry.get("categories", {})
+        if categories is not None and not isinstance(categories, dict):
+            errors.append(f"companies[{index}].categories must be an object when provided")
+        elif categories:
+            for cat_label, cat_data in categories.items():
+                if not isinstance(cat_data, dict):
+                    errors.append(
+                        f"companies[{index}].categories.{cat_label} must be an object "
+                        f"with 'count' and/or 'index' (got {type(cat_data).__name__})"
+                    )
+                    continue
+                count = cat_data.get("count")
+                if count is not None and not isinstance(count, (int, float)):
+                    errors.append(
+                        f"companies[{index}].categories.{cat_label}.count must be a "
+                        f"number (got {type(count).__name__})"
+                    )
+                index_val = cat_data.get("index")
+                if index_val is not None and not isinstance(index_val, (int, float, str)):
+                    errors.append(
+                        f"companies[{index}].categories.{cat_label}.index must be a "
+                        f"number or string (got {type(index_val).__name__})"
+                    )
+
+    return errors, warnings
+
+
+def validate_data(data):
+    """Validate the salary data shape before lookups use it.
+
+    Preserves historical behavior: exits(1) on the first hard error with the
+    same user-facing message, and returns data unchanged when valid.
+    """
+    errors, _ = collect_validation_issues(data)
+    if errors:
+        fail_data_error(errors[0])
+    return data
+
+
+def read_raw_data():
+    """Load and JSON-parse salary_data.json; exit with a helpful message if missing/invalid."""
     if not DATA_FILE.exists():
         print("Error: salary_data.json not found.", file=sys.stderr)
         print("", file=sys.stderr)
@@ -53,8 +148,17 @@ def load_data():
         print("If you don't have salary data, the salary lookup", file=sys.stderr)
         print("step will be skipped during /apply.", file=sys.stderr)
         sys.exit(1)
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except json.JSONDecodeError as exc:
+        fail_data_error(f"invalid JSON at line {exc.lineno}, column {exc.colno}: {exc.msg}")
+    return data
+
+
+def load_data():
+    """Load, parse, and validate salary_data.json for lookups."""
+    return validate_data(read_raw_data())
 
 
 def normalize(s):
@@ -83,9 +187,8 @@ def extract_core_words(s):
     return [w for w in words if len(w) > 1]
 
 
-def match_score(query, entry_name):
-    """Compute a match score between 0 and 100 for ranking results."""
-    q_norm = normalize(query)
+def match_score_optimized(q_norm, q_ang, q_words_set, q_words_ang_set, query, entry_name):
+    """Compute a match score between 0 and 100 using precalculated query values."""
     n_norm = normalize(entry_name)
 
     if not q_norm or not n_norm:
@@ -97,9 +200,8 @@ def match_score(query, entry_name):
     if q_norm in n_norm:
         ratio = len(q_norm) / len(n_norm)
         if len(q_norm) <= 4 and ratio < 0.5:
-            q_words = set(extract_core_words(query))
             n_words = set(extract_core_words(entry_name))
-            if not q_words & n_words:
+            if not q_words_set & n_words:
                 pass
             else:
                 return 80 + int(ratio * 10)
@@ -112,7 +214,6 @@ def match_score(query, entry_name):
         else:
             return 80 + int(ratio * 10)
 
-    q_ang = anglicize(q_norm)
     n_ang = anglicize(n_norm)
     if q_ang == n_ang:
         return 85
@@ -120,36 +221,43 @@ def match_score(query, entry_name):
         shorter = min(len(q_ang), len(n_ang))
         longer = max(len(q_ang), len(n_ang))
         if shorter <= 4 and shorter / longer < 0.5:
-            q_words_ang = {anglicize(w) for w in extract_core_words(query)}
             n_words_ang = {anglicize(w) for w in extract_core_words(entry_name)}
-            if q_words_ang & n_words_ang:
+            if q_words_ang_set & n_words_ang:
                 return 75
         else:
             return 75
 
-    q_words = set(extract_core_words(query))
     n_words = set(extract_core_words(entry_name))
-    if not q_words or not n_words:
+    if not q_words_set or not n_words:
         return 0
 
-    overlap = q_words & n_words
+    overlap = q_words_set & n_words
     if not overlap:
-        q_words_ang = {anglicize(w) for w in q_words}
         n_words_ang = {anglicize(w) for w in n_words}
-        overlap = q_words_ang & n_words_ang
+        overlap = q_words_ang_set & n_words_ang
 
     if overlap:
-        if len(q_words) == 1:
-            q_word = list(q_words)[0]
+        if len(q_words_set) == 1:
+            q_word = list(q_words_set)[0]
             if q_word in n_words or anglicize(q_word) in {anglicize(w) for w in n_words}:
                 return 70
             else:
                 return 0
 
-        coverage = len(overlap) / len(q_words)
+        coverage = len(overlap) / len(q_words_set)
         return int(30 + coverage * 40)
 
     return 0
+
+
+def match_score(query, entry_name):
+    """Compute a match score between 0 and 100 for ranking results."""
+    q_norm = normalize(query)
+    q_ang = anglicize(q_norm)
+    q_words = extract_core_words(query)
+    q_words_set = set(q_words)
+    q_words_ang_set = {anglicize(w) for w in q_words}
+    return match_score_optimized(q_norm, q_ang, q_words_set, q_words_ang_set, query, entry_name)
 
 
 def search_company(data, query, city=None):
@@ -157,14 +265,21 @@ def search_company(data, query, city=None):
     companies = data.get("companies", [])
     scored = []
 
+    # Pre-calculate query representations once to avoid redundant computations inside the loop
+    q_norm = normalize(query)
+    q_ang = anglicize(q_norm)
+    q_words = extract_core_words(query)
+    q_words_set = set(q_words)
+    q_words_ang_set = {anglicize(w) for w in q_words}
+
     for entry in companies:
         if city:
             city_lower = city.lower()
-            entry_city = entry.get("city", "").lower()
+            entry_city = (entry.get("city") or "").lower()
             if city_lower not in entry_city and anglicize(city_lower) not in anglicize(entry_city):
                 continue
 
-        score = match_score(query, entry["company"])
+        score = match_score_optimized(q_norm, q_ang, q_words_set, q_words_ang_set, query, entry["company"])
         if score > 0:
             scored.append((score, entry))
 
@@ -204,12 +319,18 @@ def format_entry(entry, metadata):
             count = data.get("count")
             index = data.get("index")
             if count is not None or index is not None:
-                count_str = str(count) if count else "-"
-                if index is not None:
-                    diff = index - baseline
-                    sign = "+" if diff >= 0 else ""
+                count_str = str(count) if count is not None else "-"
+                if isinstance(index, (int, float)):
                     index_str = f"{index:.1f}"
-                    diff_str = f"{sign}{diff:.1f}%"
+                    if baseline == 0:
+                        diff_str = ""
+                    else:
+                        diff_pct = ((index - baseline) / baseline) * 100
+                        sign = "+" if diff_pct >= 0 else ""
+                        diff_str = f"{sign}{diff_pct:.1f}%"
+                elif index is not None:
+                    index_str = str(index)
+                    diff_str = ""
                 else:
                     index_str = "N/A*"
                     diff_str = ""
@@ -231,13 +352,44 @@ def format_entry(entry, metadata):
     return "\n".join(lines)
 
 
+def print_validation_report(errors, warnings):
+    """Print an actionable validation report. Returns the process exit code."""
+    if not errors and not warnings:
+        print("OK - no issues found.")
+        return 0
+    print(f"Found {len(errors) + len(warnings)} issue(s):")
+    if errors:
+        print("  Errors:")
+        for i, msg in enumerate(errors, start=1):
+            print(f"    [{i}] {msg}")
+    if warnings:
+        print("  Warnings:")
+        for i, msg in enumerate(warnings, start=1):
+            print(f"    [{i}] {msg}")
+    if errors:
+        print("")
+        print("Fix the errors above, then re-run. See tools/README_SALARY_TOOL.md "
+              "for the expected format.")
+        return 1
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Salary Benchmark Lookup")
     parser.add_argument("company", nargs="?", help="Company name to search for")
     parser.add_argument("--city", help="Filter by city name")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     parser.add_argument("--list-all", action="store_true", help="List all companies")
+    parser.add_argument("--validate", action="store_true",
+                        help="Validate salary_data.json and print a report, then exit")
     args = parser.parse_args()
+
+    if args.validate:
+        data = read_raw_data()
+        errors, warnings = collect_validation_issues(data)
+        print(f"Validating {DATA_FILE.name} ...")
+        print("")
+        sys.exit(print_validation_report(errors, warnings))
 
     data = load_data()
     metadata = data.get("metadata", {})

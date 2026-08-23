@@ -6,8 +6,10 @@
       "Bash(bun run:*)",
       "Bash(bun test:*)",
       "Bash(bun install)",
+      "Bash(bunx playwright:*)",
       "Bash(python salary_lookup.py:*)",
-      "Bash(python3 salary_lookup.py:*)"
+      "Bash(python3 salary_lookup.py:*)",
+      "Bash(pdftotext:*)"
     ]
   }
 }

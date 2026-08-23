@@ -1,0 +1,85 @@
+# Weekly upstream triage. Reports only - it NEVER merges, pushes, or edits code.
+#
+# It fetches the upstream template, runs tools/upstream_triage.py to sort the
+# commits this fork lacks into "worth reviewing" vs "probably skip" (dropping
+# cherry-picks already applied and changes that only touch files this fork
+# removed), and writes the result into a single rolling issue. You read it and
+# port anything worth porting by hand.
+#
+# The report/act boundary is deliberate and load-bearing: the report stops at
+# ready-to-run cherry-pick lines and never opens a draft PR or merges. On a
+# fork "applies cleanly" is not "correct" - a commit for portals the fork
+# dropped can cherry-pick fine and still be wrong, and that silent-wrong case
+# is worse than a conflict. Merges stay a human decision, the same posture
+# /apply keeps (it drafts, never submits). Keep it that way.
+#
+# This is the commit-level companion to tools/check_upstream_updates.py, which
+# tracks personalized-file version stamps. Two tools, two questions.
+#
+# Runs only on forks (guarded below), so the upstream template never triggers
+# it against itself - GitHub also leaves inherited workflows disabled on a fork
+# until the owner enables Actions, so the guard is a second fence, not the only
+# one. Token is the built-in GITHUB_TOKEN, scoped to reading contents and
+# writing issues in this repo only: the digest can never be written outside the
+# fork.
+
+name: Upstream watch
+
+on:
+  schedule:
+    - cron: "0 8 * * 1" # 08:00 UTC every Monday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    name: Triage upstream commits
+    # No-op on the upstream template itself. Pinned by
+    # tests/test_upstream_triage.py so a template clone never runs it by surprise.
+    if: github.repository != 'MadsLorentzen/ai-job-search'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch upstream template
+        run: |
+          git remote add upstream https://github.com/MadsLorentzen/ai-job-search.git 2>/dev/null || true
+          git fetch --quiet upstream master
+
+      - name: Build triage report
+        run: |
+          {
+            echo "_Last checked: $(date -u '+%Y-%m-%d %H:%M UTC') · [run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})_"
+            echo
+            python tools/upstream_triage.py --remote upstream --branch master
+          } > report.md
+          cat report.md
+
+      - name: Open or update the rolling issue
+        env:
+          # Built-in token is scoped to this repo only, so the digest can never
+          # be written outside the fork.
+          GH_TOKEN: ${{ github.token }}
+          # Pin to this fork. Without it, the `upstream` git remote added above
+          # makes gh's remote resolution target the base repo, so the digest
+          # would land on upstream's tracker instead of the fork's.
+          GH_REPO: ${{ github.repository }}
+        run: |
+          title="Upstream sync watch"
+          existing=$(gh issue list --state open --search "in:title \"$title\"" \
+            --json number,title --jq ".[] | select(.title==\"$title\") | .number" | head -n1)
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body-file report.md
+            echo "Updated issue #$existing"
+          else
+            gh issue create --title "$title" --body-file report.md
+            echo "Created a new rolling issue"
+          fi

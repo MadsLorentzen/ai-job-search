@@ -1,0 +1,12 @@
+# Upstream commits this fork has consciously decided never to port.
+# tools/upstream_triage.py skips anything listed here so it stops re-surfacing
+# in the weekly Upstream watch report. One SHA per line (short or full); text
+# after # is a note.
+#
+# Only for commits you've reviewed and rejected on purpose. Commits you DO
+# port drop off automatically once cherry-picked (patch-id match), so they
+# never need an entry here. Likewise commits that only touch files your fork
+# removed are auto-skipped - you don't need to list those either.
+#
+# This ships empty on the template. Populate it in your own fork, e.g.:
+#   cffacfd   # Danish demo portals - my fork removed them on purpose

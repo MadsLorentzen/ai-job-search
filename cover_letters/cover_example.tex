@@ -1,0 +1,61 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cover Letter - [Company], [Role]
+%
+% Example cover letter with placeholder content. This is the structural
+% reference for /apply (see 06-cover-letter-templates.md) and the CI smoke
+% test for cover.cls: it must always compile with xelatex to exactly 1 page.
+% It demonstrates the correct itemize pattern: the list sits OUTSIDE
+% \lettercontent{} (whose trailing \\ errors on \end{itemize}) and is
+% wrapped in Raleway-Medium so the bullet font matches the body.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[]{cover}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\rfoot{Page \thepage \hspace{0pt}}
+\thispagestyle{empty}
+\renewcommand{\headrulewidth}{0pt}
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     TITLE NAME
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\namesection{}{\Huge{[YOUR NAME]}}{  \href{mailto:your.email@example.com}{your.email@example.com} | [+XX XXXXXXXXXX] |  \urlstyle{same}\href{https://www.linkedin.com/in/yourprofile}{LinkedIn}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     MAIN COVER LETTER CONTENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\currentdate{\today}
+\lettercontent{Dear [Hiring Manager / Team],}
+
+\lettercontent{[Opening paragraph: name the role and where you found it, state your strongest connection to it in one sentence, and preview why you are a fit. Keep it to 2--3 sentences.]}
+
+\lettercontent{[Body paragraph: your most relevant experience, framed toward the tasks in the posting. Follow with 3--5 concrete bullets:]}
+
+{\raggedright\fontspec[Path = OpenFonts/fonts/raleway/]{Raleway-Medium}\fontsize{11pt}{13pt}\selectfont
+\begin{itemize}
+    \item \textbf{[Achievement 1]:} [concrete result with a number where possible]
+    \item \textbf{[Achievement 2]:} [skill or project mapped to a posting requirement]
+    \item \textbf{[Achievement 3]:} [evidence for a nice-to-have requirement]
+\end{itemize}\par}
+\vspace{6pt}
+
+\lettercontent{[Connection paragraph: why this company specifically. Reference a verified specific: a product, a stated priority, a team. Never generic.]}
+
+\lettercontent{[Personal fit paragraph: behavioral strengths and what you bring to the team, 2--3 sentences.]}
+
+\lettercontent{I look forward to hearing from you.}
+
+\begin{flushright}
+% Note: no trailing \\ inside \closing{} - cover.cls appends its own \\, and a
+% doubled break triggers "There's no line here to end."
+\closing{Kind regards,}
+
+\signature{[YOUR NAME]}
+\end{flushright}
+\end{document}
