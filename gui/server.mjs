@@ -9,15 +9,19 @@ import { readFile } from "node:fs/promises";
 import { dirname, extname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
+  buildClaudeArgs,
+  chromeEnabled,
   extractHttpsUrls,
   getClaudeHealth,
+  loadDeskSession,
   loginNeedsCode,
   loginSucceeded,
+  saveDeskSession,
   spawnClaude,
   spawnOfficialInstall,
   spawnSubscriptionLogin,
 } from "./claude.mjs";
-import { CHROME_EXTENSION_URL, CLAUDE_AI_URL, CLAUDE_PRICING_URL } from "./defaults.mjs";
+import { CHROME_EXTENSION_URL, CLAUDE_AI_URL, CLAUDE_PRICING_URL, DESK_SESSION_NAME } from "./defaults.mjs";
 
 const IS_WIN = process.platform === "win32";
 const IS_MAC = process.platform === "darwin";
@@ -47,7 +51,11 @@ function send(event, data) {
 }
 
 function snapshot() {
-  return { sessionId, busy };
+  return {
+    sessionId,
+    busy,
+    chromeGroup: chromeEnabled() ? DESK_SESSION_NAME : null,
+  };
 }
 
 function extractText(message) {
@@ -83,7 +91,8 @@ function handleStreamLine(line) {
 
   if (typeof event.session_id === "string") {
     sessionId = event.session_id;
-    send("session", { sessionId });
+    saveDeskSession(workspace, sessionId);
+    send("session", { sessionId, chromeGroup: snapshot().chromeGroup });
   }
 
   if (event.type === "system" && event.subtype === "init") {
@@ -208,24 +217,23 @@ function runClaude(prompt) {
     return;
   }
 
-  const args = [
-    "--dangerously-skip-permissions",
-    "-p",
-    prompt,
-    "--output-format",
-    "stream-json",
-    "--verbose",
-    "--include-partial-messages",
-  ];
-  if (process.env.JOB_SEARCH_CLAUDE_CHROME === "1") args.unshift("--chrome");
-  if (sessionId) args.push("--resume", sessionId);
+  const args = buildClaudeArgs(prompt, { sessionId });
 
   busy = true;
   streamedText = false;
-  send("status", { text: sessionId ? "Continuing the conversation" : "Opening a new Claude session" });
+  send("status", {
+    text: sessionId
+      ? `Continuing in the ${DESK_SESSION_NAME} Chrome group`
+      : `Opening the ${DESK_SESSION_NAME} Chrome group`,
+  });
   send("user", { text: prompt });
 
   child = spawnClaude(args, { cwd: workspace, detached: !IS_WIN });
+  try {
+    child.stdin?.write("\n");
+  } catch {
+    // Print mode does not need stdin. This only dismisses a first-run Chrome prompt.
+  }
 
   let buffer = "";
   child.stdout.on("data", (chunk) => {
@@ -364,8 +372,7 @@ function createDeskServer() {
     }
 
     if (req.method === "POST" && url.pathname === "/reset") {
-      stopClaude("Starting a new conversation");
-      sessionId = null;
+      stopClaude("View cleared. The Chrome group stays with this desk.");
       send("reset", {});
       send("idle", snapshot());
       json(res, 200, { ok: true });
@@ -416,6 +423,7 @@ function openBrowser(href) {
 
 export function startDesk(options = {}) {
   workspace = options.root || process.env.JOB_SEARCH_ROOT || join(HERE, "..");
+  sessionId = loadDeskSession(workspace);
   const open = options.openBrowser ?? process.env.JOB_SEARCH_GUI_NO_BROWSER !== "1";
   const server = createDeskServer();
 

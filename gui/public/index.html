@@ -2,24 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Job search desk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0b09">
+  <meta name="color-scheme" content="dark">
+  <title>Job Search Desk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&family=Fraunces:ital,opsz,wght@0,9..144,360;0,9..144,520;0,9..144,700;1,9..144,360&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/desk.css">
 </head>
-<body class="gated">
-  <div id="gate" class="gate">
+<body>
+  <a class="skip" href="#prompt">Skip to composer</a>
+  <div class="atmosphere" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="workline" aria-hidden="true"></div>
+
+  <div id="gate" class="gate" hidden inert aria-hidden="true">
     <div class="gate-card">
+      <p class="mark" aria-hidden="true">D</p>
       <p class="brand">Desk</p>
       <p class="brand-sub">Connect Claude</p>
       <h2 id="gate-title">One button to start</h2>
       <p id="gate-copy">Use the same Claude account you already use in Chrome. The desk installs Claude Code if needed, then opens the claude.ai login.</p>
+      <ol class="gate-steps" aria-label="What this button does">
+        <li>Install Claude Code if it is missing</li>
+        <li>Sign in with your Chrome Claude subscription</li>
+        <li>Open the conversation</li>
+      </ol>
       <pre id="gate-log" class="gate-log" hidden></pre>
       <label id="gate-code-wrap" hidden>
         <span>Paste the login code from the browser</span>
-        <input id="gate-code" type="text" autocomplete="one-time-code">
+        <input id="gate-code" type="text" autocomplete="one-time-code" spellcheck="false">
       </label>
       <div class="empty-actions">
         <button type="button" id="gate-action">Start desk</button>
@@ -28,9 +42,18 @@
       </div>
     </div>
   </div>
-  <aside class="dock">
-    <p class="brand">Desk</p>
-    <p class="brand-sub">US job search</p>
+
+  <div id="scrim" class="scrim" hidden></div>
+
+  <aside class="dock" id="dock">
+    <header class="dock-head">
+      <p class="mark" aria-hidden="true">D</p>
+      <div>
+        <p class="brand">Desk</p>
+        <p class="brand-sub">US job search</p>
+      </div>
+    </header>
+    <p class="dock-rule" aria-hidden="true">The day’s work</p>
     <nav class="steps" aria-label="Workflow">
       <button type="button" data-action="setup">
         <span class="n">01</span>
@@ -84,17 +107,24 @@
     </nav>
     <div class="dock-foot">
       <p>Same conversation as the CLI. Talk in plain English, or use a step.</p>
-      <p class="tiny" id="account-label">localhost only · skip-permissions</p>
+      <p class="account" id="account-label">localhost only</p>
     </div>
   </aside>
 
   <main class="stage">
     <header class="bar">
-      <div>
-        <h1>Conversation</h1>
-        <p id="session-label">New session</p>
+      <div class="bar-identity">
+        <button type="button" id="menu" class="menu" aria-expanded="false" aria-controls="dock">
+          Steps
+        </button>
+        <div>
+          <p class="kicker">Workspace</p>
+          <h1>Conversation</h1>
+          <p id="session-label" class="session">New session</p>
+        </div>
       </div>
       <div class="bar-actions">
+        <time id="clock" class="clock" datetime=""></time>
         <button type="button" id="stop" hidden>Stop</button>
         <button type="button" id="reset" class="ghost">New chat</button>
       </div>
@@ -102,19 +132,31 @@
 
     <section id="log" class="log" aria-live="polite">
       <div class="empty" id="empty">
+        <p class="kicker">Ready when you are</p>
         <h2>Start wherever you are.</h2>
-        <p>First day in this repo? Run <strong>Setup</strong>. Profile already filled? <strong>Scrape</strong> for roles, then talk to Claude the same way you would in the terminal.</p>
+        <p>First day in this repo? Run <strong>Setup</strong>. Profile already filled? <strong>Scrape</strong> for roles, then talk the same way you would in the terminal.</p>
         <div class="empty-actions">
           <button type="button" data-action="setup">Start with setup</button>
           <button type="button" data-action="scrape" class="ghost">I am already set up</button>
         </div>
+        <div class="suggestions" aria-label="Suggested starts">
+          <button type="button" data-prompt="Which of these roles should I prioritize this week?">Prioritize this week</button>
+          <button type="button" data-action="rank">Rank what we have</button>
+          <button type="button" data-action="interview">Prep for an interview</button>
+        </div>
       </div>
     </section>
 
+    <button type="button" id="jump" class="jump" hidden>Latest</button>
+
     <footer class="composer">
-      <p id="status" class="status">Ready</p>
+      <div class="composer-meta">
+        <p id="status" class="status" aria-live="polite">Ready</p>
+        <p class="hint">Enter to send · Shift+Enter for a line · / to focus</p>
+      </div>
       <form id="compose">
-        <textarea id="prompt" rows="3" placeholder="Ask anything. Enter to send, Shift+Enter for a new line."></textarea>
+        <label class="sr-only" for="prompt">Message</label>
+        <textarea id="prompt" rows="2" placeholder="Ask anything about the search, a posting, or the next document."></textarea>
         <button type="submit" id="send">Send</button>
       </form>
     </footer>
@@ -122,13 +164,14 @@
 
   <dialog id="sheet" class="sheet">
     <form method="dialog" id="sheet-form">
+      <p class="kicker" id="sheet-kicker">Command</p>
       <h2 id="sheet-title">Apply</h2>
       <p id="sheet-copy"></p>
       <label id="focus-wrap" hidden>
         <span>Optional focus</span>
         <input id="focus" type="text" placeholder="defense, healthcare, remote staff…">
       </label>
-      <label>
+      <label id="url-wrap">
         <span>Job URL</span>
         <input id="job-url" type="url" placeholder="https://job-boards.greenhouse.io/…">
       </label>

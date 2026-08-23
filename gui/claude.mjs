@@ -3,11 +3,11 @@
  * install / claude.ai login flows. Used by the localhost desk and the app.
  */
 import { execFile, execFileSync, spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { delimiter, join } from "node:path";
 import { promisify } from "node:util";
-import { CLAUDE_INSTALL_PS1, CLAUDE_INSTALL_SH } from "./defaults.mjs";
+import { CLAUDE_INSTALL_PS1, CLAUDE_INSTALL_SH, DESK_SESSION_NAME } from "./defaults.mjs";
 
 const execFileAsync = promisify(execFile);
 const IS_WIN = process.platform === "win32";
@@ -37,6 +37,14 @@ function candidateNames(name) {
   return [name, `${name}.cmd`, `${name}.exe`, `${name}.bat`];
 }
 
+function windowsRunnable(found) {
+  if (!IS_WIN || /\.(cmd|exe|bat)$/i.test(found)) return found;
+  for (const ext of [".cmd", ".exe", ".bat"]) {
+    if (existsSync(`${found}${ext}`)) return `${found}${ext}`;
+  }
+  return found;
+}
+
 export function resolveCommand(name, env = process.env) {
   if (env.CLAUDE_BIN && name === "claude") return env.CLAUDE_BIN;
 
@@ -48,8 +56,9 @@ export function resolveCommand(name, env = process.env) {
     })
       .split(/\r?\n/)
       .map((line) => line.trim())
-      .find(Boolean);
-    if (found) return found;
+      .filter(Boolean);
+    const preferred = found.find((line) => /\.(cmd|exe|bat)$/i.test(line)) || found[0];
+    if (preferred) return windowsRunnable(preferred);
   } catch {
     // Packaged Electron often has a PATH that never saw the Claude installer.
   }
@@ -66,6 +75,14 @@ export function resolveCommand(name, env = process.env) {
 export function commandLooksInstalled(command) {
   if (!command || command === "claude") return false;
   return existsSync(command);
+}
+
+export function needsInstall(health) {
+  return Boolean(health) && health.installed === false && !health.error;
+}
+
+export function needsLogin(health) {
+  return Boolean(health?.installed && health.loggedIn === false && !health.error);
 }
 
 export function parseAuthStatus(raw) {
@@ -111,6 +128,46 @@ function useShell(command) {
   return IS_WIN && /\.(cmd|bat)$/i.test(command);
 }
 
+export function chromeEnabled(env = process.env) {
+  return env.JOB_SEARCH_CLAUDE_CHROME !== "0";
+}
+
+export function deskSessionPath(root) {
+  return join(root, ".claude", "desk-session.json");
+}
+
+export function loadDeskSession(root) {
+  try {
+    const data = JSON.parse(readFileSync(deskSessionPath(root), "utf8"));
+    return typeof data.sessionId === "string" && data.sessionId ? data.sessionId : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveDeskSession(root, id) {
+  mkdirSync(join(root, ".claude"), { recursive: true });
+  writeFileSync(deskSessionPath(root), `${JSON.stringify({ sessionId: id, name: DESK_SESSION_NAME }, null, 2)}\n`);
+}
+
+export function buildClaudeArgs(prompt, { sessionId = null, chrome = chromeEnabled(), name = DESK_SESSION_NAME } = {}) {
+  const args = [];
+  if (chrome) args.push("--chrome");
+  args.push(
+    "--dangerously-skip-permissions",
+    "--name",
+    name,
+    "-p",
+    prompt,
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--include-partial-messages",
+  );
+  if (sessionId) args.push("--resume", sessionId);
+  return args;
+}
+
 export function spawnClaude(args, { cwd, env, detached = false } = {}) {
   const command = resolveCommand("claude", env);
   return spawn(command, args, {
@@ -147,15 +204,22 @@ export async function getClaudeHealth(cwd) {
     });
     return { ...empty, installed: true, claude, ...parseAuthStatus(stdout) };
   } catch (err) {
-    const stdout = String(err.stdout || "");
-    if (stdout.trim().startsWith("{")) {
-      try {
-        return { ...empty, installed: true, claude, ...parseAuthStatus(stdout) };
-      } catch {
-        // Fall through to a logged-out result.
+    for (const raw of [String(err.stdout || ""), String(err.stderr || "")]) {
+      if (raw.trim().startsWith("{")) {
+        try {
+          return { ...empty, installed: true, claude, ...parseAuthStatus(raw) };
+        } catch {
+          // Try the other stream before treating status as unknown.
+        }
       }
     }
-    return { ...empty, installed: true, claude, error: err.message };
+    return {
+      ...empty,
+      installed: true,
+      claude,
+      loggedIn: null,
+      error: err.message,
+    };
   }
 }
 

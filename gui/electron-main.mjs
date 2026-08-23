@@ -51,13 +51,14 @@ async function openDesk(root) {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1180,
-    height: 800,
-    minWidth: 860,
-    minHeight: 600,
-    backgroundColor: "#14110e",
+    width: 1280,
+    height: 860,
+    minWidth: 920,
+    minHeight: 640,
+    backgroundColor: "#100e0b",
     title: "Job Search Desk",
     autoHideMenuBar: true,
+    show: false,
     webPreferences: {
       preload: join(HERE, "preload.mjs"),
       contextIsolation: true,
@@ -65,6 +66,7 @@ function createWindow() {
       sandbox: true,
     },
   });
+  mainWindow.once("ready-to-show", () => mainWindow.show());
   mainWindow.on("closed", () => {
     mainWindow = null;
   });

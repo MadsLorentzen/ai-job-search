@@ -4,12 +4,18 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
+  buildClaudeArgs,
+  chromeEnabled,
   commandLooksInstalled,
   extractHttpsUrls,
   isJobSearchWorkspace,
+  loadDeskSession,
   loginNeedsCode,
   loginSucceeded,
+  needsInstall,
+  needsLogin,
   parseAuthStatus,
+  saveDeskSession,
   withClaudePath,
 } from "../claude.mjs";
 
@@ -32,6 +38,16 @@ test("parseAuthStatus treats logged-out JSON as signed out", () => {
   assert.equal(status.loggedIn, false);
   assert.equal(status.usesClaudeAi, false);
   assert.equal(status.authMethod, "");
+});
+
+test("needsLogin only when Claude reports signed out", () => {
+  assert.equal(needsLogin({ installed: true, loggedIn: false }), true);
+  assert.equal(needsLogin({ installed: true, loggedIn: true }), false);
+  assert.equal(needsLogin({ installed: true, loggedIn: false, error: "spawn ENOENT" }), false);
+  assert.equal(needsLogin({ installed: true, loggedIn: null, error: "timeout" }), false);
+  assert.equal(needsLogin({ installed: false, loggedIn: false }), false);
+  assert.equal(needsInstall({ installed: false, loggedIn: false }), true);
+  assert.equal(needsInstall({ installed: false, error: "where failed" }), false);
 });
 
 test("extractHttpsUrls keeps login links and drops trailing punctuation", () => {
@@ -62,4 +78,24 @@ test("commandLooksInstalled rejects a bare command name", () => {
 test("withClaudePath prepends extra bin dirs", () => {
   const env = withClaudePath({ PATH: "/usr/bin", HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE });
   assert.match(env.PATH, /\.local/);
+});
+
+test("buildClaudeArgs keeps Chrome and one named session", () => {
+  const first = buildClaudeArgs("/scrape", { chrome: true });
+  assert.equal(first[0], "--chrome");
+  assert.ok(first.includes("--name"));
+  assert.ok(first.includes("Job Search Desk"));
+  assert.equal(first.includes("--resume"), false);
+
+  const again = buildClaudeArgs("/apply", { sessionId: "abc-123", chrome: true });
+  assert.deepEqual(again.slice(-2), ["--resume", "abc-123"]);
+  assert.equal(chromeEnabled({ JOB_SEARCH_CLAUDE_CHROME: "0" }), false);
+  assert.equal(chromeEnabled({}), true);
+});
+
+test("desk session persists the same id", () => {
+  const root = mkdtempSync(join(tmpdir(), "desk-session-"));
+  assert.equal(loadDeskSession(root), null);
+  saveDeskSession(root, "session-one");
+  assert.equal(loadDeskSession(root), "session-one");
 });

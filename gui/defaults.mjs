@@ -10,3 +10,4 @@ export const CLAUDE_AI_URL = "https://claude.ai";
 export const CLAUDE_INSTALL_SH = "https://claude.ai/install.sh";
 export const CLAUDE_INSTALL_PS1 = "https://claude.ai/install.ps1";
 export const CLAUDE_PRICING_URL = "https://claude.com/pricing";
+export const DESK_SESSION_NAME = "Job Search Desk";

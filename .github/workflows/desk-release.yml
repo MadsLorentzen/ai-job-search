@@ -84,7 +84,7 @@ jobs:
 
             1. Install the app for your OS.
             2. Open an existing job-search folder, or create a new copy of the public repo.
-            3. Click **Start desk**. If Claude Code is missing, the app installs it. If you are signed out, it opens the same claude.ai login you use in Chrome.
+            3. The desk opens the conversation when you are already signed in. It only asks you to log in to Claude Code when `claude auth status` reports you are signed out. If Claude Code is missing, the app installs it, then uses the same claude.ai login you already use in Chrome.
             4. macOS: if Gatekeeper blocks the unsigned build, open it from Finder with right-click → Open.
 
             The app talks to your local Claude Code subscription. It does not replace `/setup` for your profile.

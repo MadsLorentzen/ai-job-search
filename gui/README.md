@@ -16,7 +16,7 @@ Then:
 
 1. Open the app.
 2. Open an existing job-search folder, or create a new copy of the public repo.
-3. Click **Start desk**. If Claude Code is not installed, that button runs Anthropic's official installer. If you are signed out, it opens the **claude.ai** login — the same Claude Pro / Max / Team / Enterprise account you use in Chrome.
+3. The desk opens the conversation if you are already signed in. It only asks you to sign in when Claude Code reports you are signed out. If Claude Code is missing, it offers Anthropic's official installer, then the **claude.ai** login: the same Claude Pro / Max / Team / Enterprise account you use in Chrome.
 4. Optional: install [Claude in Chrome](https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn) if you want the browser extension connected later.
 
 macOS Gatekeeper: the release is unsigned. In Finder, right-click the app → **Open**.
@@ -41,9 +41,11 @@ CLAUDE_BIN=/path/to/claude node gui/server.mjs
 
 The desk prefers Google Chrome, then the system default browser. It listens on `http://127.0.0.1:8765/`. The installable app uses the same page inside its own window.
 
+Claude in Chrome stays in **one tab group** named Job Search Desk. The desk turns Chrome integration on, names the Claude session, and resumes that session across turns and relaunches so new browser tabs join the same group instead of stacking orphans. New chat clears the page only. Set `JOB_SEARCH_CLAUDE_CHROME=0` to turn this off.
+
 ## How to use it
 
-1. **Start desk** if Claude Code is missing or you are signed out.
+1. Sign in only if the desk reports you are signed out. Install Claude Code only if it is missing.
 2. **Setup** if this clone has no profile yet.
 3. **Scrape**, then talk: "which of these are real Staff AI roles?"
 4. **Rank** when the table is too long.
