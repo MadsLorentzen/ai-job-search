@@ -76,7 +76,7 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
-      - uses: softprops/action-gh-release@72f3f1c3810bfd93131993b4adf18d1c046038bd # v2.2.1
+      - uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
           name: Job Search Desk ${{ github.ref_name }}
           body: |
