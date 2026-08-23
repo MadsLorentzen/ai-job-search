@@ -5,6 +5,7 @@
   "private": true,
   "type": "module",
   "description": "One-click desk for the AI job search repo. Works on macOS, Windows, and Linux.",
+  "author": "AI Job Search",
   "main": "electron-main.mjs",
   "scripts": {
     "start": "node server.mjs",
