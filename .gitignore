@@ -44,6 +44,11 @@ job_scraper/autofill_*.png
 *.jpeg
 *.png
 !cover_letters/OpenFonts/fonts/**
+!gui/build/icon.png
+
+# Desk app build output
+gui/release/
+gui/dist/
 
 # OS files
 .DS_Store

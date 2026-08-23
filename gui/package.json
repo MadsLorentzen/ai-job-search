@@ -1,0 +1,20 @@
+{
+  "name": "job-search-desk",
+  "productName": "Job Search Desk",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "One-click desk for the AI job search repo. Works on macOS, Windows, and Linux.",
+  "main": "electron-main.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "app": "electron .",
+    "test": "node --test tests/*.test.mjs",
+    "dist": "electron-builder --publish never",
+    "dist:dir": "electron-builder --dir --publish never"
+  },
+  "devDependencies": {
+    "electron": "^36.9.5",
+    "electron-builder": "^26.0.12"
+  }
+}

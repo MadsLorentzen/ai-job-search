@@ -15,6 +15,14 @@ per-file diff commands.
 
 ### Added
 
+- **Installable Job Search Desk** - GitHub Releases ship a one-click desktop app
+  (`gui/`, Electron) for macOS, Windows, and Linux. First launch picks or clones
+  the job-search folder. The desk installs Claude Code when it is missing and
+  runs `claude auth login --claudeai` so a new user can sign in with the same
+  Claude subscription they already use in Chrome. Local `node gui/server.mjs`
+  still works. Pinned by `gui/tests/claude.test.mjs` and
+  `.github/workflows/desk-release.yml` on `desk-v*` tags.
+
 - **Company-research cache for `/apply` and `/interview`** - `/apply` Step 3's reviewer
   agent and `/interview` Step 2 each independently execute the Company Research
   Checklist (`04-job-evaluation.md`) for the same company, so applying and later

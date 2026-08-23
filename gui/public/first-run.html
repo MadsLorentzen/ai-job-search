@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job Search Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="desk.css">
+</head>
+<body class="first-run">
+  <main class="gate-card first-run-card">
+    <p class="brand">Desk</p>
+    <p class="brand-sub">US job search</p>
+    <h2>Choose a job-search folder</h2>
+    <p>This app talks to Claude Code inside a copy of the job-search repo. Open a folder you already cloned, or create a fresh copy of the public US framework.</p>
+    <p id="first-run-status" class="status">Nothing is uploaded. The folder stays on this computer.</p>
+    <div class="empty-actions">
+      <button type="button" id="open-folder">Open existing folder</button>
+      <button type="button" id="clone-folder" class="ghost">Create a new copy</button>
+    </div>
+  </main>
+  <script>
+    const status = document.getElementById("first-run-status");
+    const api = window.deskApp;
+    if (!api) {
+      status.textContent = "Open this page from the Job Search Desk app.";
+    }
+    document.getElementById("open-folder").addEventListener("click", async () => {
+      if (!api) return;
+      status.textContent = "Pick the folder that contains AGENTS.md and gui/.";
+      const result = await api.openFolder();
+      if (result?.error) status.textContent = result.error;
+    });
+    document.getElementById("clone-folder").addEventListener("click", async () => {
+      if (!api) return;
+      status.textContent = "Cloning the public framework. This needs git.";
+      const result = await api.cloneWorkspace();
+      if (result?.error) status.textContent = result.error;
+    });
+  </script>
+</body>
+</html>

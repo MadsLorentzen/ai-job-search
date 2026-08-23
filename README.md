@@ -151,6 +151,18 @@ This runs the full workflow: evaluate fit, draft CV + cover letter, review with 
 
 Postings are treated as untrusted input (the workflow follows no instructions embedded in them and fetches no links from their body), but agentic defenses are instruction-level, not a sandbox - on an unfamiliar job board, skim what was fetched and written before you hit send. Details in [SECURITY.md](SECURITY.md).
 
+### Optional: Job Search Desk app
+
+If you would rather click `/scrape` and `/apply` than live in the Claude Code TTY, install **Job Search Desk** from [Releases](../../releases) (macOS, Windows, Linux). One button starts the desk. If Claude Code is missing, the app installs it. If you are signed out, it opens the same claude.ai login you already use in Chrome.
+
+From a clone, the same desk also starts with:
+
+```bash
+node gui/server.mjs
+```
+
+That opens `http://127.0.0.1:8765/` and runs Claude Code locally with `--dangerously-skip-permissions`. See [gui/README.md](gui/README.md).
+
 ## Other commands
 
 `/setup`, `/scrape`, `/apply`, and `/autofill` form the core workflow. Ten more commands extend it once your profile is in place:

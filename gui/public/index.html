@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job search desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,520;9..144,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/desk.css">
+</head>
+<body class="gated">
+  <div id="gate" class="gate">
+    <div class="gate-card">
+      <p class="brand">Desk</p>
+      <p class="brand-sub">Connect Claude</p>
+      <h2 id="gate-title">One button to start</h2>
+      <p id="gate-copy">Use the same Claude account you already use in Chrome. The desk installs Claude Code if needed, then opens the claude.ai login.</p>
+      <pre id="gate-log" class="gate-log" hidden></pre>
+      <label id="gate-code-wrap" hidden>
+        <span>Paste the login code from the browser</span>
+        <input id="gate-code" type="text" autocomplete="one-time-code">
+      </label>
+      <div class="empty-actions">
+        <button type="button" id="gate-action">Start desk</button>
+        <button type="button" id="gate-cancel" class="ghost" hidden>Cancel</button>
+        <a id="gate-chrome" class="ghost-link" href="https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn" target="_blank" rel="noreferrer">Optional: Claude in Chrome</a>
+      </div>
+    </div>
+  </div>
+  <aside class="dock">
+    <p class="brand">Desk</p>
+    <p class="brand-sub">US job search</p>
+    <nav class="steps" aria-label="Workflow">
+      <button type="button" data-action="setup">
+        <span class="n">01</span>
+        <span>
+          <strong>Setup</strong>
+          <em>Profile, once</em>
+        </span>
+      </button>
+      <button type="button" data-action="scrape">
+        <span class="n">02</span>
+        <span>
+          <strong>Scrape</strong>
+          <em>Find openings</em>
+        </span>
+      </button>
+      <button type="button" data-action="rank">
+        <span class="n">03</span>
+        <span>
+          <strong>Rank</strong>
+          <em>Score the pile</em>
+        </span>
+      </button>
+      <button type="button" data-action="apply">
+        <span class="n">04</span>
+        <span>
+          <strong>Apply</strong>
+          <em>CV + letter</em>
+        </span>
+      </button>
+      <button type="button" data-action="autofill">
+        <span class="n">05</span>
+        <span>
+          <strong>Autofill</strong>
+          <em>You submit</em>
+        </span>
+      </button>
+      <button type="button" data-action="interview">
+        <span class="n">06</span>
+        <span>
+          <strong>Interview</strong>
+          <em>Prep pack</em>
+        </span>
+      </button>
+      <button type="button" data-action="outcome">
+        <span class="n">07</span>
+        <span>
+          <strong>Outcome</strong>
+          <em>What happened</em>
+        </span>
+      </button>
+    </nav>
+    <div class="dock-foot">
+      <p>Same conversation as the CLI. Talk in plain English, or use a step.</p>
+      <p class="tiny" id="account-label">localhost only · skip-permissions</p>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <header class="bar">
+      <div>
+        <h1>Conversation</h1>
+        <p id="session-label">New session</p>
+      </div>
+      <div class="bar-actions">
+        <button type="button" id="stop" hidden>Stop</button>
+        <button type="button" id="reset" class="ghost">New chat</button>
+      </div>
+    </header>
+
+    <section id="log" class="log" aria-live="polite">
+      <div class="empty" id="empty">
+        <h2>Start wherever you are.</h2>
+        <p>First day in this repo? Run <strong>Setup</strong>. Profile already filled? <strong>Scrape</strong> for roles, then talk to Claude the same way you would in the terminal.</p>
+        <div class="empty-actions">
+          <button type="button" data-action="setup">Start with setup</button>
+          <button type="button" data-action="scrape" class="ghost">I am already set up</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="composer">
+      <p id="status" class="status">Ready</p>
+      <form id="compose">
+        <textarea id="prompt" rows="3" placeholder="Ask anything. Enter to send, Shift+Enter for a new line."></textarea>
+        <button type="submit" id="send">Send</button>
+      </form>
+    </footer>
+  </main>
+
+  <dialog id="sheet" class="sheet">
+    <form method="dialog" id="sheet-form">
+      <h2 id="sheet-title">Apply</h2>
+      <p id="sheet-copy"></p>
+      <label id="focus-wrap" hidden>
+        <span>Optional focus</span>
+        <input id="focus" type="text" placeholder="defense, healthcare, remote staff…">
+      </label>
+      <label>
+        <span>Job URL</span>
+        <input id="job-url" type="url" placeholder="https://job-boards.greenhouse.io/…">
+      </label>
+      <label id="paste-wrap">
+        <span>Or paste the posting</span>
+        <textarea id="job-text" rows="8" placeholder="Title, company, requirements…"></textarea>
+      </label>
+      <div class="sheet-actions">
+        <button type="submit" value="run" id="sheet-run">Run</button>
+        <button type="submit" value="cancel" class="ghost">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+  <script src="/desk.js"></script>
+</body>
+</html>

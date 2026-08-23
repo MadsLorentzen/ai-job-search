@@ -71,6 +71,22 @@ jobs:
           python-version: "3.12"
       - run: python -m unittest discover -s tests -t . -v
 
+  desk-tests:
+    name: Desk unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Run desk tests when present
+        run: |
+          if [ -d gui/tests ]; then
+            node --test gui/tests/*.test.mjs
+          else
+            echo "No gui/tests directory; skipping"
+          fi
+
   dependency-review:
     name: Dependency review
     # Requires the repo's Dependency graph, which not every repo (upstream or

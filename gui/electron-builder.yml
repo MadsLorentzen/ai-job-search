@@ -1,0 +1,38 @@
+appId: com.ai-job-search.desk
+productName: Job Search Desk
+copyright: AI Job Search
+asar: true
+directories:
+  output: release
+  buildResources: build
+files:
+  - claude.mjs
+  - defaults.mjs
+  - electron-main.mjs
+  - preload.mjs
+  - server.mjs
+  - package.json
+  - public/**/*
+extraMetadata:
+  main: electron-main.mjs
+win:
+  target:
+    - nsis
+    - portable
+  artifactName: JobSearchDesk-${version}-win-${arch}.${ext}
+nsis:
+  oneClick: true
+  perMachine: false
+  shortcutName: Job Search Desk
+mac:
+  category: public.app-category.productivity
+  identity: null
+  target:
+    - dmg
+    - zip
+  artifactName: JobSearchDesk-${version}-mac-${arch}.${ext}
+linux:
+  category: Office
+  target:
+    - AppImage
+  artifactName: JobSearchDesk-${version}-linux-${arch}.${ext}

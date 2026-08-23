@@ -1,0 +1,95 @@
+# Build the installable Job Search Desk for Windows, macOS, and Linux.
+# Tag desk-v1.0.0 (or later) to publish a GitHub Release.
+
+name: Desk release
+
+on:
+  push:
+    tags:
+      - "desk-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Desk unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - run: node --test gui/tests/*.test.mjs
+
+  build:
+    name: Build ${{ matrix.label }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: Windows
+            args: --win --x64
+          - os: macos-latest
+            label: macOS
+            args: --mac --universal
+          - os: ubuntu-latest
+            label: Linux
+            args: --linux --x64
+    defaults:
+      run:
+        working-directory: gui
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: gui/package-lock.json
+      - run: npm ci
+      - run: npx electron-builder ${{ matrix.args }} --publish never
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: desk-${{ matrix.label }}
+          path: |
+            gui/release/JobSearchDesk-*
+            gui/release/*.exe
+            gui/release/*.dmg
+            gui/release/*.zip
+            gui/release/*.AppImage
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/desk-v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@72f3f1c3810bfd93131993b4adf18d1c046038bd # v2.2.1
+        with:
+          name: Job Search Desk ${{ github.ref_name }}
+          body: |
+            Installable Job Search Desk for macOS, Windows, and Linux.
+
+            1. Install the app for your OS.
+            2. Open an existing job-search folder, or create a new copy of the public repo.
+            3. Click **Start desk**. If Claude Code is missing, the app installs it. If you are signed out, it opens the same claude.ai login you use in Chrome.
+            4. macOS: if Gatekeeper blocks the unsigned build, open it from Finder with right-click → Open.
+
+            The app talks to your local Claude Code subscription. It does not replace `/setup` for your profile.
+          files: |
+            artifacts/JobSearchDesk-*
+            artifacts/*.exe
+            artifacts/*.dmg
+            artifacts/*.zip
+            artifacts/*.AppImage
+          fail_on_unmatched_files: true
