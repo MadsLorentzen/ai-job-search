@@ -17,7 +17,7 @@
       {% if active_search %}<label class="workspace-switcher"><span>Search workspace</span><select aria-label="Search workspace" data-search-workspace-switcher>
         {% for workspace in search_workspaces if workspace.status == 'active' %}<option value="/search-workspaces/{{ workspace.id }}/discover" {% if workspace.id == active_search.id %}selected{% endif %}>{{ workspace.name }}</option>{% endfor %}
       </select></label><a href="/search-workspaces/{{ active_search.id }}/discover">Discover jobs</a><a href="/search-workspaces/{{ active_search.id }}/preferences">Search preferences</a>{% endif %}
-      <a href="/search-workspaces">Manage searches</a><a href="/profile">Evidence Profile</a>
+      <a href="/how-it-works">How it works</a><a href="/search-workspaces">Manage searches</a><a href="/profile">Evidence Profile</a>
       <a class="button button-small" href="/new-job">Add job</a>
     </nav>
   </header>

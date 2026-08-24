@@ -210,6 +210,16 @@ def new_job_page(
     )
 
 
+@router.get("/how-it-works", response_class=HTMLResponse)
+def how_it_works_page(
+    request: Request, conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
+    return request.app.state.templates.TemplateResponse(
+        request, "how_it_works.html", _search_context(conn, scope.account_id)
+    )
+
+
 @router.get("/search-workspaces", response_class=HTMLResponse)
 def search_workspaces_page(
     request: Request, conn: sqlite3.Connection = Depends(get_conn),

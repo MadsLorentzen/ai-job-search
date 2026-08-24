@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}How it works · Job Search Workspace{% endblock %}
+{% block content %}
+<section class="hero compact"><div><p class="eyebrow">Reference</p><h1>How this app works</h1>
+<p>Every application moves through the same pipeline. Each stage only unlocks once the one before it is current and, where relevant, you've made the decisions it's asking for.</p></div></section>
+
+<section class="panel"><h2>The pipeline</h2><ol class="how-it-works-pipeline">
+<li><h3>1. Evidence Profile</h3><p><strong>What it is:</strong> the verified facts about you — skills, experience, education, languages — pulled from your CV and other sources.</p><p><strong>Why it matters:</strong> everything the app writes about you must trace back to something here. Nothing is invented.</p><p><strong>What to do:</strong> set it up once, then keep it updated as your experience changes.</p></li>
+<li><h3>2. Find/Add Job</h3><p><strong>What it is:</strong> the job posting you're evaluating, either discovered through search or pasted in directly.</p><p><strong>Why it matters:</strong> it's the fixed source text every later stage compares your evidence against.</p><p><strong>What to do:</strong> add a posting to start a new application workspace.</p></li>
+<li><h3>3. Understanding</h3><p><strong>What it is:</strong> the requirements, responsibilities, and logistics extracted from the posting, each traceable back to an exact quote.</p><p><strong>Why it matters:</strong> Job Fit only ever compares against what was actually extracted here — not assumptions about the role.</p><p><strong>What to do:</strong> run it once the posting is saved; rerun it if the posting text changes.</p></li>
+<li><h3>4. Job Fit</h3><p><strong>What it is:</strong> a structured comparison of your Evidence Profile against the extracted requirements — direct matches, transferable experience, and gaps.</p><p><strong>Why it matters:</strong> this is the evidence basis for everything Application Intelligence writes next.</p><p><strong>What to do:</strong> review any flagged matches or questions it raises.</p></li>
+<li><h3>5. Application Intelligence</h3><p><strong>What it is:</strong> draft CV bullets and cover-letter wording, generated only from evidence Job Fit already accepted.</p><p><strong>Why it matters:</strong> it proposes wording, but never decides on your behalf what gets used.</p><p><strong>What to do:</strong> read the proposals; nothing is included until you review it.</p></li>
+<li><h3>6. Review</h3><p><strong>What it is:</strong> your decisions on every proposal, match, and flagged item — use it or leave it out.</p><p><strong>Why it matters:</strong> only what you explicitly approve here can become part of your application pack.</p><p><strong>What to do:</strong> work through the outstanding items until none remain.</p></li>
+<li><h3>7. Application Pack</h3><p><strong>What it is:</strong> the frozen, reviewed CV and cover-letter content, created once your reviewed material meets the minimum content requirements.</p><p><strong>Why it matters:</strong> creating it never submits anything — it only prepares the reviewed content for download.</p><p><strong>What to do:</strong> create it once your review queue is empty and the material is ready.</p></li>
+<li><h3>8. Download</h3><p><strong>What it is:</strong> the rendered CV and cover-letter documents from your confirmed pack.</p><p><strong>Why it matters:</strong> downloading is just retrieving the file — it still isn't submission.</p><p><strong>What to do:</strong> download and use them in your actual job application, wherever that happens.</p></li>
+<li><h3>9. Apply</h3><p><strong>What it is:</strong> you telling the app you actually submitted the application outside the tool.</p><p><strong>Why it matters:</strong> the app never assumes submission on your behalf — you mark it explicitly.</p><p><strong>What to do:</strong> mark applied once you've actually sent it.</p></li>
+<li><h3>10. Track outcome</h3><p><strong>What it is:</strong> the real-world result — interview, offer, rejection, and so on.</p><p><strong>Why it matters:</strong> keeps your pipeline view accurate.</p><p><strong>What to do:</strong> update the status as things happen.</p></li>
+</ol></section>
+
+<section class="panel"><h2>Status glossary</h2><table class="status-glossary"><thead><tr><th>Status</th><th>What it means</th></tr></thead><tbody>
+<tr><td>Current</td><td>Ready to run — nothing is blocking this stage.</td></tr>
+<tr><td>Stale / needs updating</td><td>Something it depended on changed since this result was created; it needs to be rerun before it can be trusted.</td></tr>
+<tr><td>Needs review</td><td>The system generated something but wants your explicit decision before it's used.</td></tr>
+<tr><td>Blocked / incomplete</td><td>This stage can't proceed yet — an earlier requirement (a decision, a rerun, a minimum amount of content) isn't satisfied.</td></tr>
+<tr><td>Ready</td><td>This meets every requirement to move forward.</td></tr>
+<tr><td>Historical pack</td><td>A CV/cover letter you confirmed previously. It stays downloadable even after later changes make new material stale or incomplete — confirming a new pack never happens automatically.</td></tr>
+<tr><td>Drafted</td><td>You've confirmed a reviewed application pack (Gate 4), but haven't told the app you actually submitted it yet.</td></tr>
+<tr><td>Applied</td><td>You've told the app you submitted this application outside the tool.</td></tr>
+</tbody></table></section>
+{% endblock %}
