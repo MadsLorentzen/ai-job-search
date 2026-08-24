@@ -400,6 +400,29 @@ def _run_to_intelligence(page, live_server) -> str:
     return workspace_url
 
 
+def _resolve_all_pending_reviews(page, disposition: str) -> None:
+    for _ in range(30):
+        button = page.locator(
+            'article.review-item:not(:has(.decision)) '
+            f'button.review-action[data-disposition="{disposition}"]'
+        ).first
+        if button.count() == 0:
+            break
+        _click_reload(page, button)
+    else:
+        raise AssertionError(
+            f"review queue did not converge for disposition={disposition!r}"
+        )
+
+
+def _confirm_pack(page) -> None:
+    page.once("dialog", lambda dialog: dialog.accept())
+    _click_reload(
+        page,
+        page.get_by_role("button", name="Create reviewed pack — does not submit"),
+    )
+
+
 def _assert_no_private_browser_content(page, live_server) -> None:
     html = page.content()
     visible = page.locator("body").inner_text()
