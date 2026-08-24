@@ -29,6 +29,7 @@ def test_v0_archive_projection_baseline_is_frozen_from_a7faadd():
 
 def _pack():
     return {
+        "schema_version": "application-pack.v0",
         "source_artifacts": {"profile_snapshot": {"artifact_id": "art_profile"}},
         "job": {"company": "Acme / Corp", "title": "Backend Engineer", "description": "Original evidence"},
         "fit_summary": {"gaps": [{"gap_id": "gap_1"}]},
@@ -76,3 +77,40 @@ def test_exact_artifact_projection_is_idempotent(tmp_path):
     assert second == first
     assert "application-pack-artifact: art_exact" in first.read_text(encoding="utf-8")
     assert len(list(first.parent.glob("application_pack*.md"))) == 1
+
+
+def test_v1_projection_adds_exactly_one_embedded_candidate_audit_section(tmp_path):
+    pack = _pack()
+    pack["schema_version"] = "application-pack.v1"
+    pack["candidate_snapshot"] = {
+        "profile_schema_version": "candidate-profile-evidence-snapshot.v0",
+        "identity": {
+            "name": {
+                "value": "Ada Lovelace",
+                "profile_evidence_ids": ["clm_0000000000000001"],
+            }
+        },
+        "contact": {"email": {"value": "private@example.com"}},
+    }
+    path = write_application_pack_projection(
+        pack,
+        company="Acme",
+        title="Backend Engineer",
+        documents_root=tmp_path,
+        projection_id="art_v1_exact",
+    )
+    text = path.read_text(encoding="utf-8")
+    assert text.count("## Candidate Snapshot") == 1
+    assert '"value": "Ada Lovelace"' in text
+    assert "private@example.com" in text
+    assert "private@example.com" not in str(path)
+
+
+def test_archive_projection_source_has_no_live_profile_lookup_import():
+    import webapp.services.archive_projection as module
+
+    source = Path(module.__file__).read_text(encoding="utf-8")
+    for forbidden in (
+        "profile_snapshot", "get_current_artifact", "get_artifact", "persistence"
+    ):
+        assert forbidden not in source

@@ -18,6 +18,9 @@ def _json_section(lines: list[str], title: str, value: Any) -> None:
 
 
 def _render_markdown(pack: dict[str, Any], *, projection_id: str | None = None) -> str:
+    version = pack.get("schema_version")
+    if version not in {"application-pack.v0", "application-pack.v1"}:
+        raise ValueError("unsupported application pack schema version")
     job = pack.get("job", {})
     lines = []
     if projection_id is not None:
@@ -37,6 +40,8 @@ def _render_markdown(pack: dict[str, Any], *, projection_id: str | None = None) 
     lines.extend(["", "## Cover Letter Content", ""])
     lines.extend(f"- {unit.get('text', '')}" for unit in pack.get("cover_letter_content", []))
     lines.append("")
+    if version == "application-pack.v1":
+        _json_section(lines, "Candidate Snapshot", pack.get("candidate_snapshot", {}))
     _json_section(lines, "Review and Exclusion Audit", pack.get("review_record", {}))
     return "\n".join(lines)
 
