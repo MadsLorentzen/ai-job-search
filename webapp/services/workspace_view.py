@@ -648,6 +648,9 @@ def build_workspace_view_model(
     }
     for stage in stages.values():
         stage["state_label"] = stage_state_label(stage["state"])
+    has_historical_pack_with_incomplete_current_material = bool(
+        stages["review"]["artifact"]
+    ) and review_completion_status != "READY"
     if artifacts["pack"] and reviewed_output_status == "READY":
         readiness_answer = "Yes — ready to send"
         readiness_problem = "The reviewed CV and cover letter satisfy the completion contract."
@@ -696,6 +699,9 @@ def build_workspace_view_model(
             review_completion
         ),
         "review_completion_status": review_completion_status,
+        "has_historical_pack_with_incomplete_current_material": (
+            has_historical_pack_with_incomplete_current_material
+        ),
         "reviewed_output_status": reviewed_output_status,
         "reviewed_cv_content": reviewed_cv_content,
         "reviewed_cover_letter_content": reviewed_cover_letter_content,

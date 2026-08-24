@@ -257,6 +257,158 @@ def test_unmapped_completion_issue_code_fails_loudly_instead_of_disappearing():
         )
 
 
+def test_historical_pack_with_incomplete_current_material_flag_true_when_both_hold(
+    tmp_path, monkeypatch
+):
+    from webapp.services import workspace_view
+
+    conn, workspace_id = _workspace(tmp_path)
+    _, fit, intelligence = _seed_evidence(conn, workspace_id)
+    pack = save_artifact(
+        conn,
+        workspace_id=workspace_id,
+        artifact_type="application_pack",
+        payload={"source_artifacts": {}, **completion_ready_pack_payload("hist")},
+        content_id="pack_hist",
+    )
+    record_dependency_fingerprint(
+        conn,
+        artifact_id=pack["id"],
+        upstream_artifact_type="job_fit_result",
+        upstream_content_id=fit["content_id"],
+    )
+    record_dependency_fingerprint(
+        conn,
+        artifact_id=pack["id"],
+        upstream_artifact_type="application_intelligence_result",
+        upstream_content_id=intelligence["content_id"],
+    )
+    record_status_change(
+        conn,
+        workspace_id=workspace_id,
+        new_status="drafted",
+        effective_date="2026-08-20",
+        submitted_pack_artifact_id=pack["id"],
+        _allow_drafted=True,
+    )
+    monkeypatch.setattr(
+        workspace_view,
+        "_build_review_items",
+        lambda *args, **kwargs: [
+            {
+                "review_item_type": "content_unit",
+                "domain_item_id": "unit_ready",
+                "source_artifact_id": intelligence["id"],
+                "item": {"text": "New material"},
+                "decision": {"disposition": "omit_from_positioning"},
+            }
+        ],
+    )
+
+    view = workspace_view.build_workspace_view_model(conn, workspace_id)
+
+    assert view["has_historical_pack_with_incomplete_current_material"] is True
+
+
+def test_historical_pack_flag_false_when_no_pack_exists(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_evidence(conn, workspace_id)
+    view = build_workspace_view_model(conn, workspace_id)
+    assert view["has_historical_pack_with_incomplete_current_material"] is False
+
+
+def test_historical_pack_flag_false_when_current_material_is_ready(
+    tmp_path, monkeypatch
+):
+    from webapp.services import workspace_view
+
+    conn, workspace_id = _workspace(tmp_path)
+    _, fit, intelligence = _seed_evidence(conn, workspace_id)
+    pack = save_artifact(
+        conn,
+        workspace_id=workspace_id,
+        artifact_type="application_pack",
+        payload={"source_artifacts": {}, **completion_ready_pack_payload("hist2")},
+        content_id="pack_hist2",
+    )
+    record_dependency_fingerprint(
+        conn,
+        artifact_id=pack["id"],
+        upstream_artifact_type="job_fit_result",
+        upstream_content_id=fit["content_id"],
+    )
+    record_dependency_fingerprint(
+        conn,
+        artifact_id=pack["id"],
+        upstream_artifact_type="application_intelligence_result",
+        upstream_content_id=intelligence["content_id"],
+    )
+    cv_bullet_text = " ".join(f"bulletword{i}" for i in range(15))
+    cv_summary_text = " ".join(f"summaryword{i}" for i in range(15))
+    cover_paragraph_text = " ".join(f"coverword{i}" for i in range(50))
+    ready_items = [
+        {
+            "review_item_type": "content_unit",
+            "domain_item_id": "unit_ready_cv_bullet",
+            "source_artifact_id": intelligence["id"],
+            "item": {
+                "unit_id": "unit_ready_cv_bullet",
+                "unit_type": "cv_bullet",
+                "status": "READY",
+                "text": cv_bullet_text,
+                "profile_evidence_ids": ["clm_direct"],
+            },
+            "decision": {
+                "domain_item_id": "unit_ready_cv_bullet",
+                "review_item_type": "content_unit",
+                "disposition": "acknowledged_and_proceed",
+            },
+        },
+        {
+            "review_item_type": "content_unit",
+            "domain_item_id": "unit_ready_cv_summary",
+            "source_artifact_id": intelligence["id"],
+            "item": {
+                "unit_id": "unit_ready_cv_summary",
+                "unit_type": "cv_summary_line",
+                "status": "READY",
+                "text": cv_summary_text,
+                "profile_evidence_ids": ["clm_functional"],
+            },
+            "decision": {
+                "domain_item_id": "unit_ready_cv_summary",
+                "review_item_type": "content_unit",
+                "disposition": "acknowledged_and_proceed",
+            },
+        },
+        {
+            "review_item_type": "content_unit",
+            "domain_item_id": "unit_ready_cover",
+            "source_artifact_id": intelligence["id"],
+            "item": {
+                "unit_id": "unit_ready_cover",
+                "unit_type": "cover_letter_paragraph",
+                "status": "READY",
+                "text": cover_paragraph_text,
+                "profile_evidence_ids": ["clm_transfer"],
+            },
+            "decision": {
+                "domain_item_id": "unit_ready_cover",
+                "review_item_type": "content_unit",
+                "disposition": "acknowledged_and_proceed",
+            },
+        },
+    ]
+    monkeypatch.setattr(
+        workspace_view, "_build_review_items", lambda *args, **kwargs: ready_items
+    )
+
+    view = workspace_view.build_workspace_view_model(conn, workspace_id)
+
+    assert view["review_completion_status"] == "READY"
+    assert view["has_historical_pack_with_incomplete_current_material"] is False
+
+
 def test_unprocessed_workspace_has_product_stage_states(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
     view = build_workspace_view_model(conn, workspace_id)
