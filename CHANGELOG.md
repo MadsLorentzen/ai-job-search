@@ -16,7 +16,7 @@ per-file diff commands.
 ### Changed
 
 - Public README now identifies this repo as the US-market fork, points CI and
-  Desk release badges at `iLevyTate/ai-job-search`, and clones this repo in
+  Desk release badges at `iLevyTate/ai-job-search`, and forks this repo in
   Quick start instead of the Danish template.
 
 ### Added

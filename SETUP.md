@@ -154,7 +154,7 @@ If `pdftotext` is missing, `/apply` skips the mechanical check with a warning an
 ## 2. Fork and clone
 
 ```bash
-gh repo fork MadsLorentzen/ai-job-search --clone
+gh repo fork iLevyTate/ai-job-search --clone
 cd ai-job-search
 ```
 

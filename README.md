@@ -80,11 +80,11 @@ The framework encodes career guidance best practices, including structured evalu
 ### 1. Fork and clone
 
 ```bash
-gh repo clone iLevyTate/ai-job-search
+gh repo fork iLevyTate/ai-job-search --clone
 cd ai-job-search
 ```
 
-To contribute methodology back to the original template, fork [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search) instead.
+This clone is the US-market starting point. To contribute methodology back to the original template, fork [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search) instead.
 
 > [!IMPORTANT]
 > **A fork of this repo is always public.** GitHub does not allow private forks of
