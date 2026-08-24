@@ -6,6 +6,9 @@
   <p>Evidence, decisions, and real-world status remain separate and traceable.</p></div>
   <a class="button" href="/new-job">Add a job</a>
 </section>
+<section class="panel getting-started-card"><h2>How this works</h2><ol class="getting-started-steps">
+<li>Evidence Profile</li><li>Find/Add Job</li><li>Job Fit</li><li>Intelligence</li><li>Review</li><li>Pack</li><li>Download</li><li>Apply</li>
+</ol><a class="button secondary button-small" href="/how-it-works">See the full walkthrough</a></section>
 {% if not profile_ready %}<section class="panel review-surface"><h2>Set up your Evidence Profile</h2><p>Create or import a basic profile before running Job Fit.</p><a class="button" href="/profile">Set up Evidence Profile</a></section>{% endif %}
 <nav class="filters" aria-label="Application filters">
 {% for item in filters %}<a href="/?filter={{ item }}" class="filter {% if filter == item %}active{% endif %}">{{ item | replace('_', ' ') | title }}</a>{% endfor %}
@@ -25,5 +28,5 @@
     <td><time>{{ ws.updated_at }}</time></td>
   </tr>{% endfor %}</tbody>
 </table></div>
-{% else %}<section class="empty-state"><h2>No {{ filter }} applications</h2><p>Add a saved posting or choose another filter.</p><a class="button" href="/new-job">Add your first job</a></section>{% endif %}
+{% else %}<section class="empty-state"><h2>No {{ filter }} applications</h2><p>Add your first job posting to get started, or choose another filter above.</p><a class="button" href="/new-job">Add your first job</a></section>{% endif %}
 {% endblock %}
