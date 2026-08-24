@@ -80,8 +80,6 @@ def _build_application_pack_with_profile(
         conn, workspace_id, "application_intelligence_result",
         profile_workspace_id=profile_workspace_id,
     )
-    validate_snapshot(profile_artifact["payload"])
-
     stale: list[str] = []
     for artifact_type in ("job_fit_result", "application_intelligence_result"):
         result = check_staleness(
@@ -95,6 +93,7 @@ def _build_application_pack_with_profile(
             "cannot build an application pack from stale artifacts: " + " | ".join(stale)
         )
 
+    validate_snapshot(profile_artifact["payload"])
     profile = profile_artifact["payload"]
     fit = fit_artifact["payload"]
     intelligence = intelligence_artifact["payload"]
