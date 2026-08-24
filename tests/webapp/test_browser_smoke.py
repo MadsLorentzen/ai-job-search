@@ -684,6 +684,84 @@ def test_full_visible_journey_reaches_interview_with_explicit_submission(page, l
     _assert_no_private_browser_content(page, live_server)
 
 
+def test_application_pack_v1_embeds_candidate_facts_and_renders_history_exactly(
+    page, live_server,
+):
+    candidate_path = (
+        live_server.profile_root
+        / ".claude/skills/job-application-assistant/01-candidate-profile.md"
+    )
+    candidate_path.write_text(
+        candidate_path.read_text(encoding="utf-8")
+        + """
+
+## Education
+- **MSc Computing** (2018-2020) - Example University — Key topics: Distributed systems
+
+## Certifications
+- **Cloud Professional**
+""",
+        encoding="utf-8",
+    )
+    _refresh_profile(page, live_server)
+    workspace_url = _run_to_intelligence(page, live_server)
+    _resolve_all_pending_reviews(page, "acknowledged_and_proceed")
+    _confirm_pack(page)
+
+    cv_link = page.get_by_role("link", name="Download CV")
+    cover_link = page.get_by_role("link", name="Download Cover Letter")
+    historical_cv_href = cv_link.get_attribute("href")
+    historical_cover_href = cover_link.get_attribute("href")
+    cv_before = page.request.get(f"{live_server.base_url}{historical_cv_href}")
+    cover_before = page.request.get(f"{live_server.base_url}{historical_cover_href}")
+    assert cv_before.status == cover_before.status == 200
+
+    cv_texts = [
+        paragraph.text
+        for paragraph in Document(BytesIO(cv_before.body())).paragraphs
+    ]
+    cover_text = "\n".join(
+        paragraph.text
+        for paragraph in Document(BytesIO(cover_before.body())).paragraphs
+    )
+    assert cv_texts[0] == "Ada Lovelace"
+    assert "Professional Experience" in cv_texts
+    assert "Data Engineer | Evidence Works | 2020-01 - Present | London" in cv_texts
+    assert "Built production data pipelines" in cv_texts
+    assert "Tailored Highlights" in cv_texts
+    assert cv_texts.index("Built production data pipelines") < cv_texts.index(
+        "Tailored Highlights"
+    )
+    assert "MSc Computing" in "\n".join(cv_texts)
+    assert "Cloud Professional" in cv_texts
+    assert "Ada Lovelace" in cover_text
+    assert "clm_9999999999999999" not in "\n".join(cv_texts) + cover_text
+
+    candidate_path.write_text(
+        candidate_path.read_text(encoding="utf-8")
+        + "\n2. Ada Lovelace (2028). Must not enter the historical pack.\n",
+        encoding="utf-8",
+    )
+    _refresh_profile(page, live_server)
+    page.goto(workspace_url, wait_until="networkidle")
+    assert page.get_by_role("link", name="Download CV").get_attribute(
+        "href"
+    ) == historical_cv_href
+
+    cv_after = page.request.get(f"{live_server.base_url}{historical_cv_href}")
+    cover_after = page.request.get(f"{live_server.base_url}{historical_cover_href}")
+    assert cv_after.body() == cv_before.body()
+    assert cover_after.body() == cover_before.body()
+    assert cv_after.headers["x-content-hash"] == cv_before.headers["x-content-hash"]
+    assert cover_after.headers["x-content-hash"] == cover_before.headers["x-content-hash"]
+    historical_text = "\n".join(
+        paragraph.text
+        for paragraph in Document(BytesIO(cv_after.body())).paragraphs
+    )
+    assert "Must not enter the historical pack" not in historical_text
+    _assert_no_private_browser_content(page, live_server)
+
+
 def test_stale_and_review_negative_paths_are_enforced_in_rendered_ui(page, live_server):
     _refresh_profile(page, live_server)
     workspace_url = _run_to_intelligence(page, live_server)
