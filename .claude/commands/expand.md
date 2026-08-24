@@ -1,6 +1,6 @@
 # /expand - Competency Expansion from Documents and Online Presence
 
-You are enriching the candidate profile by discovering competencies hidden in documents and public online presence. This command is additive only — it never modifies existing profile content, only extends it.
+You are enriching the candidate profile by discovering competencies hidden in documents and public online presence. This command is additive only: it never modifies existing profile content, only extends it.
 
 Follow these steps **exactly in order**. Do not skip steps.
 
@@ -17,9 +17,9 @@ Hold this content in context throughout the command. Do not re-read these files 
 
 ---
 
-## Step 1: Discovery — Scan All Sources
+## Step 1: Discovery, Scan All Sources
 
-Scan every available source for "experience items" — anything that implies skill, knowledge, or competency. Process sources in this order.
+Scan every available source for "experience items": anything that implies skill, knowledge, or competency. Process sources in this order.
 
 ### 1a. documents/cv/
 Read all files in `documents/cv/`. Extract:
@@ -68,7 +68,7 @@ Check `01-candidate-profile.md` for any other URLs (portfolio site, personal web
 
 ## Step 2: Web Enrichment
 
-For each experience item discovered in Step 1, search the web to extract the competencies it implies. Apply both approaches below — do not choose one over the other.
+For each experience item discovered in Step 1, search the web to extract the competencies it implies. Apply both approaches below; do not choose one over the other.
 
 ### Approach A: Direct lookup (explicit tools and frameworks)
 If the item names a specific tool, framework, library, method, or platform, search for it directly:
@@ -95,7 +95,7 @@ Combine both approaches into a single competency list for each item.
 ### Infer (without web lookup) for:
 - Generic job responsibility bullets with no named tool
 - Vague project descriptions
-- Reference letter language (already phrased as competency — just record it)
+- Reference letter language (already phrased as competency, just record it)
 
 ---
 
@@ -103,15 +103,15 @@ Combine both approaches into a single competency list for each item.
 
 After enriching all items, build a deduplicated competency map. Group findings into these categories:
 
-**Technical Skills — Primary** (core languages, frameworks, methods you use regularly)  
-**Technical Skills — Secondary** (tools you have used but are not primary)  
+**Technical Skills, Primary** (core languages, frameworks, methods you use regularly)  
+**Technical Skills, Secondary** (tools you have used but are not primary)  
 **Domain Knowledge** (subject matter expertise: geophysics, ML, NLP, etc.)  
 **Methods and Practices** (agile, version control, reproducibility, testing, etc.)  
 **Soft / Behavioral** (leadership, communication, collaboration signals from references and project descriptions)  
 
 For each competency, record:
 - The competency name
-- The source item it came from (e.g. "Coursera — Deep Learning Specialisation", "GitHub — repo-name", "Reference letter — Jens Jensen")
+- The source item it came from (e.g. "Coursera - Deep Learning Specialisation", "GitHub - repo-name", "Reference letter - Jens Jensen")
 - Whether it came from direct lookup (A), inference (B), or both
 
 Remove anything already present in `01-candidate-profile.md` or `02-behavioral-profile.md`.
@@ -126,24 +126,24 @@ Present all new competencies for the user's review before writing anything. Form
 ## /expand found [N] new competency signals across [M] sources
 
 **COURSES & CERTIFICATIONS**
-Source: [Course/cert name — Provider]
+Source: [Course/cert name - Provider]
   + [Competency 1]
   + [Competency 2]
   ...
 
-**GITHUB — [repo-name]**
+**GITHUB - [repo-name]**
 Source: README + inferred from tech stack
   + [Competency 1]
   + [Competency 2]
   ...
 
-**JOB RESPONSIBILITIES — [Company, Role]**
+**JOB RESPONSIBILITIES - [Company, Role]**
 Source: CV bullets + direct tool lookup
   + [Competency 1]
   ...
 
 **BEHAVIORAL SIGNALS**
-Source: [Reference letter — Name / LinkedIn About / Project leadership]
+Source: [Reference letter - Name / LinkedIn About / Project leadership]
   + [Signal 1]
   ...
 
@@ -154,9 +154,9 @@ Then ask:
 
 > **How would you like to proceed?**
 >
-> - **`all`** — Add everything above to your profile
-> - **`review`** — I'll walk you through each source group one at a time
-> - **`skip`** — Cancel without writing anything
+> - **`all`**: Add everything above to your profile
+> - **`review`**: I'll walk you through each source group one at a time
+> - **`skip`**: Cancel without writing anything
 >
 > Or list specific groups to skip (e.g. "skip GitHub, add everything else").
 
@@ -166,18 +166,18 @@ Wait for the user's response before writing anything.
 
 ## Step 5: Write Confirmed Additions
 
-Apply only the confirmed items. Use the Edit tool to add to the relevant sections of each file — do not rewrite entire files.
+Apply only the confirmed items. Use the Edit tool to add to the relevant sections of each file; do not rewrite entire files.
 
 ### Additions to `01-candidate-profile.md`
 - Technical skills (primary and secondary) → append to the Technical Skills section
 - Domain knowledge → append to the Domain Knowledge or Technical Skills section (match the existing structure)
 - Methods and practices → append appropriately
 
-For each addition, add a brief source annotation in a comment or parenthetical: *(Coursera — Deep Learning Specialisation)*, *(GitHub — project-name)*, etc. This makes future `/expand` runs idempotent.
+For each addition, add a brief source annotation in a comment or parenthetical: *(Coursera - Deep Learning Specialisation)*, *(GitHub - project-name)*, etc. This makes future `/expand` runs idempotent.
 
 ### Additions to `02-behavioral-profile.md`
 - Soft/behavioral signals → append to the "Strongest Behavioral Traits" or "How I Work Best" section (match existing structure)
-- Always label inferred behavioral additions: *[Inferred from reference letter — Name / review before relying on this]*
+- Always label inferred behavioral additions: *[Inferred from reference letter - Name / review before relying on this]*
 
 ---
 
@@ -198,7 +198,7 @@ After writing, present:
 [List each source scanned and how many competencies it yielded]
 
 ### Sources skipped
-[List any sources that were missing, empty, or yielded nothing new — with brief reason]
+[List any sources that were missing, empty, or yielded nothing new, with brief reason]
 
 ### Needs manual review
 [Any items that were ambiguous, partially readable, or where web lookup returned no clear syllabus]
@@ -210,7 +210,7 @@ After writing, present:
 
 - **Additive only.** This command never modifies existing profile content. It only appends.
 - **Source-traceable.** Every addition records where it came from, so future runs are idempotent and the user can verify or remove individual items later.
-- **Both approaches, always.** Web lookup and inference are applied together — not as alternatives. A named course gets its official syllabus AND a reasoned competency list.
+- **Both approaches, always.** Web lookup and inference are applied together, not as alternatives. A named course gets its official syllabus AND a reasoned competency list.
 - **User confirms before writing.** The full competency map is shown and confirmed before a single file is touched.
 - **Behavioral signals are labeled.** Anything inferred from tone, language, or indirect signals is marked as inferred so it is reviewed critically.
-- **GitHub is fully scanned.** All public repositories are checked, not just pinned ones — unpinned repos often contain significant competency signals.
+- **GitHub is fully scanned.** All public repositories are checked, not just pinned ones. Unpinned repos often contain significant competency signals.

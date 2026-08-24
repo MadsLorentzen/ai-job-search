@@ -1,6 +1,6 @@
 # /add-template - Register a Custom CV or Cover Letter Template
 
-You are helping the user register their own CV or cover letter template with the AI Job Search framework — LaTeX, Typst, or any other toolchain that compiles to PDF from the command line. The framework ships with moderncv (banking style) for CVs and a custom `cover.cls` for cover letters. This command lets the user swap in their own template: store the template files, capture usage instructions (source extension, compile command, fonts, style rules, page limits), verify the template compiles, and wire it into the `/apply` workflow so every future application uses it.
+You are helping the user register their own CV or cover letter template with the AI Job Search framework: LaTeX, Typst, or any other toolchain that compiles to PDF from the command line. The framework ships with moderncv (banking style) for CVs and a custom `cover.cls` for cover letters. This command lets the user swap in their own template: store the template files, capture usage instructions (source extension, compile command, fonts, style rules, page limits), verify the template compiles, and wire it into the `/apply` workflow so every future application uses it.
 
 `$ARGUMENTS` may contain a subcommand, a file path, or nothing.
 
@@ -62,7 +62,7 @@ Ask the user (skip anything already answered by `$ARGUMENTS`):
    - Pasted template content
    - A directory containing the template and its assets (class/package files, fonts, images)
 
-Read every provided file. If the template references an include the declared toolchain doesn't ship by default — a custom `.cls`/`.sty` not part of standard TeX distributions, a Typst package imported via a local `#import`, or an equivalent for another toolchain — confirm the user has the file and ask for it if missing — the template cannot compile without it.
+Read every provided file. If the template references an include the declared toolchain doesn't ship by default (a custom `.cls`/`.sty` not part of standard TeX distributions, a Typst package imported via a local `#import`, or an equivalent for another toolchain), confirm the user has the file and ask for it if missing. The template cannot compile without it.
 
 ---
 
@@ -131,14 +131,14 @@ Write into it:
 
 Never register a template without a successful test compile. Templates that "look fine" routinely fail on missing fonts, missing classes/packages, or a wrong compile command.
 
-1. Copy `template<source-extension>` to a scratch file in the same folder (e.g. `_compile_test.tex` or `_compile_test.typ`) and fill every `[PLACEHOLDER]` with realistic dummy data (name, contact line, one education entry, one job entry with 3 bullets — enough content to exercise the layout).
+1. Copy `template<source-extension>` to a scratch file in the same folder (e.g. `_compile_test.tex` or `_compile_test.typ`) and fill every `[PLACEHOLDER]` with realistic dummy data (name, contact line, one education entry, one job entry with 3 bullets, enough content to exercise the layout).
 2. Compile with the declared compile command, substituting `_compile_test` for `<file>`:
    ```bash
    cd templates/<type>/<name> && <declared compile command with <file> -> _compile_test>
    ```
 3. If the compile fails: show the user the relevant error lines, diagnose (missing font file, wrong engine/command, missing class or package), fix what you can (e.g. font path values), and re-compile. If the fix needs input only the user has (a missing font file, a license-restricted class), ask for it and wait.
 4. On success, confirm a PDF was produced and Read it to check the layout renders sensibly (no overlapping text, fonts loaded, page count matches the declared page limit for the dummy content). Record any surprises in the manifest's "Known pitfalls".
-5. Delete the scratch source file, the scratch PDF, and any other intermediate files the compile command produced (LaTeX toolchains typically leave `_compile_test.aux`/`.log`/`.out`/`.fls`/`.fdb_latexmk`/`.synctex.gz`; other toolchains may leave nothing beyond the PDF — check what actually landed in the folder and remove all `_compile_test.*` byproducts).
+5. Delete the scratch source file, the scratch PDF, and any other intermediate files the compile command produced (LaTeX toolchains typically leave `_compile_test.aux`/`.log`/`.out`/`.fls`/`.fdb_latexmk`/`.synctex.gz`; other toolchains may leave nothing beyond the PDF). Check what actually landed in the folder and remove all `_compile_test.*` byproducts.
 
 Do not proceed to Step 5 until the test compile passes.
 
@@ -146,7 +146,7 @@ Do not proceed to Step 5 until the test compile passes.
 
 ## Step 5: Activate the Template
 
-Activation wires the template into `/apply` by adding a **managed block** to the top of the relevant guidance file — `05-cv-templates.md` for CVs, `06-cover-letter-templates.md` for cover letters. `/apply` reads these files in both its drafting step and its compile step, so the block is all it takes.
+Activation wires the template into `/apply` by adding a **managed block** to the top of the relevant guidance file: `05-cv-templates.md` for CVs, `06-cover-letter-templates.md` for cover letters. `/apply` reads these files in both its drafting step and its compile step, so the block is all it takes.
 
 If Step 5 was reached from Switch Mode, use the template metadata resolved from `TEMPLATE.md`. If Step 5 was reached after registering a new template, use the metadata collected and verified in Steps 2-4.
 
@@ -158,10 +158,10 @@ Insert (or replace, if one exists) this block immediately after the file's H1 ti
 >
 > A custom template is active. Where this block conflicts with the stock guidance below, this block wins. Structural advice below (tailoring, page-budget, cutting rules) still applies.
 >
-> - **Template skeleton:** `templates/<type>/<name>/template<source-extension>` — use this as the structural reference instead of the stock template
-> - **Manifest:** `templates/<type>/<name>/TEMPLATE.md` — read this for style rules and known pitfalls before drafting
+> - **Template skeleton:** `templates/<type>/<name>/template<source-extension>`, use this as the structural reference instead of the stock template
+> - **Manifest:** `templates/<type>/<name>/TEMPLATE.md`, read this for style rules and known pitfalls before drafting
 > - **Source extension:** `<source-extension>` (not `.tex` unless the template's own toolchain is LaTeX)
-> - **Compile command:** `<the full declared command>` (not the command named in the stock guidance below — `/apply`'s compile step must use this instead)
+> - **Compile command:** `<the full declared command>` (not the command named in the stock guidance below; `/apply`'s compile step must use this instead)
 > - **Fonts:** <font summary, including any path note for bundled fonts>
 > - **Page limit:** exactly <N> page(s)
 > - **Output file:** `cv/main_<company>_<role><source-extension>` / `cover_letters/cover_<company>_<role><source-extension>`; copy any class/package/font files the template needs into the output directory, or reference them by relative path
@@ -187,9 +187,9 @@ Present a summary:
 > - `/apply` will now draft <CVs | cover letters> from this template.
 >
 > Useful follow-ups:
-> - `/add-template --list` — see all registered templates
-> - `/add-template --use <other-name>` — switch templates
-> - `/add-template --use default` — go back to the stock <moderncv | cover.cls> template
+> - `/add-template --list`: see all registered templates
+> - `/add-template --use <other-name>`: switch templates
+> - `/add-template --use default`: go back to the stock <moderncv | cover.cls> template
 
 ---
 
@@ -197,5 +197,5 @@ Present a summary:
 
 - Registration is idempotent: re-running with the same name offers to update the existing template rather than duplicating it.
 - Templates are stored profile-agnostic (`[PLACEHOLDER]` tokens) so they can be shared or committed without leaking personal data.
-- The compile check in Step 4 is non-negotiable — a template that has never compiled will fail mid-`/apply`, which is the worst place to discover it.
+- The compile check in Step 4 is non-negotiable. A template that has never compiled will fail mid-`/apply`, which is the worst place to discover it.
 - Activation is a small managed block, not a rewrite of the guidance files: `/setup` and manual edits to `05`/`06` survive template switches, and `--use default` is a clean revert.

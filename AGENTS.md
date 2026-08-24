@@ -18,4 +18,15 @@ To prevent duplication and configuration drift across different AI agent framewo
 3. **Portal Search Skills:**
    - Job-portal search CLIs live under [.agents/skills/](.agents/skills/) in the portable Agent Skills format (with a `SKILL.md` per portal). Codex and Antigravity discover these automatically; the `/scrape` workflow in [.claude/skills/job-scraper/](.claude/skills/job-scraper/) orchestrates them.
 
-The optional Job Search Desk lives in `gui/`. `node gui/server.mjs` starts it on macOS, Windows, and Linux. GitHub Releases also ship an installable app with one-click start, official Claude Code install if missing, and `claude auth login --claudeai` for the same Claude subscription used in Chrome.
+## Learned User Preferences
+
+- Extend the existing Claude/Cowork job-search architecture instead of adding parallel frameworks; read existing files fully before changing them.
+- Never push personal profile, tailored CVs, or autofill answers to a public remote; share only the public US-framework fork.
+- When pulling upstream, keep US/North American search defaults; do not blind-sync the public fork.
+- Keep the `gui/` desk a polished, full CLI-equivalent conversation in the browser, not a thin command launcher.
+
+## Learned Workspace Facts
+
+- This workspace is a US-market fork of MadsLorentzen/ai-job-search: US boards and English defaults; Danish portal CLIs may remain in-tree but disabled.
+- Personal profile and application files belong on the private `personal` branch/remote; `origin/master` is the shareable North American framework.
+- The optional Chrome desk lives in `gui/` and starts with `node gui/server.mjs` on macOS, Windows, and Linux (localhost only; Claude Code with skip-permissions). The installable Job Search Desk from GitHub Releases is the same desk: one-click start, official Claude Code install if missing, `claude auth login --claudeai` for the Chrome / claude.ai subscription.

@@ -59,7 +59,7 @@ Each agent returns a JSON array, one object per job:
 }
 ```
 
-`language_gate`/`language_note` come from `04-job-evaluation.md`'s Language Gate — distinct from `language` above, which just records what language the posting is written in.
+`language_gate`/`language_note` come from `04-job-evaluation.md`'s Language Gate, distinct from `language` above, which just records what language the posting is written in.
 
 Scoring uses the dimension definitions from `04-job-evaluation.md` verbatim. The honesty rule applies to triage too: gaps are stated, never smoothed over, and a posting that is a poor fit gets a low score even if it looks prestigious.
 

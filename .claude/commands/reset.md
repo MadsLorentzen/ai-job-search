@@ -10,19 +10,19 @@ You are resetting parts of the job search framework back to a blank state so the
 
 Check `$ARGUMENTS` for a scope keyword:
 
-- `profile` — clears candidate profile data from skill files only
-- `documents` — deletes user-provided files from the `documents/` folder only
-- `all` — both of the above
+- `profile`: clears candidate profile data from skill files only
+- `documents`: deletes user-provided files from the `documents/` folder only
+- `all`: both of the above
 
 If `$ARGUMENTS` is empty or does not contain a recognized scope keyword, ask:
 
 > **What would you like to reset?**
 >
-> - **`profile`** — Clears candidate data from the skill files (profile, behavioral, STAR examples, profile statements). The framework structure and writing rules are preserved. Use this to re-run `/setup` from scratch.
+> - **`profile`**: Clears candidate data from the skill files (profile, behavioral, STAR examples, profile statements). The framework structure and writing rules are preserved. Use this to re-run `/setup` from scratch.
 >
-> - **`documents`** — Deletes all files you've placed in the `documents/` folder (CV PDFs, LinkedIn export, diplomas, references, pasted job postings, past applications). The folder structure and `README.md` are preserved.
+> - **`documents`**: Deletes all files you've placed in the `documents/` folder (CV PDFs, LinkedIn export, diplomas, references, pasted job postings, past applications). The folder structure and `README.md` are preserved.
 >
-> - **`all`** — Both of the above.
+> - **`all`**: Both of the above.
 >
 > Reply with `profile`, `documents`, or `all`.
 
@@ -40,24 +40,24 @@ Read the current state of these files and report whether each has content or is 
 
 - `.claude/skills/job-application-assistant/01-candidate-profile.md`
 - `.claude/skills/job-application-assistant/02-behavioral-profile.md`
-- `.claude/skills/job-application-assistant/05-cv-templates.md` *(profile statements section only — framework structure is preserved)*
-- `.claude/skills/job-application-assistant/07-interview-prep.md` *(STAR examples and STAR candidates sections only — framework structure is preserved)*
+- `.claude/skills/job-application-assistant/05-cv-templates.md` *(profile statements section only; framework structure is preserved)*
+- `.claude/skills/job-application-assistant/07-interview-prep.md` *(STAR examples and STAR candidates sections only; framework structure is preserved)*
 
 Present as:
 
 ```
 ## Profile reset will clear:
 
-- 01-candidate-profile.md — [has content / already empty]
+- 01-candidate-profile.md: [has content / already empty]
   Full file will be replaced with a blank template.
 
-- 02-behavioral-profile.md — [has content / already empty]
+- 02-behavioral-profile.md: [has content / already empty]
   Full file will be replaced with a blank template.
 
-- 05-cv-templates.md — [has profile statements / already blank]
+- 05-cv-templates.md: [has profile statements / already blank]
   Profile statement templates will be cleared. LaTeX structure and tailoring guidelines are preserved.
 
-- 07-interview-prep.md — [has STAR examples / already blank]
+- 07-interview-prep.md: [has STAR examples / already blank]
   STAR examples and any STAR candidate stubs will be cleared. Framework, tough questions, and roleplay guidelines are preserved.
 
 The following files are NOT touched (they contain framework rules, not candidate data):
@@ -91,10 +91,10 @@ documents/postings/
 documents/applications/
   - [subfolder/filename] or "(empty)"
 
-documents/README.md — NOT deleted (instructions file)
+documents/README.md: NOT deleted (instructions file)
 ```
 
-If all document subfolders are already empty, state "All document subfolders are already empty — nothing to delete." and skip the confirmation step for this scope.
+If all document subfolders are already empty, state "All document subfolders are already empty, nothing to delete." and skip the confirmation step for this scope.
 
 ---
 

@@ -1,6 +1,6 @@
 # /html-report - Generate Application Tracker Dashboard
 
-Generate a self-contained HTML dashboard from `job_search_tracker.csv` and the application archives under `documents/applications/`. The output is a single `.html` file — no server, no dependencies — that can be opened directly in a browser.
+Generate a self-contained HTML dashboard from `job_search_tracker.csv` and the application archives under `documents/applications/`. The output is a single `.html` file, no server, no dependencies, that can be opened directly in a browser.
 
 ## Step 0: Parse Arguments
 
@@ -16,21 +16,21 @@ Create `reports/` if it does not exist.
 
 Read in parallel:
 
-1. **`job_search_tracker.csv`** — the primary source. Parse every row into a record with fields:
+1. **`job_search_tracker.csv`**: the primary source. Parse every row into a record with fields:
    `date`, `company`, `sector`, `role`, `role_type`, `channel`, `status`, `contact_person`, `fit_rating`, `notes`, `cv_file`, `cover_letter_file`, `source`, `deadline`
 
    Rows written before `deadline` existed have thirteen fields and no fourteenth value. Treat the missing field as empty - never drop the row, and never infer a deadline from its `date`.
 
-2. **`documents/applications/*/outcome.md`** — for each resolved application, read the outcome file to get the exact interview stages reached (the checkboxes) and any notes. Merge this into the matching tracker row by company+role fuzzy match (lowercase, ignore punctuation). If an archive exists for a row but there is no match, attach it as extra context anyway.
+2. **`documents/applications/*/outcome.md`**: for each resolved application, read the outcome file to get the exact interview stages reached (the checkboxes) and any notes. Merge this into the matching tracker row by company+role fuzzy match (lowercase, ignore punctuation). If an archive exists for a row but there is no match, attach it as extra context anyway.
 
-Status normalisation — map tracker values to six canonical buckets before computing stats:
+Status normalisation: map tracker values to six canonical buckets before computing stats:
 - `drafted` → **Drafted** (documents written by `/apply`, not yet submitted)
 - `applied` → **Active** (resume submitted, no further signal)
 - `interview` → **Interview**
 - `offer` → **Offer**
 - `hired` → **Hired**
 - `rejected` / `no_response` / `no response` / `offer_declined` / `offer declined` / `withdrawn` → **Rejected/Closed**
-- anything else → **Rejected/Closed**, and name the unrecognised value once in the status breakdown — matching is case-insensitive
+- anything else → **Rejected/Closed**, and name the unrecognised value once in the status breakdown; matching is case-insensitive
 
    The bucket map tolerates the legacy space spellings on read so nothing written before
    the canonical forms were locked drops out of the stats; the **Tracker status vocabulary**
@@ -42,7 +42,7 @@ Status normalisation — map tracker values to six canonical buckets before comp
 
 From the normalised data compute:
 
-**Drafted rows are excluded from every statistic below** — they were never submitted. Report the Drafted count on its own, and include it only in the status breakdown.
+**Drafted rows are excluded from every statistic below**; they were never submitted. Report the Drafted count on its own, and include it only in the status breakdown.
 
 - **Total applications**
 - **By status bucket:** count per bucket
@@ -56,9 +56,9 @@ From the normalised data compute:
 
 ## Step 3: Generate the HTML
 
-Write a single self-contained HTML file. All CSS is inline in a `<style>` block. All JS is inline in a `<script>` block. Draw the doughnut and bar charts as hand-generated inline SVG — no Chart.js, no CDN, no external dependencies of any kind. The report must render fully offline on every open.
+Write a single self-contained HTML file. All CSS is inline in a `<style>` block. All JS is inline in a `<script>` block. Draw the doughnut and bar charts as hand-generated inline SVG: no Chart.js, no CDN, no external dependencies of any kind. The report must render fully offline on every open.
 
-**Escaping (required):** HTML-escape every CSV/outcome-file value (`&` `<` `>` `"` `'`) before interpolating it into the page — this includes table cells, `title` attributes on truncated notes, and any text placed inside SVG (`<text>` labels, chart tooltips). Notes and company names copied from job postings routinely contain these characters; unescaped, they break the layout or inject markup into a page the user opens routinely.
+**Escaping (required):** HTML-escape every CSV/outcome-file value (`&` `<` `>` `"` `'`) before interpolating it into the page. This includes table cells, `title` attributes on truncated notes, and any text placed inside SVG (`<text>` labels, chart tooltips). Notes and company names copied from job postings routinely contain these characters; unescaped, they break the layout or inject markup into a page the user opens routinely.
 
 ### Layout
 
@@ -103,12 +103,12 @@ Write a single self-contained HTML file. All CSS is inline in a `<style>` block.
 
 ### Charts (inline SVG)
 
-1. **Status doughnut** — slices for each status bucket, colours from the palette above
-2. **By sector bar** (horizontal) — company count per sector, sorted descending
-3. **By channel bar** — online / referral / other
-4. **Application funnel** (horizontal bar) — Applied → Interview → Offer → Hired, each bar = count reaching that stage, derived per Step 2's funnel rule (current status **plus** the merged `outcome.md` stage checkboxes), so a candidate who interviewed and was later rejected still counts in the Interview bar
+1. **Status doughnut**: slices for each status bucket, colours from the palette above
+2. **By sector bar** (horizontal): company count per sector, sorted descending
+3. **By channel bar**: online / referral / other
+4. **Application funnel** (horizontal bar): Applied → Interview → Offer → Hired, each bar = count reaching that stage, derived per Step 2's funnel rule (current status **plus** the merged `outcome.md` stage checkboxes), so a candidate who interviewed and was later rejected still counts in the Interview bar
 
-Build each chart as a hand-written `<svg>` element: compute bar lengths/doughnut arc angles from the stats in Step 2 and emit the `<rect>`/`<path>`/`<circle>` and `<text>` elements directly — no charting library, no `<canvas>`. Each `<svg>` has `role="img"` and an `aria-label` summarizing the chart (e.g. "Status breakdown: 3 Active, 2 Interview, 1 Offer"). Wrap each in a `<div class="chart-card">` with an `<h3>` title above. Remember to escape any label/value text drawn into `<text>` nodes per the escaping rule above.
+Build each chart as a hand-written `<svg>` element: compute bar lengths/doughnut arc angles from the stats in Step 2 and emit the `<rect>`/`<path>`/`<circle>` and `<text>` elements directly, no charting library, no `<canvas>`. Each `<svg>` has `role="img"` and an `aria-label` summarizing the chart (e.g. "Status breakdown: 3 Active, 2 Interview, 1 Offer"). Wrap each in a `<div class="chart-card">` with an `<h3>` title above. Remember to escape any label/value text drawn into `<text>` nodes per the escaping rule above.
 
 ### Table: columns to include
 
@@ -126,7 +126,7 @@ Then present:
 
 > **Dashboard generated:** `<output path>`
 >
-> Open it in any browser — no server needed.
+> Open it in any browser; no server needed.
 >
 > **Summary:**
 > - Applications sent: N · drafted, not yet sent: N
@@ -139,8 +139,8 @@ Then present:
 
 ## Design Principles
 
-- **Self-contained.** One file, fully offline — charts are inline SVG, no CDN or external requests of any kind.
+- **Self-contained.** One file, fully offline; charts are inline SVG, no CDN or external requests of any kind.
 - **Data-only.** This command reads and renders; it never writes to the tracker or archive.
-- **Idempotent.** Re-running overwrites the previous report at the same path — no accumulation.
+- **Idempotent.** Re-running overwrites the previous report at the same path; no accumulation.
 - **Graceful on sparse data.** With only a few rows (as now), charts render correctly for small N; the table is the primary value. Do not suppress charts just because N is small.
 - **No fabrication.** Every number in the report comes directly from the CSV or outcome files. Do not infer or estimate missing fields.
