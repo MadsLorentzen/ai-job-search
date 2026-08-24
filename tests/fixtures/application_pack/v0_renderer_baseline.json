@@ -1,0 +1,57 @@
+{
+  "schema_version": "application-pack.v0",
+  "job": {
+    "company": "Acme Corp",
+    "title": "Backend Engineer",
+    "location": "London"
+  },
+  "cv_content": [
+    {
+      "unit_id": "cv_summary_1",
+      "unit_type": "cv_summary_line",
+      "text": "Backend engineer with 8 years building distributed systems.",
+      "status": "READY",
+      "profile_evidence_ids": [
+        "claim_1"
+      ]
+    },
+    {
+      "unit_id": "cv_bullet_1",
+      "unit_type": "cv_bullet",
+      "text": "Led migration of payments service to Kubernetes.",
+      "status": "READY",
+      "profile_evidence_ids": [
+        "claim_2"
+      ]
+    },
+    {
+      "unit_id": "cv_bullet_2",
+      "unit_type": "cv_bullet",
+      "text": "Reduced API latency by 40% through caching redesign.",
+      "status": "READY",
+      "profile_evidence_ids": [
+        "claim_3"
+      ]
+    }
+  ],
+  "cover_letter_content": [
+    {
+      "unit_id": "cover_1",
+      "unit_type": "cover_letter_paragraph",
+      "text": "I am writing to apply for the Backend Engineer role at Acme Corp.",
+      "status": "READY",
+      "profile_evidence_ids": [
+        "claim_2"
+      ]
+    },
+    {
+      "unit_id": "cover_2",
+      "unit_type": "cover_letter_paragraph",
+      "text": "My experience leading platform migrations aligns closely with your needs.",
+      "status": "READY",
+      "profile_evidence_ids": [
+        "claim_2"
+      ]
+    }
+  ]
+}

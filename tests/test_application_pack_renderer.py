@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import copy
+import json
 import time
 from io import BytesIO
+from pathlib import Path
 
 import pytest
 from docx import Document
@@ -13,6 +15,9 @@ from product.application_pack_renderer import (
     render_cover_letter_document,
     render_cv_document,
 )
+
+
+_FIXTURES = Path(__file__).parent / "fixtures" / "application_pack"
 
 
 def _pack(
@@ -78,6 +83,31 @@ def _pack(
 def _paragraph_texts(document_bytes: bytes) -> list[str]:
     document = Document(BytesIO(document_bytes))
     return [paragraph.text for paragraph in document.paragraphs]
+
+
+def test_v0_baseline_renderer_bytes_are_frozen_from_a7faadd():
+    pack = json.loads(
+        (_FIXTURES / "v0_renderer_baseline.json").read_text(encoding="utf-8")
+    )
+
+    rendered = render_application_pack(
+        pack, source_pack_id="art_v0_baseline"
+    )
+
+    assert rendered.source_pack_id == "art_v0_baseline"
+    assert rendered.renderer_version == "application-pack-renderer.v1"
+    assert rendered.file("cv").filename == "Acme_Corp_Backend_Engineer_CV.docx"
+    assert len(rendered.file("cv").content) == 36_857
+    assert rendered.file("cv").content_hash == (
+        "sha256:91c3ca63b2d9d16bb1d2e9ef0d40a7825e92874b6521b0824bf52b88dd6e541d"
+    )
+    assert rendered.file("cover_letter").filename == (
+        "Acme_Corp_Backend_Engineer_Cover_Letter.docx"
+    )
+    assert len(rendered.file("cover_letter").content) == 36_713
+    assert rendered.file("cover_letter").content_hash == (
+        "sha256:2f9f45802ac9e983afd6a8af0858f5e9ab3dda58c7e96a7ccf207678e82c3159"
+    )
 
 
 def test_cv_document_contains_every_approved_unit_text():
