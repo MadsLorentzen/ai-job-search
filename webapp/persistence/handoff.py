@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import sqlite3
 import uuid
 from datetime import datetime, timezone
@@ -139,3 +140,89 @@ def set_handoff_session_status(
     if commit:
         conn.commit()
     return get_handoff_session(conn, session_id)
+
+
+def append_handoff_event(
+    conn: sqlite3.Connection,
+    *,
+    handoff_session_id: str,
+    event_id: str,
+    event_type: str,
+    event_payload: dict[str, Any],
+    normalized_field_type: str | None = None,
+    page_field_key: str | None = None,
+    observed_at: str | None = None,
+    commit: bool = True,
+) -> dict[str, Any]:
+    existing = conn.execute(
+        "SELECT * FROM handoff_events "
+        "WHERE handoff_session_id = ? AND event_id = ?",
+        (handoff_session_id, event_id),
+    ).fetchone()
+    if existing:
+        return dict(existing)
+
+    next_sequence = (
+        conn.execute(
+            "SELECT COALESCE(MAX(server_sequence), 0) + 1 "
+            "FROM handoff_events WHERE handoff_session_id = ?",
+            (handoff_session_id,),
+        ).fetchone()[0]
+    )
+    now = _now()
+    conn.execute(
+        "INSERT INTO handoff_events "
+        "(handoff_session_id, event_id, server_sequence, event_type, "
+        "normalized_field_type, page_field_key, event_json, observed_at, "
+        "recorded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            handoff_session_id, event_id, next_sequence, event_type,
+            normalized_field_type, page_field_key,
+            json.dumps(event_payload, ensure_ascii=False, sort_keys=True),
+            observed_at, now,
+        ),
+    )
+    if commit:
+        conn.commit()
+    row = conn.execute(
+        "SELECT * FROM handoff_events "
+        "WHERE handoff_session_id = ? AND event_id = ?",
+        (handoff_session_id, event_id),
+    ).fetchone()
+    return dict(row)
+
+
+def list_handoff_events(
+    conn: sqlite3.Connection, handoff_session_id: str
+) -> list[dict[str, Any]]:
+    rows = conn.execute(
+        "SELECT * FROM handoff_events WHERE handoff_session_id = ? "
+        "ORDER BY server_sequence ASC",
+        (handoff_session_id,),
+    ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def create_submission_confirmation(
+    conn: sqlite3.Connection,
+    *,
+    handoff_session_id: str,
+    workflow_event_id: str | None = None,
+    confirmation_id: str | None = None,
+    commit: bool = True,
+) -> dict[str, Any]:
+    confirmation_id = confirmation_id or f"subconf_{uuid.uuid4().hex[:20]}"
+    now = _now()
+    conn.execute(
+        "INSERT INTO submission_confirmations "
+        "(id, handoff_session_id, workflow_event_id, created_at) "
+        "VALUES (?, ?, ?, ?)",
+        (confirmation_id, handoff_session_id, workflow_event_id, now),
+    )
+    if commit:
+        conn.commit()
+    row = conn.execute(
+        "SELECT * FROM submission_confirmations WHERE id = ?",
+        (confirmation_id,),
+    ).fetchone()
+    return dict(row)

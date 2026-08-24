@@ -198,3 +198,91 @@ def test_find_in_progress_excludes_terminal_sessions(tmp_path):
     )
     assert found == []
     conn.close()
+
+
+import json
+
+from webapp.persistence.handoff import (
+    append_handoff_event,
+    create_submission_confirmation,
+    list_handoff_events,
+)
+
+
+def _session(conn):
+    pack_artifact_id = _setup_handoff_session_test(conn, "account_local", "ws_1")
+    return create_handoff_session(
+        conn, account_id="account_local", workspace_id="ws_1",
+        pack_artifact_id=pack_artifact_id, target_url="https://x.test/apply",
+        target_domain="x.test", ats_adapter_id="generic",
+        ats_adapter_version="generic@1",
+    )
+
+
+def test_append_handoff_event_assigns_increasing_server_sequence(tmp_path):
+    conn = _conn(tmp_path)
+    session = _session(conn)
+
+    first = append_handoff_event(
+        conn, handoff_session_id=session["id"], event_id="evt_1",
+        event_type="field_detected", event_payload={"foo": "bar"},
+        normalized_field_type="email", page_field_key="generic:email",
+    )
+    second = append_handoff_event(
+        conn, handoff_session_id=session["id"], event_id="evt_2",
+        event_type="value_inserted", event_payload={"value": "a@b.com"},
+        normalized_field_type="email", page_field_key="generic:email",
+    )
+    assert first["server_sequence"] == 1
+    assert second["server_sequence"] == 2
+    assert json.loads(first["event_json"]) == {"foo": "bar"}
+    conn.close()
+
+
+def test_append_handoff_event_is_idempotent_on_retry(tmp_path):
+    conn = _conn(tmp_path)
+    session = _session(conn)
+
+    first = append_handoff_event(
+        conn, handoff_session_id=session["id"], event_id="evt_dup",
+        event_type="field_detected", event_payload={"attempt": 1},
+    )
+    retried = append_handoff_event(
+        conn, handoff_session_id=session["id"], event_id="evt_dup",
+        event_type="field_detected", event_payload={"attempt": 2},
+    )
+    # the retried call must return the ORIGINAL row, not a new one and not
+    # the second attempt's payload
+    assert retried["server_sequence"] == first["server_sequence"]
+    assert json.loads(retried["event_json"]) == {"attempt": 1}
+
+    all_events = list_handoff_events(conn, session["id"])
+    assert len(all_events) == 1
+    conn.close()
+
+
+def test_list_handoff_events_orders_by_server_sequence(tmp_path):
+    conn = _conn(tmp_path)
+    session = _session(conn)
+    append_handoff_event(
+        conn, handoff_session_id=session["id"], event_id="evt_a",
+        event_type="field_detected", event_payload={},
+    )
+    append_handoff_event(
+        conn, handoff_session_id=session["id"], event_id="evt_b",
+        event_type="value_inserted", event_payload={},
+    )
+    events = list_handoff_events(conn, session["id"])
+    assert [event["event_id"] for event in events] == ["evt_a", "evt_b"]
+    conn.close()
+
+
+def test_create_submission_confirmation_without_workflow_event(tmp_path):
+    conn = _conn(tmp_path)
+    session = _session(conn)
+    confirmation = create_submission_confirmation(
+        conn, handoff_session_id=session["id"]
+    )
+    assert confirmation["handoff_session_id"] == session["id"]
+    assert confirmation["workflow_event_id"] is None
+    conn.close()
