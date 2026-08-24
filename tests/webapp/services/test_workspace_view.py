@@ -409,6 +409,39 @@ def test_historical_pack_flag_false_when_current_material_is_ready(
     assert view["has_historical_pack_with_incomplete_current_material"] is False
 
 
+def test_friendly_exclusion_reason_recognizes_known_rendering_template_pattern():
+    from webapp.services.workspace_view import _friendly_exclusion_reason
+
+    raw = "no rendering template is registered for assertion_type 'responsibility'"
+    friendly = _friendly_exclusion_reason(raw)
+    assert friendly == (
+        "This suggestion was excluded because the system could not safely "
+        "convert it into approved CV wording."
+    )
+
+
+def test_friendly_exclusion_reason_falls_back_honestly_for_unknown_text():
+    from webapp.services.workspace_view import _friendly_exclusion_reason
+
+    friendly = _friendly_exclusion_reason("some future provider-specific reason string")
+    assert friendly == (
+        "This wording couldn't be verified against your Evidence Profile, so it "
+        "was left out of your application material automatically."
+    )
+
+
+def test_evidence_items_carry_friendly_reason_for_unsupported_claims(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_evidence(conn, workspace_id)
+    view = build_workspace_view_model(conn, workspace_id)
+    unsupported = [
+        item for item in view["evidence_items"]
+        if item["label"] == "Unsupported — excluded from application material"
+    ]
+    assert unsupported
+    assert all("friendly_reason" in item for item in unsupported)
+
+
 def test_unprocessed_workspace_has_product_stage_states(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
     view = build_workspace_view_model(conn, workspace_id)

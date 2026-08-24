@@ -289,6 +289,33 @@ def _resolved_detail(
     }
 
 
+_KNOWN_EXCLUSION_REASON_PATTERNS: tuple[tuple[str, str], ...] = (
+    (
+        "no rendering template is registered",
+        "This suggestion was excluded because the system could not safely "
+        "convert it into approved CV wording.",
+    ),
+    (
+        "profile evidence id not found",
+        "This suggestion was excluded because it referenced Evidence Profile "
+        "information that no longer exists.",
+    ),
+)
+
+_EXCLUSION_REASON_FALLBACK = (
+    "This wording couldn't be verified against your Evidence Profile, so it "
+    "was left out of your application material automatically."
+)
+
+
+def _friendly_exclusion_reason(raw_reason: str) -> str:
+    lowered = raw_reason.casefold()
+    for pattern, friendly in _KNOWN_EXCLUSION_REASON_PATTERNS:
+        if pattern in lowered:
+            return friendly
+    return _EXCLUSION_REASON_FALLBACK
+
+
 def _build_evidence_items(
     profile: dict[str, Any] | None, bundle: dict[str, Any] | None,
     fit: dict[str, Any] | None, intelligence: dict[str, Any] | None,
@@ -328,11 +355,13 @@ def _build_evidence_items(
         items.append({
             "label": "Unsupported — excluded from application material",
             "source": "job_fit_unsupported_claims", "detail": claim,
+            "friendly_reason": _friendly_exclusion_reason(str(claim.get("reason", ""))),
         })
     for claim in intelligence_payload.get("unsupported_claims", []):
         items.append({
             "label": "Unsupported — excluded from application material",
             "source": "application_intelligence_unsupported_claims", "detail": claim,
+            "friendly_reason": _friendly_exclusion_reason(str(claim.get("reason", ""))),
         })
     for unit in intelligence_payload.get("cv_content", []) + intelligence_payload.get("cover_letter_content", []):
         if unit.get("status") == "NEEDS_REVIEW":
@@ -342,6 +371,10 @@ def _build_evidence_items(
             items.append({
                 "label": "Unsupported — excluded from application material",
                 "source": "review_exclusion", "detail": exclusion,
+                "friendly_reason": _friendly_exclusion_reason(
+                    str(exclusion.get("reason", ""))
+                    if isinstance(exclusion, dict) else ""
+                ),
             })
     return items
 
