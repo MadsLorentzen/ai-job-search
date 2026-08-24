@@ -1,5 +1,7 @@
 from copy import deepcopy
 from io import BytesIO
+import json
+from pathlib import Path
 
 from docx import Document
 from fastapi.testclient import TestClient
@@ -10,6 +12,9 @@ from webapp.config import Settings
 from webapp.persistence.accounts import create_account
 from webapp.persistence.artifacts import get_artifact, save_artifact
 from webapp.persistence.db import connect
+
+
+_PACK_FIXTURES = Path(__file__).parents[2] / "fixtures" / "application_pack"
 
 
 def _confirm_pack(client, workspace_id):
@@ -119,12 +124,22 @@ def test_explicit_historical_pack_artifact_id_renders_that_exact_pack(tmp_path):
     assert current_pack["id"] != first_pack_artifact_id
 
 
-def test_account_cannot_render_another_accounts_exact_pack(tmp_path):
+def test_account_cannot_render_another_accounts_exact_v0_or_v1_pack(tmp_path):
     app, settings, workspace_id = _app_with_pack_chain(tmp_path)
     with TestClient(app) as account_a:
-        pack_artifact_id = _confirm_pack(account_a, workspace_id)["artifact"]["id"]
+        v1_pack_id = _confirm_pack(account_a, workspace_id)["artifact"]["id"]
 
     conn = connect(settings.db_path)
+    v0_pack = save_artifact(
+        conn,
+        workspace_id=workspace_id,
+        artifact_type="application_pack",
+        payload=json.loads(
+            (_PACK_FIXTURES / "v0_renderer_baseline.json").read_text(encoding="utf-8")
+        ),
+        content_id="historical-v0-cross-account",
+    )
+
     create_account(conn, account_id="account_render_b", display_name="Renderer B")
     conn.close()
     account_b_settings = Settings(
@@ -135,14 +150,100 @@ def test_account_cannot_render_another_accounts_exact_pack(tmp_path):
         account_id="account_render_b",
     )
     with TestClient(create_app(account_b_settings)) as account_b:
-        response = account_b.get(
+        for pack_artifact_id in (v0_pack["id"], v1_pack_id):
+            response = account_b.get(
+                f"/api/workspaces/{workspace_id}/application-pack/render/cv",
+                params={"pack_artifact_id": pack_artifact_id},
+            )
+            assert response.status_code == 404
+            assert response.headers["content-type"].startswith("application/json")
+            assert not response.content.startswith(b"PK")
+
+
+def test_explicit_historical_v0_stays_legacy_when_current_pack_is_v1(tmp_path):
+    app, settings, workspace_id = _app_with_pack_chain(tmp_path)
+    conn = connect(settings.db_path)
+    v0_pack = save_artifact(
+        conn,
+        workspace_id=workspace_id,
+        artifact_type="application_pack",
+        payload=json.loads(
+            (_PACK_FIXTURES / "v0_renderer_baseline.json").read_text(encoding="utf-8")
+        ),
+        content_id="historical-v0",
+    )
+    conn.close()
+    with TestClient(app) as client:
+        _confirm_pack(client, workspace_id)
+        response = client.get(
             f"/api/workspaces/{workspace_id}/application-pack/render/cv",
-            params={"pack_artifact_id": pack_artifact_id},
+            params={"pack_artifact_id": v0_pack["id"]},
+        )
+    assert response.status_code == 200
+    text = _document_text(response)
+    assert "Backend engineer with 8 years building distributed systems." in text
+    assert "Ada Lovelace" not in text
+    assert "Professional Experience" not in text
+
+
+def test_historical_v1_render_survives_live_profile_pointer_deletion(
+    tmp_path, monkeypatch
+):
+    app, settings, workspace_id = _app_with_pack_chain(tmp_path)
+    with TestClient(app) as client:
+        pack_id = _confirm_pack(client, workspace_id)["artifact"]["id"]
+        before = client.get(
+            f"/api/workspaces/{workspace_id}/application-pack/render/cv",
+            params={"pack_artifact_id": pack_id},
+        )
+        assert before.status_code == 200
+
+        conn = connect(settings.db_path)
+        conn.execute(
+            "DELETE FROM current_artifacts WHERE artifact_type='profile_snapshot'"
+        )
+        conn.commit()
+        conn.close()
+
+        from webapp.services import http_api
+
+        def forbidden_current_lookup(*args, **kwargs):
+            raise AssertionError("historical render attempted a current-artifact lookup")
+
+        monkeypatch.setattr(http_api, "get_current_artifact", forbidden_current_lookup)
+        after = client.get(
+            f"/api/workspaces/{workspace_id}/application-pack/render/cv",
+            params={"pack_artifact_id": pack_id},
         )
 
-    assert response.status_code == 404
-    assert response.headers["content-type"].startswith("application/json")
-    assert not response.content.startswith(b"PK")
+    assert after.status_code == 200
+    assert after.content == before.content
+    assert after.headers["x-content-hash"] == before.headers["x-content-hash"]
+    assert "Ada Lovelace" in _document_text(after)
+
+
+def test_malformed_or_unauthorized_historical_v1_has_clean_route_error(tmp_path):
+    app, settings, workspace_id = _app_with_pack_chain(tmp_path)
+    with TestClient(app) as client:
+        pack_id = _confirm_pack(client, workspace_id)["artifact"]["id"]
+    conn = connect(settings.db_path)
+    payload = deepcopy(get_artifact(conn, pack_id)["payload"])
+    payload["review_record"]["decisions_consulted"] = []
+    malformed = save_artifact(
+        conn,
+        workspace_id=workspace_id,
+        artifact_type="application_pack",
+        payload=payload,
+        content_id="malformed-v1",
+    )
+    conn.close()
+    with TestClient(app) as client:
+        response = client.get(
+            f"/api/workspaces/{workspace_id}/application-pack/render/cv",
+            params={"pack_artifact_id": malformed["id"]},
+        )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "invalid application pack v1 payload"
 
 
 def test_download_remains_available_after_workflow_advances_past_drafted(tmp_path):
