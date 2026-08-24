@@ -38,22 +38,42 @@
   </main>
   <script>
     const status = document.getElementById("first-run-status");
-    const api = window.deskApp;
-    if (!api) {
-      status.textContent = "Open this page from the Job Search Desk app.";
+    const openBtn = document.getElementById("open-folder");
+    const cloneBtn = document.getElementById("clone-folder");
+
+    function api() {
+      return window.deskApp;
     }
-    document.getElementById("open-folder").addEventListener("click", async () => {
-      if (!api) return;
-      status.textContent = "Pick the folder that contains AGENTS.md and gui/.";
-      const result = await api.openFolder();
-      if (result?.error) status.textContent = result.error;
-    });
-    document.getElementById("clone-folder").addEventListener("click", async () => {
-      if (!api) return;
-      status.textContent = "Creating a local copy of the public framework.";
-      const result = await api.cloneWorkspace();
-      if (result?.error) status.textContent = result.error;
-    });
+
+    if (!api()) {
+      status.textContent = "This window is missing the Desk connection. Quit and reopen Job Search Desk from the Start Menu.";
+    }
+
+    async function run(kind) {
+      const desk = api();
+      if (!desk) {
+        status.textContent = "This window is missing the Desk connection. Quit and reopen Job Search Desk from the Start Menu.";
+        return;
+      }
+      openBtn.disabled = true;
+      cloneBtn.disabled = true;
+      status.textContent =
+        kind === "open"
+          ? "Pick the folder that contains AGENTS.md and gui/."
+          : "Choose where to create the folder, then wait while it downloads.";
+      try {
+        const result = kind === "open" ? await desk.openFolder() : await desk.cloneWorkspace();
+        if (result?.error) status.textContent = result.error;
+      } catch (err) {
+        status.textContent = err.message || "The folder dialog did not open.";
+      } finally {
+        openBtn.disabled = false;
+        cloneBtn.disabled = false;
+      }
+    }
+
+    openBtn.addEventListener("click", () => run("open"));
+    cloneBtn.addEventListener("click", () => run("clone"));
   </script>
 </body>
 </html>
