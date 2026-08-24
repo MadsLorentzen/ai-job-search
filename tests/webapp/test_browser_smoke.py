@@ -792,6 +792,94 @@ def test_causal_staleness_message_appears_and_differs_by_stage(page, live_server
     _assert_no_private_browser_content(page, live_server)
 
 
+def test_gate_four_reason_survives_an_existing_confirmed_pack(page, live_server):
+    _refresh_profile(page, live_server)
+    workspace_url = _run_to_intelligence(page, live_server)
+
+    _resolve_all_pending_reviews(page, "acknowledged_and_proceed")
+    _confirm_pack(page)
+    assert page.get_by_text("Yes — ready to send", exact=True).is_visible()
+
+    candidate_path = (
+        live_server.profile_root
+        / ".claude/skills/job-application-assistant/01-candidate-profile.md"
+    )
+    candidate_path.write_text(
+        candidate_path.read_text(encoding="utf-8")
+        + "\n2. Ada Lovelace (2027). A new browser-gate-four publication.\n",
+        encoding="utf-8",
+    )
+    _refresh_profile(page, live_server)
+    page.goto(workspace_url, wait_until="networkidle")
+    page.locator('input[name="extension_ids"][value="data-transfer"]').check()
+    _click_reload(page, page.get_by_role("button", name="Rerun Job Fit"))
+    _click_reload(
+        page, page.get_by_role("button", name="Rerun Application Intelligence")
+    )
+
+    _resolve_all_pending_reviews(page, "omit_from_positioning")
+
+    assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
+    assert page.locator("button.confirm-pack").is_disabled()
+    assert page.get_by_text("not ready to create a replacement").is_visible()
+    _assert_no_private_browser_content(page, live_server)
+
+
+def test_friendly_completion_counts_visible_when_material_incomplete(page, live_server):
+    _refresh_profile(page, live_server)
+    _run_to_intelligence(page, live_server)
+
+    _resolve_all_pending_reviews(page, "omit_from_positioning")
+
+    assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
+    assert page.get_by_text("0 of 2 required CV bullets").is_visible()
+
+
+def test_how_it_works_page_reachable_from_nav_with_pipeline_and_glossary(
+    page, live_server
+):
+    page.goto(live_server.base_url, wait_until="networkidle")
+    page.get_by_role("link", name="How it works", exact=True).click()
+    page.wait_for_url("**/how-it-works")
+    assert page.get_by_role("heading", name="How this app works").is_visible()
+    for stage_name in (
+        "Evidence Profile", "Find/Add Job", "Understanding", "Job Fit",
+        "Application Intelligence", "Application Pack",
+    ):
+        assert page.get_by_text(stage_name).first.is_visible()
+    for term in (
+        "Current", "Stale / needs updating", "Needs review", "Blocked / incomplete",
+        "Ready", "Historical pack", "Drafted", "Applied",
+    ):
+        assert page.get_by_text(term, exact=True).first.is_visible()
+    _assert_no_private_browser_content(page, live_server)
+
+
+def test_getting_started_card_visible_on_dashboard_and_links_to_how_it_works(
+    page, live_server
+):
+    page.goto(live_server.base_url, wait_until="networkidle")
+    card = page.locator(".getting-started-card")
+    assert card.is_visible()
+    for label in (
+        "Evidence Profile", "Find/Add Job", "Job Fit", "Intelligence",
+        "Review", "Pack", "Download", "Apply",
+    ):
+        assert card.get_by_text(label, exact=True).is_visible()
+    with page.expect_navigation(wait_until="networkidle"):
+        card.get_by_role("link", name="See the full walkthrough").click()
+    assert page.url.endswith("/how-it-works")
+
+
+def test_reviewed_output_empty_state_names_next_action(page, live_server):
+    _refresh_profile(page, live_server)
+    _run_to_intelligence(page, live_server)
+    empty_state = page.locator("#reviewed-cv-content .muted")
+    assert empty_state.is_visible()
+    text = empty_state.inner_text()
+    assert "Resolve" in text or "Application Intelligence" in text
+
+
 def test_discovery_search_evaluate_and_promote_browser_lifecycle(page, live_server):
     _refresh_profile(page, live_server)
     page.goto(f"{live_server.base_url}/user-profile", wait_until="networkidle")
