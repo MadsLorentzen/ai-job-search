@@ -194,6 +194,69 @@ def test_causal_staleness_message_falls_back_honestly_for_unparseable_reason():
     assert "Rerun Job Fit" in message
 
 
+def test_completion_issue_message_map_covers_every_issue_code():
+    from product.application_material_contract import (
+        INSUFFICIENT_COVER_LETTER_PARAGRAPHS,
+        INSUFFICIENT_COVER_LETTER_WORDS,
+        INSUFFICIENT_CV_UNITS,
+        INSUFFICIENT_CV_WORDS,
+        MISSING_CV_BULLET,
+    )
+    from webapp.services.workspace_view import _COMPLETION_ISSUE_MESSAGES
+
+    all_codes = {
+        INSUFFICIENT_CV_UNITS,
+        MISSING_CV_BULLET,
+        INSUFFICIENT_CV_WORDS,
+        INSUFFICIENT_COVER_LETTER_PARAGRAPHS,
+        INSUFFICIENT_COVER_LETTER_WORDS,
+    }
+    assert set(_COMPLETION_ISSUE_MESSAGES) == all_codes
+
+
+def test_friendly_completion_issues_report_exact_counts(tmp_path, monkeypatch):
+    from webapp.services import workspace_view
+
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_evidence(conn, workspace_id)
+    monkeypatch.setattr(
+        workspace_view,
+        "_build_review_items",
+        lambda *args, **kwargs: [
+            {
+                "review_item_type": "content_unit",
+                "domain_item_id": "unit_ready",
+                "source_artifact_id": "ai_A",
+                "item": {"text": "Reviewed material"},
+                "decision": {"disposition": "omit_from_positioning"},
+            }
+        ],
+    )
+    view = workspace_view.build_workspace_view_model(conn, workspace_id)
+    friendly = view["review_completion_friendly_issues"]
+    assert any("0 of 2 required CV bullets" in message for message in friendly)
+
+
+def test_unmapped_completion_issue_code_fails_loudly_instead_of_disappearing():
+    from webapp.services.workspace_view import _friendly_completion_issues
+
+    review_completion = {
+        "issues": ["some_future_issue_code_not_yet_mapped"],
+        "qualifying_cv_unit_count": 0,
+        "cv_word_count": 0,
+        "qualifying_cover_letter_paragraph_count": 0,
+        "cover_letter_word_count": 0,
+    }
+    try:
+        _friendly_completion_issues(review_completion)
+    except KeyError:
+        pass
+    else:
+        raise AssertionError(
+            "an unmapped issue code was silently dropped instead of raising"
+        )
+
+
 def test_unprocessed_workspace_has_product_stage_states(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
     view = build_workspace_view_model(conn, workspace_id)

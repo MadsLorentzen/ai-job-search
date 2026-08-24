@@ -5,7 +5,18 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-from product.application_material_contract import COMPLETION_CONTRACT_VERSION
+from product.application_material_contract import (
+    COMPLETION_CONTRACT_VERSION,
+    INSUFFICIENT_COVER_LETTER_PARAGRAPHS,
+    INSUFFICIENT_COVER_LETTER_WORDS,
+    INSUFFICIENT_CV_UNITS,
+    INSUFFICIENT_CV_WORDS,
+    MIN_COVER_LETTER_PARAGRAPHS,
+    MIN_COVER_LETTER_WORDS,
+    MIN_CV_UNITS,
+    MIN_CV_WORDS,
+    MISSING_CV_BULLET,
+)
 from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_current_artifact
 from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
@@ -87,6 +98,25 @@ _RERUN_LABELS: dict[str, str] = {
     "application_intelligence": "Rerun Application Intelligence.",
     "review": "Create the reviewed pack again.",
 }
+_COMPLETION_ISSUE_MESSAGES: dict[str, Any] = {
+    INSUFFICIENT_CV_UNITS: lambda result: (
+        f"{result['qualifying_cv_unit_count']} of {MIN_CV_UNITS} required CV "
+        "bullets/summary lines found."
+    ),
+    MISSING_CV_BULLET: lambda result: "At least one approved CV bullet is required.",
+    INSUFFICIENT_CV_WORDS: lambda result: (
+        f"Your approved CV wording is {result['cv_word_count']} words â€” it needs "
+        f"at least {MIN_CV_WORDS}."
+    ),
+    INSUFFICIENT_COVER_LETTER_PARAGRAPHS: lambda result: (
+        f"{result['qualifying_cover_letter_paragraph_count']} of "
+        f"{MIN_COVER_LETTER_PARAGRAPHS} required cover-letter paragraphs found."
+    ),
+    INSUFFICIENT_COVER_LETTER_WORDS: lambda result: (
+        f"Your approved cover letter is {result['cover_letter_word_count']} words â€” "
+        f"it needs at least {MIN_COVER_LETTER_WORDS}."
+    ),
+}
 POST_SUBMISSION_ACTIONS = (
     ("interview", "Interview"),
     ("offer", "Offer"),
@@ -142,6 +172,15 @@ def _causal_staleness_message(
         f"{sentence_cased} changed after this {this_stage_name} result was created. "
         f"{rerun}"
     )
+
+
+def _friendly_completion_issues(
+    review_completion: dict[str, Any]
+) -> list[str]:
+    return [
+        _COMPLETION_ISSUE_MESSAGES[code](review_completion)
+        for code in review_completion.get("issues", [])
+    ]
 
 
 def stage_state_label(state: str) -> str:
@@ -653,6 +692,9 @@ def build_workspace_view_model(
         "available_extensions": public_extensions,
         "profile_ready": profile_ready,
         "review_completion": review_completion,
+        "review_completion_friendly_issues": _friendly_completion_issues(
+            review_completion
+        ),
         "review_completion_status": review_completion_status,
         "reviewed_output_status": reviewed_output_status,
         "reviewed_cv_content": reviewed_cv_content,
