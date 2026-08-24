@@ -19,11 +19,15 @@ class ApplicationIdentityResolution(str, Enum):
     AMBIGUOUS = "ambiguous"
 
 
+_CONTENT_FIELDS = ("description", "raw_text", "employment_type")
+
+
 @dataclass(frozen=True)
 class JobIdentity:
     source_record_key: str | None
     canonical_url_key: str | None
     weak_fallback_key: str
+    content_fingerprint_key: str
 
     @property
     def has_strong_identity(self) -> bool:
@@ -64,7 +68,12 @@ def job_identity(record: dict[str, Any]) -> JobIdentity:
         _normalized_text(record.get(field))
         for field in ("company", "title", "location")
     )
-    return JobIdentity(source_record_key, canonical_url_key, weak_fallback_key)
+    content_fingerprint_key = "content:" + "\x1f".join(
+        _normalized_text(record.get(field)) for field in _CONTENT_FIELDS
+    )
+    return JobIdentity(
+        source_record_key, canonical_url_key, weak_fallback_key, content_fingerprint_key
+    )
 
 
 def compare_job_identities(
@@ -74,8 +83,17 @@ def compare_job_identities(
 
     Source-record identity is strongest. When it is comparable on both sides,
     lower-priority keys cannot contradict its decision. Canonical URLs are
-    considered next. Weak fallback identity can deduplicate only when neither
-    side has any strong identity.
+    considered next. Weak fallback identity (company/title/location) is never
+    sufficient on its own to declare two records the same application. When
+    one side carries a strong identity that the other cannot be compared
+    against, a matching weak fallback is always AMBIGUOUS regardless of
+    content, since a lookalike with no strong identity of its own must never
+    claim a specifically identified job. When neither side has any strong
+    identity, a matching weak fallback resolves to SAME only when the
+    posting content also matches exactly (an idempotent resubmission of the
+    same record), and otherwise surfaces as AMBIGUOUS so a false merge
+    between two distinct requisitions that merely share company/title/
+    location is never silent.
     """
 
     if existing.source_record_key and incoming.source_record_key:
@@ -89,14 +107,13 @@ def compare_job_identities(
         return ApplicationIdentityResolution.DISTINCT
 
     weak_matches = existing.weak_fallback_key == incoming.weak_fallback_key
+    if not weak_matches:
+        return ApplicationIdentityResolution.DISTINCT
+
     if existing.has_strong_identity or incoming.has_strong_identity:
-        return (
-            ApplicationIdentityResolution.AMBIGUOUS
-            if weak_matches
-            else ApplicationIdentityResolution.DISTINCT
-        )
-    return (
-        ApplicationIdentityResolution.SAME
-        if weak_matches
-        else ApplicationIdentityResolution.DISTINCT
-    )
+        return ApplicationIdentityResolution.AMBIGUOUS
+
+    if existing.content_fingerprint_key == incoming.content_fingerprint_key:
+        return ApplicationIdentityResolution.SAME
+
+    return ApplicationIdentityResolution.AMBIGUOUS

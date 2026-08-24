@@ -17,6 +17,7 @@ def _record(
     company: str = "Shell",
     title: str = "Project Planner",
     location: str = "London",
+    description: str | None = None,
 ) -> dict[str, str]:
     record = {
         "source": source,
@@ -28,6 +29,8 @@ def _record(
         record["source_record_id"] = source_record_id
     if source_url is not None:
         record["source_url"] = source_url
+    if description is not None:
+        record["description"] = description
     return record
 
 
@@ -75,10 +78,16 @@ def _record(
             id="strong-versus-weak-only-nonmatch-is-distinct",
         ),
         pytest.param(
-            _record(source_record_id=None, source_url=None),
-            _record(source_record_id=None, source_url=None),
+            _record(source_record_id=None, source_url=None, description="Plan projects."),
+            _record(source_record_id=None, source_url=None, description="Manage budgets."),
+            ApplicationIdentityResolution.AMBIGUOUS,
+            id="two-distinct-requisitions-same-company-title-location-are-not-silently-merged",
+        ),
+        pytest.param(
+            _record(source_record_id=None, source_url=None, description="Plan projects."),
+            _record(source_record_id=None, source_url=None, description="Plan projects."),
             ApplicationIdentityResolution.SAME,
-            id="weak-only-identities-may-deduplicate",
+            id="identical-resubmission-of-same-weak-only-record-is-idempotent",
         ),
         pytest.param(
             _record(source_record_id=None, source_url=None),
