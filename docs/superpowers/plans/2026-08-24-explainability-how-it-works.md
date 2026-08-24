@@ -19,6 +19,7 @@
 - **Friendly-text lookup tables must be exhaustive over closed enums** — every `DEPENDENCY_TYPES` type name, every `STAGE_ORDER` key it can apply to, and every completion issue code must have a mapping entry, verified by a dedicated exhaustiveness unit test per table.
 - **Playwright assertions target semantic phrases/actions**, never full paragraphs or exact-match on entire copy blocks — literal-string correctness lives in unit tests against the pure helpers, not the browser suite.
 - **Historical pack downloads must never be affected by these changes** — `/api/workspaces/{id}/application-pack/render/*` routes are not touched by this plan.
+- **This implementation is pinned to baseline commit `485c997`, not symbolic `master`.** Work happens in an isolated worktree/branch created in Task 0. Every "no changes to X" verification (Task 13) diffs against `485c997...HEAD`, not `master`. `master` is never moved by this ticket.
 
 ---
 
@@ -36,6 +37,61 @@ tests/webapp/test_browser_smoke.py       Modify — 7 new/extended Playwright sc
 ```
 
 No new files under `product/`, `webapp/persistence/`, or any `webapp/api/*.py` other than `views.py`.
+
+---
+
+# Part 0 — Baseline pin
+
+### Task 0: Create an isolated worktree/branch pinned to the accepted baseline commit
+
+**Why:** this repo has an unexplained-commit incident on record (see memory `incident_unexplained_autocommit`) and a busy set of parallel feature/integration branches. To guarantee this ticket's diffs are measured against exactly the code that was accepted, not against whatever `master` happens to point to when a verification command runs later, this implementation pins to the specific commit the spec was written against (`485c997`, "test: cover account-scoped pack rendering integration") rather than the symbolic ref `master`. This ticket's work must never move `master` directly.
+
+**Files:** none modified — environment setup only.
+
+- [ ] **Step 1: Confirm the baseline commit exists and is the intended one**
+
+Run:
+
+```bash
+git log -1 --format="%H %s" 485c997
+```
+
+Expected output: `485c997<full sha continuation> test: cover account-scoped pack rendering integration`
+
+- [ ] **Step 2: Create an isolated worktree branched from that exact commit**
+
+Run:
+
+```bash
+git worktree add ../ai-job-search-explainability 485c997 -b feature/explainability-how-it-works
+```
+
+This creates a new working directory at `../ai-job-search-explainability` on a new branch `feature/explainability-how-it-works`, branched from `485c997` — not from `master`'s current tip. All subsequent tasks in this plan run inside that worktree directory, never in the original working directory, and never touch `master`.
+
+- [ ] **Step 3: Record the baseline SHA for later verification steps**
+
+Run (from inside the new worktree):
+
+```bash
+git rev-parse HEAD
+```
+
+Expected: prints the full SHA for `485c997...`. Record this as `BASE_SHA=485c997` — every boundary-diff command later in this plan (Task 13) uses `git diff 485c997...HEAD`, never `git diff master`, so that another session moving `master` underneath this work cannot silently change what "no changes to X" means.
+
+- [ ] **Step 4: Confirm the working tree is clean and matches the baseline exactly**
+
+Run:
+
+```bash
+git status --short
+git diff 485c997 --stat
+```
+
+Expected: `git status --short` prints nothing (clean tree); `git diff 485c997 --stat` prints nothing (HEAD equals the baseline exactly, since no commits have been made yet in this worktree).
+
+- [ ] **Step 5: No commit for this task**
+
+Task 0 only establishes the environment — there is nothing to commit yet. Proceed to Task 1 inside this worktree.
 
 ---
 
@@ -148,6 +204,19 @@ _STAGE_DISPLAY_NAMES: dict[str, str] = {
     "review": "the reviewed pack",
 }
 
+# Distinct from _STAGE_DISPLAY_NAMES: used only inside the "this X result was
+# created" clause, where "review" needs a noun phrase ("this reviewed pack")
+# rather than the definite-article form used standalone ("the reviewed
+# pack was updated..."). Reusing _STAGE_DISPLAY_NAMES here for "review"
+# would produce the ungrammatical "this the reviewed pack result was
+# created" (the leading "the" collides with the preceding "this").
+_STAGE_RESULT_NOUNS: dict[str, str] = {
+    "understanding": "Understanding",
+    "fit": "Job Fit",
+    "application_intelligence": "Application Intelligence",
+    "review": "reviewed pack",
+}
+
 _RERUN_LABELS: dict[str, str] = {
     "understanding": "Rerun Understanding.",
     "fit": "Rerun Job Fit.",
@@ -178,7 +247,12 @@ def _extract_upstream_type(reason: str) -> str | None:
 def _causal_staleness_message(stage_key: str, stale: dict[str, Any]) -> str | None:
     if not stale.get("stale") or not stale.get("reasons"):
         return None
-    this_stage_name = _STAGE_DISPLAY_NAMES.get(stage_key, stage_key)
+    # _STAGE_RESULT_NOUNS (not _STAGE_DISPLAY_NAMES) — this variable only ever
+    # appears inside "this {this_stage_name} result was created", and the
+    # "review" stage needs a bare noun phrase there ("this reviewed pack
+    # result"), not the definite-article display form ("this the reviewed
+    # pack result", which is ungrammatical).
+    this_stage_name = _STAGE_RESULT_NOUNS.get(stage_key, stage_key)
     rerun = _RERUN_LABELS.get(stage_key, "Rerun this stage.")
 
     # Prefer the first reason whose upstream artifact type is itself another
@@ -244,10 +318,53 @@ def test_causal_staleness_message_names_job_fit_as_cause_on_intelligence(tmp_pat
 
 Add the needed import at top of the test file: `from webapp.persistence.artifacts import save_artifact` is already imported; `PROFILE_WORKSPACE_ID` is already imported; `build_workspace_view_model` is already imported. No new imports needed.
 
+- [ ] **Step 5b: Write the parser-contract test covering every `check_staleness` reason-string form**
+
+Because `_extract_upstream_type` parses `check_staleness`'s internal reason strings — a coupling this plan deliberately accepts rather than modifying `staleness.py` — that parsing needs its own direct unit coverage independent of the two full-pipeline scenarios above, so a future wording change inside `_check_staleness_recursive` breaks a fast, obvious unit test instead of only a slower integration test. Add to `tests/webapp/services/test_workspace_view.py`:
+
+```python
+def test_extract_upstream_type_handles_every_check_staleness_reason_form():
+    from webapp.services.workspace_view import _extract_upstream_type
+
+    # Verified directly against webapp/services/staleness.py's actual
+    # f-string templates (_check_staleness_recursive and
+    # _server_input_identity), not guessed — see plan Task 1's Design section
+    # for the traced scenarios these forms come from.
+    cases = [
+        # "X changed (used '...', current is '...')" — direct mismatch
+        ("profile_snapshot changed (used 'profile_A', current is 'profile_B')", "profile_snapshot"),
+        # "X is itself stale: ..." — transitive
+        ("job_fit_result is itself stale: profile_snapshot changed (...)", "job_fit_result"),
+        # "required fingerprint 'X' is missing" — repr()-quoted
+        ("required fingerprint 'job_posting_snapshot' is missing", "job_posting_snapshot"),
+        # "required upstream artifact 'X' is missing" — repr()-quoted
+        ("required upstream artifact 'job_understanding_result' is missing", "job_understanding_result"),
+        # "X cannot be resolved: <exception text>" — server: input resolution failure
+        ("server:evaluation_policy cannot be resolved: ValueError('boom')", "server:evaluation_policy"),
+        # Unknown/unparseable text — must return None, not raise, so the
+        # caller's honest fallback ("something this depends on") is reached
+        # instead of crashing the whole workspace page.
+        ("some completely unrecognized future reason format", None),
+    ]
+    for reason, expected in cases:
+        assert _extract_upstream_type(reason) == expected, f"failed for: {reason!r}"
+
+
+def test_causal_staleness_message_falls_back_honestly_for_unparseable_reason():
+    from webapp.services.workspace_view import _causal_staleness_message
+
+    message = _causal_staleness_message(
+        "fit", {"stale": True, "reasons": ["some completely unrecognized future reason format"]},
+    )
+    assert message is not None
+    assert "something this depends on" in message
+    assert "Rerun Job Fit" in message
+```
+
 - [ ] **Step 6: Run tests to verify they fail**
 
-Run: `python -m pytest tests/webapp/services/test_workspace_view.py -k causal_staleness -v`
-Expected: FAIL — `KeyError: 'causal_reason'` (not wired into `stages` yet)
+Run: `python -m pytest tests/webapp/services/test_workspace_view.py -k "causal_staleness or extract_upstream_type" -v`
+Expected: `test_causal_staleness_message_names_direct_cause_on_fit` and `test_causal_staleness_message_names_job_fit_as_cause_on_intelligence` FAIL with `KeyError: 'causal_reason'` (not wired into `stages` yet). `test_extract_upstream_type_handles_every_check_staleness_reason_form` and `test_causal_staleness_message_falls_back_honestly_for_unparseable_reason` PASS immediately — they call the pure helpers directly (no view-model wiring needed) and both helpers already exist and behave correctly from Step 3.
 
 - [ ] **Step 7: Wire the helper into `build_workspace_view_model`**
 
@@ -279,8 +396,8 @@ Replace with (adds `causal_reason` key to the four staleness-checked stages only
 
 - [ ] **Step 8: Run tests to verify they pass**
 
-Run: `python -m pytest tests/webapp/services/test_workspace_view.py -k causal_staleness -v`
-Expected: PASS (all 3 tests)
+Run: `python -m pytest tests/webapp/services/test_workspace_view.py -k "causal_staleness or extract_upstream_type" -v`
+Expected: PASS (all 4 tests)
 
 - [ ] **Step 9: Run the full existing workspace_view test file to check for regressions**
 
@@ -365,10 +482,16 @@ _COMPLETION_ISSUE_MESSAGES: dict[str, Any] = {
 
 
 def _friendly_completion_issues(review_completion: dict[str, Any]) -> list[str]:
+    # No `if code in _COMPLETION_ISSUE_MESSAGES` filter: this plan's own
+    # exhaustiveness requirement (Global Constraints) is that a closed-enum
+    # code with no mapping entry must fail loudly, not disappear silently
+    # from the user-facing list. A KeyError here — surfaced as a 500 in
+    # manual/Playwright testing — is the intended signal that a new issue
+    # code was added to application_material_contract.py without updating
+    # this map, not a bug to swallow with a filter.
     return [
         _COMPLETION_ISSUE_MESSAGES[code](review_completion)
         for code in review_completion.get("issues", [])
-        if code in _COMPLETION_ISSUE_MESSAGES
     ]
 ```
 
@@ -396,12 +519,31 @@ def test_friendly_completion_issues_report_exact_counts(tmp_path, monkeypatch):
     view = workspace_view.build_workspace_view_model(conn, workspace_id)
     friendly = view["review_completion_friendly_issues"]
     assert any("0 of 2 required CV bullets" in message for message in friendly)
+
+
+def test_unmapped_completion_issue_code_fails_loudly_instead_of_disappearing():
+    from webapp.services.workspace_view import _friendly_completion_issues
+
+    review_completion = {
+        "issues": ["some_future_issue_code_not_yet_mapped"],
+        "qualifying_cv_unit_count": 0, "cv_word_count": 0,
+        "qualifying_cover_letter_paragraph_count": 0, "cover_letter_word_count": 0,
+    }
+    try:
+        _friendly_completion_issues(review_completion)
+    except KeyError:
+        pass
+    else:
+        raise AssertionError(
+            "an unmapped issue code was silently dropped instead of raising — "
+            "this defeats the exhaustiveness guarantee"
+        )
 ```
 
-- [ ] **Step 6: Run test to verify it fails**
+- [ ] **Step 6: Run both new tests**
 
-Run: `python -m pytest tests/webapp/services/test_workspace_view.py::test_friendly_completion_issues_report_exact_counts -v`
-Expected: FAIL — `KeyError: 'review_completion_friendly_issues'`
+Run: `python -m pytest tests/webapp/services/test_workspace_view.py -k "friendly_completion_issues or unmapped_completion_issue" -v`
+Expected: `test_friendly_completion_issues_report_exact_counts` FAILs with `KeyError: 'review_completion_friendly_issues'` — the helper exists (from Step 3) but isn't wired into the view model's return dict yet. `test_unmapped_completion_issue_code_fails_loudly_instead_of_disappearing` PASSes immediately — it calls `_friendly_completion_issues` directly (no view-model wiring needed) and the helper written in Step 3 already raises `KeyError` on an unmapped code by construction (no silent-filter branch was written). If this second test does NOT pass, it means Step 3 was implemented with a silent filter — go back and remove it.
 
 - [ ] **Step 7: Wire the helper into the return dict**
 
@@ -483,7 +625,9 @@ def test_historical_pack_flag_false_when_no_pack_exists(tmp_path):
     assert view["has_historical_pack_with_incomplete_current_material"] is False
 
 
-def test_historical_pack_flag_false_when_current_material_is_ready(tmp_path):
+def test_historical_pack_flag_false_when_current_material_is_ready(tmp_path, monkeypatch):
+    from webapp.services import workspace_view
+
     conn, workspace_id = _workspace(tmp_path)
     _, fit, intelligence = _seed_evidence(conn, workspace_id)
     pack = save_artifact(
@@ -494,21 +638,82 @@ def test_historical_pack_flag_false_when_current_material_is_ready(tmp_path):
     record_dependency_fingerprint(conn, artifact_id=pack["id"], upstream_artifact_type="job_fit_result", upstream_content_id=fit["content_id"])
     record_dependency_fingerprint(conn, artifact_id=pack["id"], upstream_artifact_type="application_intelligence_result", upstream_content_id=intelligence["content_id"])
 
-    view = build_workspace_view_model(conn, workspace_id)
+    # Deterministically force the CURRENT (post-pack) material to satisfy
+    # every completion threshold, rather than relying on whatever
+    # _seed_evidence's two review items happen to sum to — MIN_CV_UNITS=2
+    # (one must be a cv_bullet), MIN_CV_WORDS=20, MIN_COVER_LETTER_PARAGRAPHS=1,
+    # MIN_COVER_LETTER_WORDS=40. Words below are padded well past each
+    # threshold so this stays true even if the thresholds are tuned later.
+    cv_bullet_text = " ".join(f"bulletword{i}" for i in range(15))
+    cv_summary_text = " ".join(f"summaryword{i}" for i in range(15))
+    cover_paragraph_text = " ".join(f"coverword{i}" for i in range(50))
+    # NOTE: application_material_completion's _acknowledged_content_unit_ids
+    # requires decision["domain_item_id"] (and reads review_item_type too) —
+    # verified directly against webapp/application_material.py: a decision
+    # dict with only {"disposition": ...} and no domain_item_id yields an
+    # EMPTY acknowledged set, so nothing would qualify and the fixture would
+    # silently produce INCOMPLETE instead of the intended READY. Every
+    # decision below must carry domain_item_id + review_item_type to match
+    # the real shape _latest_decisions produces from actual DB rows.
+    ready_items = [
+        {
+            "review_item_type": "content_unit", "domain_item_id": "unit_ready_cv_bullet",
+            "source_artifact_id": intelligence["id"],
+            "item": {
+                "unit_id": "unit_ready_cv_bullet", "unit_type": "cv_bullet",
+                "status": "READY", "text": cv_bullet_text,
+                "profile_evidence_ids": ["clm_direct"],
+            },
+            "decision": {
+                "domain_item_id": "unit_ready_cv_bullet", "review_item_type": "content_unit",
+                "disposition": "acknowledged_and_proceed",
+            },
+        },
+        {
+            "review_item_type": "content_unit", "domain_item_id": "unit_ready_cv_summary",
+            "source_artifact_id": intelligence["id"],
+            "item": {
+                "unit_id": "unit_ready_cv_summary", "unit_type": "cv_summary_line",
+                "status": "READY", "text": cv_summary_text,
+                "profile_evidence_ids": ["clm_functional"],
+            },
+            "decision": {
+                "domain_item_id": "unit_ready_cv_summary", "review_item_type": "content_unit",
+                "disposition": "acknowledged_and_proceed",
+            },
+        },
+        {
+            "review_item_type": "content_unit", "domain_item_id": "unit_ready_cover",
+            "source_artifact_id": intelligence["id"],
+            "item": {
+                "unit_id": "unit_ready_cover", "unit_type": "cover_letter_paragraph",
+                "status": "READY", "text": cover_paragraph_text,
+                "profile_evidence_ids": ["clm_transfer"],
+            },
+            "decision": {
+                "domain_item_id": "unit_ready_cover", "review_item_type": "content_unit",
+                "disposition": "acknowledged_and_proceed",
+            },
+        },
+    ]
+    monkeypatch.setattr(
+        workspace_view, "_build_review_items", lambda *args, **kwargs: ready_items,
+    )
 
-    # No incomplete-material override applied — current acknowledged review
-    # items may still be short of the threshold in this fixture, so assert
-    # against the actual computed status rather than assuming READY.
-    if view["review_completion_status"] == "READY":
-        assert view["has_historical_pack_with_incomplete_current_material"] is False
+    view = workspace_view.build_workspace_view_model(conn, workspace_id)
+
+    # Assert unconditionally: this fixture is deterministically READY, so the
+    # flag must be False, not merely "False if it happens to be READY."
+    assert view["review_completion_status"] == "READY"
+    assert view["has_historical_pack_with_incomplete_current_material"] is False
 ```
 
-Needed imports already present in the test file (`save_artifact`, `record_dependency_fingerprint`, `record_status_change`, `completion_ready_pack_payload`, `build_workspace_view_model`).
+Needed imports already present in the test file (`save_artifact`, `record_dependency_fingerprint`, `record_status_change`, `completion_ready_pack_payload`, `build_workspace_view_model`). The third test additionally needs `from webapp.services import workspace_view` (for `monkeypatch.setattr`), matching the same local-import pattern already used by `test_omitting_all_usable_material_keeps_gate_four_incomplete` elsewhere in this file.
 
 - [ ] **Step 2: Run tests to verify they fail**
 
 Run: `python -m pytest tests/webapp/services/test_workspace_view.py -k historical_pack -v`
-Expected: FAIL — `KeyError: 'has_historical_pack_with_incomplete_current_material'`
+Expected: FAIL — `KeyError: 'has_historical_pack_with_incomplete_current_material'` on all three tests.
 
 - [ ] **Step 3: Wire the flag into the return dict**
 
@@ -529,7 +734,7 @@ Then add the key to the returned dict, next to `"review_completion_friendly_issu
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `python -m pytest tests/webapp/services/test_workspace_view.py -k historical_pack -v`
-Expected: PASS (3 tests; the third has a conditional assertion by design since the fixture's exact completion status depends on `_seed_evidence`'s content — if it prints a failure, inspect the printed `review_completion_status` and adjust the conditional, not the flag logic)
+Expected: PASS (all 3 tests). All three assertions are unconditional: `test_historical_pack_flag_false_when_current_material_is_ready` was constructed with a monkeypatched fixture verified independently (against `application_material_completion` directly) to always produce `review_completion_status == "READY"` — the test asserts that fact explicitly before asserting the flag, so a future regression that breaks the READY guarantee fails loudly at the first assertion rather than the test silently degrading to a no-op.
 
 - [ ] **Step 5: Run full workspace_view test suite**
 
@@ -868,7 +1073,7 @@ Replace with:
 
 - [ ] **Step 4: Manual smoke check**
 
-Run the dev server, load `/`, confirm the card renders above the filters with all 8 labels visible and the link goes to `/how-it-works` (will 404 until Task 8 — that's expected at this point in the plan).
+Run the dev server, load `/`, confirm the card renders above the filters with all 8 labels visible and the link goes to `/how-it-works` (will 404 until Task 7 — that's expected at this point in the plan).
 
 - [ ] **Step 5: Commit**
 
@@ -988,15 +1193,18 @@ Unit test coverage for Tasks 1-4 was written test-first inline within each task 
 
 - [ ] **Step 1: List all new tests added in Tasks 1-4 and confirm each spec requirement has coverage**
 
-Run: `python -m pytest tests/webapp/services/test_workspace_view.py -v --collect-only | grep -E "causal_staleness|completion_issue|historical_pack|friendly_exclusion"`
+Run: `python -m pytest tests/webapp/services/test_workspace_view.py -v --collect-only | grep -E "causal_staleness|extract_upstream_type|completion_issue|unmapped_completion|historical_pack|friendly_exclusion"`
 
 Expected output includes all of:
 ```
 test_causal_staleness_noun_map_covers_every_dependency_type
 test_causal_staleness_message_names_direct_cause_on_fit
 test_causal_staleness_message_names_job_fit_as_cause_on_intelligence
+test_extract_upstream_type_handles_every_check_staleness_reason_form
+test_causal_staleness_message_falls_back_honestly_for_unparseable_reason
 test_completion_issue_message_map_covers_every_issue_code
 test_friendly_completion_issues_report_exact_counts
+test_unmapped_completion_issue_code_fails_loudly_instead_of_disappearing
 test_historical_pack_with_incomplete_current_material_flag_true_when_both_hold
 test_historical_pack_flag_false_when_no_pack_exists
 test_historical_pack_flag_false_when_current_material_is_ready
@@ -1010,7 +1218,7 @@ If any are missing, go back to the relevant Task 1-4 step and add them now — d
 - [ ] **Step 2: Run the full unit test file one more time**
 
 Run: `python -m pytest tests/webapp/services/test_workspace_view.py -v`
-Expected: All PASS (existing + 11 new tests)
+Expected: All PASS (existing + 14 new tests)
 
 - [ ] **Step 3: Commit only if Step 1 found and filled a gap**
 
@@ -1027,7 +1235,54 @@ git commit -m "test: fill unit coverage gap for [specific gap found]"
 
 All scenarios extend `tests/webapp/test_browser_smoke.py` using its existing fixtures (`live_server`, `page`, `_refresh_profile`, `_run_to_intelligence`, `_click_reload`, `_create_job`, `_assert_no_private_browser_content`). Per the spec's copy-assertion discipline: assert semantic phrases/actions, never full paragraphs.
 
-### Task 9: Causal staleness Playwright scenario
+### Task 9: Shared review-resolution helpers (avoid repeating 30-click loops)
+
+**Why:** three existing tests in this file already inline a `for _ in range(30): ... click ...` loop to resolve every pending review item one disposition at a time, and this plan's new scenarios (Tasks 10 and 11 below) would otherwise add three more copies of the same loop. That repetition is fragile — any future change to review-item markup or the confirm-pack flow means fixing the same loop in six places. Extracting one shared helper per disposition, plus a "confirm the pack" convenience, means future review-UI changes are fixed once. This task only adds the helpers; it does not modify the three pre-existing tests that already inline the loop (out of scope for this plan — they still pass unchanged), but every *new* test this plan adds in Tasks 10-11 uses the shared helper instead of inlining its own copy.
+
+**Files:**
+- Modify: `tests/webapp/test_browser_smoke.py`
+
+**Interfaces:**
+- Produces: `_resolve_all_pending_reviews(page, disposition: str) -> None` — clicks every outstanding review-item button for the given disposition (`"acknowledged_and_proceed"` or `"omit_from_positioning"`) until none remain, reloading after each click via the existing `_click_reload` helper. `_confirm_pack(page) -> None` — accepts the confirmation dialog and clicks "Create reviewed pack — does not submit", reloading via `_click_reload`.
+
+- [ ] **Step 1: Add the two helpers**
+
+In `tests/webapp/test_browser_smoke.py`, add immediately after `_run_to_intelligence` (currently ends line 400, before `_assert_no_private_browser_content`):
+
+```python
+def _resolve_all_pending_reviews(page, disposition: str) -> None:
+    for _ in range(30):
+        button = page.locator(
+            'article.review-item:not(:has(.decision)) '
+            f'button.review-action[data-disposition="{disposition}"]'
+        ).first
+        if button.count() == 0:
+            break
+        _click_reload(page, button)
+    else:
+        raise AssertionError(f"review queue did not converge for disposition={disposition!r}")
+
+
+def _confirm_pack(page) -> None:
+    page.once("dialog", lambda dialog: dialog.accept())
+    _click_reload(page, page.get_by_role("button", name="Create reviewed pack — does not submit"))
+```
+
+- [ ] **Step 2: Run the existing full suite to confirm nothing regressed from this purely additive change**
+
+Run: `python -m pytest tests/webapp/test_browser_smoke.py -v`
+Expected: All existing tests still PASS unchanged (this step only adds two new module-level functions; no existing test body was touched)
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add tests/webapp/test_browser_smoke.py
+git commit -m "test: extract shared review-resolution helpers for Playwright scenarios"
+```
+
+---
+
+### Task 10: Causal staleness Playwright scenario
 
 **Files:**
 - Modify: `tests/webapp/test_browser_smoke.py`
@@ -1071,7 +1326,7 @@ def test_causal_staleness_message_appears_and_differs_by_stage(page, live_server
 Run: `python -m pytest tests/webapp/test_browser_smoke.py::test_causal_staleness_message_appears_and_differs_by_stage -v`
 Expected: PASS
 
-(If Playwright's Chromium isn't installed locally, this will error with `BrowserType.launch: Executable doesn't exist` — this is a pre-existing environment gap noted in prior session reports, not a regression from this task. Run `playwright install chromium` if it's available, otherwise flag this to the user and proceed; Task 13's full-suite run will surface the same pre-existing gap.)
+(Per Task 14, Chromium is a mandatory requirement for this plan's completion gate, not an optional check — if `playwright install chromium` hasn't been run yet in this environment, run it now rather than deferring to Task 14; this test must actually execute and pass, not merely be written.)
 
 - [ ] **Step 3: Commit**
 
@@ -1082,7 +1337,7 @@ git commit -m "test: add Playwright coverage for causal per-stage staleness mess
 
 ---
 
-### Task 10: Gate 4 visibility regression + friendly completion counts + How it works + Getting Started + empty-state Playwright scenarios
+### Task 11: Gate 4 visibility regression + friendly completion counts + How it works + Getting Started + empty-state Playwright scenarios
 
 **Files:**
 - Modify: `tests/webapp/test_browser_smoke.py`
@@ -1096,16 +1351,8 @@ def test_gate_four_reason_survives_an_existing_confirmed_pack(page, live_server)
     _refresh_profile(page, live_server)
     workspace_url = _run_to_intelligence(page, live_server)
 
-    for _ in range(30):
-        acknowledge = page.locator(
-            'article.review-item:not(:has(.decision)) '
-            'button.review-action[data-disposition="acknowledged_and_proceed"]'
-        ).first
-        if acknowledge.count() == 0:
-            break
-        _click_reload(page, acknowledge)
-    page.once("dialog", lambda dialog: dialog.accept())
-    _click_reload(page, page.get_by_role("button", name="Create reviewed pack — does not submit"))
+    _resolve_all_pending_reviews(page, "acknowledged_and_proceed")
+    _confirm_pack(page)
     assert page.get_by_text("Yes — ready to send", exact=True).is_visible()
 
     candidate_path = (
@@ -1123,14 +1370,7 @@ def test_gate_four_reason_survives_an_existing_confirmed_pack(page, live_server)
     _click_reload(page, page.get_by_role("button", name="Rerun Job Fit"))
     _click_reload(page, page.get_by_role("button", name="Rerun Application Intelligence"))
 
-    for _ in range(30):
-        omit = page.locator(
-            'article.review-item:not(:has(.decision)) '
-            'button.review-action[data-disposition="omit_from_positioning"]'
-        ).first
-        if omit.count() == 0:
-            break
-        _click_reload(page, omit)
+    _resolve_all_pending_reviews(page, "omit_from_positioning")
 
     assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
     assert page.locator("button.confirm-pack").is_disabled()
@@ -1142,14 +1382,7 @@ def test_friendly_completion_counts_visible_when_material_incomplete(page, live_
     _refresh_profile(page, live_server)
     _run_to_intelligence(page, live_server)
 
-    for _ in range(30):
-        omit = page.locator(
-            'article.review-item:not(:has(.decision)) '
-            'button.review-action[data-disposition="omit_from_positioning"]'
-        ).first
-        if omit.count() == 0:
-            break
-        _click_reload(page, omit)
+    _resolve_all_pending_reviews(page, "omit_from_positioning")
 
     assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
     assert page.get_by_text("0 of 2 required CV bullets").is_visible()
@@ -1210,7 +1443,7 @@ git commit -m "test: add Playwright coverage for Gate 4 visibility fix, How it w
 
 ---
 
-### Task 11: Combined confusing-state regression scenario (spec §4 item 7)
+### Task 12: Combined confusing-state regression scenario (spec §4 item 7)
 
 **Files:**
 - Modify: `tests/webapp/test_browser_smoke.py`
@@ -1228,16 +1461,8 @@ def test_historical_pack_and_incomplete_current_material_never_read_as_contradic
     _refresh_profile(page, live_server)
     workspace_url = _run_to_intelligence(page, live_server)
 
-    for _ in range(30):
-        acknowledge = page.locator(
-            'article.review-item:not(:has(.decision)) '
-            'button.review-action[data-disposition="acknowledged_and_proceed"]'
-        ).first
-        if acknowledge.count() == 0:
-            break
-        _click_reload(page, acknowledge)
-    page.once("dialog", lambda dialog: dialog.accept())
-    _click_reload(page, page.get_by_role("button", name="Create reviewed pack — does not submit"))
+    _resolve_all_pending_reviews(page, "acknowledged_and_proceed")
+    _confirm_pack(page)
     cv_link = page.get_by_role("link", name="Download CV")
     cover_letter_link = page.get_by_role("link", name="Download Cover Letter")
     assert cv_link.is_visible()
@@ -1261,14 +1486,7 @@ def test_historical_pack_and_incomplete_current_material_never_read_as_contradic
     _click_reload(page, page.get_by_role("button", name="Rerun Job Fit"))
     _click_reload(page, page.get_by_role("button", name="Rerun Application Intelligence"))
 
-    for _ in range(30):
-        omit = page.locator(
-            'article.review-item:not(:has(.decision)) '
-            'button.review-action[data-disposition="omit_from_positioning"]'
-        ).first
-        if omit.count() == 0:
-            break
-        _click_reload(page, omit)
+    _resolve_all_pending_reviews(page, "omit_from_positioning")
 
     # 1. Historical downloads remain available and point at the same rendered artifact.
     cv_link = page.get_by_role("link", name="Download CV")
@@ -1316,16 +1534,16 @@ git commit -m "test: add combined regression for historical pack + incomplete cu
 
 # Part 5 — Regression verification
 
-### Task 12: Confirm untouched-file boundary
+### Task 13: Confirm untouched-file boundary
 
 **Files:** none modified — verification only.
 
 - [ ] **Step 1: Diff-check that no out-of-scope file changed**
 
-Run:
+Diffs are measured against the pinned baseline commit `485c997` recorded in Task 0, never against symbolic `master` — this guarantees the comparison is stable even if another session moves `master` while this ticket is in progress. Run (from inside the Task 0 worktree):
 
 ```bash
-git diff master --stat -- product/ webapp/persistence/ webapp/services/staleness.py webapp/application_material.py webapp/services/http_api.py
+git diff 485c997...HEAD --stat -- product/ webapp/persistence/ webapp/services/staleness.py webapp/application_material.py webapp/services/http_api.py
 ```
 
 Expected: empty output (no changes to any file in this list). If anything appears, stop and investigate before proceeding — this plan should never touch these files.
@@ -1335,7 +1553,7 @@ Expected: empty output (no changes to any file in this list). If anything appear
 Run:
 
 ```bash
-git diff master --stat -- webapp/api/ | grep -v "views.py"
+git diff 485c997...HEAD --stat -- webapp/api/ | grep -v "views.py"
 ```
 
 Expected: empty output.
@@ -1348,7 +1566,7 @@ Run:
 python -m pytest tests/webapp/services/test_staleness.py tests/webapp/test_application_material.py -v
 ```
 
-Expected: All PASS, unchanged pass/fail set compared to a run on `master` before this branch's changes.
+Expected: All PASS, unchanged pass/fail set compared to a run at the pinned baseline `485c997` before this branch's changes.
 
 - [ ] **Step 4: Re-run existing Gate 4 workflow tests**
 
@@ -1366,51 +1584,42 @@ If any step above fails, do not commit further work; return to the relevant task
 
 ---
 
-### Task 13: Full Chrome-inclusive suite
+### Task 14: Full Chrome-inclusive suite — Chromium is mandatory for this gate
+
+**Chromium is a hard requirement for declaring this ticket complete, not an optional extra.** This ticket is fundamentally UI/Playwright work (causal copy rendered in templates, a new page, a dashboard card) — its correctness cannot be established by unit tests against Python dicts alone. A prior worktree's environment gap (missing Chromium executable, `.claude/worktrees/.../task-3-report.md`) was tolerable for tickets where Playwright was incidental coverage; it is not tolerable here, where the working browser journeys demonstrated by `485c997`'s own acceptance testing are the whole point of this ticket. "Browser suite unexercised" is a blocker to completion, not an acceptable final-report caveat.
 
 **Files:** none modified — verification only.
 
-- [ ] **Step 1: Run the complete repo test suite**
-
-Run:
-
-```bash
-python -m pytest tests/ -v
-```
-
-- [ ] **Step 2: Compare the result against the pre-existing known-failure baseline**
-
-Per prior session reports in this repo (`.claude/worktrees/.../task-3-report.md`), the only expected pre-existing failures are Playwright browser-smoke tests failing with `BrowserType.launch: Executable doesn't exist` if Chromium hasn't been installed in this environment (`playwright install chromium`). Confirm:
-- If Chromium **is** installed: expected result is 100% pass, including all 7 new Playwright scenarios from Tasks 9-11 and all existing browser-smoke tests.
-- If Chromium is **not** installed: the failure count should match exactly the pre-existing baseline count plus the new tests added in this plan (all new tests will also fail with the same `Executable doesn't exist` error, not a different error) — confirm no new *type* of failure was introduced by grepping the pytest output for anything other than `BrowserType.launch`.
-
-Run (if any failures appear, to separate expected-environment gaps from real regressions):
-
-```bash
-python -m pytest tests/ -v 2>&1 | grep -B2 "FAILED\|ERROR" | grep -v "BrowserType.launch"
-```
-
-Expected: empty output (every failure, if any, is the known Playwright-executable gap, not a real regression).
-
-- [ ] **Step 3: If Chromium is available in this environment, install it and get a true green run**
+- [ ] **Step 1: Install Chromium unconditionally, before running anything**
 
 Run:
 
 ```bash
 playwright install chromium
+```
+
+If this command fails (no network access, disk space, or similar genuine environment failure — not "let's skip it"), stop here and escalate to the user before proceeding; do not report this ticket complete without a green run from Step 3.
+
+- [ ] **Step 2: Run the complete repo test suite**
+
+Run:
+
+```bash
 python -m pytest tests/ -v
 ```
 
-Expected: 100% pass.
+- [ ] **Step 3: Require 100% pass — no tolerated failure category**
+
+Expected: 100% pass, including all 7 new Playwright scenarios from Tasks 10-12 (plus the shared helpers added in Task 9), all pre-existing browser-smoke tests, and every unit test from Tasks 1-4/8. There is no accepted "known gap" bucket for this run — any failure, Playwright or otherwise, is investigated and fixed before this task is considered done. If any test fails, treat it exactly like any other failing test in this plan: diagnose the root cause (a genuine regression in this plan's changes, a flaky/timing issue in the test itself, or a pre-existing repo issue unrelated to this ticket) and either fix it or, only if it is unambiguously pre-existing and unrelated to any file this plan touches (per the Task 13 file list), document that specific test name and reason in the final report — never as a blanket "Chromium unavailable" excuse.
 
 - [ ] **Step 4: Report final status to the user**
 
-No commit for this task — it's the final verification gate. Summarize pass/fail counts and any environment caveats (e.g. "Chromium unavailable, browser suite unexercised") when reporting completion.
+No commit for this task — it's the final verification gate. Report the pass/fail count from a green (or explicitly investigated and justified) run. A report claiming ticket completion with an unexercised browser suite is not acceptable output for this task.
 
 ---
 
 ## Self-Review Notes
 
-**Spec coverage check:** every numbered item in the spec's §2 (2a stale causal messages, 2b Gate 4 always-visible reason, 2b-2 historical/current split, 2c exclusion friendly+preserved reason, 2d How it works + glossary, 2e empty states, 2f Getting Started card) maps to a task above (Tasks 1, 2, 5, 3, 4/5, 7, 5/6, 6 respectively). Spec §4's 7 Playwright scenarios map to Tasks 9-11. Spec §6's risk mitigations (exhaustiveness tests, read-only presentation flag, no JSON API changes) map to Task 8's audit and Task 12's boundary check.
+**Spec coverage check:** every numbered item in the spec's §2 (2a stale causal messages, 2b Gate 4 always-visible reason, 2b-2 historical/current split, 2c exclusion friendly+preserved reason, 2d How it works + glossary, 2e empty states, 2f Getting Started card) maps to a task above (Tasks 1, 2, 5, 3, 4/5, 7, 5/6, 6 respectively). Spec §4's 7 Playwright scenarios map to Tasks 10-12 (built on the shared helpers from Task 9). Spec §6's risk mitigations (exhaustiveness tests, read-only presentation flag, no JSON API changes) map to Task 8's audit and Task 13's boundary check.
 
 **Type consistency check:** `stage["causal_reason"]` (Task 1) is read in Task 5's Step 3 template edits using the same key name across all three stage panels. `review_completion_friendly_issues` (Task 2) is read in Task 5's Step 1 template edit using the same key name. `has_historical_pack_with_incomplete_current_material` (Task 3) is read identically in Task 5's Steps 1-2. `friendly_reason` (Task 4, on evidence items) is read in Task 5's Step 4. No renaming drift found.
