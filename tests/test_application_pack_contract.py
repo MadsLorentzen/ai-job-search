@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 import copy
+import json
+from pathlib import Path
 
 import pytest
 
 from product.application_pack_contract import (
     ApplicationPackContractError,
     build_candidate_snapshot,
+    validate_application_pack_v1,
 )
+
+
+_FIXTURES = Path(__file__).parent / "fixtures" / "application_pack"
 
 
 def _claim(
@@ -201,3 +207,170 @@ def test_builder_does_not_mutate_source_artifact():
     before = copy.deepcopy(artifact)
     build_candidate_snapshot(artifact)
     assert artifact == before
+
+
+def _valid_v1_pack():
+    return json.loads((_FIXTURES / "v1_valid.json").read_text(encoding="utf-8"))
+
+
+def _matching_profile_artifact(*, include_employment=False):
+    claims = [_name_claim()]
+    if include_employment:
+        claims.extend(
+            [
+                _claim(10, "employment", "job_title", "Engineer", record=10),
+                _claim(11, "employment", "employer", "Example Ltd", record=10),
+            ]
+        )
+    return _artifact(claims)
+
+
+def test_valid_v1_pack_passes_render_and_construction_modes():
+    pack = _valid_v1_pack()
+    validate_application_pack_v1(pack)
+    validate_application_pack_v1(
+        pack, source_profile_artifact=_matching_profile_artifact()
+    )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda pack: pack.update(schema_version="application-pack.v9"),
+        lambda pack: pack.update(unexpected=True),
+        lambda pack: pack["candidate_snapshot"].update(unexpected=True),
+        lambda pack: pack["candidate_snapshot"].update(profile_schema_version="profile.v9"),
+        lambda pack: pack["candidate_snapshot"]["identity"].update(name=None),
+        lambda pack: pack["candidate_snapshot"]["identity"]["name"].update(extra=True),
+        lambda pack: pack["candidate_snapshot"]["identity"]["name"].update(
+            profile_evidence_ids=[]
+        ),
+        lambda pack: pack["candidate_snapshot"]["identity"]["name"].update(
+            profile_evidence_ids=["clm_0000000000000002", "clm_0000000000000001"]
+        ),
+        lambda pack: pack["source_artifacts"]["profile_snapshot"].update(extra=True),
+    ],
+)
+def test_structurally_malformed_v1_pack_is_rejected_in_both_modes(mutation):
+    pack = _valid_v1_pack()
+    mutation(pack)
+    with pytest.raises(ApplicationPackContractError):
+        validate_application_pack_v1(pack)
+    with pytest.raises(ApplicationPackContractError):
+        validate_application_pack_v1(
+            pack, source_profile_artifact=_matching_profile_artifact()
+        )
+
+
+@pytest.mark.parametrize(
+    "decision_mutation",
+    [
+        lambda decisions: decisions.pop(0),
+        lambda decisions: decisions[0].update(source_artifact_id="art_ai_old"),
+        lambda decisions: decisions[0].update(disposition="omit_from_positioning"),
+        lambda decisions: decisions.append(copy.deepcopy(decisions[0])),
+    ],
+)
+def test_every_rendered_ai_unit_requires_exactly_one_acknowledgement(decision_mutation):
+    pack = _valid_v1_pack()
+    decision_mutation(pack["review_record"]["decisions_consulted"])
+    with pytest.raises(ApplicationPackContractError, match="authorization"):
+        validate_application_pack_v1(pack)
+
+
+def test_acknowledgement_cannot_coexist_with_a_contradictory_matching_decision():
+    pack = _valid_v1_pack()
+    contradiction = copy.deepcopy(pack["review_record"]["decisions_consulted"][0])
+    contradiction["id"] = "rev_contradiction"
+    contradiction["disposition"] = "omit_from_positioning"
+    pack["review_record"]["decisions_consulted"].append(contradiction)
+    with pytest.raises(ApplicationPackContractError, match="authorization"):
+        validate_application_pack_v1(pack)
+
+
+def test_duplicate_rendered_unit_ids_are_rejected():
+    pack = _valid_v1_pack()
+    pack["cover_letter_content"][0]["unit_id"] = "cv_summary_1"
+    with pytest.raises(ApplicationPackContractError, match="duplicate"):
+        validate_application_pack_v1(pack)
+
+
+def test_construction_mode_requires_exact_complete_candidate_projection():
+    source = _matching_profile_artifact(include_employment=True)
+    complete = _valid_v1_pack()
+    complete["candidate_snapshot"] = build_candidate_snapshot(source)
+    validate_application_pack_v1(complete, source_profile_artifact=source)
+
+    mutations = []
+    omitted_record = copy.deepcopy(complete)
+    omitted_record["candidate_snapshot"]["employment"] = []
+    mutations.append(omitted_record)
+    omitted_field = copy.deepcopy(complete)
+    omitted_field["candidate_snapshot"]["employment"][0]["employer"] = None
+    mutations.append(omitted_field)
+    fabricated = copy.deepcopy(complete)
+    fabricated["candidate_snapshot"]["employment"].append(
+        copy.deepcopy(fabricated["candidate_snapshot"]["employment"][0])
+    )
+    fabricated["candidate_snapshot"]["employment"][1]["record_id"] = "rec_ffffffffffffffff"
+    mutations.append(fabricated)
+
+    for pack in mutations:
+        validate_application_pack_v1(pack)
+        with pytest.raises(ApplicationPackContractError, match="exact projection"):
+            validate_application_pack_v1(pack, source_profile_artifact=source)
+
+
+def test_construction_mode_rejects_reordered_deterministic_output():
+    source = _artifact(
+        [
+            _name_claim(),
+            _claim(10, "employment", "job_title", "First", record=10, file="a.md"),
+            _claim(20, "employment", "job_title", "Second", record=20, file="b.md"),
+        ]
+    )
+    pack = _valid_v1_pack()
+    pack["candidate_snapshot"] = build_candidate_snapshot(source)
+    pack["candidate_snapshot"]["employment"].reverse()
+    validate_application_pack_v1(pack)
+    with pytest.raises(ApplicationPackContractError, match="exact projection"):
+        validate_application_pack_v1(pack, source_profile_artifact=source)
+
+
+def test_render_mode_is_structural_not_profile_referential_validation():
+    pack = _valid_v1_pack()
+    pack["candidate_snapshot"]["identity"]["name"]["profile_evidence_ids"] = [
+        "clm_ffffffffffffffff"
+    ]
+    validate_application_pack_v1(pack)
+    with pytest.raises(ApplicationPackContractError, match="exact projection"):
+        validate_application_pack_v1(
+            pack, source_profile_artifact=_matching_profile_artifact()
+        )
+
+
+def test_construction_mode_checks_exact_source_reference():
+    pack = _valid_v1_pack()
+    source = _matching_profile_artifact()
+    source["content_id"] = "different_content"
+    with pytest.raises(ApplicationPackContractError, match="reference mismatch"):
+        validate_application_pack_v1(pack, source_profile_artifact=source)
+
+
+@pytest.mark.parametrize("mutation", ["literal", "corroboration"])
+def test_construction_mode_rejects_literal_or_corroborating_id_drift(mutation):
+    source = _artifact(
+        [
+            _name_claim(1, "Ada Lovelace", file="a.md"),
+            _name_claim(2, " ADA  LOVELACE ", file="b.md"),
+        ]
+    )
+    pack = _valid_v1_pack()
+    pack["candidate_snapshot"] = build_candidate_snapshot(source)
+    if mutation == "literal":
+        pack["candidate_snapshot"]["identity"]["name"]["value"] = "A. Lovelace"
+    else:
+        pack["candidate_snapshot"]["identity"]["name"]["profile_evidence_ids"].pop()
+    validate_application_pack_v1(pack)
+    with pytest.raises(ApplicationPackContractError, match="exact projection"):
+        validate_application_pack_v1(pack, source_profile_artifact=source)
