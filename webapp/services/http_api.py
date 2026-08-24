@@ -11,9 +11,14 @@ from pathlib import Path
 from typing import Any, Callable
 
 from webapp.persistence.artifacts import get_artifact, get_current_artifact
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
 from webapp.persistence.review import DISPOSITIONS, save_review_decision
 from webapp.persistence.workflow import record_status_change
-from webapp.persistence.workspaces import get_workspace, list_workspaces
+from webapp.persistence.workspaces import (
+    get_profile_workspace_id,
+    get_workspace,
+    list_workspaces,
+)
 from webapp.services.application_pack import (
     confirm_application_pack,
     retry_application_pack_projection,
@@ -36,26 +41,40 @@ class JobWorkspaceNotFound(LookupError):
     pass
 
 
-def require_job_workspace(conn: sqlite3.Connection, workspace_id: str) -> dict[str, Any]:
-    workspace = get_workspace(conn, workspace_id)
+def require_job_workspace(
+    conn: sqlite3.Connection,
+    workspace_id: str,
+    *,
+    account_id: str = DEFAULT_ACCOUNT_ID,
+) -> dict[str, Any]:
+    workspace = get_workspace(conn, workspace_id, account_id=account_id)
     if workspace is None or workspace["kind"] != "job":
         raise JobWorkspaceNotFound(f"job workspace {workspace_id!r} not found")
     return workspace
 
 
-def list_job_workspaces(conn: sqlite3.Connection) -> list[dict[str, Any]]:
-    return list_workspaces(conn)
+def list_job_workspaces(
+    conn: sqlite3.Connection, *, account_id: str = DEFAULT_ACCOUNT_ID
+) -> list[dict[str, Any]]:
+    return list_workspaces(conn, account_id=account_id)
 
 
-def get_job_workspace(conn: sqlite3.Connection, workspace_id: str) -> dict[str, Any]:
-    return require_job_workspace(conn, workspace_id)
+def get_job_workspace(
+    conn: sqlite3.Connection,
+    workspace_id: str,
+    *,
+    account_id: str = DEFAULT_ACCOUNT_ID,
+) -> dict[str, Any]:
+    return require_job_workspace(conn, workspace_id, account_id=account_id)
 
 
 def create_job_workspace(
-    conn: sqlite3.Connection, *, company: str, title: str, source_record: dict[str, Any]
+    conn: sqlite3.Connection, *, company: str, title: str,
+    source_record: dict[str, Any], account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     return create_job_from_source_record(
-        conn, company=company, title=title, source_record=source_record
+        conn, company=company, title=title, source_record=source_record,
+        account_id=account_id,
     )
 
 
@@ -96,9 +115,10 @@ def _preserve_current_artifacts(
 
 
 def understand_job(
-    conn: sqlite3.Connection, workspace_id: str, provider: Any, *, request_id: str
+    conn: sqlite3.Connection, workspace_id: str, provider: Any, *, request_id: str,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    require_job_workspace(conn, workspace_id)
+    require_job_workspace(conn, workspace_id, account_id=account_id)
     return _preserve_current_artifacts(
         conn, workspace_id,
         lambda: run_job_understanding(conn, workspace_id, provider, request_id=request_id),
@@ -108,8 +128,9 @@ def understand_job(
 def fit_job(
     conn: sqlite3.Connection, workspace_id: str, semantic_adapter: Any, *, request_id: str,
     extension_ids: list[str], extensions_dir: Path,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    require_job_workspace(conn, workspace_id)
+    require_job_workspace(conn, workspace_id, account_id=account_id)
     try:
         extensions = resolve_active_extensions(extensions_dir, extension_ids)
     except ExtensionRegistryError as exc:
@@ -119,18 +140,21 @@ def fit_job(
         lambda: run_job_fit(
             conn, workspace_id, semantic_adapter, request_id=request_id,
             active_extensions=extensions,
+            account_id=account_id,
         ),
     )
 
 
 def generate_application_intelligence(
-    conn: sqlite3.Connection, workspace_id: str, provider: Any, *, request_id: str
+    conn: sqlite3.Connection, workspace_id: str, provider: Any, *, request_id: str,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    require_job_workspace(conn, workspace_id)
+    require_job_workspace(conn, workspace_id, account_id=account_id)
     return _preserve_current_artifacts(
         conn, workspace_id,
         lambda: run_application_intelligence(
-            conn, workspace_id, provider, request_id=request_id
+            conn, workspace_id, provider, request_id=request_id,
+            account_id=account_id,
         ),
     )
 
@@ -139,12 +163,17 @@ def record_review_decision(
     conn: sqlite3.Connection, workspace_id: str, *, review_item_type: str,
     source_artifact_id: str, domain_item_id: str | None, disposition: str,
     note: str | None, commit: bool = True,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    require_job_workspace(conn, workspace_id)
+    require_job_workspace(conn, workspace_id, account_id=account_id)
     if disposition not in DISPOSITIONS:
         raise PipelineError(f"unknown disposition: {disposition!r}")
     source = get_artifact(conn, source_artifact_id)
-    if source is None or source["workspace_id"] not in {workspace_id, "profile"}:
+    profile_workspace_id = get_profile_workspace_id(conn, account_id)
+    if source is None or source["workspace_id"] not in {
+        workspace_id,
+        profile_workspace_id,
+    }:
         raise PipelineError("review source artifact does not belong to this workflow")
     return save_review_decision(
         conn, workspace_id=workspace_id, review_item_type=review_item_type,
@@ -154,9 +183,10 @@ def record_review_decision(
 
 
 def record_review_decisions(
-    conn: sqlite3.Connection, workspace_id: str, decisions: list[dict[str, Any]]
+    conn: sqlite3.Connection, workspace_id: str, decisions: list[dict[str, Any]],
+    *, account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> list[dict[str, Any]]:
-    require_job_workspace(conn, workspace_id)
+    require_job_workspace(conn, workspace_id, account_id=account_id)
     if not decisions:
         raise PipelineError("at least one review decision is required")
     try:
@@ -171,6 +201,7 @@ def record_review_decisions(
                 disposition=item["disposition"],
                 note=item.get("note"),
                 commit=False,
+                account_id=account_id,
             )
             for item in decisions
         ]
@@ -184,28 +215,31 @@ def record_review_decisions(
 def confirm_job_application_pack(
     conn: sqlite3.Connection, workspace_id: str, *, effective_date: str,
     documents_root: Path, extensions_dir: Path,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    require_job_workspace(conn, workspace_id)
+    require_job_workspace(conn, workspace_id, account_id=account_id)
     return confirm_application_pack(
         conn, workspace_id, effective_date=effective_date, documents_root=documents_root,
-        extensions_dir=extensions_dir,
+        extensions_dir=extensions_dir, account_id=account_id,
     )
 
 
 def retry_job_application_pack_projection(
     conn: sqlite3.Connection, workspace_id: str, *, pack_artifact_id: str,
     documents_root: Path,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    require_job_workspace(conn, workspace_id)
+    require_job_workspace(conn, workspace_id, account_id=account_id)
     return retry_application_pack_projection(
         conn, workspace_id, pack_artifact_id=pack_artifact_id,
-        documents_root=documents_root,
+        documents_root=documents_root, account_id=account_id,
     )
 
 
 def change_job_status(
     conn: sqlite3.Connection, workspace_id: str, *, new_status: str,
     effective_date: str, note: str | None,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     if new_status == "drafted":
         raise PipelineError(
@@ -216,7 +250,7 @@ def change_job_status(
         # SQLite write reservation. A concurrent Gate-4 confirmation cannot
         # promote Pack B between reading Pack A and recording ``applied``.
         conn.execute("BEGIN IMMEDIATE")
-        require_job_workspace(conn, workspace_id)
+        require_job_workspace(conn, workspace_id, account_id=account_id)
         submitted_pack_id = None
         if new_status == "applied":
             current_pack = get_current_artifact(conn, workspace_id, "application_pack")
@@ -225,7 +259,7 @@ def change_job_status(
             conn, workspace_id=workspace_id, new_status=new_status,
             effective_date=effective_date, note=note,
             submitted_pack_artifact_id=submitted_pack_id,
-            commit=False,
+            commit=False, account_id=account_id,
         )
         conn.commit()
     except ValueError as exc:
@@ -234,4 +268,4 @@ def change_job_status(
     except Exception:
         conn.rollback()
         raise
-    return require_job_workspace(conn, workspace_id)
+    return require_job_workspace(conn, workspace_id, account_id=account_id)

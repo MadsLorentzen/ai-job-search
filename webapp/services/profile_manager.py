@@ -22,13 +22,14 @@ from typing import Any
 from product.job_fit import profile_snapshot_content_id
 from product.profile_snapshot import SOURCE_PATHS, build_snapshot
 from webapp.persistence.artifacts import get_current_artifact, save_artifact
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
 from webapp.persistence.profile_sources import (
     CANDIDATE_SOURCE,
     included_profile_sources,
     list_profile_source_settings,
     set_supplemental_source_included,
 )
-from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID, ensure_profile_workspace
+from webapp.persistence.workspaces import ensure_profile_workspace
 from webapp.services.profile_setup import _atomic_write_bytes, profile_snapshot_is_ready
 
 
@@ -246,7 +247,12 @@ def parse_candidate_entries(markdown: str) -> list[SourceEntry]:
     return entries
 
 
-def _assign_entry_ids(conn: sqlite3.Connection, entries: list[SourceEntry]) -> None:
+def _assign_entry_ids(
+    conn: sqlite3.Connection,
+    entries: list[SourceEntry],
+    *,
+    account_id: str,
+) -> None:
     now = _now()
     seen_ids: set[str] = set()
     for entry in entries:
@@ -256,26 +262,27 @@ def _assign_entry_ids(conn: sqlite3.Connection, entries: list[SourceEntry]) -> N
             seen_ids.add(entry.entry_id)
             conn.execute(
                 "INSERT INTO profile_source_entries "
-                "(entry_id, source_path, entry_kind, fingerprint, occurrence, created_at, updated_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(entry_id) DO UPDATE SET "
+                "(account_id, entry_id, source_path, entry_kind, fingerprint, occurrence, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT(account_id, entry_id) DO UPDATE SET "
                 "entry_kind=excluded.entry_kind, fingerprint=excluded.fingerprint, "
                 "occurrence=excluded.occurrence, updated_at=excluded.updated_at",
-                (entry.entry_id, CANDIDATE_SOURCE, entry.kind, entry.fingerprint, entry.occurrence, now, now),
+                (account_id, entry.entry_id, CANDIDATE_SOURCE, entry.kind, entry.fingerprint, entry.occurrence, now, now),
             )
             continue
         row = conn.execute(
-            "SELECT entry_id FROM profile_source_entries WHERE source_path=? AND "
-            "entry_kind=? AND fingerprint=? AND occurrence=?",
-            (CANDIDATE_SOURCE, entry.kind, entry.fingerprint, entry.occurrence),
+            "SELECT entry_id FROM profile_source_entries WHERE account_id=? AND "
+            "source_path=? AND entry_kind=? AND fingerprint=? AND occurrence=?",
+            (account_id, CANDIDATE_SOURCE, entry.kind, entry.fingerprint, entry.occurrence),
         ).fetchone()
         entry.entry_id = row["entry_id"] if row else f"profile-entry-{uuid.uuid4().hex[:20]}"
         seen_ids.add(entry.entry_id)
         if row is None:
             conn.execute(
                 "INSERT INTO profile_source_entries "
-                "(entry_id, source_path, entry_kind, fingerprint, occurrence, created_at, updated_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (entry.entry_id, CANDIDATE_SOURCE, entry.kind, entry.fingerprint, entry.occurrence, now, now),
+                "(account_id, entry_id, source_path, entry_kind, fingerprint, occurrence, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (account_id, entry.entry_id, CANDIDATE_SOURCE, entry.kind, entry.fingerprint, entry.occurrence, now, now),
             )
 
 
@@ -289,16 +296,24 @@ def _public_entry(entry: SourceEntry) -> dict[str, Any]:
     }
 
 
-def get_profile_manager(conn: sqlite3.Connection, *, root: str | Path) -> dict[str, Any]:
+def get_profile_manager(
+    conn: sqlite3.Connection,
+    *,
+    root: str | Path,
+    account_id: str = DEFAULT_ACCOUNT_ID,
+) -> dict[str, Any]:
     with _MUTATION_LOCK:
         path = _profile_path(root)
         if not path.is_file():
             raise ProfileManagerError("canonical candidate profile source was not found")
         entries = parse_candidate_entries(path.read_text(encoding="utf-8"))
-        _assign_entry_ids(conn, entries)
+        _assign_entry_ids(conn, entries, account_id=account_id)
         conn.commit()
-        sources = list_profile_source_settings(conn)
-        current = get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
+        sources = list_profile_source_settings(conn, account_id=account_id)
+        profile_workspace = ensure_profile_workspace(conn, account_id=account_id)
+        current = get_current_artifact(
+            conn, profile_workspace["id"], "profile_snapshot"
+        )
         return {
             "revision": _revision(root, sources),
             "entries": [_public_entry(entry) for entry in entries],
@@ -429,7 +444,11 @@ def _insert_entry(lines: list[str], kind: str, fields: dict[str, Any], rendered:
 
 
 def _build_prospective_snapshot(
-    conn: sqlite3.Connection, root: str | Path, markdown: str
+    conn: sqlite3.Connection,
+    root: str | Path,
+    markdown: str,
+    *,
+    account_id: str,
 ) -> dict[str, Any]:
     import shutil
     import tempfile
@@ -437,7 +456,10 @@ def _build_prospective_snapshot(
     with tempfile.TemporaryDirectory(prefix="profile-manager-") as temp_dir:
         validation_root = Path(temp_dir)
         root_path = Path(root).resolve()
-        for relative in SOURCE_PATHS:
+        selected_sources = included_profile_sources(
+            conn, account_id=account_id
+        )
+        for relative in selected_sources:
             destination = validation_root / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             if relative == CANDIDATE_SOURCE:
@@ -448,7 +470,8 @@ def _build_prospective_snapshot(
                     raise ProfileManagerError(f"required candidate source not found: {relative}")
                 shutil.copyfile(source, destination)
         snapshot = build_snapshot(
-            validation_root, included_sources=included_profile_sources(conn)
+            validation_root,
+            included_sources=selected_sources,
         )
         candidate_has_name = any(
             claim.get("source", {}).get("file") == CANDIDATE_SOURCE
@@ -467,7 +490,7 @@ def _build_prospective_snapshot(
 
 def _persist_mutation(
     conn: sqlite3.Connection, *, root: str | Path, expected_revision: str,
-    operation: Any,
+    operation: Any, account_id: str,
 ) -> dict[str, Any]:
     with _MUTATION_LOCK:
         path = _profile_path(root)
@@ -475,7 +498,7 @@ def _persist_mutation(
         wrote_source = False
         try:
             conn.execute("BEGIN IMMEDIATE")
-            sources = list_profile_source_settings(conn)
+            sources = list_profile_source_settings(conn, account_id=account_id)
             if _revision(root, sources) != expected_revision:
                 raise ProfileRevisionConflict(
                     "Your Evidence Profile changed after this page was opened. "
@@ -483,35 +506,39 @@ def _persist_mutation(
                 )
             markdown = previous.decode("utf-8")
             entries = parse_candidate_entries(markdown)
-            _assign_entry_ids(conn, entries)
+            _assign_entry_ids(conn, entries, account_id=account_id)
             prospective, source_changed = operation(markdown, entries)
             if source_changed and prospective == markdown:
                 raise ProfileManagerError("profile mutation did not change the source")
-            snapshot = _build_prospective_snapshot(conn, root, prospective)
+            snapshot = _build_prospective_snapshot(
+                conn, root, prospective, account_id=account_id
+            )
             if source_changed:
                 _atomic_write_bytes(path, prospective.encode("utf-8"))
                 wrote_source = True
-            ensure_profile_workspace(conn, commit=False)
+            profile_workspace = ensure_profile_workspace(
+                conn, account_id=account_id, commit=False
+            )
             artifact = save_artifact(
-                conn, workspace_id=PROFILE_WORKSPACE_ID,
+                conn, workspace_id=profile_workspace["id"],
                 artifact_type="profile_snapshot", payload=snapshot,
                 content_id=profile_snapshot_content_id(snapshot), commit=False,
             )
             new_entries = parse_candidate_entries(prospective)
-            _assign_entry_ids(conn, new_entries)
+            _assign_entry_ids(conn, new_entries, account_id=account_id)
             conn.commit()
         except Exception:
             conn.rollback()
             if wrote_source:
                 _atomic_write_bytes(path, previous)
             raise
-        manager = get_profile_manager(conn, root=root)
+        manager = get_profile_manager(conn, root=root, account_id=account_id)
         return {"profile": artifact, "manager": manager}
 
 
 def create_profile_entry(
     conn: sqlite3.Connection, *, root: str | Path, expected_revision: str,
-    kind: str, fields: dict[str, Any],
+    kind: str, fields: dict[str, Any], account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     normalized = _normalize_fields(kind, fields)
     entry_id = f"profile-entry-{uuid.uuid4().hex[:20]}"
@@ -522,7 +549,8 @@ def create_profile_entry(
         return "\n".join(lines).rstrip() + "\n", True
 
     result = _persist_mutation(
-        conn, root=root, expected_revision=expected_revision, operation=operation
+        conn, root=root, expected_revision=expected_revision,
+        operation=operation, account_id=account_id,
     )
     result["entry_id"] = entry_id
     return result
@@ -531,6 +559,7 @@ def create_profile_entry(
 def update_profile_entry(
     conn: sqlite3.Connection, *, root: str | Path, expected_revision: str,
     entry_id: str, kind: str, fields: dict[str, Any],
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     normalized = _normalize_fields(kind, fields)
 
@@ -545,13 +574,14 @@ def update_profile_entry(
         return "\n".join(lines).rstrip() + "\n", True
 
     return _persist_mutation(
-        conn, root=root, expected_revision=expected_revision, operation=operation
+        conn, root=root, expected_revision=expected_revision,
+        operation=operation, account_id=account_id,
     )
 
 
 def delete_profile_entry(
     conn: sqlite3.Connection, *, root: str | Path, expected_revision: str,
-    entry_id: str,
+    entry_id: str, account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     def operation(markdown: str, entries: list[SourceEntry]) -> tuple[str, bool]:
         entry = next((item for item in entries if item.entry_id == entry_id), None)
@@ -561,22 +591,31 @@ def delete_profile_entry(
             raise ProfileManagerError("the required candidate name cannot be deleted")
         lines = markdown.splitlines()
         del lines[entry.start:entry.end]
-        conn.execute("DELETE FROM profile_source_entries WHERE entry_id=?", (entry_id,))
+        conn.execute(
+            "DELETE FROM profile_source_entries "
+            "WHERE account_id=? AND entry_id=?",
+            (account_id, entry_id),
+        )
         return "\n".join(lines).rstrip() + "\n", True
 
     return _persist_mutation(
-        conn, root=root, expected_revision=expected_revision, operation=operation
+        conn, root=root, expected_revision=expected_revision,
+        operation=operation, account_id=account_id,
     )
 
 
 def update_profile_source(
     conn: sqlite3.Connection, *, root: str | Path, expected_revision: str,
     source_path: str, included: bool,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     def operation(markdown: str, entries: list[SourceEntry]) -> tuple[str, bool]:
-        set_supplemental_source_included(conn, source_path, included)
+        set_supplemental_source_included(
+            conn, source_path, included, account_id=account_id
+        )
         return markdown, False
 
     return _persist_mutation(
-        conn, root=root, expected_revision=expected_revision, operation=operation
+        conn, root=root, expected_revision=expected_revision,
+        operation=operation, account_id=account_id,
     )

@@ -15,9 +15,11 @@ from product.application_intelligence_providers import ProviderResponse as AIRes
 from product.job_understanding_providers import ProviderResponse as UnderstandingResponse
 from webapp.app import create_app
 from webapp.config import Settings
+from webapp.persistence.accounts import create_account
 from webapp.persistence.artifacts import list_artifact_history
 from webapp.persistence.db import connect
-from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID
+from webapp.persistence.search_workspaces import create_search_workspace
+from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID, create_workspace
 
 from tests.webapp.fixtures.acceptance.fixtures import extension
 
@@ -404,6 +406,38 @@ def _assert_no_private_browser_content(page, live_server) -> None:
     assert "OPENAI_API_KEY" not in combined
     assert str(live_server.extensions_dir) not in combined
     assert "extension.json" not in combined
+
+
+def test_browser_routes_do_not_expose_another_accounts_known_ids(page, live_server):
+    conn = connect(live_server.db_path)
+    create_account(conn, account_id="account_browser_b", display_name="Browser B")
+    search_b = create_search_workspace(
+        conn,
+        account_id="account_browser_b",
+        search_workspace_id="search_browser_b",
+        name="Private Browser B Search",
+    )
+    application_b = create_workspace(
+        conn,
+        account_id="account_browser_b",
+        workspace_id="ws_browser_b",
+        company="Private Browser B Company",
+        title="Private Browser B Role",
+    )
+    conn.close()
+
+    page.goto(live_server.base_url + "/search-workspaces")
+    assert "Private Browser B Search" not in page.locator("body").inner_text()
+    search_response = page.goto(
+        live_server.base_url
+        + f"/search-workspaces/{search_b['id']}/preferences"
+    )
+    assert search_response.status == 404
+    application_response = page.goto(
+        live_server.base_url + f"/workspaces/{application_b['id']}"
+    )
+    assert application_response.status == 404
+    assert "Private Browser B Company" not in page.locator("body").inner_text()
 
 
 def test_user_profile_preferences_are_editable_in_browser(page, live_server):

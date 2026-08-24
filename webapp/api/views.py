@@ -5,7 +5,7 @@ import sqlite3
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from webapp.api.dependencies import get_conn
+from webapp.api.dependencies import get_account_scope, get_conn
 from product.user_profile import normalize_user_profile
 from webapp.persistence.user_profile import get_current_user_profile
 from product.discovery_search import SUPPORTED_DISCOVERY_SOURCES
@@ -23,34 +23,42 @@ from webapp.services.workspace_view import (
     build_workspace_view_model,
 )
 from webapp.services.profile_manager import get_profile_manager
+from webapp.services.ownership import AccountScope
 
 router = APIRouter(tags=["views"])
 
 
 def _search_context(
-    conn: sqlite3.Connection, selected_search_workspace: dict | None = None
+    conn: sqlite3.Connection, account_id: str,
+    selected_search_workspace: dict | None = None,
 ) -> dict:
     return {
-        "search_workspaces": list_search_workspaces(conn, include_archived=True),
+        "search_workspaces": list_search_workspaces(
+            conn, account_id=account_id, include_archived=True
+        ),
         "selected_search_workspace": selected_search_workspace,
     }
 
 
 def _require_search_workspace(
-    conn: sqlite3.Connection, search_workspace_id: str
+    conn: sqlite3.Connection, search_workspace_id: str, account_id: str
 ) -> dict:
-    workspace = get_search_workspace(conn, search_workspace_id)
+    workspace = get_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
     if workspace is None:
         raise HTTPException(status_code=404, detail="search workspace not found")
     return workspace
 
 
-def _selected_search_workspace_id(request: Request, conn: sqlite3.Connection) -> str:
+def _selected_search_workspace_id(
+    request: Request, conn: sqlite3.Connection, account_id: str
+) -> str:
     selected = request.cookies.get("search_workspace_id", DEFAULT_SEARCH_WORKSPACE_ID)
-    workspace = get_search_workspace(conn, selected)
+    workspace = get_search_workspace(conn, selected, account_id=account_id)
     if workspace is not None and workspace["status"] == "active":
         return selected
-    active = list_search_workspaces(conn)
+    active = list_search_workspaces(conn, account_id=account_id)
     return active[0]["id"] if active else DEFAULT_SEARCH_WORKSPACE_ID
 
 
@@ -58,6 +66,7 @@ def _selected_search_workspace_id(request: Request, conn: sqlite3.Connection) ->
 def dashboard(
     request: Request, filter: str = "active",
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     if filter not in {"all", "active", "drafted", "applied", "interview", "offer", "final"}:
         filter = "active"
@@ -69,47 +78,58 @@ def dashboard(
                 conn,
                 filter_name=filter,
                 extensions_dir=request.app.state.settings.extensions_dir,
+                account_id=scope.account_id,
             ),
-            **_search_context(conn),
+            **_search_context(conn, scope.account_id),
         },
     )
 
 
 @router.get("/profile", response_class=HTMLResponse)
-def profile_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+def profile_page(
+    request: Request,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
     return_to = request.query_params.get("return_to", "")
     if not return_to.startswith("/workspaces/"):
         return_to = ""
     view = build_profile_view_model(
-        conn, profile_root=request.app.state.settings.profile_root
+        conn, profile_root=scope.profile_root, account_id=scope.account_id
     )
     manager = None
     if not view["setup_required"]:
         manager = get_profile_manager(
-            conn, root=request.app.state.settings.profile_root
+            conn, root=scope.profile_root, account_id=scope.account_id
         )
     return request.app.state.templates.TemplateResponse(
         request, "profile.html", {
             **view,
             "profile_manager": manager,
             "return_to": return_to,
-            **_search_context(conn),
+            **_search_context(conn, scope.account_id),
         }
     )
 
 
 @router.get("/user-profile", response_class=HTMLResponse)
-def user_profile_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+def user_profile_page(
+    request: Request, conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
     return RedirectResponse(
-        f"/search-workspaces/{_selected_search_workspace_id(request, conn)}/preferences",
+        f"/search-workspaces/{_selected_search_workspace_id(request, conn, scope.account_id)}/preferences",
         status_code=307,
     )
 
 
 @router.get("/discover", response_class=HTMLResponse)
-def discovery_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+def discovery_page(
+    request: Request, conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
     return RedirectResponse(
-        f"/search-workspaces/{_selected_search_workspace_id(request, conn)}/discover",
+        f"/search-workspaces/{_selected_search_workspace_id(request, conn, scope.account_id)}/discover",
         status_code=307,
     )
 
@@ -119,16 +139,21 @@ def scoped_user_profile_page(
     search_workspace_id: str,
     request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
-    workspace = _require_search_workspace(conn, search_workspace_id)
-    record = get_current_user_profile(conn, search_workspace_id)
+    workspace = _require_search_workspace(
+        conn, search_workspace_id, scope.account_id
+    )
+    record = get_current_user_profile(
+        conn, search_workspace_id, account_id=scope.account_id
+    )
     response = request.app.state.templates.TemplateResponse(
         request,
         "user_profile.html",
         {
             "user_profile": record,
             "preferences": record["payload"] if record else normalize_user_profile({}),
-            **_search_context(conn, workspace),
+            **_search_context(conn, scope.account_id, workspace),
         },
     )
     response.set_cookie("search_workspace_id", search_workspace_id, samesite="lax")
@@ -140,9 +165,14 @@ def scoped_discovery_page(
     search_workspace_id: str,
     request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
-    workspace = _require_search_workspace(conn, search_workspace_id)
-    profile = get_current_user_profile(conn, search_workspace_id)
+    workspace = _require_search_workspace(
+        conn, search_workspace_id, scope.account_id
+    )
+    profile = get_current_user_profile(
+        conn, search_workspace_id, account_id=scope.account_id
+    )
     preferences = profile["payload"] if profile else normalize_user_profile({})
     latest_run = get_latest_discovery_run(conn, search_workspace_id)
     response = request.app.state.templates.TemplateResponse(
@@ -156,12 +186,14 @@ def scoped_discovery_page(
                 conn,
                 search_workspace_id=search_workspace_id,
                 extensions_dir=request.app.state.settings.extensions_dir,
+                account_id=scope.account_id,
             ),
             "latest_run": latest_run,
             "search_stale": discovery_run_is_stale(
-                conn, latest_run, search_workspace_id=search_workspace_id
+                conn, latest_run, search_workspace_id=search_workspace_id,
+                account_id=scope.account_id,
             ),
-            **_search_context(conn, workspace),
+            **_search_context(conn, scope.account_id, workspace),
         },
     )
     response.set_cookie("search_workspace_id", search_workspace_id, samesite="lax")
@@ -169,35 +201,48 @@ def scoped_discovery_page(
 
 
 @router.get("/new-job", response_class=HTMLResponse)
-def new_job_page(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+def new_job_page(
+    request: Request, conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
     return request.app.state.templates.TemplateResponse(
-        request, "new_job.html", _search_context(conn)
+        request, "new_job.html", _search_context(conn, scope.account_id)
     )
 
 
 @router.get("/search-workspaces", response_class=HTMLResponse)
 def search_workspaces_page(
-    request: Request, conn: sqlite3.Connection = Depends(get_conn)
+    request: Request, conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
-    selected_id = _selected_search_workspace_id(request, conn)
-    selected = get_search_workspace(conn, selected_id)
+    selected_id = _selected_search_workspace_id(
+        request, conn, scope.account_id
+    )
+    selected = get_search_workspace(
+        conn, selected_id, account_id=scope.account_id
+    )
     return request.app.state.templates.TemplateResponse(
         request,
         "search_workspaces.html",
-        _search_context(conn, selected),
+        _search_context(conn, scope.account_id, selected),
     )
 
 
 @router.get("/workspaces/{workspace_id}", response_class=HTMLResponse)
 def workspace_detail_page(
-    workspace_id: str, request: Request, conn: sqlite3.Connection = Depends(get_conn)
+    workspace_id: str, request: Request,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         view = build_workspace_view_model(
-            conn, workspace_id, extensions_dir=request.app.state.settings.extensions_dir
+            conn, workspace_id,
+            extensions_dir=request.app.state.settings.extensions_dir,
+            account_id=scope.account_id,
         )
     except JobWorkspaceNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return request.app.state.templates.TemplateResponse(
-        request, "workspace_detail.html", {**view, **_search_context(conn)}
+        request, "workspace_detail.html",
+        {**view, **_search_context(conn, scope.account_id)}
     )

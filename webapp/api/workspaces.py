@@ -7,7 +7,8 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
-from webapp.api.dependencies import get_conn, get_extensions_dir
+from webapp.api.dependencies import get_account_scope, get_conn, get_extensions_dir
+from webapp.services.ownership import AccountScope
 from webapp.services.http_api import (
     JobWorkspaceNotFound,
     create_job_workspace,
@@ -56,24 +57,42 @@ def get_extensions(extensions_dir: Path = Depends(get_extensions_dir)):
 
 
 @router.post("/workspaces", status_code=201)
-def post_workspace(body: CreateWorkspaceBody, conn: sqlite3.Connection = Depends(get_conn)):
+def post_workspace(
+    body: CreateWorkspaceBody,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
     try:
         return create_job_workspace(
-            conn, company=body.company, title=body.title, source_record=body.source_record
+            conn, company=body.company, title=body.title,
+            source_record=body.source_record, account_id=scope.account_id,
         )
     except PipelineError as exc:
         raise _service_error(exc) from exc
 
 
 @router.get("/workspaces")
-def get_workspaces(conn: sqlite3.Connection = Depends(get_conn)):
-    return {"workspaces": list_job_workspaces(conn)}
+def get_workspaces(
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
+    return {
+        "workspaces": list_job_workspaces(conn, account_id=scope.account_id)
+    }
 
 
 @router.get("/workspaces/{workspace_id}")
-def get_workspace_detail(workspace_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+def get_workspace_detail(
+    workspace_id: str,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
     try:
-        return {"workspace": get_job_workspace(conn, workspace_id)}
+        return {
+            "workspace": get_job_workspace(
+                conn, workspace_id, account_id=scope.account_id
+            )
+        }
     except JobWorkspaceNotFound as exc:
         raise _service_error(exc) from exc
 
@@ -82,10 +101,14 @@ def get_workspace_detail(workspace_id: str, conn: sqlite3.Connection = Depends(g
 def post_understand(
     workspace_id: str, body: ProcessingBody, request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     provider = _job_understanding_provider(request)
     try:
-        return {"artifact": understand_job(conn, workspace_id, provider, request_id=body.request_id)}
+        return {"artifact": understand_job(
+            conn, workspace_id, provider, request_id=body.request_id,
+            account_id=scope.account_id,
+        )}
     except (PipelineError, JobWorkspaceNotFound) as exc:
         raise _service_error(exc) from exc
 
@@ -95,12 +118,14 @@ def post_fit(
     workspace_id: str, body: FitBody, request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
     extensions_dir: Path = Depends(get_extensions_dir),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         return {
             "artifact": fit_job(
                 conn, workspace_id, _semantic_adapter(request), request_id=body.request_id,
                 extension_ids=body.extension_ids, extensions_dir=extensions_dir,
+                account_id=scope.account_id,
             )
         }
     except (PipelineError, JobWorkspaceNotFound) as exc:
@@ -111,12 +136,14 @@ def post_fit(
 def post_application_intelligence(
     workspace_id: str, body: ProcessingBody, request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         return {
             "artifact": generate_application_intelligence(
                 conn, workspace_id, _application_intelligence_provider(request),
                 request_id=body.request_id,
+                account_id=scope.account_id,
             )
         }
     except (PipelineError, JobWorkspaceNotFound) as exc:

@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Any
 
 from webapp.persistence.artifacts import get_current_artifact
-from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
+from webapp.persistence.workspaces import get_profile_workspace_id
 
 # Direct upstream artifact TYPES each artifact type depends on. Used only to
 # know which fingerprint rows to expect/check — the actual comparison values
@@ -46,29 +47,30 @@ def record_dependency_fingerprint(
 def check_staleness(
     conn: sqlite3.Connection, workspace_id: str, artifact_type: str, *,
     extensions_dir: Path | str = Path("extensions"),
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
+    profile_workspace_id = get_profile_workspace_id(conn, account_id)
     return _check_staleness_recursive(
-        conn, workspace_id, artifact_type, set(), Path(extensions_dir)
+        conn, workspace_id, artifact_type, set(), Path(extensions_dir),
+        profile_workspace_id,
     )
 
 
 def _check_staleness_recursive(
     conn: sqlite3.Connection, workspace_id: str, artifact_type: str, visiting: set[str],
-    extensions_dir: Path,
+    extensions_dir: Path, profile_workspace_id: str | None,
 ) -> dict[str, Any]:
     if artifact_type in visiting:
         return {"stale": False, "reasons": []}  # cycle guard; DEPENDENCY_TYPES is acyclic by construction
     visiting = visiting | {artifact_type}
 
-    # profile_snapshot artifacts live ONLY under the global profile workspace
-    # (PROFILE_WORKSPACE_ID), never under a job workspace — matching how
-    # webapp.services.pipeline.get_current_profile_snapshot and
-    # workspace_view.py already read it. Every call site below (the direct
+    # Profile snapshots live only under the owning account's profile workspace,
+    # never under a job workspace. Every call site below (the direct
     # check_staleness(..., "profile_snapshot") case, the loop over
     # DEPENDENCY_TYPES, and the recursive descent) goes through this one
     # resolution so the lookup is never wrong regardless of which workspace
     # id the caller passed in.
-    lookup_workspace_id = PROFILE_WORKSPACE_ID if artifact_type == "profile_snapshot" else workspace_id
+    lookup_workspace_id = profile_workspace_id if artifact_type == "profile_snapshot" else workspace_id
     current = get_current_artifact(conn, lookup_workspace_id, artifact_type)
     if current is None:
         return {"stale": False, "reasons": []}
@@ -102,7 +104,7 @@ def _check_staleness_recursive(
                 )
             continue
 
-        upstream_lookup_workspace_id = PROFILE_WORKSPACE_ID if upstream_type == "profile_snapshot" else workspace_id
+        upstream_lookup_workspace_id = profile_workspace_id if upstream_type == "profile_snapshot" else workspace_id
         upstream_current = get_current_artifact(conn, upstream_lookup_workspace_id, upstream_type)
         if upstream_current is None:
             reasons.append(f"required upstream artifact {upstream_type!r} is missing")
@@ -115,7 +117,8 @@ def _check_staleness_recursive(
             continue  # direct mismatch already explains staleness; skip the transitive check for this branch
 
         upstream_staleness = _check_staleness_recursive(
-            conn, workspace_id, upstream_type, visiting, extensions_dir
+            conn, workspace_id, upstream_type, visiting, extensions_dir,
+            profile_workspace_id,
         )
         if upstream_staleness["stale"]:
             reasons.append(f"{upstream_type} is itself stale: {'; '.join(upstream_staleness['reasons'])}")

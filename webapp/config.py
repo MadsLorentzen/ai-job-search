@@ -14,6 +14,7 @@ class Settings:
     profile_root: str = "."
     extensions_dir: Path = field(default_factory=lambda: Path("extensions"))
     documents_root: Path = field(default_factory=lambda: Path("documents"))
+    account_id: str | None = None
 
     def __post_init__(self) -> None:
         self.db_path = Path(self.db_path)

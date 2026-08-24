@@ -10,10 +10,15 @@ from product.job_identity import (
     job_identity,
 )
 from webapp.persistence.search_workspaces import DEFAULT_SEARCH_WORKSPACE_ID
+from webapp.persistence.accounts import (
+    DEFAULT_ACCOUNT_DISPLAY_NAME,
+    DEFAULT_ACCOUNT_ID,
+)
 
 
 SEARCH_WORKSPACES_MIGRATION_ID = "001_search_workspaces"
 PROFILE_MANAGER_MIGRATION_ID = "002_evidence_profile_manager"
+ACCOUNTS_OWNERSHIP_MIGRATION_ID = "003_accounts_ownership"
 
 
 def _now() -> str:
@@ -37,6 +42,7 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
     migrations = (
         (SEARCH_WORKSPACES_MIGRATION_ID, _migrate_search_workspaces, True),
         (PROFILE_MANAGER_MIGRATION_ID, _migrate_evidence_profile_manager, False),
+        (ACCOUNTS_OWNERSHIP_MIGRATION_ID, _migrate_accounts_ownership, False),
     )
     for migration_id, operation, disable_foreign_keys in migrations:
         if conn.execute(
@@ -64,6 +70,140 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
         finally:
             if disable_foreign_keys:
                 conn.execute("PRAGMA foreign_keys = ON")
+
+
+def _migrate_accounts_ownership(conn: sqlite3.Connection) -> None:
+    now = _now()
+    _execute_statements(
+        conn,
+        """
+        CREATE TABLE accounts (
+            id TEXT PRIMARY KEY,
+            display_name TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        );
+        """,
+    )
+    conn.execute(
+        "INSERT INTO accounts (id, display_name, created_at) VALUES (?, ?, ?)",
+        (DEFAULT_ACCOUNT_ID, DEFAULT_ACCOUNT_DISPLAY_NAME, now),
+    )
+    # SQLite cannot add a REFERENCES column with a non-NULL default to the
+    # already-populated Search Workspace table. Keep the required/defaulted
+    # column for lossless legacy inserts and enforce the account reference with
+    # FK-equivalent triggers below. account_profiles additionally uses a real
+    # composite foreign key to prove profile/workspace owner consistency.
+    conn.execute(
+        "ALTER TABLE workspaces ADD COLUMN account_id TEXT NOT NULL "
+        "DEFAULT 'account_local'"
+    )
+    conn.execute(
+        "ALTER TABLE search_workspaces ADD COLUMN account_id TEXT NOT NULL "
+        "DEFAULT 'account_local'"
+    )
+    conn.execute(
+        "CREATE UNIQUE INDEX idx_workspaces_id_account "
+        "ON workspaces(id, account_id)"
+    )
+    conn.execute(
+        "CREATE INDEX idx_workspaces_account_kind "
+        "ON workspaces(account_id, kind, updated_at)"
+    )
+    conn.execute(
+        "CREATE UNIQUE INDEX idx_search_workspaces_id_account "
+        "ON search_workspaces(id, account_id)"
+    )
+    conn.execute(
+        "CREATE INDEX idx_search_workspaces_account_status "
+        "ON search_workspaces(account_id, status, updated_at)"
+    )
+    _execute_statements(
+        conn,
+        """
+        CREATE TABLE account_profiles (
+            account_id TEXT PRIMARY KEY REFERENCES accounts(id),
+            workspace_id TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (workspace_id, account_id)
+                REFERENCES workspaces(id, account_id)
+        );
+
+        DROP INDEX idx_profile_source_entries_lookup;
+        ALTER TABLE profile_source_settings RENAME TO profile_source_settings_pre_accounts;
+        ALTER TABLE profile_source_entries RENAME TO profile_source_entries_pre_accounts;
+
+        CREATE TABLE profile_source_settings (
+            account_id TEXT NOT NULL REFERENCES accounts(id),
+            source_path TEXT NOT NULL,
+            included INTEGER NOT NULL CHECK (included IN (0, 1)),
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (account_id, source_path)
+        );
+
+        CREATE TABLE profile_source_entries (
+            account_id TEXT NOT NULL REFERENCES accounts(id),
+            entry_id TEXT NOT NULL,
+            source_path TEXT NOT NULL,
+            entry_kind TEXT NOT NULL,
+            fingerprint TEXT NOT NULL,
+            occurrence INTEGER NOT NULL CHECK (occurrence >= 0),
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (account_id, entry_id),
+            UNIQUE (account_id, source_path, entry_kind, fingerprint, occurrence)
+        );
+
+        CREATE INDEX idx_profile_source_entries_lookup
+            ON profile_source_entries(
+                account_id, source_path, entry_kind, fingerprint, occurrence
+            );
+
+        INSERT INTO profile_source_settings
+            (account_id, source_path, included, updated_at)
+        SELECT 'account_local', source_path, included, updated_at
+        FROM profile_source_settings_pre_accounts;
+
+        INSERT INTO profile_source_entries
+            (account_id, entry_id, source_path, entry_kind, fingerprint,
+             occurrence, created_at, updated_at)
+        SELECT 'account_local', entry_id, source_path, entry_kind, fingerprint,
+               occurrence, created_at, updated_at
+        FROM profile_source_entries_pre_accounts;
+
+        DROP TABLE profile_source_settings_pre_accounts;
+        DROP TABLE profile_source_entries_pre_accounts;
+        """,
+    )
+    for trigger in (
+        """CREATE TRIGGER workspaces_account_insert
+        BEFORE INSERT ON workspaces
+        WHEN NOT EXISTS (SELECT 1 FROM accounts WHERE id = NEW.account_id)
+        BEGIN SELECT RAISE(ABORT, 'workspace account does not exist'); END""",
+        """CREATE TRIGGER workspaces_account_update
+        BEFORE UPDATE OF account_id ON workspaces
+        WHEN NEW.account_id <> OLD.account_id
+        BEGIN SELECT RAISE(ABORT, 'workspace ownership is immutable'); END""",
+        """CREATE TRIGGER search_workspaces_account_insert
+        BEFORE INSERT ON search_workspaces
+        WHEN NOT EXISTS (SELECT 1 FROM accounts WHERE id = NEW.account_id)
+        BEGIN SELECT RAISE(ABORT, 'search workspace account does not exist'); END""",
+        """CREATE TRIGGER search_workspaces_account_update
+        BEFORE UPDATE OF account_id ON search_workspaces
+        WHEN NEW.account_id <> OLD.account_id
+        BEGIN SELECT RAISE(ABORT, 'search workspace ownership is immutable'); END""",
+        """CREATE TRIGGER accounts_owned_aggregate_delete
+        BEFORE DELETE ON accounts
+        WHEN EXISTS (SELECT 1 FROM workspaces WHERE account_id = OLD.id)
+          OR EXISTS (SELECT 1 FROM search_workspaces WHERE account_id = OLD.id)
+        BEGIN SELECT RAISE(ABORT, 'account owns application data'); END""",
+    ):
+        conn.execute(trigger)
+    conn.execute(
+        "INSERT INTO account_profiles (account_id, workspace_id, created_at) "
+        "SELECT ?, id, ? FROM workspaces "
+        "WHERE id = 'profile' AND kind = 'profile' AND account_id = ?",
+        (DEFAULT_ACCOUNT_ID, now, DEFAULT_ACCOUNT_ID),
+    )
 
 
 def _migrate_evidence_profile_manager(conn: sqlite3.Connection) -> None:

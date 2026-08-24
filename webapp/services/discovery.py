@@ -19,6 +19,7 @@ from product.semantic_job_fit import (
     load_semantic_fit_policy,
 )
 from webapp.persistence.artifacts import get_current_artifact
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
 from webapp.persistence.application_identity import (
     ApplicationIdentityAmbiguityError,
     ApplicationIdentityConflictError,
@@ -39,7 +40,7 @@ from webapp.persistence.search_workspaces import (
     DEFAULT_SEARCH_WORKSPACE_ID,
     get_search_workspace,
 )
-from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID
+from webapp.persistence.workspaces import get_profile_workspace_id
 from webapp.services.input_identity import (
     active_extensions_identity,
     content_identity,
@@ -56,9 +57,14 @@ class DiscoveryServiceError(RuntimeError):
 
 
 def _require_active_search_workspace(
-    conn: sqlite3.Connection, search_workspace_id: str
+    conn: sqlite3.Connection,
+    search_workspace_id: str,
+    *,
+    account_id: str,
 ) -> dict[str, Any]:
-    workspace = get_search_workspace(conn, search_workspace_id)
+    workspace = get_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
     if workspace is None:
         raise DiscoveryServiceError(
             f"unknown search workspace {search_workspace_id!r}"
@@ -77,9 +83,14 @@ def run_discovery_search(
     queries: list[str] | None = None,
     locations: list[str] | None = None,
     limit_per_source: int = 20,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    _require_active_search_workspace(conn, search_workspace_id)
-    profile = get_current_user_profile(conn, search_workspace_id)
+    _require_active_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
+    profile = get_current_user_profile(
+        conn, search_workspace_id, account_id=account_id
+    )
     if profile is None:
         raise DiscoveryServiceError("set up User Profile before searching for jobs")
     preferences = profile["payload"]
@@ -117,6 +128,7 @@ def run_discovery_search(
         user_profile_version_id=profile["id"],
         user_profile_content_id=profile["content_id"],
         request=request,
+        account_id=account_id,
     )
     captured_at = datetime.now(timezone.utc).isoformat()
     source_status: dict[str, Any] = {}
@@ -141,6 +153,7 @@ def run_discovery_search(
                         record,
                         run_id=run["id"],
                         search_workspace_id=search_workspace_id,
+                        account_id=account_id,
                     )
                     accepted += 1
                     candidate_ids.append(ingested["candidate"]["id"])
@@ -192,7 +205,11 @@ def discovery_run_is_stale(
     run: dict[str, Any] | None = None,
     *,
     search_workspace_id: str = DEFAULT_SEARCH_WORKSPACE_ID,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> bool | None:
+    _require_active_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
     run = run or get_latest_discovery_run(conn, search_workspace_id)
     if run is None:
         return None
@@ -200,7 +217,9 @@ def discovery_run_is_stale(
         raise DiscoveryServiceError(
             "discovery run does not belong to the selected search workspace"
         )
-    profile = get_current_user_profile(conn, search_workspace_id)
+    profile = get_current_user_profile(
+        conn, search_workspace_id, account_id=account_id
+    )
     return profile is None or profile["content_id"] != run["user_profile_content_id"]
 
 
@@ -213,8 +232,11 @@ def evaluate_discovery_candidate(
     request_id: str,
     understanding_provider: Any | None = None,
     active_extensions: list[dict[str, Any]] | None = None,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    _require_active_search_workspace(conn, search_workspace_id)
+    _require_active_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
     candidate = get_discovery_candidate(
         conn, candidate_id, search_workspace_id=search_workspace_id
     )
@@ -222,7 +244,12 @@ def evaluate_discovery_candidate(
         raise DiscoveryServiceError(f"unknown discovery candidate {candidate_id!r}")
     if candidate["lifecycle_status"] not in {"new", "saved"}:
         raise DiscoveryServiceError("only new or saved candidates can be evaluated")
-    profile_artifact = get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
+    profile_workspace_id = get_profile_workspace_id(conn, account_id)
+    profile_artifact = (
+        get_current_artifact(conn, profile_workspace_id, "profile_snapshot")
+        if profile_workspace_id
+        else None
+    )
     if profile_artifact is None:
         raise DiscoveryServiceError("refresh Evidence Profile before evaluating jobs")
     source_record = candidate["canonical_source_record"]
@@ -305,7 +332,11 @@ def discovery_fit_is_stale(
     search_workspace_id: str = DEFAULT_SEARCH_WORKSPACE_ID,
     active_extensions: list[dict[str, Any]] | None = None,
     extensions_dir: Any | None = None,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> bool | None:
+    _require_active_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
     fit = get_current_discovery_fit(
         conn, candidate_id, search_workspace_id=search_workspace_id
     )
@@ -314,7 +345,12 @@ def discovery_fit_is_stale(
     candidate = get_discovery_candidate(
         conn, candidate_id, search_workspace_id=search_workspace_id
     )
-    profile = get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
+    profile_workspace_id = get_profile_workspace_id(conn, account_id)
+    profile = (
+        get_current_artifact(conn, profile_workspace_id, "profile_snapshot")
+        if profile_workspace_id
+        else None
+    )
     if candidate is None or profile is None:
         return True
     if active_extensions is None:
@@ -348,7 +384,11 @@ def grouped_discovery_candidates(
     *,
     search_workspace_id: str = DEFAULT_SEARCH_WORKSPACE_ID,
     extensions_dir: Any | None = None,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, list[dict[str, Any]]]:
+    _require_active_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
     groups: dict[str, list[dict[str, Any]]] = {
         "scored": [], "unresolved": [], "blocked": [], "expired_unavailable": []
     }
@@ -372,6 +412,7 @@ def grouped_discovery_candidates(
             candidate["id"],
             search_workspace_id=search_workspace_id,
             extensions_dir=extensions_dir,
+            account_id=account_id,
         )
         if fit is None:
             groups["unresolved"].append(candidate)
@@ -392,10 +433,13 @@ def promote_discovery_candidate(
     candidate_id: str,
     *,
     search_workspace_id: str = DEFAULT_SEARCH_WORKSPACE_ID,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     try:
         conn.execute("BEGIN IMMEDIATE")
-        _require_active_search_workspace(conn, search_workspace_id)
+        _require_active_search_workspace(
+            conn, search_workspace_id, account_id=account_id
+        )
         candidate = get_discovery_candidate(
             conn, candidate_id, search_workspace_id=search_workspace_id
         )
@@ -403,7 +447,9 @@ def promote_discovery_candidate(
             raise DiscoveryServiceError(f"unknown discovery candidate {candidate_id!r}")
         existing_workspace_id = candidate.get("promoted_workspace_id")
         if existing_workspace_id:
-            workspace = get_workspace(conn, existing_workspace_id)
+            workspace = get_workspace(
+                conn, existing_workspace_id, account_id=account_id
+            )
             if workspace is None:
                 raise DiscoveryServiceError("promoted candidate references a missing workspace")
             conn.commit()
@@ -417,6 +463,7 @@ def promote_discovery_candidate(
             title=candidate["title"],
             source_record=candidate["canonical_source_record"],
             workspace_id=workspace_id,
+            account_id=account_id,
             commit=False,
         )
         application_workspace_id = created["workspace"]["id"]

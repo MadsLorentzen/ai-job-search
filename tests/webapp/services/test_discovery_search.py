@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from webapp.persistence.accounts import create_account
 from webapp.persistence.db import connect, init_db
 from webapp.persistence.user_profile import get_current_user_profile, save_user_profile
 from webapp.persistence.search_workspaces import create_search_workspace
@@ -95,3 +96,33 @@ def test_preference_staleness_is_derived_and_isolated_by_search_workspace(tmp_pa
         row["name"] for row in conn.execute("PRAGMA table_info(discovery_runs)")
     }
     assert "stale" not in columns
+
+
+def test_search_and_staleness_use_the_explicit_nondefault_account(tmp_path):
+    conn = _connection(tmp_path)
+    create_account(conn, account_id="account_search_b", display_name="Search B")
+    search = create_search_workspace(
+        conn, name="Search B", account_id="account_search_b"
+    )
+    profile = save_user_profile(
+        conn,
+        {"target_roles": ["Project Planner"]},
+        search_workspace_id=search["id"],
+        account_id="account_search_b",
+    )
+
+    run = run_discovery_search(
+        conn,
+        FakeRunner(),
+        search_workspace_id=search["id"],
+        sources=["freehire-search"],
+        account_id="account_search_b",
+    )["run"]
+
+    assert run["user_profile_content_id"] == profile["content_id"]
+    assert discovery_run_is_stale(
+        conn,
+        run,
+        search_workspace_id=search["id"],
+        account_id="account_search_b",
+    ) is False

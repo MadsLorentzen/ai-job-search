@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from product.discovery_search import CliDiscoveryPortalRunner, SUPPORTED_DISCOVERY_SOURCES
-from webapp.api.dependencies import get_conn, get_extensions_dir
+from webapp.api.dependencies import get_account_scope, get_conn, get_extensions_dir
 from webapp.persistence.discovery import set_discovery_candidate_status
 from webapp.services.discovery import (
     DiscoveryServiceError,
@@ -18,6 +18,7 @@ from webapp.services.discovery import (
     run_discovery_search,
 )
 from webapp.services.extension_registry import resolve_active_extensions
+from webapp.services.ownership import AccountScope, OwnedResourceNotFound
 
 
 router = APIRouter(tags=["discovery"])
@@ -48,8 +49,24 @@ def _error(exc: Exception) -> HTTPException:
     return HTTPException(status_code=400, detail=str(exc))
 
 
+def _authorize_search_workspace(
+    scope: AccountScope,
+    conn: sqlite3.Connection,
+    search_workspace_id: str,
+) -> None:
+    try:
+        scope.require_search_workspace(conn, search_workspace_id)
+    except OwnedResourceNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 @router.get("/api/search-workspaces/{search_workspace_id}/discovery/sources")
-def get_sources(search_workspace_id: str):
+def get_sources(
+    search_workspace_id: str,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
+    _authorize_search_workspace(scope, conn, search_workspace_id)
     return {"sources": list(SUPPORTED_DISCOVERY_SOURCES)}
 
 
@@ -59,7 +76,9 @@ def post_search(
     request: Request,
     search_workspace_id: str,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
+    _authorize_search_workspace(scope, conn, search_workspace_id)
     runner = getattr(request.app.state, "discovery_portal_runner", None)
     if runner is None:
         runner = CliDiscoveryPortalRunner(Path(request.app.state.settings.profile_root).resolve())
@@ -68,6 +87,7 @@ def post_search(
             conn, runner, search_workspace_id=search_workspace_id,
             sources=body.sources, queries=body.queries,
             locations=body.locations, limit_per_source=body.limit_per_source,
+            account_id=scope.account_id,
         )
     except DiscoveryServiceError as exc:
         raise _error(exc) from exc
@@ -78,9 +98,12 @@ def get_candidates(
     search_workspace_id: str,
     conn: sqlite3.Connection = Depends(get_conn),
     extensions_dir: Path = Depends(get_extensions_dir),
+    scope: AccountScope = Depends(get_account_scope),
 ):
+    _authorize_search_workspace(scope, conn, search_workspace_id)
     return {"groups": grouped_discovery_candidates(
-        conn, search_workspace_id=search_workspace_id, extensions_dir=extensions_dir
+        conn, search_workspace_id=search_workspace_id,
+        extensions_dir=extensions_dir, account_id=scope.account_id,
     )}
 
 
@@ -90,11 +113,14 @@ def patch_candidate(
     body: LifecycleBody,
     search_workspace_id: str,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
+    _authorize_search_workspace(scope, conn, search_workspace_id)
     try:
         return {"candidate": set_discovery_candidate_status(
             conn, candidate_id, body.status,
             search_workspace_id=search_workspace_id,
+            account_id=scope.account_id,
         )}
     except Exception as exc:
         raise _error(exc) from exc
@@ -107,7 +133,9 @@ def post_evaluate(
     search_workspace_id: str,
     conn: sqlite3.Connection = Depends(get_conn),
     extensions_dir: Path = Depends(get_extensions_dir),
+    scope: AccountScope = Depends(get_account_scope),
 ):
+    _authorize_search_workspace(scope, conn, search_workspace_id)
     try:
         extensions = resolve_active_extensions(extensions_dir, body.extension_ids)
     except Exception as exc:
@@ -123,6 +151,7 @@ def post_evaluate(
                 request_id=f"{body.request_id}-{index + 1}",
                 understanding_provider=understanding_provider,
                 active_extensions=extensions,
+                account_id=scope.account_id,
             )
             results.append({"candidate_id": candidate_id, "status": "completed", "fit": fit})
         except Exception as exc:
@@ -135,10 +164,13 @@ def post_promote(
     candidate_id: str,
     search_workspace_id: str,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
+    _authorize_search_workspace(scope, conn, search_workspace_id)
     try:
         return promote_discovery_candidate(
-            conn, candidate_id, search_workspace_id=search_workspace_id
+            conn, candidate_id, search_workspace_id=search_workspace_id,
+            account_id=scope.account_id,
         )
     except DiscoveryServiceError as exc:
         raise _error(exc) from exc

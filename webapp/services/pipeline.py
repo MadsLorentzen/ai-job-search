@@ -40,8 +40,8 @@ from webapp.persistence.application_identity import (
 )
 from webapp.persistence.provider_audits import save_provider_audit
 from webapp.persistence.profile_sources import included_profile_sources
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
 from webapp.persistence.workspaces import (
-    PROFILE_WORKSPACE_ID,
     create_workspace,
     ensure_profile_workspace,
     get_workspace,
@@ -73,26 +73,42 @@ def _hash_artifact(prefix: str, payload: dict[str, Any]) -> str:
     return f"{prefix}{digest}"
 
 
-def refresh_profile(conn: sqlite3.Connection, *, root: str = ".") -> dict[str, Any]:
-    ensure_profile_workspace(conn)
+def refresh_profile(
+    conn: sqlite3.Connection,
+    *,
+    root: str = ".",
+    account_id: str = DEFAULT_ACCOUNT_ID,
+) -> dict[str, Any]:
+    profile_workspace = ensure_profile_workspace(conn, account_id=account_id)
     try:
-        snapshot = build_snapshot(root, included_sources=included_profile_sources(conn))
+        snapshot = build_snapshot(
+            root,
+            included_sources=included_profile_sources(
+                conn, account_id=account_id
+            ),
+        )
     except Exception as exc:
         raise PipelineError(f"profile refresh failed: {exc}") from exc
     content_id = profile_snapshot_content_id(snapshot)
     return save_artifact(
-        conn, workspace_id=PROFILE_WORKSPACE_ID, artifact_type="profile_snapshot",
+        conn, workspace_id=profile_workspace["id"], artifact_type="profile_snapshot",
         payload=snapshot, content_id=content_id,
     )
 
 
-def get_current_profile_snapshot(conn: sqlite3.Connection) -> dict[str, Any] | None:
-    return get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
+def get_current_profile_snapshot(
+    conn: sqlite3.Connection,
+    *,
+    account_id: str = DEFAULT_ACCOUNT_ID,
+) -> dict[str, Any] | None:
+    profile_workspace = ensure_profile_workspace(conn, account_id=account_id)
+    return get_current_artifact(conn, profile_workspace["id"], "profile_snapshot")
 
 
 def create_job_from_source_record(
     conn: sqlite3.Connection, *, company: str, title: str, source_record: dict[str, Any],
-    workspace_id: str | None = None, commit: bool = True,
+    workspace_id: str | None = None, account_id: str = DEFAULT_ACCOUNT_ID,
+    commit: bool = True,
 ) -> dict[str, Any]:
     try:
         job_snapshot = normalize_job_source_record(source_record)
@@ -101,9 +117,13 @@ def create_job_from_source_record(
     try:
         if commit:
             conn.execute("BEGIN IMMEDIATE")
-        existing = resolve_application_workspace(conn, source_record)
+        existing = resolve_application_workspace(
+            conn, source_record, account_id=account_id
+        )
         if existing.application_workspace_id is not None:
-            workspace = get_workspace(conn, existing.application_workspace_id)
+            workspace = get_workspace(
+                conn, existing.application_workspace_id, account_id=account_id
+            )
             artifact = get_current_artifact(
                 conn, existing.application_workspace_id, "job_posting_snapshot"
             )
@@ -121,7 +141,8 @@ def create_job_from_source_record(
             return {"workspace": workspace, "artifact": artifact, "created": False}
 
         workspace = create_workspace(
-            conn, company=company, title=title, workspace_id=workspace_id, commit=False
+            conn, company=company, title=title, workspace_id=workspace_id,
+            account_id=account_id, commit=False
         )
         content_id = job_snapshot_content_id(job_snapshot)
         artifact = save_artifact(
@@ -206,8 +227,9 @@ def run_job_fit(
     conn: sqlite3.Connection, workspace_id: str, semantic_adapter: SemanticProposalAdapter, *,
     request_id: str, extension_paths: list[str] | None = None,
     active_extensions: list[dict[str, Any]] | None = None,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    profile_artifact = get_current_profile_snapshot(conn)
+    profile_artifact = get_current_profile_snapshot(conn, account_id=account_id)
     job_artifact = get_current_artifact(conn, workspace_id, "job_posting_snapshot")
     if profile_artifact is None or job_artifact is None:
         raise PipelineError(
@@ -324,8 +346,9 @@ def run_job_fit(
 
 def run_application_intelligence(
     conn: sqlite3.Connection, workspace_id: str, ai_provider: ApplicationIntelligenceProvider, *, request_id: str,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    profile_artifact = get_current_profile_snapshot(conn)
+    profile_artifact = get_current_profile_snapshot(conn, account_id=account_id)
     fit_artifact = get_current_artifact(conn, workspace_id, "job_fit_result")
     bundle_artifact = get_current_artifact(conn, workspace_id, "resolved_job_evidence")
     if profile_artifact is None or fit_artifact is None or bundle_artifact is None:

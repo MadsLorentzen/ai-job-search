@@ -5,7 +5,7 @@ import sqlite3
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
 
-from webapp.api.dependencies import get_conn
+from webapp.api.dependencies import get_account_scope, get_conn
 from webapp.persistence.search_workspaces import (
     SearchWorkspaceConflictError,
     SearchWorkspaceError,
@@ -16,6 +16,7 @@ from webapp.persistence.search_workspaces import (
     rename_search_workspace,
     restore_search_workspace,
 )
+from webapp.services.ownership import AccountScope
 
 
 router = APIRouter(prefix="/api/search-workspaces", tags=["search-workspaces"])
@@ -48,27 +49,50 @@ def _mutate(operation):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+def _require_owned(
+    conn: sqlite3.Connection, scope: AccountScope, search_workspace_id: str
+) -> None:
+    if get_search_workspace(
+        conn, search_workspace_id, account_id=scope.account_id
+    ) is None:
+        raise HTTPException(status_code=404, detail="search workspace not found")
+
+
 @router.get("")
-def get_search_workspaces(conn: sqlite3.Connection = Depends(get_conn)):
-    return {"search_workspaces": list_search_workspaces(conn, include_archived=True)}
+def get_search_workspaces(
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
+    return {"search_workspaces": list_search_workspaces(
+        conn, account_id=scope.account_id, include_archived=True
+    )}
 
 
 @router.post("", status_code=201)
 def post_search_workspace(
-    body: CreateBody, conn: sqlite3.Connection = Depends(get_conn)
+    body: CreateBody,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
+    if body.copy_profile_from is not None:
+        _require_owned(conn, scope, body.copy_profile_from)
     return _mutate(
         lambda: create_search_workspace(
-            conn, name=body.name, copy_profile_from=body.copy_profile_from
+            conn, name=body.name, copy_profile_from=body.copy_profile_from,
+            account_id=scope.account_id,
         )
     )
 
 
 @router.get("/{search_workspace_id}")
 def get_one_search_workspace(
-    search_workspace_id: str, conn: sqlite3.Connection = Depends(get_conn)
+    search_workspace_id: str,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
-    workspace = get_search_workspace(conn, search_workspace_id)
+    workspace = get_search_workspace(
+        conn, search_workspace_id, account_id=scope.account_id
+    )
     if workspace is None:
         raise HTTPException(status_code=404, detail="search workspace not found")
     return {"search_workspace": workspace}
@@ -79,13 +103,16 @@ def patch_search_workspace(
     search_workspace_id: str,
     body: RenameBody,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
+    _require_owned(conn, scope, search_workspace_id)
     return _mutate(
         lambda: rename_search_workspace(
             conn,
             search_workspace_id,
             name=body.name,
             expected_revision=body.expected_revision,
+            account_id=scope.account_id,
         )
     )
 
@@ -95,10 +122,13 @@ def post_archive_search_workspace(
     search_workspace_id: str,
     body: RevisionBody,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
+    _require_owned(conn, scope, search_workspace_id)
     return _mutate(
         lambda: archive_search_workspace(
-            conn, search_workspace_id, expected_revision=body.expected_revision
+            conn, search_workspace_id, expected_revision=body.expected_revision,
+            account_id=scope.account_id,
         )
     )
 
@@ -108,9 +138,12 @@ def post_restore_search_workspace(
     search_workspace_id: str,
     body: RevisionBody,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
+    _require_owned(conn, scope, search_workspace_id)
     return _mutate(
         lambda: restore_search_workspace(
-            conn, search_workspace_id, expected_revision=body.expected_revision
+            conn, search_workspace_id, expected_revision=body.expected_revision,
+            account_id=scope.account_id,
         )
     )

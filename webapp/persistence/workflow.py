@@ -5,6 +5,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
+
 from product.application_material_contract import COMPLETION_CONTRACT_VERSION
 from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_artifact
@@ -30,6 +32,7 @@ def record_status_change(
     conn: sqlite3.Connection, *, workspace_id: str, new_status: str, effective_date: str,
     note: str | None = None, submitted_pack_artifact_id: str | None = None,
     _allow_drafted: bool = False, commit: bool = True,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     if new_status not in TRACKER_STATUSES:
         raise ValueError(f"unknown tracker status: {new_status!r}")
@@ -39,7 +42,9 @@ def record_status_change(
             "not the general status endpoint"
         )
 
-    workspace = get_workspace(conn, workspace_id)
+    workspace = get_workspace(conn, workspace_id, account_id=account_id)
+    if workspace is None:
+        raise ValueError(f"workspace {workspace_id!r} not found")
     previous_status = workspace["workflow_status"] if workspace else None
 
     if new_status == "drafted":
@@ -124,8 +129,9 @@ def record_status_change(
              submitted_pack_artifact_id, _now()),
         )
         conn.execute(
-            "UPDATE workspaces SET workflow_status = ?, updated_at = ? WHERE id = ?",
-            (new_status, _now(), workspace_id),
+            "UPDATE workspaces SET workflow_status = ?, updated_at = ? "
+            "WHERE id = ? AND account_id = ?",
+            (new_status, _now(), workspace_id, account_id),
         )
         if commit:
             conn.commit()

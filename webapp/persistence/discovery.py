@@ -13,6 +13,7 @@ from webapp.persistence.search_workspaces import (
     DEFAULT_SEARCH_WORKSPACE_ID,
     get_search_workspace,
 )
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
 
 
 USER_STATUSES = {"new", "saved", "dismissed", "expired"}
@@ -28,9 +29,14 @@ class DiscoveryIdentityConflictError(RuntimeError):
 
 
 def _require_writable_search_workspace(
-    conn: sqlite3.Connection, search_workspace_id: str
+    conn: sqlite3.Connection,
+    search_workspace_id: str,
+    *,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> None:
-    workspace = get_search_workspace(conn, search_workspace_id)
+    workspace = get_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
     if workspace is None:
         raise DiscoveryLifecycleError(
             f"unknown search workspace {search_workspace_id!r}"
@@ -102,9 +108,12 @@ def ingest_discovery_record(
     *,
     run_id: str | None = None,
     search_workspace_id: str = DEFAULT_SEARCH_WORKSPACE_ID,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     validate_job_source_record(source_record)
-    _require_writable_search_workspace(conn, search_workspace_id)
+    _require_writable_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
     if run_id is not None:
         run = conn.execute(
             "SELECT search_workspace_id FROM discovery_runs WHERE id = ?", (run_id,)
@@ -264,8 +273,11 @@ def set_discovery_candidate_status(
     status: str,
     *,
     search_workspace_id: str = DEFAULT_SEARCH_WORKSPACE_ID,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    _require_writable_search_workspace(conn, search_workspace_id)
+    _require_writable_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
     if status == "promoted":
         raise DiscoveryLifecycleError("promoted status is assigned only by the promotion service")
     if status not in USER_STATUSES:
@@ -297,8 +309,11 @@ def create_discovery_run(
     user_profile_version_id: str,
     user_profile_content_id: str,
     request: dict[str, Any],
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    _require_writable_search_workspace(conn, search_workspace_id)
+    _require_writable_search_workspace(
+        conn, search_workspace_id, account_id=account_id
+    )
     run_id = f"dsrun_{uuid.uuid4().hex[:20]}"
     now = _now()
     conn.execute(

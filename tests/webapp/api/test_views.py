@@ -114,14 +114,16 @@ def test_dashboard_uses_configured_extension_registry(tmp_path, monkeypatch):
     client, settings = _client(tmp_path)
     captured = {}
 
-    def fake_dashboard(conn, *, filter_name, extensions_dir):
+    def fake_dashboard(conn, *, filter_name, extensions_dir, account_id):
         captured["extensions_dir"] = extensions_dir
+        captured["account_id"] = account_id
         return {"workspaces": [], "filter": filter_name, "filters": ()}
 
     monkeypatch.setattr("webapp.api.views.build_dashboard_view_model", fake_dashboard)
     with client:
         assert client.get("/").status_code == 200
     assert captured["extensions_dir"] == settings.extensions_dir
+    assert captured["account_id"] == "account_local"
 
 
 def test_profile_is_trust_inspection_and_conflict_never_verified(tmp_path):

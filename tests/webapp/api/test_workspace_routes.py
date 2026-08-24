@@ -117,9 +117,13 @@ def test_fit_request_rejects_every_client_path_field(tmp_path, field):
 def test_fit_resolves_extension_ids_server_side(tmp_path, monkeypatch):
     captured = {}
 
-    def fake_run(conn, workspace_id, adapter, *, request_id, active_extensions=None, extension_paths=None):
+    def fake_run(
+        conn, workspace_id, adapter, *, request_id, active_extensions=None,
+        extension_paths=None, account_id=None,
+    ):
         captured["active_extensions"] = active_extensions
         captured["extension_paths"] = extension_paths
+        captured["account_id"] = account_id
         return {"id": "art_fit", "artifact_type": "job_fit_result"}
 
     monkeypatch.setattr("webapp.services.http_api.run_job_fit", fake_run)
@@ -133,6 +137,7 @@ def test_fit_resolves_extension_ids_server_side(tmp_path, monkeypatch):
         )
         assert response.status_code == 200, response.text
     assert captured["extension_paths"] is None
+    assert captured["account_id"] == "account_local"
     assert [item["id"] for item in captured["active_extensions"]] == ["geophysics"]
 
 

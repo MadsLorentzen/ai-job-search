@@ -6,13 +6,14 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 
 from product.user_profile import UserProfileValidationError, normalize_user_profile
-from webapp.api.dependencies import get_conn
+from webapp.api.dependencies import get_account_scope, get_conn
 from webapp.persistence.user_profile import get_current_user_profile, save_user_profile
 from webapp.persistence.search_workspaces import (
     SearchWorkspaceConflictError,
     SearchWorkspaceError,
     get_search_workspace,
 )
+from webapp.services.ownership import AccountScope
 
 
 router = APIRouter(
@@ -46,12 +47,18 @@ class UserProfileBody(StrictBody):
 
 @router.get("")
 def get_scoped_user_profile(
-    search_workspace_id: str, conn: sqlite3.Connection = Depends(get_conn)
+    search_workspace_id: str,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
-    if get_search_workspace(conn, search_workspace_id) is None:
+    if get_search_workspace(
+        conn, search_workspace_id, account_id=scope.account_id
+    ) is None:
         raise HTTPException(status_code=404, detail="search workspace not found")
     return {
-        "user_profile": get_current_user_profile(conn, search_workspace_id),
+        "user_profile": get_current_user_profile(
+            conn, search_workspace_id, account_id=scope.account_id
+        ),
         "defaults": normalize_user_profile({}),
     }
 
@@ -75,7 +82,12 @@ def put_scoped_user_profile(
     body: UserProfileBody,
     if_match: str | None = Header(default=None, alias="If-Match"),
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
+    if get_search_workspace(
+        conn, search_workspace_id, account_id=scope.account_id
+    ) is None:
+        raise HTTPException(status_code=404, detail="search workspace not found")
     try:
         return {
             "user_profile": save_user_profile(
@@ -83,6 +95,7 @@ def put_scoped_user_profile(
                 body.model_dump(),
                 search_workspace_id=search_workspace_id,
                 expected_revision=_expected_revision(if_match),
+                account_id=scope.account_id,
             )
         }
     except SearchWorkspaceConflictError as exc:

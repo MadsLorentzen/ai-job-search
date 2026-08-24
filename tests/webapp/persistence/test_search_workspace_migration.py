@@ -75,22 +75,16 @@ def test_new_database_has_one_deterministic_default_search_workspace(tmp_path):
     assert conn.execute("SELECT COUNT(*) FROM search_workspaces").fetchone()[0] == 1
     assert {
         row["id"] for row in conn.execute("SELECT id FROM schema_migrations")
-    } == {"001_search_workspaces", "002_evidence_profile_manager"}
+    } == {
+        "001_search_workspaces",
+        "002_evidence_profile_manager",
+        "003_accounts_ownership",
+    }
     assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
-def test_existing_001_database_upgrades_to_profile_manager_002_idempotently(tmp_path):
-    path = tmp_path / "existing-001.sqlite3"
-    init_db(path)
-    conn = connect(path)
-    conn.execute("DROP TABLE profile_source_entries")
-    conn.execute("DROP TABLE profile_source_settings")
-    conn.execute(
-        "DELETE FROM schema_migrations WHERE id = '002_evidence_profile_manager'"
-    )
-    conn.commit()
-    conn.close()
-
+def test_profile_manager_and_account_migrations_are_idempotent(tmp_path):
+    path = tmp_path / "idempotent.sqlite3"
     init_db(path)
     init_db(path)
 
@@ -102,7 +96,11 @@ def test_existing_001_database_upgrades_to_profile_manager_002_idempotently(tmp_
     } == {"profile_source_entries", "profile_source_settings"}
     assert {
         row["id"] for row in upgraded.execute("SELECT id FROM schema_migrations")
-    } == {"001_search_workspaces", "002_evidence_profile_manager"}
+    } == {
+        "001_search_workspaces",
+        "002_evidence_profile_manager",
+        "003_accounts_ownership",
+    }
     assert upgraded.execute("PRAGMA foreign_key_check").fetchall() == []
 
 

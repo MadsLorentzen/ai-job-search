@@ -8,6 +8,9 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
+from webapp.persistence.profile_sources import included_profile_sources
+
 from product.profile_snapshot import SOURCE_PATHS, build_snapshot
 from webapp.services.pipeline import PipelineError, refresh_profile
 
@@ -95,13 +98,18 @@ def render_basic_profile(data: dict[str, Any]) -> str:
 
 
 def setup_basic_profile(
-    conn: sqlite3.Connection, *, root: str | Path, data: dict[str, Any]
+    conn: sqlite3.Connection, *, root: str | Path, data: dict[str, Any],
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    return import_profile_markdown(conn, root=root, markdown=render_basic_profile(data))
+    return import_profile_markdown(
+        conn, root=root, markdown=render_basic_profile(data),
+        account_id=account_id,
+    )
 
 
 def import_profile_markdown(
-    conn: sqlite3.Connection, *, root: str | Path, markdown: str
+    conn: sqlite3.Connection, *, root: str | Path, markdown: str,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     root_path = Path(root).resolve()
     if not profile_source_is_unconfigured(root_path):
@@ -109,14 +117,17 @@ def import_profile_markdown(
             "profile setup is only available while the canonical candidate profile is unconfigured"
         )
     _validate_markdown(markdown)
-    _validate_prospective_snapshot(root_path, markdown)
+    sources = included_profile_sources(conn, account_id=account_id)
+    _validate_prospective_snapshot(root_path, markdown, sources)
 
     target = root_path / CANDIDATE_PROFILE_PATH
     target.parent.mkdir(parents=True, exist_ok=True)
     previous = target.read_bytes() if target.exists() else None
     _atomic_write(target, markdown)
     try:
-        artifact = refresh_profile(conn, root=str(root_path))
+        artifact = refresh_profile(
+            conn, root=str(root_path), account_id=account_id
+        )
     except Exception:
         if previous is None:
             target.unlink(missing_ok=True)
@@ -143,10 +154,12 @@ def _validate_markdown(markdown: str) -> None:
         raise PipelineError("candidate profile Markdown must contain a '# Candidate Profile' heading")
 
 
-def _validate_prospective_snapshot(root: Path, markdown: str) -> None:
+def _validate_prospective_snapshot(
+    root: Path, markdown: str, included_sources: tuple[str, ...] = SOURCE_PATHS
+) -> None:
     with tempfile.TemporaryDirectory(prefix="profile-setup-") as temp_dir:
         validation_root = Path(temp_dir)
-        for relative in SOURCE_PATHS:
+        for relative in included_sources:
             destination = validation_root / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             if Path(relative) == CANDIDATE_PROFILE_PATH:
@@ -157,7 +170,9 @@ def _validate_prospective_snapshot(root: Path, markdown: str) -> None:
                     raise PipelineError(f"required candidate source not found: {relative}")
                 shutil.copyfile(source, destination)
         try:
-            snapshot = build_snapshot(validation_root)
+            snapshot = build_snapshot(
+                validation_root, included_sources=included_sources
+            )
         except Exception as exc:
             raise PipelineError(f"candidate profile import is invalid: {exc}") from exc
         candidate_claims = [

@@ -8,9 +8,10 @@ from typing import Any
 from product.application_material_contract import COMPLETION_CONTRACT_VERSION
 from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_current_artifact
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
 from webapp.persistence.review import list_review_decisions
 from webapp.persistence.workflow import list_workflow_events
-from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID, list_workspaces
+from webapp.persistence.workspaces import get_profile_workspace_id, list_workspaces
 from webapp.services.extension_registry import list_installed_extensions
 from webapp.services.http_api import require_job_workspace
 from webapp.services.profile_setup import profile_setup_state, profile_snapshot_is_ready
@@ -333,9 +334,15 @@ def _is_outstanding_review_item(item: dict[str, Any]) -> bool:
 
 
 def build_profile_view_model(
-    conn: sqlite3.Connection, *, profile_root: str | Path = "."
+    conn: sqlite3.Connection, *, profile_root: str | Path = ".",
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    profile = get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
+    profile_workspace_id = get_profile_workspace_id(conn, account_id)
+    profile = (
+        get_current_artifact(conn, profile_workspace_id, "profile_snapshot")
+        if profile_workspace_id
+        else None
+    )
     conflicted = build_conflicted_concept_ids(profile)
     profile_claims = _artifact_payload(profile).get("claims", [])
     claims = []
@@ -361,11 +368,18 @@ def build_profile_view_model(
 
 
 def build_workspace_view_model(
-    conn: sqlite3.Connection, workspace_id: str, *, extensions_dir: Path | None = None
+    conn: sqlite3.Connection, workspace_id: str, *, extensions_dir: Path | None = None,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    workspace = require_job_workspace(conn, workspace_id)
+    workspace = require_job_workspace(
+        conn, workspace_id, account_id=account_id
+    )
+    profile_workspace_id = get_profile_workspace_id(conn, account_id)
     artifacts = {
-        "profile": get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot"),
+        "profile": (
+            get_current_artifact(conn, profile_workspace_id, "profile_snapshot")
+            if profile_workspace_id else None
+        ),
         "job": get_current_artifact(conn, workspace_id, "job_posting_snapshot"),
         "understanding": get_current_artifact(conn, workspace_id, "job_understanding_result"),
         "bundle": get_current_artifact(conn, workspace_id, "resolved_job_evidence"),
@@ -377,6 +391,7 @@ def build_workspace_view_model(
         name: check_staleness(
             conn, workspace_id, artifact_type,
             extensions_dir=extensions_dir or Path("extensions"),
+            account_id=account_id,
         )
         for name, artifact_type in (
             ("understanding", "job_understanding_result"),
@@ -550,11 +565,13 @@ def _dashboard_stage(view: dict[str, Any]) -> str:
 def build_dashboard_view_model(
     conn: sqlite3.Connection, *, filter_name: str = "active",
     extensions_dir: Path | None = None,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     rows = []
-    for workspace in list_workspaces(conn):
+    for workspace in list_workspaces(conn, account_id=account_id):
         view = build_workspace_view_model(
             conn, workspace["id"], extensions_dir=extensions_dir,
+            account_id=account_id,
         )
         focus = _dashboard_focus(view)
         fit = _artifact_payload(view["stages"]["fit"]["artifact"])
@@ -579,6 +596,8 @@ def build_dashboard_view_model(
         "workspaces": [row for row in rows if include(row)], "filter": filter_name,
         "filters": ("all", "active", "drafted", "applied", "interview", "offer", "final"),
         "profile_ready": profile_snapshot_is_ready(
-            get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
+            get_current_artifact(
+                conn, get_profile_workspace_id(conn, account_id), "profile_snapshot"
+            ) if get_profile_workspace_id(conn, account_id) else None
         ),
     }

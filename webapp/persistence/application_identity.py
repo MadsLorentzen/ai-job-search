@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
+
 from product.job_identity import (
     ApplicationIdentityResolution,
     JobIdentity,
@@ -34,7 +36,10 @@ def _now() -> str:
 
 
 def resolve_application_workspace(
-    conn: sqlite3.Connection, source_record: dict[str, Any]
+    conn: sqlite3.Connection,
+    source_record: dict[str, Any],
+    *,
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> ApplicationIdentityLookup:
     incoming = job_identity(source_record)
     clauses = ["weak_fallback_key = ?"]
@@ -46,9 +51,11 @@ def resolve_application_workspace(
         clauses.append("canonical_url_key = ?")
         values.append(incoming.canonical_url_key)
     rows = conn.execute(
-        "SELECT application_workspace_id, source_record_json "
-        "FROM application_workspace_job_identities WHERE " + " OR ".join(clauses),
-        values,
+        "SELECT i.application_workspace_id, i.source_record_json "
+        "FROM application_workspace_job_identities i "
+        "JOIN workspaces w ON w.id = i.application_workspace_id "
+        "WHERE w.account_id = ? AND (" + " OR ".join(clauses) + ")",
+        [account_id, *values],
     ).fetchall()
     by_workspace: dict[str, list[ApplicationIdentityResolution]] = {}
     for row in rows:

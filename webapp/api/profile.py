@@ -5,7 +5,7 @@ import sqlite3
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
-from webapp.api.dependencies import get_conn
+from webapp.api.dependencies import get_account_scope, get_conn
 from webapp.services.pipeline import PipelineError, get_current_profile_snapshot, refresh_profile
 from webapp.services.profile_setup import import_profile_markdown, setup_basic_profile
 from webapp.services.profile_manager import (
@@ -18,6 +18,7 @@ from webapp.services.profile_manager import (
     update_profile_entry,
     update_profile_source,
 )
+from webapp.services.ownership import AccountScope
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
 
@@ -67,15 +68,26 @@ def _manager_error(exc: Exception) -> HTTPException:
 
 
 @router.get("")
-def get_profile(conn: sqlite3.Connection = Depends(get_conn)):
-    return {"profile": get_current_profile_snapshot(conn)}
+def get_profile(
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
+    return {
+        "profile": get_current_profile_snapshot(
+            conn, account_id=scope.account_id
+        )
+    }
 
 
 @router.get("/manager")
-def get_manager(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+def get_manager(
+    request: Request,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
     try:
         return get_profile_manager(
-            conn, root=request.app.state.settings.profile_root
+            conn, root=scope.profile_root, account_id=scope.account_id
         )
     except ProfileManagerError as exc:
         raise _manager_error(exc) from exc
@@ -85,10 +97,11 @@ def get_manager(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
 def post_profile_entry(
     body: ProfileEntryBody, request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         return create_profile_entry(
-            conn, root=request.app.state.settings.profile_root,
+            conn, root=scope.profile_root, account_id=scope.account_id,
             expected_revision=body.expected_revision,
             kind=body.kind, fields=body.fields,
         )
@@ -100,10 +113,11 @@ def post_profile_entry(
 def put_profile_entry(
     entry_id: str, body: ProfileEntryBody, request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         return update_profile_entry(
-            conn, root=request.app.state.settings.profile_root,
+            conn, root=scope.profile_root, account_id=scope.account_id,
             expected_revision=body.expected_revision, entry_id=entry_id,
             kind=body.kind, fields=body.fields,
         )
@@ -115,10 +129,11 @@ def put_profile_entry(
 def remove_profile_entry(
     entry_id: str, body: ProfileDeleteBody, request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         return delete_profile_entry(
-            conn, root=request.app.state.settings.profile_root,
+            conn, root=scope.profile_root, account_id=scope.account_id,
             expected_revision=body.expected_revision, entry_id=entry_id,
         )
     except ProfileManagerError as exc:
@@ -129,10 +144,11 @@ def remove_profile_entry(
 def put_profile_source(
     source_path: str, body: ProfileSourceBody, request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         return update_profile_source(
-            conn, root=request.app.state.settings.profile_root,
+            conn, root=scope.profile_root, account_id=scope.account_id,
             expected_revision=body.expected_revision,
             source_path=source_path, included=body.included,
         )
@@ -141,9 +157,15 @@ def put_profile_source(
 
 
 @router.post("/refresh")
-def post_profile_refresh(request: Request, conn: sqlite3.Connection = Depends(get_conn)):
+def post_profile_refresh(
+    request: Request,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
     try:
-        return {"profile": refresh_profile(conn, root=request.app.state.settings.profile_root)}
+        return {"profile": refresh_profile(
+            conn, root=str(scope.profile_root), account_id=scope.account_id
+        )}
     except PipelineError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -152,10 +174,11 @@ def post_profile_refresh(request: Request, conn: sqlite3.Connection = Depends(ge
 def post_basic_profile_setup(
     body: BasicProfileBody, request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         artifact = setup_basic_profile(
-            conn, root=request.app.state.settings.profile_root,
+            conn, root=scope.profile_root, account_id=scope.account_id,
             data=body.model_dump(),
         )
         return {"profile": artifact}
@@ -167,10 +190,11 @@ def post_basic_profile_setup(
 def post_profile_import(
     body: ImportProfileBody, request: Request,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         artifact = import_profile_markdown(
-            conn, root=request.app.state.settings.profile_root,
+            conn, root=scope.profile_root, account_id=scope.account_id,
             markdown=body.markdown,
         )
         return {"profile": artifact}

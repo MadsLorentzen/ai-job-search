@@ -6,7 +6,13 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
 
-from webapp.api.dependencies import get_conn, get_documents_root, get_extensions_dir
+from webapp.api.dependencies import (
+    get_account_scope,
+    get_conn,
+    get_documents_root,
+    get_extensions_dir,
+)
+from webapp.services.ownership import AccountScope
 from webapp.services.http_api import (
     JobWorkspaceNotFound,
     confirm_job_application_pack,
@@ -49,9 +55,15 @@ def _translate(exc: Exception) -> HTTPException:
 
 
 @router.get("/review")
-def get_review(workspace_id: str, conn: sqlite3.Connection = Depends(get_conn)):
+def get_review(
+    workspace_id: str,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
     try:
-        return build_review_view_model(conn, workspace_id)
+        return build_review_view_model(
+            conn, workspace_id, account_id=scope.account_id
+        )
     except JobWorkspaceNotFound as exc:
         raise _translate(exc) from exc
 
@@ -60,6 +72,7 @@ def get_review(workspace_id: str, conn: sqlite3.Connection = Depends(get_conn)):
 def post_review_decision(
     workspace_id: str, body: ReviewDecisionBody,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         return record_review_decision(
@@ -67,6 +80,7 @@ def post_review_decision(
             source_artifact_id=body.source_artifact_id,
             domain_item_id=body.domain_item_id, disposition=body.disposition,
             note=body.note,
+            account_id=scope.account_id,
         )
     except (PipelineError, JobWorkspaceNotFound) as exc:
         raise _translate(exc) from exc
@@ -76,12 +90,14 @@ def post_review_decision(
 def post_review_decisions_batch(
     workspace_id: str, body: ReviewDecisionBatchBody,
     conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     if not 1 <= len(body.decisions) <= 100:
         raise HTTPException(status_code=400, detail="batch must contain from 1 to 100 decisions")
     try:
         decisions = record_review_decisions(
-            conn, workspace_id, [item.model_dump() for item in body.decisions]
+            conn, workspace_id, [item.model_dump() for item in body.decisions],
+            account_id=scope.account_id,
         )
         return {"decisions": decisions}
     except (PipelineError, JobWorkspaceNotFound) as exc:
@@ -94,6 +110,7 @@ def post_application_pack(
     conn: sqlite3.Connection = Depends(get_conn),
     documents_root: Path = Depends(get_documents_root),
     extensions_dir: Path = Depends(get_extensions_dir),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     if not body.confirmed:
         raise HTTPException(status_code=400, detail="application pack requires explicit confirmation")
@@ -101,6 +118,7 @@ def post_application_pack(
         return confirm_job_application_pack(
             conn, workspace_id, effective_date=body.effective_date,
             documents_root=documents_root, extensions_dir=extensions_dir,
+            account_id=scope.account_id,
         )
     except (PipelineError, JobWorkspaceNotFound) as exc:
         raise _translate(exc) from exc
@@ -111,11 +129,13 @@ def post_retry_projection(
     workspace_id: str, pack_artifact_id: str,
     conn: sqlite3.Connection = Depends(get_conn),
     documents_root: Path = Depends(get_documents_root),
+    scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         return retry_job_application_pack_projection(
             conn, workspace_id, pack_artifact_id=pack_artifact_id,
             documents_root=documents_root,
+            account_id=scope.account_id,
         )
     except (PipelineError, JobWorkspaceNotFound) as exc:
         raise _translate(exc) from exc

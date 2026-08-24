@@ -9,7 +9,8 @@ from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_artifact, get_current_artifact, save_artifact
 from webapp.persistence.review import list_review_decisions
 from webapp.persistence.workflow import record_status_change
-from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID, get_workspace
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
+from webapp.persistence.workspaces import get_profile_workspace_id, get_workspace
 from webapp.services.pipeline import PipelineError
 from webapp.services.staleness import check_staleness, record_dependency_fingerprint
 
@@ -19,9 +20,10 @@ _BLOCKING = frozenset({"requires_upstream_change", "resolved_by_rerun"})
 
 
 def _current_or_error(
-    conn: sqlite3.Connection, workspace_id: str, artifact_type: str
+    conn: sqlite3.Connection, workspace_id: str, artifact_type: str,
+    *, profile_workspace_id: str | None,
 ) -> dict[str, Any]:
-    lookup_workspace = PROFILE_WORKSPACE_ID if artifact_type == "profile_snapshot" else workspace_id
+    lookup_workspace = profile_workspace_id if artifact_type == "profile_snapshot" else workspace_id
     artifact = get_current_artifact(conn, lookup_workspace, artifact_type)
     if artifact is None:
         raise PipelineError(
@@ -53,18 +55,31 @@ def _artifact_ref(artifact: dict[str, Any]) -> dict[str, Any]:
 def build_application_pack(
     conn: sqlite3.Connection, workspace_id: str, *,
     extensions_dir: Path | str = Path("extensions"),
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
-    profile_artifact = _current_or_error(conn, workspace_id, "profile_snapshot")
-    job_artifact = _current_or_error(conn, workspace_id, "job_posting_snapshot")
-    fit_artifact = _current_or_error(conn, workspace_id, "job_fit_result")
+    profile_workspace_id = get_profile_workspace_id(conn, account_id)
+    profile_artifact = _current_or_error(
+        conn, workspace_id, "profile_snapshot",
+        profile_workspace_id=profile_workspace_id,
+    )
+    job_artifact = _current_or_error(
+        conn, workspace_id, "job_posting_snapshot",
+        profile_workspace_id=profile_workspace_id,
+    )
+    fit_artifact = _current_or_error(
+        conn, workspace_id, "job_fit_result",
+        profile_workspace_id=profile_workspace_id,
+    )
     intelligence_artifact = _current_or_error(
-        conn, workspace_id, "application_intelligence_result"
+        conn, workspace_id, "application_intelligence_result",
+        profile_workspace_id=profile_workspace_id,
     )
 
     stale: list[str] = []
     for artifact_type in ("job_fit_result", "application_intelligence_result"):
         result = check_staleness(
-            conn, workspace_id, artifact_type, extensions_dir=extensions_dir
+            conn, workspace_id, artifact_type, extensions_dir=extensions_dir,
+            account_id=account_id,
         )
         if result["stale"]:
             stale.append(f"{artifact_type}: {'; '.join(result['reasons'])}")
@@ -315,6 +330,7 @@ def confirm_application_pack(
     conn: sqlite3.Connection, workspace_id: str, *, effective_date: str,
     documents_root: Path | str = Path("documents"),
     extensions_dir: Path | str = Path("extensions"),
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     """Gate 4: the sole webapp route to ``drafted`` and an exact pack binding."""
     try:
@@ -323,7 +339,7 @@ def confirm_application_pack(
         # serializable SQLite operation; a concurrent rerun cannot replace a
         # current artifact between pack assembly and commit.
         conn.execute("BEGIN IMMEDIATE")
-        workspace = get_workspace(conn, workspace_id)
+        workspace = get_workspace(conn, workspace_id, account_id=account_id)
         if workspace is None:
             raise PipelineError(f"workspace {workspace_id} does not exist")
         if workspace["workflow_status"] not in (None, "drafted"):
@@ -332,7 +348,10 @@ def confirm_application_pack(
                 f"{workspace['workflow_status']!r}"
             )
 
-        pack = build_application_pack(conn, workspace_id, extensions_dir=extensions_dir)
+        pack = build_application_pack(
+            conn, workspace_id, extensions_dir=extensions_dir,
+            account_id=account_id,
+        )
         if pack["completion_status"] != "READY":
             raise PipelineError(
                 "cannot complete Gate 4: no reviewed usable application material; "
@@ -357,7 +376,8 @@ def confirm_application_pack(
         event = record_status_change(
             conn, workspace_id=workspace_id, new_status="drafted", effective_date=effective_date,
             note="Application pack reviewed and confirmed by user.",
-            submitted_pack_artifact_id=artifact["id"], _allow_drafted=True, commit=False,
+            submitted_pack_artifact_id=artifact["id"], _allow_drafted=True,
+            commit=False, account_id=account_id,
         )
         conn.commit()
     except Exception:
@@ -378,6 +398,7 @@ def confirm_application_pack(
 def retry_application_pack_projection(
     conn: sqlite3.Connection, workspace_id: str, *, pack_artifact_id: str,
     documents_root: Path | str = Path("documents"),
+    account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     """Retry only the compatibility export for one immutable existing pack.
 
@@ -386,6 +407,8 @@ def retry_application_pack_projection(
     idempotent even if a prior call wrote the file but its success response was
     lost.
     """
+    if get_workspace(conn, workspace_id, account_id=account_id) is None:
+        raise PipelineError(f"workspace {workspace_id} does not exist")
     artifact = get_artifact(conn, pack_artifact_id)
     if (
         artifact is None
