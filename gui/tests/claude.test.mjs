@@ -7,6 +7,7 @@ import {
   buildClaudeArgs,
   chromeEnabled,
   commandLooksInstalled,
+  extraBinDirs,
   extractHttpsUrls,
   isJobSearchWorkspace,
   loadDeskSession,
@@ -15,6 +16,7 @@ import {
   needsInstall,
   needsLogin,
   parseAuthStatus,
+  resolveCommand,
   saveDeskSession,
   withClaudePath,
 } from "../claude.mjs";
@@ -78,6 +80,49 @@ test("commandLooksInstalled rejects a bare command name", () => {
 test("withClaudePath prepends extra bin dirs", () => {
   const env = withClaudePath({ PATH: "/usr/bin", HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE });
   assert.match(env.PATH, /\.local/);
+});
+
+test("withClaudePath includes the Windows npm global folder", () => {
+  const env = withClaudePath({
+    PATH: "C:\\Windows\\system32",
+    APPDATA: "C:\\Users\\test\\AppData\\Roaming",
+    LOCALAPPDATA: "C:\\Users\\test\\AppData\\Local",
+    USERPROFILE: "C:\\Users\\test",
+    npm_config_prefix: "C:\\custom\\npm-prefix",
+  });
+  assert.match(env.PATH, /AppData\\Roaming\\npm/);
+  assert.match(env.PATH, /AppData\\Local\\claude/);
+  assert.match(env.PATH, /WinGet\\Links/);
+  assert.match(env.PATH, /custom\\npm-prefix/);
+});
+
+test("extraBinDirs keeps the native installer and WinGet locations", () => {
+  const dirs = extraBinDirs({
+    USERPROFILE: "C:\\Users\\test",
+    LOCALAPPDATA: "C:\\Users\\test\\AppData\\Local",
+    APPDATA: "C:\\Users\\test\\AppData\\Roaming",
+  });
+  assert.ok(dirs.some((dir) => dir.endsWith(join("test", ".local", "bin")) || dir.includes(".local")));
+});
+
+test("resolveCommand prefers claude.cmd over the extensionless npm shim", (t) => {
+  if (process.platform !== "win32") {
+    t.skip("Windows npm shims");
+    return;
+  }
+  const root = mkdtempSync(join(tmpdir(), "desk-npm-"));
+  const npm = join(root, "npm");
+  mkdirSync(npm);
+  writeFileSync(join(npm, "claude"), "unix shim");
+  writeFileSync(join(npm, "claude.cmd"), "@echo off\r\n");
+  const found = resolveCommand("claude", {
+    APPDATA: root,
+    PATH: "C:\\Windows\\system32",
+    SystemRoot: "C:\\Windows",
+    LOCALAPPDATA: join(root, "Local"),
+    USERPROFILE: root,
+  });
+  assert.equal(found, join(npm, "claude.cmd"));
 });
 
 test("buildClaudeArgs keeps Chrome and one named session", () => {

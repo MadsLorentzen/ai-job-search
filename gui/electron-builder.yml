@@ -11,11 +11,14 @@ files:
   - electron-main.mjs
   - preload.mjs
   - server.mjs
+  - workspace.mjs
   - package.json
   - public/**/*
 extraMetadata:
   main: electron-main.mjs
 win:
+  executableName: JobSearchDesk
+  icon: build/icon.png
   target:
     - nsis
     - portable
@@ -24,8 +27,13 @@ nsis:
   oneClick: true
   perMachine: false
   shortcutName: Job Search Desk
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  runAfterFinish: true
+  uninstallDisplayName: Job Search Desk
 mac:
   category: public.app-category.productivity
+  icon: build/icon.png
   identity: null
   target:
     - dmg
@@ -33,6 +41,7 @@ mac:
   artifactName: JobSearchDesk-${version}-mac-${arch}.${ext}
 linux:
   category: Office
+  icon: build/icon.png
   target:
     - AppImage
   artifactName: JobSearchDesk-${version}-linux-${arch}.${ext}

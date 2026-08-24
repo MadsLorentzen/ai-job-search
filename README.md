@@ -158,7 +158,7 @@ Postings are treated as untrusted input (the workflow follows no instructions em
 
 ### Optional: Job Search Desk app
 
-If you would rather click `/scrape` and `/apply` than live in the Claude Code TTY, install **Job Search Desk** from [Releases](../../releases) (macOS, Windows, Linux). The desk opens the conversation when you are already signed in. It only asks you to log in to Claude Code when `claude auth status` reports you are signed out. If Claude Code is missing, the app installs it, then uses the same claude.ai login you already use in Chrome.
+If you would rather click `/scrape` and `/apply` than live in the Claude Code TTY, install **Job Search Desk** from [Releases](../../releases) (macOS, Windows, Linux). Run the installer; Windows adds Start Menu and Desktop shortcuts and opens the app when setup finishes. Open a job-search folder or create a new copy of the public repo (Git is optional). The desk opens the conversation when you are already signed in. It only asks you to log in to Claude Code when `claude auth status` reports you are signed out. If Claude Code is missing, the app installs it, then uses the same claude.ai login you already use in Chrome.
 
 From a clone, the same desk also starts with:
 

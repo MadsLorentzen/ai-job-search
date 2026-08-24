@@ -225,6 +225,18 @@ async function post(path, body) {
 async function sendPrompt(prompt) {
   const text = prompt.trim();
   if (!text || busy) return;
+  try {
+    lastHealth = await readHealth();
+  } catch {
+    // Keep the last known status if the health endpoint blips.
+  }
+  if (needsInstall(lastHealth) || needsLogin(lastHealth) || !lastHealth?.installed) {
+    applyHealth(lastHealth || { installed: false });
+    if (!lastHealth?.installed && !needsInstall(lastHealth) && !needsLogin(lastHealth)) {
+      addMessage("error", "Claude Code is not installed yet. Use the Connect Claude button.");
+    }
+    return;
+  }
   assistant = null;
   setMenu(false);
   setBusy(true);
@@ -428,6 +440,7 @@ const gateChrome = document.getElementById("gate-chrome");
 const accountLabel = document.getElementById("account-label");
 
 let authWaiter = null;
+let lastHealth = null;
 
 function setGate(open, title, copy) {
   document.body.classList.toggle("gated", open);
@@ -476,6 +489,7 @@ async function readHealth() {
 }
 
 function applyHealth(health) {
+  lastHealth = health;
   accountLabel.textContent = describeAccount(health);
   accountLabel.classList.toggle("signed-in", Boolean(health?.loggedIn));
   gateCancel.hidden = true;

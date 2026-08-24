@@ -15,6 +15,11 @@ per-file diff commands.
 
 ### Changed
 
+- Job Search Desk 1.2.0: the Windows installer launches the app, creates Start
+  Menu and Desktop shortcuts, and a second shortcut click focuses the running
+  window. First-run can download the public repo when Git is missing. The desk
+  finds a Windows npm `claude.cmd` and will not send commands before Claude is
+  installed.
 - Public README now identifies this repo as the US-market fork, points CI and
   Desk release badges at `iLevyTate/ai-job-search`, and forks this repo in
   Quick start instead of the Danish template.

@@ -1,14 +1,16 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
-import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isJobSearchWorkspace } from "./claude.mjs";
-import { TEMPLATE_REPO } from "./defaults.mjs";
 import { startDesk } from "./server.mjs";
+import { createWorkspace } from "./workspace.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+
+app.setName("Job Search Desk");
+app.setAppUserModelId("com.ai-job-search.desk");
 
 function statePath() {
   return join(app.getPath("userData"), "workspace.json");
@@ -72,6 +74,13 @@ function createWindow() {
   });
 }
 
+function focusMainWindow() {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
 ipcMain.handle("open-folder", async () => {
   const picked = await dialog.showOpenDialog(mainWindow, {
     title: "Open job-search folder",
@@ -82,8 +91,12 @@ ipcMain.handle("open-folder", async () => {
   if (!isJobSearchWorkspace(root)) {
     return { error: "That folder is not a job-search repo. It needs AGENTS.md and gui/." };
   }
-  await openDesk(root);
-  return { ok: true };
+  try {
+    await openDesk(root);
+    return { ok: true };
+  } catch (err) {
+    return { error: err.message || "The desk could not start in that folder." };
+  }
 });
 
 ipcMain.handle("clone-workspace", async () => {
@@ -96,40 +109,49 @@ ipcMain.handle("clone-workspace", async () => {
     return { error: "No folder selected." };
   }
   const dest = join(destParent.filePaths[0], "ai-job-search");
-  if (existsSync(dest)) {
-    if (isJobSearchWorkspace(dest)) {
-      await openDesk(dest);
-      return { ok: true };
-    }
-    return { error: `${dest} already exists and is not a job-search repo.` };
+  const created = await createWorkspace(dest);
+  if (created.error) return created;
+  try {
+    await openDesk(dest);
+    return { ok: true };
+  } catch (err) {
+    return { error: err.message || "The workspace was created but the desk could not start." };
   }
+});
 
-  const cloned = await new Promise((resolve) => {
-    const child = spawn("git", ["clone", "--depth", "1", TEMPLATE_REPO, dest], { windowsHide: true });
-    let err = "";
-    child.stderr?.on("data", (chunk) => {
-      err += chunk.toString("utf8");
-    });
-    child.on("error", (error) => resolve({ error: error.message }));
-    child.on("close", (code) => {
-      if (code) resolve({ error: err.trim() || `git clone exited ${code}` });
-      else resolve({ ok: true });
-    });
+const hasLock = app.requestSingleInstanceLock();
+if (!hasLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    focusMainWindow();
   });
-  if (cloned.error) return cloned;
-  if (!isJobSearchWorkspace(dest)) {
-    return { error: "Clone finished but the folder looks incomplete." };
-  }
-  await openDesk(dest);
-  return { ok: true };
-});
 
-app.whenReady().then(async () => {
-  createWindow();
-  const root = sourceWorkspace();
-  if (root) await openDesk(root);
-  else await mainWindow.loadFile(join(HERE, "public", "first-run.html"));
-});
+  app.whenReady().then(async () => {
+    if (app.isPackaged) {
+      try {
+        process.chdir(app.getPath("userData"));
+      } catch {
+        // Shortcut launches sometimes start in System32. userData is enough.
+      }
+    }
+    createWindow();
+    const root = sourceWorkspace();
+    if (root) {
+      try {
+        await openDesk(root);
+      } catch (err) {
+        dialog.showErrorBox(
+          "Job Search Desk",
+          err.message || "The desk could not start. Close any other desk window and try again.",
+        );
+        await mainWindow.loadFile(join(HERE, "public", "first-run.html"));
+      }
+    } else {
+      await mainWindow.loadFile(join(HERE, "public", "first-run.html"));
+    }
+  });
+}
 
 app.on("before-quit", () => {
   desk?.stop();
