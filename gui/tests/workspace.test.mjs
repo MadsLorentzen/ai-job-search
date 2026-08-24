@@ -14,7 +14,11 @@ test("template archive points at the public master zip", () => {
   assert.equal(templateArchiveRoot("https://github.com/iLevyTate/ai-job-search.git"), "ai-job-search-master");
 });
 
-test("gitSearchDirs includes Git for Windows", () => {
+test("gitSearchDirs includes Git for Windows", (t) => {
+  if (process.platform !== "win32") {
+    t.skip("Windows Git install locations");
+    return;
+  }
   const dirs = gitSearchDirs({
     ProgramFiles: "C:\\Program Files",
     "ProgramFiles(x86)": "C:\\Program Files (x86)",

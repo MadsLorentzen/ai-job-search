@@ -90,10 +90,10 @@ test("withClaudePath includes the Windows npm global folder", () => {
     USERPROFILE: "C:\\Users\\test",
     npm_config_prefix: "C:\\custom\\npm-prefix",
   });
-  assert.match(env.PATH, /AppData\\Roaming\\npm/);
-  assert.match(env.PATH, /AppData\\Local\\claude/);
-  assert.match(env.PATH, /WinGet\\Links/);
-  assert.match(env.PATH, /custom\\npm-prefix/);
+  assert.match(env.PATH, /AppData[/\\]Roaming[/\\]npm/);
+  assert.match(env.PATH, /AppData[/\\]Local[/\\]claude/);
+  assert.match(env.PATH, /WinGet[/\\]Links/);
+  assert.match(env.PATH, /custom[/\\]npm-prefix/);
 });
 
 test("extraBinDirs keeps the native installer and WinGet locations", () => {
