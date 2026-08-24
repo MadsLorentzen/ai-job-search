@@ -19,6 +19,7 @@ from webapp.persistence.accounts import (
 SEARCH_WORKSPACES_MIGRATION_ID = "001_search_workspaces"
 PROFILE_MANAGER_MIGRATION_ID = "002_evidence_profile_manager"
 ACCOUNTS_OWNERSHIP_MIGRATION_ID = "003_accounts_ownership"
+HANDOFF_SESSIONS_MIGRATION_ID = "004_handoff_sessions"
 
 
 def _now() -> str:
@@ -43,6 +44,7 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
         (SEARCH_WORKSPACES_MIGRATION_ID, _migrate_search_workspaces, True),
         (PROFILE_MANAGER_MIGRATION_ID, _migrate_evidence_profile_manager, False),
         (ACCOUNTS_OWNERSHIP_MIGRATION_ID, _migrate_accounts_ownership, False),
+        (HANDOFF_SESSIONS_MIGRATION_ID, _migrate_handoff_sessions, False),
     )
     for migration_id, operation, disable_foreign_keys in migrations:
         if conn.execute(
@@ -203,6 +205,62 @@ def _migrate_accounts_ownership(conn: sqlite3.Connection) -> None:
         "SELECT ?, id, ? FROM workspaces "
         "WHERE id = 'profile' AND kind = 'profile' AND account_id = ?",
         (DEFAULT_ACCOUNT_ID, now, DEFAULT_ACCOUNT_ID),
+    )
+
+
+def _migrate_handoff_sessions(conn: sqlite3.Connection) -> None:
+    _execute_statements(
+        conn,
+        """
+        CREATE TABLE extension_credentials (
+            id TEXT PRIMARY KEY,
+            account_id TEXT NOT NULL REFERENCES accounts(id),
+            secret_hash TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            revoked_at TEXT
+        );
+
+        CREATE INDEX idx_extension_credentials_account
+            ON extension_credentials(account_id);
+
+        CREATE TABLE handoff_sessions (
+            id TEXT PRIMARY KEY,
+            account_id TEXT NOT NULL REFERENCES accounts(id),
+            workspace_id TEXT NOT NULL REFERENCES workspaces(id),
+            pack_artifact_id TEXT NOT NULL REFERENCES artifacts(id),
+            target_url TEXT NOT NULL,
+            target_domain TEXT NOT NULL,
+            ats_adapter_id TEXT NOT NULL,
+            ats_adapter_version TEXT NOT NULL,
+            started_at TEXT NOT NULL,
+            status TEXT NOT NULL,
+            user_confirmed_submitted_at TEXT
+        );
+
+        CREATE INDEX idx_handoff_sessions_discovery
+            ON handoff_sessions(account_id, workspace_id, target_domain);
+
+        CREATE TABLE handoff_events (
+            handoff_session_id TEXT NOT NULL REFERENCES handoff_sessions(id),
+            event_id TEXT NOT NULL,
+            server_sequence INTEGER NOT NULL,
+            event_type TEXT NOT NULL,
+            normalized_field_type TEXT,
+            page_field_key TEXT,
+            event_json TEXT NOT NULL,
+            observed_at TEXT,
+            recorded_at TEXT NOT NULL,
+            PRIMARY KEY (handoff_session_id, event_id),
+            UNIQUE (handoff_session_id, server_sequence)
+        );
+
+        CREATE TABLE submission_confirmations (
+            id TEXT PRIMARY KEY,
+            handoff_session_id TEXT NOT NULL REFERENCES handoff_sessions(id),
+            workflow_event_id TEXT REFERENCES workflow_events(id),
+            created_at TEXT NOT NULL
+        );
+        """,
     )
 
 
