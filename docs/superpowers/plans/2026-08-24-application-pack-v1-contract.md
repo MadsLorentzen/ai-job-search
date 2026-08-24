@@ -110,11 +110,26 @@ blocker before modifying them.
      "C:\Users\smbab\OneDrive\Documents\Projects\ai-job-search-pack-v1" a7faadd
    ```
 
-2. Read the reviewed spec and this plan from the design branch. Copying or
-   cherry-picking the documentation commits is optional; all production diff
-   checks remain anchored to `a7faadd`.
-3. Confirm the implementation worktree is clean and `HEAD` has `a7faadd` as its
-   merge base.
+2. Bring the reviewed specification and implementation plan onto the new branch
+   before production work. Cherry-pick the complete documentation-only range in
+   its existing order:
+
+   ```powershell
+   $packV1DocCommits = @(
+     git rev-list --reverse a7faadd..design/application-pack-v1-contract
+   )
+   foreach ($packV1DocCommit in $packV1DocCommits) {
+     git cherry-pick $packV1DocCommit
+   }
+   ```
+
+   Confirm that this range changes only the two reviewed files under
+   `docs/superpowers/`. Do not squash or recreate them. This makes the approved
+   contract auditable from the implementation branch even if the design
+   worktree is later removed.
+3. Confirm the implementation worktree is clean and that `a7faadd` remains its
+   merge base. All production-diff checks stay anchored to `a7faadd`; the
+   documentation commits do not change the frozen product baseline.
 4. Install Chromium unconditionally:
 
    ```powershell
@@ -309,7 +324,26 @@ not query historical decisions and does not change `_decision_index` semantics.
 
 ### Construction-only source checks
 
-With `source_profile_artifact` supplied, fail on:
+With `source_profile_artifact` supplied, the validator must first compute:
+
+```python
+expected_candidate_snapshot = build_candidate_snapshot(source_profile_artifact)
+```
+
+and require exact structural equality:
+
+```python
+pack["candidate_snapshot"] == expected_candidate_snapshot
+```
+
+This is the construction-mode completeness invariant. It proves that every safe
+in-scope value was copied, every unsafe value was excluded, deterministic
+literal selection and ordering were preserved, all corroborating IDs were
+retained, sparse fields use the specified null/empty representation, and no
+field was invented. Do not implement a second extraction algorithm inside the
+validator.
+
+Keep focused failures for:
 
 - artifact ID/type/content ID mismatch;
 - copied profile schema mismatch;
@@ -317,6 +351,18 @@ With `source_profile_artifact` supplied, fail on:
 - placeholder/conflicted evidence ID;
 - literal value not equal to the deterministic selected source claim;
 - missing corroborating claim ID.
+
+Also require independent failures when an otherwise valid candidate snapshot:
+
+- omits a safe record;
+- omits a safe field from an included record;
+- adds a fabricated record/value; or
+- reorders deterministic record or detail output.
+
+Each must pass render-mode structural validation when it remains structurally
+well-formed, then fail construction mode against the exact source artifact. That
+contrast documents why render mode cannot prove completeness without a forbidden
+Profile read.
 
 ### Explicit render-time provenance-limit test
 
@@ -377,6 +423,21 @@ Rules:
 - no candidate or upstream fallback is added;
 - no renderer import from profile/webapp/persistence/provider modules.
 
+The renderer's public exception boundary remains `RendererError`:
+
+- absent or unknown versions raise
+  `RendererError("unsupported application pack schema version")` exactly;
+- v1 validation failures are caught at the renderer boundary and re-raised as
+  `RendererError("invalid application pack v1 payload")`, chaining the original
+  `ApplicationPackContractError` with `raise ... from exc`;
+- validation details, candidate values, evidence IDs, and payload fragments must
+  not be interpolated into the public message.
+
+Add tests for absent/unknown versions here. Task 6 adds malformed and
+review-unauthorized v1 cases and verifies both the stable public message and the
+chained internal cause. The existing HTTP service already translates
+`RendererError` to `PipelineError`; preserve that clean public route behavior.
+
 At this task’s boundary, a valid v1 may raise a clean “v1 renderer not yet
 available” error; pack construction still emits v0, so the application remains
 coherent between commits.
@@ -427,7 +488,11 @@ Using the frozen valid v1 fixture, require:
 10. malformed or review-ambiguous v1 packs fail before document creation;
 11. repeated v1 rendering is byte-identical across a real wall-clock gap;
 12. v1 reports `application-pack-renderer.v2`;
-13. renderer source/import guard remains free of upstream modules.
+13. malformed and review-unauthorized v1 packs surface the stable
+    `RendererError("invalid application pack v1 payload")`, with an
+    `ApplicationPackContractError` as `__cause__` and no payload data in the
+    public message;
+14. renderer source/import guard remains free of upstream modules.
 
 Run focused v1 tests and then the complete renderer suite:
 
@@ -507,7 +572,9 @@ the authoritative pre-persistence provenance check.
 
 Require:
 
-- exact candidate snapshot and source-profile ref in a newly built v1 pack;
+- exact candidate snapshot and source-profile ref in a newly built v1 pack,
+  explicitly asserting
+  `pack["candidate_snapshot"] == build_candidate_snapshot(profile_artifact)`;
 - every candidate value traces to the exact source artifact;
 - changed live profile after confirmation does not mutate persisted pack JSON;
 - unsupported profile version fails before persistence;
@@ -540,12 +607,40 @@ git commit -m "feat: confirm provenance-complete application pack v1 artifacts"
 
 **Files:**
 
+- Create: `tests/fixtures/application_pack/v0_archive_projection_baseline.md`
 - Modify: `webapp/services/archive_projection.py`
 - Modify: `tests/webapp/services/test_archive_projection.py`
 
-Test first:
+### Phase A: freeze v0 before changing production
 
-- v0 projection output for a frozen v0 input is unchanged;
+At `a7faadd`, pass the exact frozen v0 fixture from Task 2 to
+`_render_markdown` with
+`projection_id="art_v0_projection_baseline"`. Materialize the returned text
+unchanged as `v0_archive_projection_baseline.md` and add a characterization
+test that pins its UTF-8 bytes:
+
+- byte length: `752`;
+- SHA-256:
+  `sha256:f6951f92b4cdcd81790b871a3639b899fc7ff05f2c16651be8cf00d96795ab68`.
+
+These are immutable values captured from `a7faadd`, not expectations to
+recalculate after implementation. The test must pass while
+`archive_projection.py` is still unmodified. Commit the fixture and passing
+characterization test separately:
+
+```powershell
+python -m pytest tests/webapp/services/test_archive_projection.py `
+  -k "v0_archive_projection_baseline" -v
+git add tests/fixtures/application_pack/v0_archive_projection_baseline.md `
+  tests/webapp/services/test_archive_projection.py
+git commit -m "test: lock application pack v0 archive projection bytes"
+```
+
+### Phase B: add explicit v1 projection
+
+Only after the Phase A commit may `archive_projection.py` change. Test first:
+
+- v0 projection output still matches the exact frozen bytes and hash;
 - v1 projection adds exactly one `Candidate Snapshot` JSON audit section copied
   from the pack;
 - no live Profile read/import is introduced;
@@ -583,7 +678,9 @@ No route change is expected. Add integration tests proving:
    pointer, then render the historical pack to identical bytes/hashes;
 5. render path performs no Profile, Fit, Intelligence, or review lookup after the
    pack artifact is selected (use monkeypatch tripwires on those read paths);
-6. render-mode validation rejects review-ambiguous or unauthorized v1 payloads;
+6. render-mode validation rejects review-ambiguous or unauthorized v1 payloads
+   through the stable `RendererError -> PipelineError` seam without exposing
+   contract details or payload data;
 7. Account B cannot render Account A’s exact v0 or v1 artifact;
 8. explicit pack artifact ID cannot cross workspace ownership or silently
    substitute the current pack.
@@ -667,11 +764,64 @@ git diff a7faadd...HEAD --name-only -- `
   product/profile_snapshot.py `
   webapp/services/staleness.py `
   webapp/application_material.py `
+  webapp/persistence/review.py `
+  webapp/persistence/accounts.py `
+  webapp/persistence/workspaces.py `
+  webapp/services/ownership.py `
+  webapp/services/http_api.py `
+  webapp/api/review.py `
   webapp/persistence/schema.sql `
   webapp/persistence/migrations.py
 ```
 
-Expected: empty.
+Expected: empty. These paths mechanically protect `list_review_decisions`,
+account/workspace owner resolution, `AccountScope`, authorization-before-read,
+and the existing `RendererError -> PipelineError` route seam. If Task 9 exposes
+a genuine need to change `http_api.py`, stop for the focused review required
+there before altering this expected set; do not silently weaken the guard.
+
+`webapp/services/application_pack.py` must change to construct v1, so it cannot
+be part of the empty file-level check. It is nevertheless the real module that
+contains `_decision_index`. Mechanically prove that function's AST is unchanged
+from `a7faadd`:
+
+```powershell
+@'
+import ast
+import subprocess
+from pathlib import Path
+
+def function_ast(source: str, name: str) -> str:
+    tree = ast.parse(source)
+    node = next(
+        item for item in tree.body
+        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and item.name == name
+    )
+    return ast.dump(node, include_attributes=False)
+
+baseline = subprocess.check_output(
+    ["git", "show", "a7faadd:webapp/services/application_pack.py"],
+    text=True,
+    encoding="utf-8",
+)
+current = Path("webapp/services/application_pack.py").read_text(encoding="utf-8")
+assert function_ast(current, "_decision_index") == function_ast(
+    baseline, "_decision_index"
+), "_decision_index changed from a7faadd"
+'@ | python -
+```
+
+Expected: exit code zero. Review the remaining diff in that module with function
+context and require all selection semantics to stay in place:
+
+```powershell
+git diff --function-context a7faadd...HEAD -- webapp/services/application_pack.py
+```
+
+The Task 7 newest-effective characterization tests are the behavioral guard for
+the nested review-selection code. Neither this review nor the AST check assigns
+meaning to equal timestamps.
 
 No new SQL/migration file may exist. Confirm:
 
@@ -737,8 +887,13 @@ git commit -m "test: guard application pack v1 trust boundaries"
 
 5. Review the final diff specifically for:
 
-   - v0 byte/hash compatibility;
-   - exact source Profile Snapshot construction validation;
+   - exact v0 renderer and archive-projection byte/hash compatibility, including
+     archive length `752` and SHA-256
+     `f6951f92b4cdcd81790b871a3639b899fc7ff05f2c16651be8cf00d96795ab68`;
+   - construction-mode proof that
+     `pack["candidate_snapshot"] == build_candidate_snapshot(source_profile_artifact)`,
+     including omitted record/field, fabricated record, and reordered-output
+     failures;
    - render-time provenance-limit comments/tests;
    - exact-one effective review authorization per rendered AI unit;
    - verbatim Profile employment details separated from tailored AI bullets;
@@ -751,7 +906,7 @@ git commit -m "test: guard application pack v1 trust boundaries"
    - commits created;
    - files changed;
    - focused contract/service/renderer/route results;
-   - exact v0 baseline hashes;
+   - exact v0 renderer and archive-projection baseline lengths/hashes;
    - Chromium results;
    - full-suite result;
    - `git diff --check`;
@@ -770,10 +925,11 @@ Stop after the final validated implementation commit. Do not merge or push.
 4. `refactor: add explicit application pack renderer version dispatch`
 5. `feat: render self-contained application pack v1 documents`
 6. `feat: confirm provenance-complete application pack v1 artifacts`
-7. `feat: project application pack v1 candidate audit data`
-8. `test: prove immutable owner-scoped v0 and v1 historical rendering`
-9. `test: add Chromium journey for immutable application pack v1 rendering`
-10. Optional test-only boundary commit if Task 11 adds a guard.
+7. `test: lock application pack v0 archive projection bytes`
+8. `feat: project application pack v1 candidate audit data`
+9. `test: prove immutable owner-scoped v0 and v1 historical rendering`
+10. `test: add Chromium journey for immutable application pack v1 rendering`
+11. Optional test-only boundary commit if Task 11 adds a guard.
 
 Each commit must leave the repository coherent for its current production pack
 version. No squash, merge, push, or unrelated cleanup is part of this plan.
