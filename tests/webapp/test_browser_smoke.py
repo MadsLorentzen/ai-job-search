@@ -761,6 +761,37 @@ def test_stale_and_review_negative_paths_are_enforced_in_rendered_ui(page, live_
     _assert_no_private_browser_content(page, live_server)
 
 
+def test_causal_staleness_message_appears_and_differs_by_stage(page, live_server):
+    _refresh_profile(page, live_server)
+    workspace_url = _run_to_intelligence(page, live_server)
+
+    candidate_path = (
+        live_server.profile_root
+        / ".claude/skills/job-application-assistant/01-candidate-profile.md"
+    )
+    candidate_path.write_text(
+        candidate_path.read_text(encoding="utf-8")
+        + "\n2. Ada Lovelace (2027). A new browser-causal-staleness publication.\n",
+        encoding="utf-8",
+    )
+    _refresh_profile(page, live_server)
+    page.goto(workspace_url, wait_until="networkidle")
+
+    fit_panel = page.locator("#job-fit")
+    assert fit_panel.get_by_text("Evidence Profile").is_visible()
+    assert fit_panel.get_by_role("button", name="Rerun Job Fit").is_visible()
+
+    page.locator('input[name="extension_ids"][value="data-transfer"]').check()
+    _click_reload(page, page.get_by_role("button", name="Rerun Job Fit"))
+
+    intelligence_panel = page.locator("#application-intelligence")
+    assert intelligence_panel.get_by_text("Job Fit").is_visible()
+    assert intelligence_panel.get_by_role(
+        "button", name="Rerun Application Intelligence"
+    ).is_visible()
+    _assert_no_private_browser_content(page, live_server)
+
+
 def test_discovery_search_evaluate_and_promote_browser_lifecycle(page, live_server):
     _refresh_profile(page, live_server)
     page.goto(f"{live_server.base_url}/user-profile", wait_until="networkidle")
