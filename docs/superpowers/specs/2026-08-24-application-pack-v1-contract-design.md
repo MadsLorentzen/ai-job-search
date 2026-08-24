@@ -121,6 +121,13 @@ V1 retains every v0 top-level field unchanged and adds one closed
 }
 ```
 
+`candidate_snapshot.profile_schema_version` is copied verbatim from the exact
+source Profile Snapshot’s declared `schema_version`; it is not a pack-builder
+constant. Application Pack v1 has an explicit supported-profile-version set.
+For this contract that set is exactly
+`{"candidate-profile-evidence-snapshot.v0"}`. An unsupported Profile Snapshot
+version fails construction rather than being interpreted opportunistically.
+
 ### 4.1 Provenanced value
 
 Every rendered candidate value uses this closed shape:
@@ -132,9 +139,10 @@ Every rendered candidate value uses this closed shape:
 }
 ```
 
-`profile_evidence_ids` is non-empty, sorted, and contains every safe,
-same-valued claim collapsed into that presentation value. These IDs must exist
-in the exact Profile Snapshot referenced by
+`profile_evidence_ids` is non-empty, sorted, and contains every safe claim whose
+value is equivalent under the Profile Snapshot’s normalized-value semantics and
+was collapsed into that presentation value. These IDs must exist in the exact
+Profile Snapshot referenced by
 `source_artifacts.profile_snapshot.artifact_id`.
 
 The renderer uses only `value`. Evidence IDs remain audit metadata and never
@@ -224,7 +232,32 @@ are not CV presentation fields in v1 and are not copied. Adding a new Profile
 Snapshot category later does not implicitly add it to v1; a future pack contract
 must opt in explicitly.
 
-## 5. Snapshot construction rules
+## 5. Review-authorization boundary
+
+Application Pack v1 does not change review semantics. It distinguishes two
+classes of renderable content:
+
+**Candidate-owned factual presentation data** is copied verbatim from safe,
+non-placeholder, non-conflicted Profile Snapshot claims into
+`candidate_snapshot`. This includes identity/contact data, employment facts and
+details, education, certifications, skills, languages, projects, publications,
+and awards. Because the candidate controls the Evidence Profile and these values
+are reproduced as facts rather than newly generated application wording, they do
+not require a second per-application review decision.
+
+**Application Intelligence wording** consists of `cv_summary_line`, `cv_bullet`,
+and `cover_letter_paragraph` units. Such wording is renderable in v1 only when the
+unit is present in the immutable pack and `review_record.decisions_consulted`
+contains its exact existing authorization: `review_item_type == "content_unit"`,
+matching `domain_item_id == unit_id`, matching the exact
+`application_intelligence_result` artifact ID, and
+`disposition == "acknowledged_and_proceed"`.
+
+The v1 validator enforces that cross-reference independently at persistence and
+render time. Candidate-owned facts cannot be relabelled as generated units to
+bypass review, and generated units cannot be copied into `candidate_snapshot`.
+
+## 6. Snapshot construction rules
 
 Candidate presentation extraction is a pure transformation of the exact current
 Profile Snapshot payload already acquired inside the Gate 4 transaction.
@@ -234,26 +267,33 @@ Profile Snapshot payload already acquired inside the Gate 4 transaction.
 3. Exclude every placeholder claim.
 4. Exclude every claim whose `concept_id` is conflicted. A review decision cannot
    turn conflicted evidence into safe candidate presentation data.
-5. Group remaining claims by `(record_id, category, field, concept_id)`.
-6. Within a group, require values to be equal under the Profile Snapshot’s own
-   normalized-value semantics. Collapse corroborating claims into one value and
-   retain all sorted claim IDs. A mismatch fails pack construction loudly; it is
-   never resolved by source priority.
-7. Sort record arrays deterministically by their earliest source position
+5. Group remaining claims by `(record_id, category, field, concept_id)` and then
+   by the Profile Snapshot’s normalized-value semantics.
+6. When multiple safe claims normalize to the same value, select the exact
+   literal `value` from the claim with the earliest deterministic source position
+   `(source.file, source.line_start, claim.id)`. Retain all collapsed claim IDs,
+   sorted lexicographically, in `profile_evidence_ids`. This deterministic
+   literal selection is not a general source-priority policy and applies anywhere
+   corroborating claims collapse into one presentation value.
+7. If a single concept contains more than one distinct normalized safe value,
+   fail construction loudly. Never select a winner between distinct values.
+8. Sort record arrays deterministically by their earliest source position
    `(source.file, source.line_start, record_id)`. Sort evidence IDs
    lexicographically. Preserve `details`/list-item source order with `record_id`
    as the final tie-breaker.
-8. Require exactly one safe candidate name value. Zero or multiple distinct safe
-   names fails v1 construction. This restates the existing profile-readiness
-   requirement; it does not authorize choosing a source winner.
-9. Missing optional sections or fields produce empty arrays/nulls. They do not
+9. Require exactly one **distinct normalized** safe candidate-name value. Multiple
+   safe sources asserting that same normalized name collapse under rule 6 and do
+   not fail construction. Zero names or multiple distinct normalized names fail
+   v1 construction. This restates the existing profile-readiness requirement; it
+   does not authorize choosing a source winner.
+10. Missing optional sections or fields produce empty arrays/nulls. They do not
    fail Gate 4 and do not alter the substantive-completion contract.
 
 No value may come from User Profile/search preferences, workspace metadata,
 Job Fit prose, Application Intelligence prose, source files on disk, or a later
 Profile Snapshot.
 
-## 6. Provenance invariants
+## 7. Provenance invariants
 
 For every persisted v1 pack:
 
@@ -275,11 +315,59 @@ For every persisted v1 pack:
 The existing dependency fingerprints for Job Fit and Application Intelligence
 remain unchanged. V1 does not redefine staleness or historical-pack semantics.
 
-## 7. Renderer contract
+## 8. Canonical v1 validation boundary
+
+There is one canonical pure validator:
+
+```python
+validate_application_pack_v1(
+    pack: dict,
+    *,
+    source_profile_artifact: dict | None = None,
+) -> None
+```
+
+It performs no database, filesystem, network, provider, or current-artifact
+lookup. Both construction and rendering call this function; neither maintains a
+second definition of a valid v1 pack.
+
+The validator always enforces:
+
+- exact `schema_version == "application-pack.v1"`;
+- required and closed top-level and `candidate_snapshot` object fields;
+- supported copied `profile_schema_version`;
+- required non-null candidate name;
+- exact scalar/list/null types for every field;
+- closed provenanced-value objects;
+- non-empty, unique, sorted evidence-ID arrays;
+- closed record shapes and no unexpected candidate-snapshot categories;
+- exact `source_artifacts` reference shapes;
+- the review-authorization cross-reference for every rendered Application
+  Intelligence unit described in §5.
+
+During construction, `source_profile_artifact` is required and is the exact
+artifact already read inside the Gate 4 transaction. In this mode the same
+validator additionally enforces:
+
+- the artifact ID, artifact type, and content ID match
+  `source_artifacts.profile_snapshot`;
+- the copied profile schema version matches the artifact payload;
+- every embedded evidence ID exists in that payload’s claims;
+- every embedded literal value is copied from the deterministically selected
+  source claim under §6;
+- no embedded evidence ID belongs to a placeholder or conflicted concept.
+
+Immediately before `save_artifact`, pack construction calls the validator with
+the source artifact. Rendering independently calls the same validator without a
+source artifact because upstream access is forbidden; all structural and review
+authorization checks still run against the self-contained pack. A malformed
+historical v1 payload is rejected even if it was once persisted.
+
+## 9. Renderer contract
 
 The renderer dispatches only on the exact pack `schema_version`.
 
-### 7.1 V0
+### 9.1 V0
 
 - Call the existing legacy rendering path unchanged.
 - Preserve current filenames, section order, text, DOCX bytes, content hashes,
@@ -287,7 +375,21 @@ The renderer dispatches only on the exact pack `schema_version`.
 - Do not fill candidate fields from any external source.
 - Do not silently upgrade or normalize v0 to v1.
 
-### 7.2 V1
+The accepted baseline lock is the exact `_pack()` payload in
+`tests/test_application_pack_renderer.py` at commit `a7faadd`, rendered with
+`source_pack_id="art_v0_baseline"`:
+
+- CV: 36,857 bytes,
+  `sha256:91c3ca63b2d9d16bb1d2e9ef0d40a7825e92874b6521b0824bf52b88dd6e541d`
+- Cover letter: 36,713 bytes,
+  `sha256:2f9f45802ac9e983afd6a8af0858f5e9ab3dda58c7e96a7ccf207678e82c3159`
+
+Before changing dispatch, the implementation plan must materialize that exact
+baseline payload as a frozen fixture and pin both hashes. The version-aware
+renderer must reproduce these values exactly; recomputing expected hashes from
+the modified renderer is not a compatibility test.
+
+### 9.2 V1
 
 - Use only `candidate_snapshot`, existing approved `cv_content`, existing
   approved `cover_letter_content`, and `job` embedded in the exact pack.
@@ -316,6 +418,12 @@ approved generated units are never merged into one employment record because
 current Application Intelligence units do not carry a reviewed role-placement
 contract.
 
+`candidate_snapshot.employment[*].details` are rendered verbatim as bullet items
+under their Profile-owned employment record. They are neither rewritten nor
+reviewed again. Approved Application Intelligence `cv_bullet` units render only
+in the separate Tailored Highlights section and are never attributed to an
+employer by inference.
+
 The v1 cover letter may render the embedded candidate name/contact header, the
 job subject, and approved cover-letter paragraphs. It must not invent a recipient,
 postal address, salutation, closing phrase, or signature.
@@ -325,7 +433,7 @@ Intelligence, review, provider, or persistence modules. The HTTP service may
 perform its existing owner-scoped lookup of the requested pack artifact and no
 other domain lookup before rendering.
 
-## 8. Historical and compatibility behavior
+## 10. Historical and compatibility behavior
 
 - Explicit historical pack rendering remains exact-artifact rendering.
 - A v0 historical pack always uses the v0 branch, even when a newer Profile
@@ -339,7 +447,7 @@ other domain lookup before rendering.
   byte-for-byte unchanged; v1 adds a `Candidate Snapshot` JSON audit section from
   the embedded pack only.
 
-## 9. Persistence and migration decision
+## 11. Persistence and migration decision
 
 No database migration is permitted or required for this ticket.
 
@@ -355,7 +463,7 @@ Rationale:
 If implementation appears to require a schema/table migration, work stops for
 design review; that would indicate scope drift or an unrecognized blocker.
 
-## 10. Non-goals and protected boundaries
+## 12. Non-goals and protected boundaries
 
 This contract does not change:
 
@@ -371,7 +479,7 @@ This contract does not change:
 V1 enriches what Gate 4 snapshots and what the downstream renderer can present.
 It does not authorize new facts or weaken any evidence/review gate.
 
-## 11. Required acceptance coverage for a later implementation
+## 13. Required acceptance coverage for a later implementation
 
 At minimum, implementation must prove:
 
@@ -381,21 +489,27 @@ At minimum, implementation must prove:
 3. Conflicted and placeholder candidate data never enters `candidate_snapshot`.
 4. Sparse optional profile sections remain valid and do not change Gate 4
    completion semantics.
-5. V0 renders byte-for-byte identically to the accepted baseline.
+5. The frozen v0 fixture renders to the exact baseline byte lengths and SHA-256
+   hashes recorded in §9.1.
 6. V1 renders candidate name/contact and structured employment, education, and
    certifications without any upstream read.
 7. Changing the live Profile Snapshot after confirmation does not change v1
    rendered bytes or content hashes.
 8. Rendering an explicitly requested historical v0 or v1 artifact never
    substitutes the current pack.
-9. Unknown versions and malformed v1 payloads fail cleanly.
+9. The one canonical validator rejects unknown versions, unsupported copied
+   Profile Snapshot versions, malformed v1 payloads, and review cross-reference
+   failures consistently at construction and render boundaries.
 10. Cross-account historical pack access remains denied.
 11. The renderer’s import boundary excludes profile, fit, intelligence, review,
     persistence, and provider modules.
 12. Fresh-database and existing-database tests pass without a new migration.
 13. The full Chrome-inclusive suite remains green.
+14. An Application Intelligence unit lacking its exact required review
+    authorization never appears in a v1 rendered document, even when the
+    candidate snapshot is otherwise valid and complete.
 
-## 12. Expected implementation seams (informational, not an implementation plan)
+## 14. Expected implementation seams (informational, not an implementation plan)
 
 The later implementation is expected to remain localized to:
 
