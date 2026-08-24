@@ -4,7 +4,13 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from product.application_pack_contract import (
+    APPLICATION_PACK_V1,
+    build_candidate_snapshot,
+    validate_application_pack_v1,
+)
 from product.application_material_contract import COMPLETION_CONTRACT_VERSION
+from product.profile_snapshot import validate_snapshot
 from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_artifact, get_current_artifact, save_artifact
 from webapp.persistence.review import list_review_decisions
@@ -52,11 +58,11 @@ def _artifact_ref(artifact: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_application_pack(
+def _build_application_pack_with_profile(
     conn: sqlite3.Connection, workspace_id: str, *,
     extensions_dir: Path | str = Path("extensions"),
     account_id: str = DEFAULT_ACCOUNT_ID,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], dict[str, Any]]:
     profile_workspace_id = get_profile_workspace_id(conn, account_id)
     profile_artifact = _current_or_error(
         conn, workspace_id, "profile_snapshot",
@@ -74,6 +80,7 @@ def build_application_pack(
         conn, workspace_id, "application_intelligence_result",
         profile_workspace_id=profile_workspace_id,
     )
+    validate_snapshot(profile_artifact["payload"])
 
     stale: list[str] = []
     for artifact_type in ("job_fit_result", "application_intelligence_result"):
@@ -278,8 +285,9 @@ def build_application_pack(
         "application_intelligence_result": _artifact_ref(intelligence_artifact),
     }
     pack = {
-        "schema_version": "application-pack.v0",
+        "schema_version": APPLICATION_PACK_V1,
         "source_artifacts": source_artifacts,
+        "candidate_snapshot": build_candidate_snapshot(profile_artifact),
         "job": job_artifact["payload"],
         "fit_summary": {
             "status": fit.get("status"),
@@ -323,6 +331,23 @@ def build_application_pack(
         key: value for key, value in completion.items()
         if key not in {"status", "issues"}
     }
+    validate_application_pack_v1(
+        pack, source_profile_artifact=profile_artifact
+    )
+    return pack, profile_artifact
+
+
+def build_application_pack(
+    conn: sqlite3.Connection, workspace_id: str, *,
+    extensions_dir: Path | str = Path("extensions"),
+    account_id: str = DEFAULT_ACCOUNT_ID,
+) -> dict[str, Any]:
+    pack, _ = _build_application_pack_with_profile(
+        conn,
+        workspace_id,
+        extensions_dir=extensions_dir,
+        account_id=account_id,
+    )
     return pack
 
 
@@ -348,7 +373,7 @@ def confirm_application_pack(
                 f"{workspace['workflow_status']!r}"
             )
 
-        pack = build_application_pack(
+        pack, profile_artifact = _build_application_pack_with_profile(
             conn, workspace_id, extensions_dir=extensions_dir,
             account_id=account_id,
         )
@@ -358,6 +383,9 @@ def confirm_application_pack(
                 "the Application Intelligence result remains incomplete: "
                 + ", ".join(pack["completion_issues"])
             )
+        validate_application_pack_v1(
+            pack, source_profile_artifact=profile_artifact
+        )
         artifact = save_artifact(
             conn, workspace_id=workspace_id, artifact_type="application_pack", payload=pack,
             commit=False,

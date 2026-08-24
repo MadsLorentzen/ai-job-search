@@ -1,7 +1,12 @@
 import copy
+import sqlite3
 
 import pytest
 
+from product.application_pack_contract import (
+    ApplicationPackContractError,
+    build_candidate_snapshot,
+)
 from webapp.persistence.artifacts import (
     get_artifact,
     get_current_artifact,
@@ -35,6 +40,96 @@ from webapp.services.input_identity import (
 )
 
 
+_NAME_CLAIM_ID = "clm_0000000000000001"
+_PROFILE_SOURCE = {
+    "file": "profile.md",
+    "sha256": "0" * 64,
+    "line_count": 100,
+}
+
+
+def _profile_claim(
+    claim_id, concept_id, value, *, placeholder=False, category="identity",
+    field="name", record_id="rec_0000000000000001", line=1,
+):
+    return {
+        "id": claim_id,
+        "record_id": record_id,
+        "concept_id": concept_id,
+        "category": category,
+        "field": field,
+        "value": value,
+        "source": {
+            "file": "profile.md", "section": None,
+            "line_start": line, "line_end": line,
+        },
+        "placeholder": placeholder,
+        "confidence": "high",
+        "extraction_status": "explicit",
+    }
+
+
+def _profile_payload(*, claims=None, conflicts=None):
+    claims = claims or [
+        _profile_claim(
+            _NAME_CLAIM_ID, "cpt_0000000000000001", "Ada Lovelace"
+        )
+    ]
+    conflicts = conflicts or []
+    return {
+        "schema_version": "candidate-profile-evidence-snapshot.v0",
+        "id_semantics": (
+            "deterministic content-derived identifiers; not durable persistent identifiers"
+        ),
+        "sources": [copy.deepcopy(_PROFILE_SOURCE)],
+        "claims": claims,
+        "corroborations": [],
+        "conflicts": conflicts,
+        "summary": {
+            "source_count": 1,
+            "claim_count": len(claims),
+            "placeholder_claim_count": sum(claim["placeholder"] for claim in claims),
+            "corroboration_count": 0,
+            "conflict_count": len(conflicts),
+        },
+    }
+
+
+def _profile_with_cited_placeholder_conflict():
+    unsafe_id = "clm_00000000000000aa"
+    other_id = "clm_00000000000000ab"
+    concept_id = "cpt_00000000000000aa"
+    conflict_id = "con_00000000000000aa"
+    unsafe = _profile_claim(
+        unsafe_id, concept_id, "[PHONE]", placeholder=True,
+        category="contact", field="phone", record_id="rec_00000000000000aa", line=10,
+    )
+    other = _profile_claim(
+        other_id, concept_id, "+44 123", category="contact", field="phone",
+        record_id="rec_00000000000000aa", line=11,
+    )
+    name = _profile_claim(
+        _NAME_CLAIM_ID, "cpt_0000000000000001", "Ada Lovelace"
+    )
+    conflict = {
+        "id": conflict_id,
+        "concept_id": concept_id,
+        "category": "contact",
+        "field": "phone",
+        "variants": [
+            {
+                "value": unsafe["value"], "claim_ids": [unsafe_id],
+                "provenance": [unsafe["source"]],
+            },
+            {
+                "value": other["value"], "claim_ids": [other_id],
+                "provenance": [other["source"]],
+            },
+        ],
+    }
+    return _profile_payload(claims=[name, unsafe, other], conflicts=[conflict]), unsafe_id, conflict_id
+
+
 def _workspace(tmp_path):
     db_path = tmp_path / "jobsearch.sqlite3"
     init_db(db_path)
@@ -45,7 +140,7 @@ def _workspace(tmp_path):
 
 
 def _seed(conn, workspace_id, *, profile=None, fit=None, units=None, unsupported=None):
-    profile_payload = profile or {"claims": [], "conflicts": []}
+    profile_payload = profile or _profile_payload()
     profile_artifact = save_artifact(
         conn, workspace_id=PROFILE_WORKSPACE_ID, artifact_type="profile_snapshot",
         payload=profile_payload, content_id="profilesnap_A",
@@ -133,7 +228,7 @@ def _seed(conn, workspace_id, *, profile=None, fit=None, units=None, unsupported
     )
     ai_units = units if units is not None else [
         {"unit_id": "cv_1", "unit_type": "cv_bullet", "text": "Built Python systems.",
-         "status": "READY", "profile_evidence_ids": ["clm_1"]}
+         "status": "READY", "profile_evidence_ids": [_NAME_CLAIM_ID]}
     ]
     intelligence_request = save_artifact(
         conn, workspace_id=workspace_id, artifact_type="application_intelligence_request",
@@ -198,11 +293,11 @@ def _completion_ready_units() -> list[dict]:
 
     return [
         {"unit_id": "cv_1", "unit_type": "cv_bullet", "text": words(10, "bullet"),
-         "status": "READY", "profile_evidence_ids": ["clm_1"]},
+         "status": "READY", "profile_evidence_ids": [_NAME_CLAIM_ID]},
         {"unit_id": "cv_2", "unit_type": "cv_summary_line", "text": words(10, "summary"),
-         "status": "READY", "profile_evidence_ids": ["clm_1"]},
+         "status": "READY", "profile_evidence_ids": [_NAME_CLAIM_ID]},
         {"unit_id": "cover_1", "unit_type": "cover_letter_paragraph", "text": words(40, "cover"),
-         "status": "READY", "profile_evidence_ids": ["clm_1"]},
+         "status": "READY", "profile_evidence_ids": [_NAME_CLAIM_ID]},
     ]
 
 
@@ -252,6 +347,46 @@ def test_decision_on_superseded_intelligence_does_not_authorize_current_unit(tmp
     )
     with pytest.raises(PipelineError, match="content_unit:cv_1"):
         build_application_pack(conn, workspace_id)
+
+
+def test_newer_omission_is_the_only_effective_consulted_decision(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _, _, _, intelligence = _seed(conn, workspace_id)
+    older = _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
+    newer = _decide(
+        conn, workspace_id, intelligence, "content_unit", "cv_1",
+        "omit_from_positioning",
+    )
+    conn.execute("UPDATE review_decisions SET created_at=? WHERE id=?", ("2026-08-24T10:00:00+00:00", older["id"]))
+    conn.execute("UPDATE review_decisions SET created_at=? WHERE id=?", ("2026-08-24T10:01:00+00:00", newer["id"]))
+    conn.commit()
+
+    pack = build_application_pack(conn, workspace_id)
+
+    assert pack["cv_content"] == []
+    assert [item["id"] for item in pack["review_record"]["decisions_consulted"]] == [
+        newer["id"]
+    ]
+
+
+def test_newer_acknowledgement_is_the_only_effective_consulted_decision(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _, _, _, intelligence = _seed(conn, workspace_id)
+    older = _decide(
+        conn, workspace_id, intelligence, "content_unit", "cv_1",
+        "omit_from_positioning",
+    )
+    newer = _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
+    conn.execute("UPDATE review_decisions SET created_at=? WHERE id=?", ("2026-08-24T10:00:00+00:00", older["id"]))
+    conn.execute("UPDATE review_decisions SET created_at=? WHERE id=?", ("2026-08-24T10:01:00+00:00", newer["id"]))
+    conn.commit()
+
+    pack = build_application_pack(conn, workspace_id)
+
+    assert [unit["unit_id"] for unit in pack["cv_content"]] == ["cv_1"]
+    assert [item["id"] for item in pack["review_record"]["decisions_consulted"]] == [
+        newer["id"]
+    ]
 
 
 @pytest.mark.parametrize("status", ["READY", "NEEDS_REVIEW"])
@@ -332,24 +467,27 @@ def test_empty_needs_review_shell_from_fully_rejected_unit_cannot_enter_pack(tmp
 
 def test_cited_placeholder_and_conflict_are_gate1_review_items(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
-    profile = {
-        "claims": [{"id": "clm_1", "concept_id": "concept_1", "placeholder": True}],
-        "conflicts": [{"id": "conf_1", "concept_id": "concept_1", "values": []}],
+    profile, unsafe_id, conflict_id = _profile_with_cited_placeholder_conflict()
+    fit = {"direct_matches": [{"match_id": "direct_1", "profile_evidence_ids": [unsafe_id], "job_requirement_ids": ["jobev_1"]}]}
+    unsafe_unit = {
+        "unit_id": "cv_1", "unit_type": "cv_bullet", "text": "Unsafe claim",
+        "status": "READY", "profile_evidence_ids": [unsafe_id],
     }
-    fit = {"direct_matches": [{"match_id": "direct_1", "profile_evidence_ids": ["clm_1"], "job_requirement_ids": ["jobev_1"]}]}
-    profile_artifact, _, _, intelligence = _seed(conn, workspace_id, profile=profile, fit=fit)
+    profile_artifact, _, _, intelligence = _seed(
+        conn, workspace_id, profile=profile, fit=fit, units=[unsafe_unit]
+    )
     _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
     with pytest.raises(PipelineError) as exc:
         build_application_pack(conn, workspace_id)
-    assert "profile_conflict:conf_1" in str(exc.value)
-    assert "profile_placeholder:clm_1" in str(exc.value)
-    _decide(conn, workspace_id, profile_artifact, "profile_conflict", "conf_1")
-    _decide(conn, workspace_id, profile_artifact, "profile_placeholder", "clm_1")
-    with pytest.raises(PipelineError, match="profile_conflict:conf_1"):
+    assert f"profile_conflict:{conflict_id}" in str(exc.value)
+    assert f"profile_placeholder:{unsafe_id}" in str(exc.value)
+    _decide(conn, workspace_id, profile_artifact, "profile_conflict", conflict_id)
+    _decide(conn, workspace_id, profile_artifact, "profile_placeholder", unsafe_id)
+    with pytest.raises(PipelineError, match=f"profile_conflict:{conflict_id}"):
         build_application_pack(conn, workspace_id)
 
-    _decide(conn, workspace_id, profile_artifact, "profile_conflict", "conf_1", "omit_from_positioning")
-    _decide(conn, workspace_id, profile_artifact, "profile_placeholder", "clm_1", "omit_from_positioning")
+    _decide(conn, workspace_id, profile_artifact, "profile_conflict", conflict_id, "omit_from_positioning")
+    _decide(conn, workspace_id, profile_artifact, "profile_placeholder", unsafe_id, "omit_from_positioning")
     pack = build_application_pack(conn, workspace_id)
     assert pack["fit_summary"]["direct_matches"] == []
     assert pack["cv_content"] == []
@@ -360,17 +498,10 @@ def test_cited_placeholder_and_conflict_are_gate1_review_items(tmp_path):
 
 def test_content_only_profile_integrity_issue_is_quarantined_by_gate1(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
-    profile = {
-        "claims": [{
-            "id": "clm_unsafe", "concept_id": "concept_unsafe", "placeholder": True,
-        }],
-        "conflicts": [{
-            "id": "conf_unsafe", "concept_id": "concept_unsafe", "values": [],
-        }],
-    }
+    profile, unsafe_id, conflict_id = _profile_with_cited_placeholder_conflict()
     unit = {
         "unit_id": "cv_unsafe", "unit_type": "cv_bullet", "text": "Unsafe claim",
-        "status": "READY", "profile_evidence_ids": ["clm_unsafe"],
+        "status": "READY", "profile_evidence_ids": [unsafe_id],
     }
     profile_artifact, _, _, _ = _seed(
         conn, workspace_id, profile=profile, units=[unit],
@@ -378,15 +509,15 @@ def test_content_only_profile_integrity_issue_is_quarantined_by_gate1(tmp_path):
 
     with pytest.raises(PipelineError) as exc:
         build_application_pack(conn, workspace_id)
-    assert "profile_conflict:conf_unsafe" in str(exc.value)
-    assert "profile_placeholder:clm_unsafe" in str(exc.value)
+    assert f"profile_conflict:{conflict_id}" in str(exc.value)
+    assert f"profile_placeholder:{unsafe_id}" in str(exc.value)
 
     _decide(
-        conn, workspace_id, profile_artifact, "profile_conflict", "conf_unsafe",
+        conn, workspace_id, profile_artifact, "profile_conflict", conflict_id,
         "omit_from_positioning",
     )
     _decide(
-        conn, workspace_id, profile_artifact, "profile_placeholder", "clm_unsafe",
+        conn, workspace_id, profile_artifact, "profile_placeholder", unsafe_id,
         "omit_from_positioning",
     )
     pack = build_application_pack(conn, workspace_id)
@@ -425,7 +556,7 @@ def test_gate2_surfaces_require_exact_decisions_and_gaps_remain_informational(tm
 def test_review_bearing_matches_require_decision_and_preserve_details(tmp_path, collection, item_type):
     conn, workspace_id = _workspace(tmp_path)
     match = {
-        "match_id": "m1", "profile_evidence_ids": ["clm_1"],
+        "match_id": "m1", "profile_evidence_ids": [_NAME_CLAIM_ID],
         "job_requirement_ids": ["jobev_1"], "conditions": ["Confirm context"],
         "limitations": ["Not identical"],
     }
@@ -450,13 +581,67 @@ def test_pack_records_exact_source_artifacts_and_full_job_and_fit_audit(tmp_path
     }
     assert pack["job"]["description"] == "Exact posting text"
     assert "gate_assessments" in pack["fit_summary"]
+    assert pack["schema_version"] == "application-pack.v1"
+    assert pack["candidate_snapshot"] == build_candidate_snapshot(profile)
+
+
+def test_confirmed_v1_pack_does_not_change_after_live_profile_replacement(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_completion_ready(conn, workspace_id)
+    confirmed = confirm_application_pack(
+        conn, workspace_id, effective_date="2026-08-20", documents_root=tmp_path
+    )
+    original = copy.deepcopy(get_artifact(conn, confirmed["artifact"]["id"])["payload"])
+    replacement = _profile_payload(
+        claims=[
+            _profile_claim(
+                _NAME_CLAIM_ID, "cpt_0000000000000001", "Grace Hopper"
+            )
+        ]
+    )
+    save_artifact(
+        conn, workspace_id=PROFILE_WORKSPACE_ID, artifact_type="profile_snapshot",
+        payload=replacement, content_id="profilesnap_replacement",
+    )
+    assert get_artifact(conn, confirmed["artifact"]["id"])["payload"] == original
+
+
+def test_pre_save_v1_validation_failure_rolls_back_gate4_atomically(tmp_path, monkeypatch):
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_completion_ready(conn, workspace_id)
+    from webapp.services import application_pack as module
+
+    real_validator = module.validate_application_pack_v1
+    calls = 0
+
+    def fail_immediately_before_save(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise ApplicationPackContractError("injected pre-save failure")
+        return real_validator(*args, **kwargs)
+
+    monkeypatch.setattr(
+        module, "validate_application_pack_v1", fail_immediately_before_save
+    )
+    with pytest.raises(ApplicationPackContractError, match="injected pre-save"):
+        confirm_application_pack(
+            conn, workspace_id, effective_date="2026-08-20", documents_root=tmp_path
+        )
+    assert get_current_artifact(conn, workspace_id, "application_pack") is None
+    assert list_artifact_history(conn, workspace_id, "application_pack") == []
+    assert list_workflow_events(conn, workspace_id) == []
+    assert get_workspace(conn, workspace_id)["workflow_status"] is None
 
 
 def test_stale_fit_or_intelligence_chain_is_rejected(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
     _, _, _, intelligence = _seed(conn, workspace_id)
     _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
-    save_artifact(conn, workspace_id=PROFILE_WORKSPACE_ID, artifact_type="profile_snapshot", payload={"claims": [], "conflicts": []}, content_id="profilesnap_B")
+    save_artifact(
+        conn, workspace_id=PROFILE_WORKSPACE_ID, artifact_type="profile_snapshot",
+        payload=_profile_payload(), content_id="profilesnap_B",
+    )
     with pytest.raises(PipelineError, match="stale artifacts"):
         build_application_pack(conn, workspace_id)
 
@@ -605,7 +790,6 @@ def test_gate4_database_steps_are_atomic_and_retry_safe(tmp_path, monkeypatch, f
             raise sqlite3.OperationalError("injected status")
         return real_status(*args, **kwargs)
 
-    import sqlite3
     monkeypatch.setattr(module, "record_dependency_fingerprint", injected_fingerprint)
     monkeypatch.setattr(module, "record_status_change", injected_status)
     with pytest.raises(sqlite3.OperationalError, match="injected"):
