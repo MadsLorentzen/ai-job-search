@@ -50,9 +50,9 @@ Canonical spellings for the tracker CSV `status` column (underscores, never spac
 `drafted` | `applied` | `interview` | `offer` | `hired` | `rejected` | `no_response` | `offer_declined` | `withdrawn`
 
 - **Final** (application closed): `hired`, `rejected`, `no_response`, `offer_declined`, `withdrawn`
-- **Open**: everything else, `drafted` included — a row is active until its status is one of the **Final** values.
-- **`drafted`** is open but distinct — nothing was sent, so no follow-up is ever due.
-- Readers must also accept the legacy space spellings `no response` and `offer declined` on read, so that existing trackers keep working without a migration. Never write them — they are the same values as `no_response` and `offer_declined`, not separate statuses, equally **Final**, and every rule that names one applies to the other.
+- **Open**: everything else, `drafted` included. A row is active until its status is one of the **Final** values.
+- **`drafted`** is open but distinct: nothing was sent, so no follow-up is ever due.
+- Readers must also accept the legacy space spellings `no response` and `offer declined` on read, so that existing trackers keep working without a migration. Never write them. They are the same values as `no_response` and `offer_declined`, not separate statuses, equally **Final**, and every rule that names one applies to the other.
 
 > Distinct from the archive `Status:` enum in `documents/README.md`
 > (`in_progress` | `hired` | `offer_declined` | `rejected` | `no_response` | `interview_only`),
@@ -69,7 +69,7 @@ Ask the user what happened, then classify:
 - Interview invitation / stage scheduled or completed (phone screen, technical, case, final round)
 - Offer received (not yet accepted or declined)
 
-**Resolutions** (application closed) — these map to the archive `Status:` enum in `documents/README.md` that `/setup` parses (distinct from the tracker CSV column; see **Tracker status vocabulary** above):
+**Resolutions** (application closed): these map to the archive `Status:` enum in `documents/README.md` that `/setup` parses (distinct from the tracker CSV column; see **Tracker status vocabulary** above):
 - `hired` - accepted an offer
 - `offer_declined` - received an offer, turned it down
 - `rejected` - explicit rejection at any stage
@@ -119,7 +119,7 @@ Create or update `documents/applications/<company>_<role>/`. All content here is
 3. **`outcome.md`** - write or update it in exactly the format documented in `documents/README.md`, so `/setup` Path A parses it without special cases:
 
 ```markdown
-# Outcome: <Company> — <Role>
+# Outcome: <Company> - <Role>
 
 **Status:** in_progress | hired | offer_declined | rejected | no_response | interview_only
 

@@ -13,7 +13,7 @@ Follow these steps **in order**.
 `$ARGUMENTS` may contain a company name (optionally with a role), e.g. `/interview acme`.
 
 - **With an argument:** match against `job_search_tracker.csv` rows (case-insensitive on company, then role). One match → proceed. Several → list and ask. None → this application isn't tracked; suggest `/outcome <company>` to register it first, or accept the posting and role details directly if the user wants to prep anyway.
-- **Without an argument:** list tracker rows whose status suggests a live process — an open status per the **Tracker status vocabulary** in `/outcome` (`interview`, `offer`, or recently `applied`; `drafted` is open but nothing was sent, so it never qualifies) — and ask which one. If the tracker is empty, ask for the company, role, and posting.
+- **Without an argument:** list tracker rows whose status suggests a live process (an open status per the **Tracker status vocabulary** in `/outcome`: `interview`, `offer`, or recently `applied`; `drafted` is open but nothing was sent, so it never qualifies), and ask which one. If the tracker is empty, ask for the company, role, and posting.
 
 v1 preps for a **specific application**. Generic no-target practice is out of scope - if asked, prep against a real tracked application instead.
 
@@ -37,7 +37,7 @@ v1 preps for a **specific application**. Generic no-target practice is out of sc
 
 ## Step 2: Research the Company (Interview-Focused)
 
-**First, check the cache**: read `company_research/<normalized-company-name>.json` per the Company Research Cache section in `04-job-evaluation.md` (normalize the company name the same way). If it exists and is within the documented TTL, start from it instead of researching from scratch — `/apply` may already have populated it for this same application. The verification rule below still applies regardless of source.
+**First, check the cache**: read `company_research/<normalized-company-name>.json` per the Company Research Cache section in `04-job-evaluation.md` (normalize the company name the same way). If it exists and is within the documented TTL, start from it instead of researching from scratch; `/apply` may already have populated it for this same application. The verification rule below still applies regardless of source.
 
 If the cache is missing or stale, execute the Company Research Checklist that `04-job-evaluation.md` defines: company website (mission, values, recent news), review sites, LinkedIn (team size, recent hires), and media coverage (growth, restructuring, workplace issues). Afterward, write (or overwrite) the cache file with the fresh findings per the schema in `04-job-evaluation.md`, so a later `/apply` or `/interview` run for the same company can reuse them.
 
@@ -106,6 +106,6 @@ If Step 3 drafted new STAR answers the user approved for keeps, remind them thos
 2. **Honesty on gaps.** Weak matches get bridge answers (acknowledge → adjacent experience → learning path), never invented experience. Same rule as everywhere else in this repo.
 3. **Verified research only.** Company specifics go in the pack only after independent confirmation. Interviewer notes stick to public professional information.
 4. **Stage-appropriate prep.** A phone screen pack and a final-round pack are different documents; recorded feedback from earlier stages takes priority over generic question lists.
-5. **Write only to the application archive** — with one exception. The prep pack lands in the archive folder derived in Step 1; framework files are not edited, except appending user-approved STAR examples to `07-interview-prep.md` on explicit request.
+5. **Write only to the application archive**, with one exception. The prep pack lands in the archive folder derived in Step 1; framework files are not edited, except appending user-approved STAR examples to `07-interview-prep.md` on explicit request.
 
    **The exception is `01-candidate-profile.md`.** Interview prep is where new facts surface most often: the user recalls a metric, corrects a scope, or fills in a STAR stub. When that happens, write the fact into the profile, as well as putting it in the prep pack. A fact recorded only in prep material reads as unsupported to a later drafting session and gets stripped from CVs as a fabrication. Prep files are not a substitute for the profile.

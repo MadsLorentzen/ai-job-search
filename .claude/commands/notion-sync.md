@@ -58,11 +58,11 @@ Validate the cheap, local precondition before creating anything external. A run 
 
    | Property | Type | Values / notes |
    |----------|------|----------------|
-   | Name | title | `<Role> — <Company>` |
+   | Name | title | `<Role> - <Company>` |
    | Company | rich text | |
    | Score | number | 0-100 from `rank_score` |
    | Verdict | select | Strong Fit / Good Fit / Moderate Fit / Weak Fit / Poor Fit |
-   | Status | select | `ranked` / `drafted` / `applied` / `interview` / `offer` / `hired` / `rejected` / `no_response` / `offer_declined` / `withdrawn` / `expired` — canonical tracker spellings per **Tracker status vocabulary** in `/outcome`; Notion options grow to match as values appear |
+   | Status | select | `ranked` / `drafted` / `applied` / `interview` / `offer` / `hired` / `rejected` / `no_response` / `offer_declined` / `withdrawn` / `expired`, canonical tracker spellings per **Tracker status vocabulary** in `/outcome`; Notion options grow to match as values appear |
    | Fit | select | high / medium / low (scraper quick-fit) |
    | Deadline | date | tracker `deadline` column, falling back to `seen_jobs.json`'s `deadline` when the row has none; omit when neither states one |
    | First seen | date | |
