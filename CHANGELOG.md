@@ -15,6 +15,9 @@ per-file diff commands.
 
 ### Changed
 
+- Job Search Desk 1.2.1: first-run Open / Create buttons work in the installed
+  app. The packaged preload is CommonJS and unpacked from asar, so the folder
+  dialogs are no longer a silent no-op.
 - Job Search Desk 1.2.0: the Windows installer launches the app, creates Start
   Menu and Desktop shortcuts, and a second shortcut click focuses the running
   window. First-run can download the public repo when Git is missing. The desk

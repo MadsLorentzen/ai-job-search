@@ -9,11 +9,13 @@ files:
   - claude.mjs
   - defaults.mjs
   - electron-main.mjs
-  - preload.mjs
+  - preload.cjs
   - server.mjs
   - workspace.mjs
   - package.json
   - public/**/*
+asarUnpack:
+  - preload.cjs
 extraMetadata:
   main: electron-main.mjs
 win:

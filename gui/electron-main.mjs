@@ -51,6 +51,12 @@ async function openDesk(root) {
   if (mainWindow) await mainWindow.loadURL(desk.href);
 }
 
+function preloadPath() {
+  const packed = join(app.getAppPath(), "preload.cjs");
+  const unpacked = packed.replace(/app\.asar(?=$|[\\/])/, "app.asar.unpacked");
+  return existsSync(unpacked) ? unpacked : packed;
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -62,10 +68,10 @@ function createWindow() {
     autoHideMenuBar: true,
     show: false,
     webPreferences: {
-      preload: join(HERE, "preload.mjs"),
+      preload: preloadPath(),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true,
+      sandbox: false,
     },
   });
   mainWindow.once("ready-to-show", () => mainWindow.show());
