@@ -880,6 +880,75 @@ def test_reviewed_output_empty_state_names_next_action(page, live_server):
     assert "Resolve" in text or "Application Intelligence" in text
 
 
+def test_historical_pack_and_incomplete_current_material_never_read_as_contradictory(
+    page, live_server,
+):
+    _refresh_profile(page, live_server)
+    workspace_url = _run_to_intelligence(page, live_server)
+
+    _resolve_all_pending_reviews(page, "acknowledged_and_proceed")
+    _confirm_pack(page)
+    cv_link = page.get_by_role("link", name="Download CV")
+    cover_letter_link = page.get_by_role("link", name="Download Cover Letter")
+    assert cv_link.is_visible()
+    assert cover_letter_link.is_visible()
+    historical_cv_href = cv_link.get_attribute("href")
+    historical_cover_href = cover_letter_link.get_attribute("href")
+
+    candidate_path = (
+        live_server.profile_root
+        / ".claude/skills/job-application-assistant/01-candidate-profile.md"
+    )
+    candidate_path.write_text(
+        candidate_path.read_text(encoding="utf-8")
+        + "\n2. Ada Lovelace (2027). A new browser-combined-regression publication.\n",
+        encoding="utf-8",
+    )
+    _refresh_profile(page, live_server)
+    page.goto(workspace_url, wait_until="networkidle")
+    assert page.locator(".badge.stale").count() >= 1
+    page.locator('input[name="extension_ids"][value="data-transfer"]').check()
+    _click_reload(page, page.get_by_role("button", name="Rerun Job Fit"))
+    _click_reload(
+        page, page.get_by_role("button", name="Rerun Application Intelligence")
+    )
+
+    _resolve_all_pending_reviews(page, "omit_from_positioning")
+
+    # 1. Historical downloads remain available and point at the same rendered artifact.
+    cv_link = page.get_by_role("link", name="Download CV")
+    cover_letter_link = page.get_by_role("link", name="Download Cover Letter")
+    assert cv_link.is_visible()
+    assert cover_letter_link.is_visible()
+    assert cv_link.get_attribute("href") == historical_cv_href
+    assert cover_letter_link.get_attribute("href") == historical_cover_href
+    cv_download = page.request.get(f"{live_server.base_url}{historical_cv_href}")
+    assert cv_download.status == 200
+
+    # 2. The historical pack is explicitly labeled as previous/confirmed, not
+    #    presented as if it were the freshly reviewed material.
+    assert page.get_by_text(
+        "previously confirmed application pack is still available"
+    ).is_visible()
+
+    # 3. A separate, distinct statement says the replacement pack is not ready,
+    #    with the actual current completion issue visible.
+    assert page.get_by_text("not ready to create a replacement").is_visible()
+    assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
+    assert page.get_by_text("required CV bullets").is_visible()
+
+    # 4. The confirm-pack button stays disabled — no automatic replacement.
+    assert page.locator("button.confirm-pack").is_disabled()
+
+    # 5. The reviewed-content panel heading is qualified as historical, never
+    #    presented as the current unreviewed material.
+    assert page.get_by_text(
+        "Reviewed CV content (from your confirmed pack)"
+    ).is_visible()
+
+    _assert_no_private_browser_content(page, live_server)
+
+
 def test_discovery_search_evaluate_and_promote_browser_lifecycle(page, live_server):
     _refresh_profile(page, live_server)
     page.goto(f"{live_server.base_url}/user-profile", wait_until="networkidle")
