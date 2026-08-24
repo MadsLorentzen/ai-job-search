@@ -111,6 +111,89 @@ def _seed_evidence(conn, workspace_id):
     return profile, fit, intelligence
 
 
+def test_causal_staleness_noun_map_covers_every_dependency_type():
+    from webapp.services.staleness import DEPENDENCY_TYPES
+    from webapp.services.workspace_view import _ARTIFACT_TYPE_NOUNS
+
+    all_types = {item for dependencies in DEPENDENCY_TYPES.values() for item in dependencies}
+    missing = all_types - set(_ARTIFACT_TYPE_NOUNS)
+    assert missing == set(), f"missing friendly nouns for: {missing}"
+
+
+def test_causal_staleness_message_names_direct_cause_on_fit(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_evidence(conn, workspace_id)
+    save_artifact(
+        conn,
+        workspace_id=PROFILE_WORKSPACE_ID,
+        artifact_type="profile_snapshot",
+        payload={"claims": [], "conflicts": []},
+        content_id="profile_B",
+    )
+    view = build_workspace_view_model(conn, workspace_id)
+    message = view["stages"]["fit"]["causal_reason"]
+    assert "Evidence Profile" in message
+    assert "Rerun Job Fit" in message
+
+
+def test_causal_staleness_message_names_job_fit_as_cause_on_intelligence(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_evidence(conn, workspace_id)
+    save_artifact(
+        conn,
+        workspace_id=PROFILE_WORKSPACE_ID,
+        artifact_type="profile_snapshot",
+        payload={"claims": [], "conflicts": []},
+        content_id="profile_B",
+    )
+    view = build_workspace_view_model(conn, workspace_id)
+    message = view["stages"]["application_intelligence"]["causal_reason"]
+    assert "Job Fit" in message
+    assert "Rerun Application Intelligence" in message
+
+
+def test_extract_upstream_type_handles_every_check_staleness_reason_form():
+    from webapp.services.workspace_view import _extract_upstream_type
+
+    cases = [
+        (
+            "profile_snapshot changed (used 'profile_A', current is 'profile_B')",
+            "profile_snapshot",
+        ),
+        (
+            "job_fit_result is itself stale: profile_snapshot changed (...)",
+            "job_fit_result",
+        ),
+        (
+            "required fingerprint 'job_posting_snapshot' is missing",
+            "job_posting_snapshot",
+        ),
+        (
+            "required upstream artifact 'job_understanding_result' is missing",
+            "job_understanding_result",
+        ),
+        (
+            "server:evaluation_policy cannot be resolved: ValueError('boom')",
+            "server:evaluation_policy",
+        ),
+        ("some completely unrecognized future reason format", None),
+    ]
+    for reason, expected in cases:
+        assert _extract_upstream_type(reason) == expected, f"failed for: {reason!r}"
+
+
+def test_causal_staleness_message_falls_back_honestly_for_unparseable_reason():
+    from webapp.services.workspace_view import _causal_staleness_message
+
+    message = _causal_staleness_message(
+        "fit",
+        {"stale": True, "reasons": ["some completely unrecognized future reason format"]},
+    )
+    assert message is not None
+    assert "something this depends on" in message
+    assert "Rerun Job Fit" in message
+
+
 def test_unprocessed_workspace_has_product_stage_states(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
     view = build_workspace_view_model(conn, workspace_id)

@@ -43,6 +43,50 @@ RUN_ACTION_LABELS = {
     "application_intelligence": "Run Application Intelligence",
     "review": "Create reviewed pack",
 }
+_ARTIFACT_TYPE_NOUNS: dict[str, str] = {
+    "job_posting_snapshot": "the saved job posting",
+    "job_understanding_request": "the Understanding request",
+    "job_understanding_result": "the Understanding result",
+    "resolved_job_evidence": "the accepted job evidence",
+    "profile_snapshot": "your Evidence Profile",
+    "job_fit_request": "the Job Fit request",
+    "job_fit_result": "Job Fit",
+    "application_intelligence_request": "the Application Intelligence request",
+    "application_intelligence_result": "Application Intelligence",
+    "server:active_extensions": "your active professional-knowledge extensions",
+    "server:evaluation_policy": "the evaluation policy",
+    "server:semantic_fit_policy": "the fit-matching policy",
+    "server:semantic_proposer_policy": "the fit-matching provider policy",
+    "server:semantic_proposals": "the fit-matching proposals",
+    "server:application_intelligence_policy": "the Application Intelligence policy",
+    "server:application_intelligence_generation_contract": (
+        "the Application Intelligence generation rules"
+    ),
+}
+_ARTIFACT_TYPE_TO_STAGE: dict[str, str] = {
+    "job_understanding_result": "understanding",
+    "job_fit_result": "fit",
+    "application_intelligence_result": "application_intelligence",
+    "application_pack": "review",
+}
+_STAGE_DISPLAY_NAMES: dict[str, str] = {
+    "understanding": "Understanding",
+    "fit": "Job Fit",
+    "application_intelligence": "Application Intelligence",
+    "review": "the reviewed pack",
+}
+_STAGE_RESULT_NOUNS: dict[str, str] = {
+    "understanding": "Understanding",
+    "fit": "Job Fit",
+    "application_intelligence": "Application Intelligence",
+    "review": "reviewed pack",
+}
+_RERUN_LABELS: dict[str, str] = {
+    "understanding": "Rerun Understanding.",
+    "fit": "Rerun Job Fit.",
+    "application_intelligence": "Rerun Application Intelligence.",
+    "review": "Create the reviewed pack again.",
+}
 POST_SUBMISSION_ACTIONS = (
     ("interview", "Interview"),
     ("offer", "Offer"),
@@ -52,6 +96,52 @@ POST_SUBMISSION_ACTIONS = (
     ("offer_declined", "Decline offer"),
     ("withdrawn", "Withdraw"),
 )
+
+
+def _extract_upstream_type(reason: str) -> str | None:
+    """Extract the dependency type from one check_staleness reason."""
+    if "required fingerprint '" in reason:
+        return reason.split("required fingerprint '", 1)[1].split("'", 1)[0]
+    if "required upstream artifact '" in reason:
+        return reason.split("required upstream artifact '", 1)[1].split("'", 1)[0]
+    for marker in (" is itself stale", " changed (", " cannot be resolved"):
+        if marker in reason:
+            return reason.split(marker, 1)[0]
+    return None
+
+
+def _causal_staleness_message(
+    stage_key: str, stale: dict[str, Any]
+) -> str | None:
+    if not stale.get("stale") or not stale.get("reasons"):
+        return None
+    this_stage_name = _STAGE_RESULT_NOUNS.get(stage_key, stage_key)
+    rerun = _RERUN_LABELS.get(stage_key, "Rerun this stage.")
+
+    for reason in stale["reasons"]:
+        upstream_type = _extract_upstream_type(reason)
+        upstream_stage = _ARTIFACT_TYPE_TO_STAGE.get(upstream_type)
+        if upstream_stage is not None:
+            upstream_name = _STAGE_DISPLAY_NAMES.get(upstream_stage, upstream_stage)
+            return (
+                f"{upstream_name} was updated after this {this_stage_name} result "
+                f"was created. {rerun}"
+            )
+
+    upstream_type = _extract_upstream_type(stale["reasons"][0])
+    if upstream_type is None:
+        return (
+            f"A change to something this depends on made this {this_stage_name} "
+            f"result out of date. {rerun}"
+        )
+    upstream_name = _ARTIFACT_TYPE_NOUNS.get(
+        upstream_type, "something this depends on"
+    )
+    sentence_cased = upstream_name[:1].upper() + upstream_name[1:]
+    return (
+        f"{sentence_cased} changed after this {this_stage_name} result was created. "
+        f"{rerun}"
+    )
 
 
 def stage_state_label(state: str) -> str:
@@ -490,10 +580,31 @@ def build_workspace_view_model(
     )
     stages = {
         "job": {"label": "Job", "state": job_state, "artifact": artifacts["job"]},
-        "understanding": {"label": "Understanding", "state": understanding_state, "artifact": artifacts["understanding"], "staleness": stale["understanding"]},
-        "fit": {"label": "Job Fit", "state": fit_state, "artifact": artifacts["fit"], "staleness": stale["fit"]},
-        "application_intelligence": {"label": "Application Intelligence", "state": intelligence_state, "artifact": artifacts["intelligence"], "staleness": stale["application_intelligence"]},
-        "review": {"label": "Review", "state": review_state, "artifact": artifacts["pack"], "staleness": stale["review"]},
+        "understanding": {
+            "label": "Understanding", "state": understanding_state,
+            "artifact": artifacts["understanding"], "staleness": stale["understanding"],
+            "causal_reason": _causal_staleness_message(
+                "understanding", stale["understanding"]
+            ),
+        },
+        "fit": {
+            "label": "Job Fit", "state": fit_state, "artifact": artifacts["fit"],
+            "staleness": stale["fit"],
+            "causal_reason": _causal_staleness_message("fit", stale["fit"]),
+        },
+        "application_intelligence": {
+            "label": "Application Intelligence", "state": intelligence_state,
+            "artifact": artifacts["intelligence"],
+            "staleness": stale["application_intelligence"],
+            "causal_reason": _causal_staleness_message(
+                "application_intelligence", stale["application_intelligence"]
+            ),
+        },
+        "review": {
+            "label": "Review", "state": review_state, "artifact": artifacts["pack"],
+            "staleness": stale["review"],
+            "causal_reason": _causal_staleness_message("review", stale["review"]),
+        },
         "status": {"label": "Status", "state": status_state, "artifact": None},
     }
     for stage in stages.values():
