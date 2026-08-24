@@ -199,13 +199,29 @@ class SnapshotBuilder:
         return snapshot
 
 
-def build_snapshot(root: str | Path = ".") -> dict[str, Any]:
+def build_snapshot(
+    root: str | Path = ".", *, included_sources: Iterable[str] | None = None
+) -> dict[str, Any]:
     """Build and validate a snapshot without modifying any source file."""
 
     root_path = Path(root).resolve()
     builder = SnapshotBuilder(root_path)
 
+    selected_sources = (
+        set(SOURCE_PATHS) if included_sources is None else set(included_sources)
+    )
+    unknown_sources = selected_sources - set(SOURCE_PATHS)
+    if unknown_sources:
+        raise SnapshotValidationError(
+            "unsupported profile sources: " + ", ".join(sorted(unknown_sources))
+        )
+    candidate_source = ".claude/skills/job-application-assistant/01-candidate-profile.md"
+    if candidate_source not in selected_sources:
+        raise SnapshotValidationError("the canonical candidate profile source is required")
+
     for relative_path in SOURCE_PATHS:
+        if relative_path not in selected_sources:
+            continue
         path = root_path / relative_path
         if not path.is_file():
             raise FileNotFoundError(f"required candidate source not found: {relative_path}")
@@ -574,13 +590,26 @@ def _parse_candidate_markdown(
 
         if section == "Education" and line.lstrip().startswith("-"):
             value = line.split("-", 1)[1].strip()
-            match = re.match(r"^\*\*(.+?)\*\*\s*(?:-\s*(.+))?$", value)
+            match = re.match(r"^\*\*(.+?)\*\*\s*(.*)$", value)
             qualification = match.group(1) if match else value
-            institution = match.group(2) if match and match.group(2) else ""
+            remainder = match.group(2).strip() if match else ""
+            key_topics = ""
+            if " — Key topics: " in remainder:
+                remainder, key_topics = remainder.split(" — Key topics: ", 1)
+            date_range = ""
+            dates = re.match(r"^\((.+?)\)\s*(.*)$", remainder)
+            if dates:
+                date_range, remainder = dates.groups()
+            institution = re.sub(r"^-\s*", "", remainder).strip()
             record_key = f"education:profile-line:{index}"
             _add_record_fields(
                 builder, "education", record_key,
-                {"qualification": qualification, "institution": institution},
+                {
+                    "qualification": qualification,
+                    "date_range": date_range,
+                    "institution": institution,
+                    "key_topics": key_topics,
+                },
                 location,
             )
             continue

@@ -12,8 +12,13 @@ from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID, create_workspace
 from tests.webapp.services.test_workspace_view import _seed_evidence
 
 
-def _client(tmp_path):
-    settings = Settings(db_path=tmp_path / "jobsearch.sqlite3", documents_root=tmp_path / "documents", extensions_dir=Path(__file__).parents[2] / "fixtures" / "extensions")
+def _client(tmp_path, *, profile_root="."):
+    settings = Settings(
+        db_path=tmp_path / "jobsearch.sqlite3",
+        documents_root=tmp_path / "documents",
+        extensions_dir=Path(__file__).parents[2] / "fixtures" / "extensions",
+        profile_root=profile_root,
+    )
     return TestClient(create_app(settings)), settings
 
 
@@ -120,7 +125,19 @@ def test_dashboard_uses_configured_extension_registry(tmp_path, monkeypatch):
 
 
 def test_profile_is_trust_inspection_and_conflict_never_verified(tmp_path):
-    client, settings = _client(tmp_path)
+    candidate_profile = (
+        tmp_path
+        / ".claude"
+        / "skills"
+        / "job-application-assistant"
+        / "01-candidate-profile.md"
+    )
+    candidate_profile.parent.mkdir(parents=True)
+    candidate_profile.write_text(
+        "# Candidate Profile\n\n## Identity\n\n- **Name:** Test Candidate\n",
+        encoding="utf-8",
+    )
+    client, settings = _client(tmp_path, profile_root=tmp_path)
     with client:
         conn = connect(settings.db_path)
         ensure_profile_workspace(conn)
@@ -130,9 +147,10 @@ def test_profile_is_trust_inspection_and_conflict_never_verified(tmp_path):
         })
         conn.close()
         text = client.get("/profile").text
-        assert "Trust inspection" in text and "No editing" in text
+        assert "My Evidence Profile" in text and "Derived · read-only" in text
         assert "NEEDS_REVIEW" in text
         assert "Verified evidence" not in text
+        assert "Edit conflict" not in text
 
 
 def test_new_job_offers_only_manual_paste_and_supported_import(tmp_path):

@@ -12,7 +12,9 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def ensure_profile_workspace(conn: sqlite3.Connection) -> dict[str, Any]:
+def ensure_profile_workspace(
+    conn: sqlite3.Connection, *, commit: bool = True
+) -> dict[str, Any]:
     existing = get_workspace(conn, PROFILE_WORKSPACE_ID)
     if existing is not None:
         return existing
@@ -23,13 +25,15 @@ def ensure_profile_workspace(conn: sqlite3.Connection) -> dict[str, Any]:
             "VALUES (?, 'profile', '', '', NULL, ?, ?)",
             (PROFILE_WORKSPACE_ID, now, now),
         )
-        conn.commit()
+        if commit:
+            conn.commit()
     except sqlite3.IntegrityError:
         # A concurrent caller won the race and already inserted the single
         # profile-workspace row (primary-key conflict on PROFILE_WORKSPACE_ID).
         # ensure_profile_workspace() is documented as idempotent, so resolve
         # to the existing row instead of propagating the conflict.
-        conn.rollback()
+        if commit:
+            conn.rollback()
         return get_workspace(conn, PROFILE_WORKSPACE_ID)
     return get_workspace(conn, PROFILE_WORKSPACE_ID)
 

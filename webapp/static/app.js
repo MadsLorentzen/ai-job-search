@@ -167,6 +167,91 @@ function checkedValues(form, name) {
   return [...form.querySelectorAll(`input[name="${name}"]:checked`)].map(item => item.value);
 }
 
+function profileManagerRevision() {
+  return document.getElementById("profile-manager")?.dataset.revision;
+}
+
+function profileEntryFields(form) {
+  const fields = {};
+  new FormData(form).forEach((value, name) => {
+    fields[name] = name === "details"
+      ? String(value).split(/\r?\n/).map(item => item.trim()).filter(Boolean)
+      : String(value).trim();
+  });
+  return fields;
+}
+
+document.querySelectorAll(".profile-entry-edit").forEach(button => button.addEventListener("click", event => {
+  const card = event.currentTarget.closest(".profile-entry-card");
+  card.querySelector(".profile-entry-summary").hidden = true;
+  card.querySelector(".profile-entry-edit-form").hidden = false;
+}));
+
+document.querySelectorAll(".profile-entry-cancel").forEach(button => button.addEventListener("click", event => {
+  const card = event.currentTarget.closest(".profile-entry-card");
+  card.querySelector(".profile-entry-edit-form").reset();
+  card.querySelector(".profile-entry-edit-form").hidden = true;
+  card.querySelector(".profile-entry-summary").hidden = false;
+}));
+
+document.querySelectorAll(".profile-entry-edit-form").forEach(form => form.addEventListener("submit", async event => {
+  event.preventDefault();
+  const card = event.currentTarget.closest(".profile-entry-card");
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+  button.disabled = true;
+  try {
+    await api(`/api/profile/entries/${card.dataset.entryId}`, {
+      method: "PUT", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({expected_revision: profileManagerRevision(), kind: card.dataset.entryKind,
+        fields: profileEntryFields(event.currentTarget)})
+    });
+    window.location.reload();
+  } catch (error) { showMessage(error.message, true); button.disabled = false; }
+}));
+
+document.querySelectorAll(".profile-entry-delete").forEach(button => button.addEventListener("click", async event => {
+  const card = event.currentTarget.closest(".profile-entry-card");
+  if (!window.confirm("Delete this Candidate Profile entry? A new Evidence Snapshot will be created.")) return;
+  event.currentTarget.disabled = true;
+  try {
+    await api(`/api/profile/entries/${card.dataset.entryId}`, {
+      method: "DELETE", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({expected_revision: profileManagerRevision()})
+    });
+    window.location.reload();
+  } catch (error) { showMessage(error.message, true); event.currentTarget.disabled = false; }
+}));
+
+document.querySelectorAll(".profile-entry-add-form").forEach(form => form.addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+  button.disabled = true;
+  try {
+    await api("/api/profile/entries", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({expected_revision: profileManagerRevision(), kind: event.currentTarget.dataset.entryKind,
+        fields: profileEntryFields(event.currentTarget)})
+    });
+    window.location.reload();
+  } catch (error) { showMessage(error.message, true); button.disabled = false; }
+}));
+
+document.querySelectorAll(".profile-source-toggle").forEach(toggle => toggle.addEventListener("change", async event => {
+  const row = event.currentTarget.closest(".profile-source");
+  event.currentTarget.disabled = true;
+  try {
+    await api(`/api/profile/sources/${row.dataset.sourcePath}`, {
+      method: "PUT", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({expected_revision: profileManagerRevision(), included: event.currentTarget.checked})
+    });
+    window.location.reload();
+  } catch (error) {
+    event.currentTarget.checked = !event.currentTarget.checked;
+    event.currentTarget.disabled = false;
+    showMessage(error.message, true);
+  }
+}));
+
 const userProfileForm = document.getElementById("user-profile-form");
 if (userProfileForm?.dataset.readOnly === "true") {
   userProfileForm.querySelectorAll("input, textarea, select, button").forEach(control => { control.disabled = true; });

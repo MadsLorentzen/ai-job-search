@@ -12,7 +12,8 @@ from product.job_identity import (
 from webapp.persistence.search_workspaces import DEFAULT_SEARCH_WORKSPACE_ID
 
 
-MIGRATION_ID = "001_search_workspaces"
+SEARCH_WORKSPACES_MIGRATION_ID = "001_search_workspaces"
+PROFILE_MANAGER_MIGRATION_ID = "002_evidence_profile_manager"
 
 
 def _now() -> str:
@@ -32,32 +33,64 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
         "CREATE TABLE IF NOT EXISTS schema_migrations ("
         "id TEXT PRIMARY KEY, applied_at TEXT NOT NULL)"
     )
-    if conn.execute(
-        "SELECT 1 FROM schema_migrations WHERE id = ?", (MIGRATION_ID,)
-    ).fetchone():
-        conn.commit()
-        return
-
     conn.commit()
-    conn.execute("PRAGMA foreign_keys = OFF")
-    try:
-        conn.execute("BEGIN IMMEDIATE")
-        _migrate_search_workspaces(conn)
-        conn.execute(
-            "INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?)",
-            (MIGRATION_ID, _now()),
-        )
-        violations = conn.execute("PRAGMA foreign_key_check").fetchall()
-        if violations:
-            raise sqlite3.IntegrityError(
-                f"search workspace migration created foreign-key violations: {violations!r}"
+    migrations = (
+        (SEARCH_WORKSPACES_MIGRATION_ID, _migrate_search_workspaces, True),
+        (PROFILE_MANAGER_MIGRATION_ID, _migrate_evidence_profile_manager, False),
+    )
+    for migration_id, operation, disable_foreign_keys in migrations:
+        if conn.execute(
+            "SELECT 1 FROM schema_migrations WHERE id = ?", (migration_id,)
+        ).fetchone():
+            continue
+        if disable_foreign_keys:
+            conn.execute("PRAGMA foreign_keys = OFF")
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            operation(conn)
+            conn.execute(
+                "INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?)",
+                (migration_id, _now()),
             )
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.execute("PRAGMA foreign_keys = ON")
+            violations = conn.execute("PRAGMA foreign_key_check").fetchall()
+            if violations:
+                raise sqlite3.IntegrityError(
+                    f"migration {migration_id} created foreign-key violations: {violations!r}"
+                )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            if disable_foreign_keys:
+                conn.execute("PRAGMA foreign_keys = ON")
+
+
+def _migrate_evidence_profile_manager(conn: sqlite3.Connection) -> None:
+    _execute_statements(
+        conn,
+        """
+        CREATE TABLE profile_source_settings (
+            source_path TEXT PRIMARY KEY,
+            included INTEGER NOT NULL CHECK (included IN (0, 1)),
+            updated_at TEXT NOT NULL
+        );
+
+        CREATE TABLE profile_source_entries (
+            entry_id TEXT PRIMARY KEY,
+            source_path TEXT NOT NULL,
+            entry_kind TEXT NOT NULL,
+            fingerprint TEXT NOT NULL,
+            occurrence INTEGER NOT NULL CHECK (occurrence >= 0),
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            UNIQUE (source_path, entry_kind, fingerprint, occurrence)
+        );
+
+        CREATE INDEX idx_profile_source_entries_lookup
+            ON profile_source_entries(source_path, entry_kind, fingerprint, occurrence);
+        """,
+    )
 
 
 def _migrate_search_workspaces(conn: sqlite3.Connection) -> None:
@@ -321,6 +354,13 @@ def _source_record_from_job_snapshot(snapshot: dict) -> dict:
         record["source_record_id"] = ingestion["source_record_id"]
     if snapshot.get("source_url"):
         record["source_url"] = snapshot["source_url"]
+    # Preserve the fields used by the conservative weak-only identity
+    # fingerprint.  Older application workspaces retain the normalized job
+    # snapshot rather than the original source record, so omitting these
+    # values would make an exact post-migration resubmission look ambiguous.
+    for field in ("description", "raw_text", "employment_type"):
+        if snapshot.get(field) is not None:
+            record[field] = snapshot[field]
     return record
 
 

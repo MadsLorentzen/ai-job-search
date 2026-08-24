@@ -337,15 +337,22 @@ def build_profile_view_model(
 ) -> dict[str, Any]:
     profile = get_current_artifact(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
     conflicted = build_conflicted_concept_ids(profile)
+    profile_claims = _artifact_payload(profile).get("claims", [])
     claims = []
-    for claim in _artifact_payload(profile).get("claims", []):
+    for claim in profile_claims:
         if claim.get("placeholder"):
             label = "Missing evidence"
         elif claim.get("concept_id") in conflicted:
             label = "NEEDS_REVIEW"
         else:
             label = "Verified evidence"
-        claims.append({"claim": claim, "label": label})
+        sources = sorted({
+            related.get("source", {}).get("file", "Unknown source")
+            for related in profile_claims
+            if related.get("concept_id") == claim.get("concept_id")
+            and related.get("value") == claim.get("value")
+        })
+        claims.append({"claim": claim, "label": label, "sources": sources})
     return {
         "profile": profile, "claims": claims,
         "conflicted_concept_ids": conflicted,

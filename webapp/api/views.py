@@ -22,6 +22,7 @@ from webapp.services.workspace_view import (
     build_profile_view_model,
     build_workspace_view_model,
 )
+from webapp.services.profile_manager import get_profile_manager
 
 router = APIRouter(tags=["views"])
 
@@ -79,11 +80,18 @@ def profile_page(request: Request, conn: sqlite3.Connection = Depends(get_conn))
     return_to = request.query_params.get("return_to", "")
     if not return_to.startswith("/workspaces/"):
         return_to = ""
+    view = build_profile_view_model(
+        conn, profile_root=request.app.state.settings.profile_root
+    )
+    manager = None
+    if not view["setup_required"]:
+        manager = get_profile_manager(
+            conn, root=request.app.state.settings.profile_root
+        )
     return request.app.state.templates.TemplateResponse(
         request, "profile.html", {
-            **build_profile_view_model(
-                conn, profile_root=request.app.state.settings.profile_root
-            ),
+            **view,
+            "profile_manager": manager,
             "return_to": return_to,
             **_search_context(conn),
         }

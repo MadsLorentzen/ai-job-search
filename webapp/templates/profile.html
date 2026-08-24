@@ -1,12 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Evidence Profile · Job Search Workspace{% endblock %}
+{% block title %}My Evidence Profile · Job Search Workspace{% endblock %}
+{% macro field_control(name, value='', kind='text') -%}
+  <label>{{ name | replace('_', ' ') | title }}
+  {% if name == 'details' %}<textarea name="{{ name }}" rows="5">{{ value | join('\n') if value is iterable and value is not string else value }}</textarea>
+  {% else %}<input name="{{ name }}" value="{{ value }}" {% if name not in ['location', 'institution', 'evidence', 'date_range', 'key_topics'] %}required{% endif %}>{% endif %}
+  </label>
+{%- endmacro %}
 {% block content %}
-<section class="hero compact"><div><p class="eyebrow">Trust inspection</p><h1>Candidate evidence profile</h1>
-<p>This page shows what the product can cite. Update source profile files outside this interface, then refresh the snapshot.</p></div>
-{% if not setup_required %}<button class="button secondary" data-action="refresh-profile">Refresh snapshot</button>{% endif %}</section>
+<section class="hero compact"><div><p class="eyebrow">Global candidate evidence</p><h1>My Evidence Profile</h1>
+<p>Maintain the facts the product may cite. Saved changes create a new immutable Evidence Snapshot and make dependent results stale until you rerun them.</p></div>
+{% if not setup_required %}<button class="button secondary" data-action="refresh-profile">Refresh snapshot from included sources</button>{% endif %}</section>
+
 {% if setup_required %}
 <section class="panel form-panel profile-setup"><div class="panel-heading"><div><p class="eyebrow">First-time setup</p><h2>Create your Evidence Profile</h2></div></div>
-<p>Add only facts you can personally confirm. The application saves them as a source-backed candidate profile, builds the global snapshot, and then returns you to the job workflow.</p>
+<p>Add only facts you can personally confirm. The application saves them to the canonical Candidate Profile source and builds the global snapshot.</p>
 <fieldset class="mode-picker"><legend>Setup method</legend>
   <label><input type="radio" name="profile_setup_mode" value="basic" checked> Create basic profile</label>
   <label><input type="radio" name="profile_setup_mode" value="import"> Import profile Markdown</label>
@@ -25,18 +32,57 @@
   <p class="form-note">Import only facts you can confirm. The import must contain a Candidate Profile heading and an explicit name.</p>
   <button class="button" type="submit">Import Evidence Profile</button>
 </form></section>
-{% endif %}
-{% if profile %}
-<div class="summary-strip"><span>Snapshot</span><code>{{ profile.content_id }}</code><span>{{ claims | length }} claims</span><span>{{ profile.payload.conflicts | length }} conflicts</span></div>
-<section class="panel"><div class="panel-heading"><h2>Evidence claims</h2><p>No editing or conflict resolution occurs here.</p></div>
+{% else %}
+
+<div id="profile-manager" data-revision="{{ profile_manager.revision }}">
+<section class="panel"><div class="panel-heading"><div><p class="eyebrow">Source management</p><h2>Evidence sources</h2><p>The Candidate Profile is the only editable source. Supplemental sources contribute evidence but remain read-only.</p></div></div>
+<div class="evidence-list">
+{% for source in profile_manager.sources %}
+<article class="evidence-row profile-source" data-source-path="{{ source.source_path }}">
+  <span class="badge {% if source.editable %}verified{% else %}neutral{% endif %}">{{ 'Editable' if source.editable else 'Read-only' }}</span>
+  <div><strong>{% if source.editable %}Candidate Profile{% elif source.source_path == 'CLAUDE.md' %}CLAUDE.md{% else %}CV{% endif %}</strong>
+  <p>{{ 'Required canonical source' if source.required else 'Supplemental source' }}</p><small>{{ source.source_path }}</small></div>
+  {% if source.required %}<span class="badge complete">Included · required</span>
+  {% else %}<label class="source-toggle"><input type="checkbox" class="profile-source-toggle" {% if source.included %}checked{% endif %}> Included</label>{% endif %}
+</article>
+{% endfor %}
+</div></section>
+
+<section class="panel"><div class="panel-heading"><div><p class="eyebrow">Canonical Candidate Profile</p><h2>Editable profile entries</h2><p>Add, edit, or remove source entries. Derived claims, corroborations, and conflicts are not edited here.</p></div></div>
+{% for section, entries in profile_manager.entries | groupby('section') %}
+<section class="profile-entry-section"><h3>{{ section }}</h3>
+{% for entry in entries %}<article class="profile-entry-card" data-entry-id="{{ entry.entry_id }}" data-entry-kind="{{ entry.kind }}">
+  <div class="profile-entry-summary"><div><span class="badge verified">Candidate Profile · Editable</span><strong>{{ entry.label }}</strong>
+  {% for name, value in entry.fields.items() %}{% if value %}<p><small>{{ name | replace('_',' ') | title }}</small> {{ value | join('; ') if value is iterable and value is not string else value }}</p>{% endif %}{% endfor %}</div>
+  <div class="review-actions"><button type="button" class="button button-small secondary profile-entry-edit">Edit</button>
+  {% if not (entry.kind == 'identity' and entry.fields.label | lower == 'name') %}<button type="button" class="button button-small secondary profile-entry-delete">Delete</button>{% endif %}</div></div>
+  <form class="profile-entry-edit-form" hidden>
+    {% for name, value in entry.fields.items() %}{{ field_control(name, value) }}{% endfor %}
+    <div class="review-actions"><button class="button button-small" type="submit">Save</button><button class="button button-small secondary profile-entry-cancel" type="button">Cancel</button></div>
+  </form>
+</article>{% endfor %}
+</section>{% else %}<p class="muted">No editable entries were found.</p>{% endfor %}
+
+<details class="profile-add"><summary>Add profile information</summary>
+{% for kind, definition in profile_manager.entry_definitions.items() %}<form class="profile-entry-add-form form-panel" data-entry-kind="{{ kind }}">
+  <h3>Add {{ definition.label }}</h3>
+  {% for name in definition.fields %}{{ field_control(name, [] if name == 'details' else ('Skills' if name == 'subsection' else '')) }}{% endfor %}
+  <button class="button button-small" type="submit">Add</button>
+</form>{% endfor %}
+</details></section>
+</div>
+
+{% if profile %}<div class="summary-strip"><span>Current immutable snapshot</span><code>{{ profile.content_id }}</code><span>{{ claims | length }} claims</span><span>{{ profile.payload.conflicts | length }} conflicts</span></div>{% endif %}
+
+{% if profile and profile.payload.conflicts %}<section class="panel danger-panel"><div class="panel-heading"><div><h2>Conflicts detected</h2><p>Correct the Candidate Profile entry above or exclude an inappropriate supplemental source. Conflicts themselves are read-only.</p></div></div>
+{% for conflict in profile.payload.conflicts %}<article class="derived-conflict"><span class="badge review">Derived · read-only</span><strong>{{ conflict.field | replace('_', ' ') | title }}</strong>
+{% for variant in conflict.get('variants', []) %}<div><p>{{ variant.value }}</p><small>Sources: {% for provenance in variant.provenance %}{{ provenance.file }}{% if not loop.last %}, {% endif %}{% endfor %}</small></div>{% endfor %}</article>{% endfor %}</section>{% endif %}
+
+{% if profile %}<section class="panel"><div class="panel-heading"><div><h2>Generated evidence claims</h2><p>These are immutable outputs of the current snapshot builder, not editable profile records.</p></div></div>
 <div class="evidence-list">{% for entry in claims %}<article class="evidence-row">
-  {% if entry.label == "Verified evidence" %}<span class="badge verified">Verified evidence</span>
-  {% elif entry.label == "Missing evidence" %}<span class="badge missing">Missing evidence</span>
-  {% else %}<span class="badge review">NEEDS_REVIEW</span>{% endif %}
+  {% if entry.label == "Verified evidence" %}<span class="badge verified">Verified evidence</span>{% elif entry.label == "Missing evidence" %}<span class="badge missing">Missing evidence</span>{% else %}<span class="badge review">NEEDS_REVIEW</span>{% endif %}
   <div><strong>{{ entry.claim.field | replace('_', ' ') | title }}</strong><p>{{ entry.claim.value }}</p>
-  <small>{{ entry.claim.category }} · evidence ID {{ entry.claim.id }}</small></div>
-</article>{% endfor %}</div></section>
-{% if profile.payload.conflicts %}<section class="panel danger-panel"><div class="panel-heading"><h2>Conflicts requiring source correction</h2></div>
-{% for conflict in profile.payload.conflicts %}<article><span class="badge review">NEEDS_REVIEW</span> <strong>{{ conflict.field | replace('_', ' ') | title }}</strong><code>{{ conflict.id }}</code></article>{% endfor %}</section>{% endif %}
-{% elif not setup_required %}<section class="empty-state"><h2>Profile source found</h2><p>Select Refresh snapshot to build the Evidence Profile from the existing source. This does not edit it.</p></section>{% endif %}
+  <small>Sources: {% for claim_source in entry.sources %}{{ 'Candidate Profile · Editable' if claim_source.endswith('01-candidate-profile.md') else claim_source ~ ' · Supplemental read-only' }}{% if not loop.last %}; {% endif %}{% endfor %} · evidence ID {{ entry.claim.id }}</small></div>
+</article>{% endfor %}</div></section>{% else %}<section class="empty-state"><h2>Profile source found</h2><p>Select Refresh to build the Evidence Profile from the included sources.</p></section>{% endif %}
+{% endif %}
 {% endblock %}

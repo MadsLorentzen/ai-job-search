@@ -15,6 +15,9 @@ from product.application_intelligence_providers import ProviderResponse as AIRes
 from product.job_understanding_providers import ProviderResponse as UnderstandingResponse
 from webapp.app import create_app
 from webapp.config import Settings
+from webapp.persistence.artifacts import list_artifact_history
+from webapp.persistence.db import connect
+from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID
 
 from tests.webapp.fixtures.acceptance.fixtures import extension
 
@@ -331,7 +334,7 @@ def live_server(tmp_path, monkeypatch):
         raise RuntimeError("Uvicorn browser fixture did not start on 127.0.0.1")
     yield SimpleNamespace(
         base_url=f"http://127.0.0.1:{port}", profile_root=profile_root,
-        extensions_dir=extensions_dir, secret=browser_secret,
+        extensions_dir=extensions_dir, secret=browser_secret, db_path=settings.db_path,
     )
     server.should_exit = True
     thread.join(timeout=10)
@@ -440,6 +443,80 @@ def test_user_profile_preferences_are_editable_in_browser(page, live_server):
     assert payload["compensation"] == {
         "currency": "GBP", "minimum": 60000, "period": "year",
     }
+    _assert_no_private_browser_content(page, live_server)
+
+
+def test_evidence_profile_manager_crud_sources_concurrency_and_staleness(page, live_server):
+    _refresh_profile(page, live_server)
+    workspace_url = _run_to_intelligence(page, live_server)
+
+    page.goto(f"{live_server.base_url}/profile", wait_until="networkidle")
+    assert page.get_by_role("heading", name="My Evidence Profile").is_visible()
+    initial_revision = page.locator("#profile-manager").get_attribute("data-revision")
+    conn = connect(live_server.db_path)
+    initial_history = list_artifact_history(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
+    conn.close()
+
+    skill = page.locator(".profile-entry-card").filter(has_text="Python").first
+    skill.get_by_role("button", name="Edit").click()
+    skill.locator('input[name="value"]').fill("Python and SQL")
+    with page.expect_navigation(wait_until="networkidle"):
+        skill.get_by_role("button", name="Save").click()
+    assert page.get_by_text("Python and SQL", exact=True).first.is_visible()
+
+    location = page.locator(".profile-entry-card").filter(has_text="Location").first
+    location.get_by_role("button", name="Edit").click()
+    location.locator('input[name="value"]').fill("Birmingham, UK")
+    with page.expect_navigation(wait_until="networkidle"):
+        location.get_by_role("button", name="Save").click()
+    assert page.get_by_role("heading", name="Conflicts detected").is_visible()
+    assert page.get_by_text("Derived · read-only", exact=True).first.is_visible()
+    assert page.get_by_role("button", name="Edit conflict").count() == 0
+
+    page.get_by_text("Add profile information", exact=True).click()
+    add_cert = page.locator('.profile-entry-add-form[data-entry-kind="certification"]')
+    add_cert.locator('input[name="value"]').fill("PRINCE2 Practitioner")
+    with page.expect_navigation(wait_until="networkidle"):
+        add_cert.get_by_role("button", name="Add").click()
+    certification = page.locator(".profile-entry-card").filter(has_text="PRINCE2 Practitioner").first
+    assert certification.is_visible()
+
+    certification.get_by_role("button", name="Edit").click()
+    certification.locator('input[name="value"]').fill("Cancelled change")
+    certification.get_by_role("button", name="Cancel").click()
+    assert "PRINCE2 Practitioner" in certification.locator(".profile-entry-summary").inner_text()
+    assert certification.locator(".profile-entry-edit-form").is_hidden()
+
+    page.once("dialog", lambda dialog: dialog.accept())
+    with page.expect_navigation(wait_until="networkidle"):
+        certification.get_by_role("button", name="Delete").click()
+    assert page.get_by_text("PRINCE2 Practitioner", exact=True).count() == 0
+
+    claude_source = page.locator('.profile-source[data-source-path="CLAUDE.md"]')
+    assert claude_source.get_by_text("Read-only", exact=True).is_visible()
+    assert claude_source.get_by_role("button", name="Edit").count() == 0
+    with page.expect_navigation(wait_until="networkidle"):
+        claude_source.locator(".profile-source-toggle").uncheck()
+    assert not page.locator('.profile-source[data-source-path="CLAUDE.md"] .profile-source-toggle').is_checked()
+    with page.expect_navigation(wait_until="networkidle"):
+        page.locator('.profile-source[data-source-path="CLAUDE.md"] .profile-source-toggle').check()
+
+    stale_response = page.request.post(
+        f"{live_server.base_url}/api/profile/entries",
+        data={"expected_revision": initial_revision, "kind": "certification", "fields": {"value": "Stale write"}},
+    )
+    assert stale_response.status == 409
+    assert "Reload it before saving" in stale_response.json()["detail"]
+
+    conn = connect(live_server.db_path)
+    history = list_artifact_history(conn, PROFILE_WORKSPACE_ID, "profile_snapshot")
+    conn.close()
+    assert len(history) >= len(initial_history) + 6
+    assert history[-1]["payload"] == initial_history[-1]["payload"]
+
+    page.goto(workspace_url, wait_until="networkidle")
+    assert page.locator(".badge.stale").count() >= 1
+    assert page.get_by_role("button", name="Rerun Job Fit").is_visible()
     _assert_no_private_browser_content(page, live_server)
 
 

@@ -39,6 +39,7 @@ from webapp.persistence.application_identity import (
     save_application_identity,
 )
 from webapp.persistence.provider_audits import save_provider_audit
+from webapp.persistence.profile_sources import included_profile_sources
 from webapp.persistence.workspaces import (
     PROFILE_WORKSPACE_ID,
     create_workspace,
@@ -75,7 +76,7 @@ def _hash_artifact(prefix: str, payload: dict[str, Any]) -> str:
 def refresh_profile(conn: sqlite3.Connection, *, root: str = ".") -> dict[str, Any]:
     ensure_profile_workspace(conn)
     try:
-        snapshot = build_snapshot(root)
+        snapshot = build_snapshot(root, included_sources=included_profile_sources(conn))
     except Exception as exc:
         raise PipelineError(f"profile refresh failed: {exc}") from exc
     content_id = profile_snapshot_content_id(snapshot)

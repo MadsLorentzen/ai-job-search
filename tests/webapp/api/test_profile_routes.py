@@ -49,6 +49,19 @@ def test_first_time_basic_setup_builds_profile_and_rejects_second_overwrite(tmp_
     app = create_app(Settings(
         db_path=tmp_path / "setup.sqlite3", profile_root=str(root)
     ))
+
+
+def _configured_client(tmp_path):
+    root = tmp_path / "configured-profile-root"
+    shutil.copytree(FIXTURE_PROFILE_ROOT, root)
+    target = root / ".claude/skills/job-application-assistant/01-candidate-profile.md"
+    target.write_text(
+        "# Candidate Profile\n\n## Identity\n- **Name:** Ada Lovelace\n\n"
+        "## Technical Skills\n\n### Tools\n\n- Python\n",
+        encoding="utf-8",
+    )
+    settings = Settings(db_path=tmp_path / "manager.sqlite3", profile_root=str(root))
+    return TestClient(create_app(settings)), settings, root
     with TestClient(app) as client:
         page = client.get("/profile?return_to=/workspaces/ws_example")
         assert "Create your Evidence Profile" in page.text
@@ -81,3 +94,70 @@ def test_import_requires_candidate_profile_heading_and_name(tmp_path):
         assert client.post(
             "/api/profile/setup/import", json={"markdown": "Just some CV text"}
         ).status_code == 400
+
+
+def test_profile_manager_api_crud_concurrency_and_source_controls(tmp_path):
+    client, settings, root = _configured_client(tmp_path)
+    with client:
+        assert client.post("/api/profile/refresh").status_code == 200
+        manager = client.get("/api/profile/manager").json()
+        skill = next(item for item in manager["entries"] if item["kind"] == "technical_skill")
+
+        updated = client.put(f"/api/profile/entries/{skill['entry_id']}", json={
+            "expected_revision": manager["revision"], "kind": "technical_skill",
+            "fields": {"subsection": "Tools", "value": "Python and SQL"},
+        })
+        assert updated.status_code == 200, updated.text
+        updated_manager = updated.json()["manager"]
+        assert next(
+            item for item in updated_manager["entries"] if item["entry_id"] == skill["entry_id"]
+        )["fields"]["value"] == "Python and SQL"
+
+        stale = client.post("/api/profile/entries", json={
+            "expected_revision": manager["revision"], "kind": "certification",
+            "fields": {"value": "Stale"},
+        })
+        assert stale.status_code == 409
+        assert "Reload it before saving" in stale.json()["detail"]
+
+        added = client.post("/api/profile/entries", json={
+            "expected_revision": updated_manager["revision"], "kind": "certification",
+            "fields": {"value": "PRINCE2 Practitioner"},
+        })
+        assert added.status_code == 201, added.text
+        added_body = added.json()
+        removed = client.request("DELETE", f"/api/profile/entries/{added_body['entry_id']}", json={
+            "expected_revision": added_body["manager"]["revision"]
+        })
+        assert removed.status_code == 200, removed.text
+
+        excluded = client.put("/api/profile/sources/CLAUDE.md", json={
+            "expected_revision": removed.json()["manager"]["revision"], "included": False,
+        })
+        assert excluded.status_code == 200, excluded.text
+        assert "CLAUDE.md" not in {
+            source["file"] for source in excluded.json()["profile"]["payload"]["sources"]
+        }
+        candidate_disable = client.put(
+            "/api/profile/sources/.claude/skills/job-application-assistant/01-candidate-profile.md",
+            json={"expected_revision": excluded.json()["manager"]["revision"], "included": False},
+        )
+        assert candidate_disable.status_code == 400
+        assert "cannot be disabled" in candidate_disable.json()["detail"]
+
+        assert "Python and SQL" in (root / ".claude/skills/job-application-assistant/01-candidate-profile.md").read_text(encoding="utf-8")
+
+
+def test_profile_manager_page_exposes_editable_and_read_only_boundaries(tmp_path):
+    client, _, _ = _configured_client(tmp_path)
+    with client:
+        client.post("/api/profile/refresh")
+        page = client.get("/profile")
+        assert page.status_code == 200
+        for text in (
+            "My Evidence Profile", "Editable profile entries", "Candidate Profile · Editable",
+            "Supplemental source", "Read-only", "Add profile information",
+            "Generated evidence claims",
+        ):
+            assert text in page.text
+        assert "Edit conflict" not in page.text

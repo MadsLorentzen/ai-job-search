@@ -73,7 +73,76 @@ def test_new_database_has_one_deterministic_default_search_workspace(tmp_path):
     ).fetchone()
     assert dict(workspace)["name"] == "Default search"
     assert conn.execute("SELECT COUNT(*) FROM search_workspaces").fetchone()[0] == 1
-    assert conn.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()[0] == 1
+    assert {
+        row["id"] for row in conn.execute("SELECT id FROM schema_migrations")
+    } == {"001_search_workspaces", "002_evidence_profile_manager"}
+    assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
+
+
+def test_existing_001_database_upgrades_to_profile_manager_002_idempotently(tmp_path):
+    path = tmp_path / "existing-001.sqlite3"
+    init_db(path)
+    conn = connect(path)
+    conn.execute("DROP TABLE profile_source_entries")
+    conn.execute("DROP TABLE profile_source_settings")
+    conn.execute(
+        "DELETE FROM schema_migrations WHERE id = '002_evidence_profile_manager'"
+    )
+    conn.commit()
+    conn.close()
+
+    init_db(path)
+    init_db(path)
+
+    upgraded = connect(path)
+    assert {
+        row["name"] for row in upgraded.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'profile_source_%'"
+        )
+    } == {"profile_source_entries", "profile_source_settings"}
+    assert {
+        row["id"] for row in upgraded.execute("SELECT id FROM schema_migrations")
+    } == {"001_search_workspaces", "002_evidence_profile_manager"}
+    assert upgraded.execute("PRAGMA foreign_key_check").fetchall() == []
+
+
+def test_failed_profile_manager_002_migration_rolls_back_without_harming_001(
+    tmp_path, monkeypatch
+):
+    path = tmp_path / "failed-002.sqlite3"
+    init_db(path)
+    conn = connect(path)
+    conn.execute("DROP TABLE profile_source_entries")
+    conn.execute("DROP TABLE profile_source_settings")
+    conn.execute(
+        "DELETE FROM schema_migrations WHERE id = '002_evidence_profile_manager'"
+    )
+    conn.commit()
+    conn.close()
+
+    def fail_after_partial_ddl(conn):
+        conn.execute("CREATE TABLE profile_source_settings (source_path TEXT PRIMARY KEY)")
+        raise sqlite3.OperationalError("simulated 002 failure")
+
+    monkeypatch.setattr(
+        "webapp.persistence.migrations._migrate_evidence_profile_manager",
+        fail_after_partial_ddl,
+    )
+    with pytest.raises(sqlite3.OperationalError, match="simulated 002 failure"):
+        init_db(path)
+
+    inspected = connect(path)
+    assert inspected.execute(
+        "SELECT COUNT(*) FROM schema_migrations WHERE id='001_search_workspaces'"
+    ).fetchone()[0] == 1
+    assert inspected.execute(
+        "SELECT COUNT(*) FROM schema_migrations WHERE id='002_evidence_profile_manager'"
+    ).fetchone()[0] == 0
+    assert inspected.execute(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
+        "AND name='profile_source_settings'"
+    ).fetchone()[0] == 0
+    assert inspected.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
 def test_legacy_singleton_profile_and_discovery_are_attached_without_data_loss(tmp_path):
@@ -151,6 +220,8 @@ def test_legacy_application_identity_and_promotion_origin_are_backfilled(tmp_pat
         "company": "Example",
         "title": "Planner",
         "location": "London",
+        "description": "Plan complex delivery programmes.",
+        "employment_type": "full_time",
     }
     snapshot = normalize_job_source_record(source_record)
     conn.execute(
@@ -183,6 +254,9 @@ def test_legacy_application_identity_and_promotion_origin_are_backfilled(tmp_pat
         "WHERE application_workspace_id = 'ws_old'"
     ).fetchone()
     assert identity["source_record_key"] == "source:portal-a:job-old"
+    migrated_source = json.loads(identity["source_record_json"])
+    assert migrated_source["description"] == "Plan complex delivery programmes."
+    assert migrated_source["employment_type"] == "full_time"
     origin = migrated.execute(
         "SELECT * FROM application_workspace_origins "
         "WHERE discovery_candidate_id = 'disc_old'"
