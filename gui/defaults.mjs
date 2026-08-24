@@ -3,6 +3,15 @@
 export const TEMPLATE_REPO =
   process.env.JOB_SEARCH_TEMPLATE_URL || "https://github.com/iLevyTate/ai-job-search.git";
 
+export function templateArchiveUrl(repoUrl = TEMPLATE_REPO) {
+  return `${repoUrl.replace(/\.git$/i, "").replace(/\/$/, "")}/archive/refs/heads/master.zip`;
+}
+
+export function templateArchiveRoot(repoUrl = TEMPLATE_REPO) {
+  const name = repoUrl.replace(/\.git$/i, "").replace(/\/$/, "").split("/").pop();
+  return `${name}-master`;
+}
+
 export const CHROME_EXTENSION_URL =
   "https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn";
 

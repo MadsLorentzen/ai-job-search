@@ -1,7 +1,7 @@
 {
   "name": "job-search-desk",
   "productName": "Job Search Desk",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "One-click desk for the AI job search repo. Works on macOS, Windows, and Linux.",

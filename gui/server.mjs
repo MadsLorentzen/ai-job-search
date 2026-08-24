@@ -11,11 +11,13 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   buildClaudeArgs,
   chromeEnabled,
+  commandLooksInstalled,
   extractHttpsUrls,
   getClaudeHealth,
   loadDeskSession,
   loginNeedsCode,
   loginSucceeded,
+  resolveCommand,
   saveDeskSession,
   spawnClaude,
   spawnOfficialInstall,
@@ -211,9 +213,19 @@ function runHelper(kind, factory) {
   return true;
 }
 
+function missingClaudeMessage() {
+  return "Claude Code is not installed yet. Use the Connect Claude button.";
+}
+
 function runClaude(prompt) {
   if (busy) {
     send("error", { text: "Claude is already working. Stop the turn, or wait." });
+    return;
+  }
+
+  if (!commandLooksInstalled(resolveCommand("claude"))) {
+    send("error", { text: missingClaudeMessage() });
+    send("idle", snapshot());
     return;
   }
 
@@ -253,9 +265,7 @@ function runClaude(prompt) {
     child = null;
     send("error", {
       text:
-        err.code === "ENOENT"
-          ? "Claude Code is not installed yet. Use the Connect Claude button."
-          : err.message,
+        err.code === "ENOENT" ? missingClaudeMessage() : err.message,
     });
     send("idle", snapshot());
   });
@@ -264,7 +274,10 @@ function runClaude(prompt) {
     busy = false;
     child = null;
     if (code && code !== 0) {
-      send("error", { text: `Claude exited with code ${code}` });
+      send("error", {
+        text:
+          code === -4058 ? missingClaudeMessage() : `Claude exited with code ${code}`,
+      });
     }
     send("idle", snapshot());
   });
@@ -421,7 +434,22 @@ function openBrowser(href) {
   linuxChrome.unref();
 }
 
-export function startDesk(options = {}) {
+function listen(server, host, port) {
+  return new Promise((resolve, reject) => {
+    const onError = (err) => {
+      server.off("listening", onListening);
+      reject(err);
+    };
+    const onListening = () => {
+      server.off("error", onError);
+      resolve();
+    };
+    server.once("error", onError);
+    server.listen(port, host, onListening);
+  });
+}
+
+export async function startDesk(options = {}) {
   workspace = options.root || process.env.JOB_SEARCH_ROOT || join(HERE, "..");
   sessionId = loadDeskSession(workspace);
   const open = options.openBrowser ?? process.env.JOB_SEARCH_GUI_NO_BROWSER !== "1";
@@ -439,17 +467,24 @@ export function startDesk(options = {}) {
   process.on("SIGINT", () => stop(true));
   process.on("SIGTERM", () => stop(true));
 
-  return new Promise((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(PORT, HOST, () => {
-      const href = `http://${HOST}:${PORT}/`;
-      console.log(`Job search desk: ${href}`);
-      console.log("Claude Code runs locally with --dangerously-skip-permissions.");
-      console.log("Localhost only. Close this window to stop.");
-      if (open) openBrowser(href);
-      resolve({ href, server, workspace, stop });
-    });
-  });
+  const preferred = Number(process.env.JOB_SEARCH_GUI_PORT || PORT);
+  let bound = preferred;
+  for (let offset = 0; offset < 10; offset += 1) {
+    bound = preferred + offset;
+    try {
+      await listen(server, HOST, bound);
+      break;
+    } catch (err) {
+      if (err.code !== "EADDRINUSE" || offset === 9) throw err;
+    }
+  }
+
+  const href = `http://${HOST}:${bound}/`;
+  console.log(`Job search desk: ${href}`);
+  console.log("Claude Code runs locally with --dangerously-skip-permissions.");
+  console.log("Localhost only. Close this window to stop.");
+  if (open) openBrowser(href);
+  return { href, server, workspace, stop, port: bound };
 }
 
 const launchedDirectly =

@@ -14,10 +14,12 @@ Download **Job Search Desk** from [Releases](https://github.com/iLevyTate/ai-job
 
 Then:
 
-1. Open the app.
-2. Open an existing job-search folder, or create a new copy of the public repo.
+1. Run the installer. On Windows it adds Start Menu and Desktop shortcuts and launches the app when setup finishes. macOS: open the `.dmg` and drag the app to Applications. Linux: mark the AppImage executable and run it.
+2. Open an existing job-search folder, or create a new copy of the public repo (downloads it; Git is optional).
 3. The desk opens the conversation if you are already signed in. It only asks you to sign in when Claude Code reports you are signed out. If Claude Code is missing, it offers Anthropic's official installer, then the **claude.ai** login: the same Claude Pro / Max / Team / Enterprise account you use in Chrome.
 4. Optional: install [Claude in Chrome](https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn) if you want the browser extension connected later.
+
+A second click of the shortcut focuses the window that is already running. It does not start a second desk.
 
 macOS Gatekeeper: the release is unsigned. In Finder, right-click the app → **Open**.
 

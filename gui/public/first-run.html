@@ -30,7 +30,7 @@
       <button type="button" id="clone-folder" class="choice">
         <span class="n">02</span>
         <strong>Create a new copy</strong>
-        <em>Clones the public US framework. Needs git.</em>
+        <em>Downloads the public US framework. Git is optional.</em>
       </button>
     </div>
     <p id="first-run-status" class="status first-run-status">Pick a folder to continue.</p>
@@ -50,7 +50,7 @@
     });
     document.getElementById("clone-folder").addEventListener("click", async () => {
       if (!api) return;
-      status.textContent = "Cloning the public framework. This needs git.";
+      status.textContent = "Creating a local copy of the public framework.";
       const result = await api.cloneWorkspace();
       if (result?.error) status.textContent = result.error;
     });

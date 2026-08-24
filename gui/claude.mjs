@@ -13,7 +13,7 @@ const execFileAsync = promisify(execFile);
 const IS_WIN = process.platform === "win32";
 
 export function extraBinDirs(env = process.env) {
-  const home = homedir();
+  const home = env.HOME || env.USERPROFILE || homedir();
   const dirs = [
     join(home, ".local", "bin"),
     join(home, ".claude", "local"),
@@ -22,19 +22,58 @@ export function extraBinDirs(env = process.env) {
     "/opt/homebrew/bin",
   ];
   if (env.LOCALAPPDATA) {
-    dirs.push(join(env.LOCALAPPDATA, "claude"), join(env.LOCALAPPDATA, "Programs", "claude"));
+    dirs.push(
+      join(env.LOCALAPPDATA, "claude"),
+      join(env.LOCALAPPDATA, "Programs", "claude"),
+      join(env.LOCALAPPDATA, "Microsoft", "WinGet", "Links"),
+    );
+  }
+  // Windows npm global shims (`claude.cmd`) live here. Packaged Electron often
+  // has a PATH that never saw that folder, so `where claude` misses it.
+  if (env.APPDATA) {
+    dirs.push(join(env.APPDATA, "npm"));
+  }
+  if (env.npm_config_prefix) dirs.push(env.npm_config_prefix);
+  if (IS_WIN) {
+    const systemRoot = env.SystemRoot || env.SYSTEMROOT || "C:\\Windows";
+    dirs.push(join(systemRoot, "system32"));
   }
   return dirs;
 }
 
+let persistedWindowsPath;
+
+function windowsPersistedPath() {
+  if (!IS_WIN) return "";
+  if (persistedWindowsPath !== undefined) return persistedWindowsPath;
+  persistedWindowsPath = "";
+  try {
+    persistedWindowsPath = execFileSync(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-Command",
+        "[Environment]::GetEnvironmentVariable('Path','User') + ';' + [Environment]::GetEnvironmentVariable('Path','Machine')",
+      ],
+      { encoding: "utf8", timeout: 8000, windowsHide: true },
+    ).trim();
+  } catch {
+    persistedWindowsPath = "";
+  }
+  return persistedWindowsPath;
+}
+
 export function withClaudePath(env = process.env) {
-  const extra = extraBinDirs(env).join(delimiter);
-  return { ...env, PATH: extra ? `${extra}${delimiter}${env.PATH || ""}` : env.PATH };
+  const extras = extraBinDirs(env);
+  const persisted = env === process.env ? windowsPersistedPath() : "";
+  const parts = [...extras, persisted, env.PATH || ""].filter(Boolean);
+  return { ...env, PATH: parts.join(delimiter) };
 }
 
 function candidateNames(name) {
   if (!IS_WIN) return [name];
-  return [name, `${name}.cmd`, `${name}.exe`, `${name}.bat`];
+  // The extensionless npm shim is a Unix script. Spawn it and Windows returns -4058.
+  return [`${name}.cmd`, `${name}.exe`, `${name}.bat`, name];
 }
 
 function windowsRunnable(found) {
@@ -66,7 +105,7 @@ export function resolveCommand(name, env = process.env) {
   for (const dir of extraBinDirs(merged)) {
     for (const file of candidateNames(name)) {
       const path = join(dir, file);
-      if (existsSync(path)) return path;
+      if (existsSync(path)) return windowsRunnable(path);
     }
   }
   return name;
