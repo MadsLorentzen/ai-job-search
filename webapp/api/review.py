@@ -4,6 +4,7 @@ import sqlite3
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel, ConfigDict
 
 from webapp.api.dependencies import (
@@ -18,6 +19,7 @@ from webapp.services.http_api import (
     confirm_job_application_pack,
     record_review_decision,
     record_review_decisions,
+    render_job_application_pack_document,
     retry_job_application_pack_projection,
 )
 from webapp.services.pipeline import PipelineError
@@ -139,3 +141,32 @@ def post_retry_projection(
         )
     except (PipelineError, JobWorkspaceNotFound) as exc:
         raise _translate(exc) from exc
+
+
+_RENDER_KINDS = {"cv", "cover_letter"}
+
+
+@router.get("/application-pack/render/{kind}")
+def get_application_pack_document(
+    workspace_id: str, kind: str,
+    pack_artifact_id: str | None = None,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
+    if kind not in _RENDER_KINDS:
+        raise HTTPException(status_code=404, detail=f"unknown rendered document kind {kind!r}")
+    try:
+        rendered_file = render_job_application_pack_document(
+            conn, workspace_id, kind=kind, pack_artifact_id=pack_artifact_id,
+            account_id=scope.account_id,
+        )
+    except (PipelineError, JobWorkspaceNotFound) as exc:
+        raise _translate(exc) from exc
+    return Response(
+        content=rendered_file.content,
+        media_type=rendered_file.mime_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{rendered_file.filename}"',
+            "X-Content-Hash": rendered_file.content_hash,
+        },
+    )

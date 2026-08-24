@@ -5,11 +5,13 @@ import json
 import socket
 import threading
 import time
+from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 import uvicorn
+from docx import Document
 
 from product.application_intelligence_providers import ProviderResponse as AIResponse
 from product.job_understanding_providers import ProviderResponse as UnderstandingResponse
@@ -611,11 +613,39 @@ def test_full_visible_journey_reaches_interview_with_explicit_submission(page, l
     assert page.locator('[data-copy-section="cv"]').is_visible()
     assert page.locator('[data-copy-section="cover-letter"]').is_visible()
 
+    cv_link = page.get_by_role("link", name="Download CV")
+    cover_letter_link = page.get_by_role("link", name="Download Cover Letter")
+    assert cv_link.is_visible()
+    assert cover_letter_link.is_visible()
+    cv_download = page.request.get(f"{live_server.base_url}{cv_link.get_attribute('href')}")
+    cover_letter_download = page.request.get(
+        f"{live_server.base_url}{cover_letter_link.get_attribute('href')}"
+    )
+    assert cv_download.status == 200
+    assert cover_letter_download.status == 200
+    assert cv_download.headers["content-type"] == (
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+    cv_document = Document(BytesIO(cv_download.body()))
+    cv_texts = " ".join(p.text for p in cv_document.paragraphs)
+    reviewed_cv_text = page.locator("#reviewed-cv-content").inner_text()
+    assert reviewed_cv_text.strip().splitlines()[0].strip() in cv_texts
+
+    cover_letter_document = Document(BytesIO(cover_letter_download.body()))
+    cover_letter_texts = " ".join(p.text for p in cover_letter_document.paragraphs)
+    assert cover_letter_texts.strip()
+    assert "applied" not in page.locator(".workspace-header").inner_text().casefold()
+
     page.once("dialog", lambda dialog: dialog.accept())
     _click_reload(page, page.get_by_role("button", name="Mark applied — I submitted externally"))
     assert page.get_by_text("Workflow status:").locator("strong").inner_text() == "applied"
+    assert page.get_by_role("link", name="Download CV").is_visible()
+    assert page.get_by_role("link", name="Download Cover Letter").is_visible()
+
     _click_reload(page, page.get_by_role("button", name="Interview"))
     assert page.get_by_text("Workflow status:").locator("strong").inner_text() == "interview"
+    assert page.get_by_role("link", name="Download CV").is_visible()
+    assert page.get_by_role("link", name="Download Cover Letter").is_visible()
 
     page.goto(f"{live_server.base_url}/?filter=all", wait_until="networkidle")
     assert "active" in page.get_by_role("link", name="All").get_attribute("class")

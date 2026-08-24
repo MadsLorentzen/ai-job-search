@@ -23,6 +23,7 @@ from webapp.services.application_pack import (
     confirm_application_pack,
     retry_application_pack_projection,
 )
+from product.application_pack_renderer import RendererError, render_application_pack
 from webapp.services.extension_registry import (
     ExtensionRegistryError,
     list_installed_extensions,
@@ -234,6 +235,52 @@ def retry_job_application_pack_projection(
         conn, workspace_id, pack_artifact_id=pack_artifact_id,
         documents_root=documents_root, account_id=account_id,
     )
+
+
+def render_job_application_pack_document(
+    conn: sqlite3.Connection,
+    workspace_id: str,
+    *,
+    kind: str,
+    pack_artifact_id: str | None = None,
+    account_id: str = DEFAULT_ACCOUNT_ID,
+):
+    """Render one document (``kind`` is ``"cv"`` or ``"cover_letter"``) from an
+    immutable Application Pack belonging to ``workspace_id``.
+
+    When ``pack_artifact_id`` is omitted, the workspace's current Application
+    Pack is used. When it is given explicitly, that exact pack is rendered
+    even if it is no longer current -- a historical immutable pack is never
+    silently replaced by the current one.
+
+    ``require_job_workspace`` scopes ``workspace_id`` to ``account_id`` before
+    any artifact is read, so an explicit ``pack_artifact_id`` can never be
+    used to reach a pack belonging to a workspace owned by another account:
+    a workspace_id owned by a different account never resolves here at all.
+    """
+    require_job_workspace(conn, workspace_id, account_id=account_id)
+    if pack_artifact_id is None:
+        artifact = get_current_artifact(conn, workspace_id, "application_pack")
+        if artifact is None:
+            raise PipelineError(
+                f"workspace {workspace_id} has no confirmed application pack to render"
+            )
+    else:
+        artifact = get_artifact(conn, pack_artifact_id)
+        if (
+            artifact is None
+            or artifact["workspace_id"] != workspace_id
+            or artifact["artifact_type"] != "application_pack"
+        ):
+            raise PipelineError(
+                f"application pack artifact {pack_artifact_id!r} does not belong to "
+                f"workspace {workspace_id}"
+            )
+    try:
+        rendered = render_application_pack(artifact["payload"], source_pack_id=artifact["id"])
+        return rendered.file(kind)
+    except RendererError as exc:
+        raise PipelineError(str(exc)) from exc
 
 
 def change_job_status(
