@@ -24,6 +24,9 @@ def rich_profile() -> dict:
     value = copy.deepcopy(_rich_profile())
     value["claims"].extend([
         _claim(
+            "clm_bbbbbbbbbbbbbbbb", "identity", "name", "Ada Lovelace"
+        ),
+        _claim(
             "clm_7777777777777777", "employment", "responsibility_or_achievement",
             " ".join(f"cvbullet{index}" for index in range(10)),
         ),
