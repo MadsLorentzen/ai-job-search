@@ -110,6 +110,25 @@ def test_v0_baseline_renderer_bytes_are_frozen_from_a7faadd():
     )
 
 
+@pytest.mark.parametrize("schema_version", [None, "application-pack.v9"])
+def test_renderer_rejects_absent_or_unknown_schema_version(schema_version):
+    pack = _pack()
+    if schema_version is None:
+        pack.pop("schema_version")
+    else:
+        pack["schema_version"] = schema_version
+    with pytest.raises(
+        RendererError, match="^unsupported application pack schema version$"
+    ):
+        render_application_pack(pack, source_pack_id="art_unknown")
+
+
+def test_v1_dispatch_fails_cleanly_until_v1_renderer_is_available():
+    pack = json.loads((_FIXTURES / "v1_valid.json").read_text(encoding="utf-8"))
+    with pytest.raises(RendererError, match="v1 renderer is not available"):
+        render_application_pack(pack, source_pack_id="art_v1")
+
+
 def test_cv_document_contains_every_approved_unit_text():
     pack = _pack()
     texts = _paragraph_texts(render_cv_document(pack))

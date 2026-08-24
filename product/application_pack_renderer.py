@@ -32,6 +32,7 @@ from typing import Any
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
+from product.application_pack_contract import APPLICATION_PACK_V0, APPLICATION_PACK_V1
 
 _FROZEN_ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
@@ -133,7 +134,7 @@ def _add_heading(document: Document, text: str) -> None:
     heading.paragraph_format.space_after = Pt(6)
 
 
-def render_cv_document(pack: dict[str, Any]) -> bytes:
+def _render_cv_document_v0(pack: dict[str, Any]) -> bytes:
     """Render the approved CV content of ``pack`` into a DOCX document.
 
     Only ``cv_summary_line`` and ``cv_bullet`` units already present in
@@ -176,7 +177,7 @@ def render_cv_document(pack: dict[str, Any]) -> bytes:
     return _freeze_docx_bytes(buffer.getvalue())
 
 
-def render_cover_letter_document(pack: dict[str, Any]) -> bytes:
+def _render_cover_letter_document_v0(pack: dict[str, Any]) -> bytes:
     """Render the approved cover-letter content of ``pack`` into a DOCX document.
 
     Only ``cover_letter_paragraph`` units already present in
@@ -206,6 +207,29 @@ def render_cover_letter_document(pack: dict[str, Any]) -> bytes:
     return _freeze_docx_bytes(buffer.getvalue())
 
 
+def _schema_version(pack: Any) -> str:
+    if not isinstance(pack, dict) or pack.get("schema_version") not in {
+        APPLICATION_PACK_V0,
+        APPLICATION_PACK_V1,
+    }:
+        raise RendererError("unsupported application pack schema version")
+    return pack["schema_version"]
+
+
+def render_cv_document(pack: dict[str, Any]) -> bytes:
+    version = _schema_version(pack)
+    if version == APPLICATION_PACK_V0:
+        return _render_cv_document_v0(pack)
+    raise RendererError("application pack v1 renderer is not available")
+
+
+def render_cover_letter_document(pack: dict[str, Any]) -> bytes:
+    version = _schema_version(pack)
+    if version == APPLICATION_PACK_V0:
+        return _render_cover_letter_document_v0(pack)
+    raise RendererError("application pack v1 renderer is not available")
+
+
 def render_application_pack(
     pack: dict[str, Any], *, source_pack_id: str
 ) -> RenderedApplicationPack:
@@ -223,10 +247,11 @@ def render_application_pack(
     otherwise wall-clock-dependent ZIP timestamps are removed.
     """
 
-    if not isinstance(pack, dict):
-        raise RendererError("pack must be a dict")
+    version = _schema_version(pack)
     if not source_pack_id:
         raise RendererError("source_pack_id is required for traceability")
+    if version == APPLICATION_PACK_V1:
+        raise RendererError("application pack v1 renderer is not available")
 
     stem = _build_filename_stem(pack)
 
