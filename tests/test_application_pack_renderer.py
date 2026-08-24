@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import copy
 import json
 import time
@@ -509,6 +510,32 @@ def test_renderer_never_imports_llm_provider_modules():
         contents = handle.read()
     for forbidden in ("openai", "application_intelligence", "job_fit", "profile_snapshot"):
         assert forbidden not in contents
+
+
+def test_renderer_and_contract_import_graph_stays_upstream_independent():
+    import product.application_pack_contract as contract_module
+    import product.application_pack_renderer as renderer_module
+
+    forbidden_prefixes = (
+        "webapp",
+        "product.profile_snapshot",
+        "product.job_fit",
+        "product.application_intelligence",
+    )
+    for module in (renderer_module, contract_module):
+        tree = ast.parse(Path(module.__file__).read_text(encoding="utf-8"))
+        imports = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imports.extend(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imports.append(node.module)
+        assert not any(
+            imported == prefix or imported.startswith(prefix + ".")
+            for imported in imports
+            for prefix in forbidden_prefixes
+        )
+        assert not any("provider" in imported for imported in imports)
 
 
 def test_historical_pack_renders_from_its_own_exact_contents_not_a_current_substitute():
