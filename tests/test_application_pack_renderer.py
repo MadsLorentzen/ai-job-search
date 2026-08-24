@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from docx import Document
 
+from product.application_pack_contract import ApplicationPackContractError
 from product.application_pack_renderer import (
     RendererError,
     render_application_pack,
@@ -123,10 +124,157 @@ def test_renderer_rejects_absent_or_unknown_schema_version(schema_version):
         render_application_pack(pack, source_pack_id="art_unknown")
 
 
-def test_v1_dispatch_fails_cleanly_until_v1_renderer_is_available():
+def _value(text: str, evidence_id: str = "clm_0000000000000001"):
+    return {"value": text, "profile_evidence_ids": [evidence_id]}
+
+
+def _rich_v1_pack():
     pack = json.loads((_FIXTURES / "v1_valid.json").read_text(encoding="utf-8"))
-    with pytest.raises(RendererError, match="v1 renderer is not available"):
-        render_application_pack(pack, source_pack_id="art_v1")
+    candidate = pack["candidate_snapshot"]
+    candidate["contact"].update(
+        email=_value("ada@example.com"),
+        phone=_value("+44 123"),
+        linkedin=_value("linkedin.com/in/ada"),
+        github=_value("github.com/ada"),
+        location=_value("London, UK"),
+    )
+    candidate["employment"] = [
+        {
+            "record_id": "rec_0000000000000010",
+            "role": _value("Engineer"),
+            "employer": _value("Example Ltd"),
+            "date_range": _value("2020–2024"),
+            "location": _value("London"),
+            "details": [_value("Built verified systems.")],
+        }
+    ]
+    candidate["education"] = [
+        {
+            "record_id": "rec_0000000000000020",
+            "qualification": _value("MSc Computing"),
+            "institution": _value("Example University"),
+            "date_range": _value("2018–2020"),
+            "location": None,
+            "key_topics": _value("Distributed systems"),
+            "details": None,
+        }
+    ]
+    candidate["certifications"] = [
+        {"record_id": "rec_0000000000000030", "name": _value("Cloud Professional")}
+    ]
+    candidate["skills"] = [
+        {"record_id": "rec_0000000000000040", "category": "Languages", "value": _value("Python")}
+    ]
+    candidate["languages"] = [
+        {
+            "record_id": "rec_0000000000000050",
+            "language": _value("English"),
+            "proficiency": _value("Fluent"),
+            "notes": None,
+        }
+    ]
+    candidate["projects"] = [
+        {
+            "record_id": "rec_0000000000000060",
+            "name": _value("Verified Platform"),
+            "description": _value("Auditable application workflow."),
+        }
+    ]
+    candidate["publications"] = [
+        {"record_id": "rec_0000000000000070", "value": _value("A Useful Paper")}
+    ]
+    candidate["awards"] = [
+        {"record_id": "rec_0000000000000080", "value": _value("Engineering Award")}
+    ]
+    return pack
+
+
+def test_v1_cv_renders_fixed_candidate_and_reviewed_content_sections():
+    texts = _paragraph_texts(render_cv_document(_rich_v1_pack()))
+    expected = [
+        "Ada Lovelace",
+        "ada@example.com | +44 123 | linkedin.com/in/ada | github.com/ada | London, UK",
+        "Professional Summary",
+        "Reviewed summary.",
+        "Professional Experience",
+        "Engineer | Example Ltd | 2020–2024 | London",
+        "Built verified systems.",
+        "Tailored Highlights",
+        "Reviewed highlight.",
+        "Education",
+        "MSc Computing | Example University | 2018–2020",
+        "Distributed systems",
+        "Certifications",
+        "Cloud Professional",
+        "Skills",
+        "Languages: Python",
+        "Languages",
+        "English | Fluent",
+        "Projects",
+        "Verified Platform",
+        "Auditable application workflow.",
+        "Publications",
+        "A Useful Paper",
+        "Awards",
+        "Engineering Award",
+    ]
+    assert [text for text in texts if text] == expected
+    joined = "\n".join(texts)
+    assert "clm_" not in joined
+    assert texts.index("Built verified systems.") < texts.index("Tailored Highlights")
+    assert texts.index("Reviewed highlight.") > texts.index("Tailored Highlights")
+
+
+def test_v1_cover_letter_uses_embedded_header_subject_and_reviewed_paragraphs_only():
+    texts = _paragraph_texts(render_cover_letter_document(_rich_v1_pack()))
+    assert texts == [
+        "Ada Lovelace",
+        "ada@example.com | +44 123 | linkedin.com/in/ada | github.com/ada | London, UK",
+        "Re: Backend Engineer - Acme Corp",
+        "Reviewed cover-letter paragraph.",
+    ]
+    assert not any(
+        word in "\n".join(texts)
+        for word in ("Dear Hiring Manager", "Sincerely", "Yours faithfully")
+    )
+
+
+def test_v1_empty_optional_sections_omit_cleanly_and_report_renderer_v2():
+    pack = json.loads((_FIXTURES / "v1_valid.json").read_text(encoding="utf-8"))
+    rendered = render_application_pack(pack, source_pack_id="art_v1")
+    assert rendered.renderer_version == "application-pack-renderer.v2"
+    texts = _paragraph_texts(rendered.file("cv").content)
+    assert "Professional Experience" not in texts
+    assert "Education" not in texts
+    assert "Ada Lovelace" in texts
+
+
+@pytest.mark.parametrize("kind", ["malformed", "unauthorized"])
+def test_invalid_v1_pack_stays_behind_stable_renderer_error(kind):
+    pack = _rich_v1_pack()
+    if kind == "malformed":
+        pack["candidate_snapshot"]["identity"]["name"] = None
+    else:
+        pack["review_record"]["decisions_consulted"] = [
+            decision
+            for decision in pack["review_record"]["decisions_consulted"]
+            if decision["domain_item_id"] != "cv_summary_1"
+        ]
+    with pytest.raises(
+        RendererError, match="^invalid application pack v1 payload$"
+    ) as caught:
+        render_application_pack(pack, source_pack_id="art_v1_invalid")
+    assert isinstance(caught.value.__cause__, ApplicationPackContractError)
+    assert "Ada" not in str(caught.value)
+
+
+def test_v1_rendering_is_byte_identical_across_wall_clock_gap():
+    pack = _rich_v1_pack()
+    first = render_application_pack(pack, source_pack_id="art_v1")
+    time.sleep(1.2)
+    second = render_application_pack(pack, source_pack_id="art_v1")
+    assert first.file("cv").content == second.file("cv").content
+    assert first.file("cover_letter").content == second.file("cover_letter").content
 
 
 def test_cv_document_contains_every_approved_unit_text():

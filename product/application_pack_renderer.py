@@ -1,23 +1,9 @@
 """Deterministic downstream renderer for a confirmed immutable Application Pack.
 
 This module never re-queries the Evidence Profile, Job Fit, Application
-Intelligence, or review state. It consumes exactly the ``cv_content``,
-``cover_letter_content``, and ``job`` fields already embedded in a pack
-payload and turns approved units into presentation documents. It never
-invents application substance: it renders exactly the units the pack
-contains, in the order the pack contains them, and nothing else.
-
-The current Application Pack contract (``application-pack.v0``) does not
-embed candidate identity/contact details or structured employer/role/date/
-education/certification data -- those live in the Evidence Profile snapshot
-and are referenced from the pack only by artifact ID. Rendering a
-conventional full CV with a name/contact header and a structured experience
-section requires that data to be captured into the pack itself at
-confirmation time; this renderer intentionally does not reach upstream to
-fill that gap, since doing so would make a rendered document derivable from
-something other than the exact immutable pack it claims to represent. This
-is a documented limitation of the current pack contract, not a rendering
-choice.
+Intelligence, or review state. V0 follows its frozen legacy path. V1 consumes
+only the candidate snapshot, reviewed generated units, and job data embedded
+in the exact immutable pack. It never invents application substance.
 """
 from __future__ import annotations
 
@@ -32,11 +18,17 @@ from typing import Any
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
-from product.application_pack_contract import APPLICATION_PACK_V0, APPLICATION_PACK_V1
+from product.application_pack_contract import (
+    APPLICATION_PACK_V0,
+    APPLICATION_PACK_V1,
+    ApplicationPackContractError,
+    validate_application_pack_v1,
+)
 
 _FROZEN_ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
 RENDERER_VERSION = "application-pack-renderer.v1"
+V1_RENDERER_VERSION = "application-pack-renderer.v2"
 
 _CV_DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 _MAX_FILENAME_STEM_LENGTH = 120
@@ -216,18 +208,175 @@ def _schema_version(pack: Any) -> str:
     return pack["schema_version"]
 
 
+def _validate_v1_for_render(pack: dict[str, Any]) -> None:
+    """Validate the self-contained artifact without pretending to re-prove Profile facts.
+
+    Full Profile referential validation happened before persistence. A renderer
+    intentionally has no source Profile artifact and therefore performs only
+    the canonical structural and embedded-review checks.
+    """
+
+    try:
+        validate_application_pack_v1(pack)
+    except ApplicationPackContractError as exc:
+        raise RendererError("invalid application pack v1 payload") from exc
+
+
+def _candidate_text(value: dict[str, Any] | None) -> str | None:
+    return value["value"] if value is not None else None
+
+
+def _available_values(*values: dict[str, Any] | None) -> list[str]:
+    return [text for value in values if (text := _candidate_text(value)) is not None]
+
+
+def _render_cv_document_v1(pack: dict[str, Any]) -> bytes:
+    _validate_v1_for_render(pack)
+    candidate = pack["candidate_snapshot"]
+    document = Document()
+    _set_base_style(document)
+
+    name = document.add_paragraph(candidate["identity"]["name"]["value"])
+    name.runs[0].bold = True
+    name.runs[0].font.size = Pt(16)
+    contact = candidate["contact"]
+    contact_values = _available_values(
+        contact["email"],
+        contact["phone"],
+        contact["linkedin"],
+        contact["github"],
+        contact["location"],
+    )
+    if contact_values:
+        document.add_paragraph(" | ".join(contact_values))
+
+    summary_lines = _units_by_type(pack["cv_content"], "cv_summary_line")
+    if summary_lines:
+        _add_heading(document, "Professional Summary")
+        for unit in summary_lines:
+            document.add_paragraph(unit["text"])
+
+    if candidate["employment"]:
+        _add_heading(document, "Professional Experience")
+        for record in candidate["employment"]:
+            header_values = _available_values(
+                record["role"], record["employer"], record["date_range"], record["location"]
+            )
+            if header_values:
+                header = document.add_paragraph(" | ".join(header_values))
+                header.runs[0].bold = True
+            for detail in record["details"]:
+                document.add_paragraph(detail["value"], style="List Bullet")
+
+    bullets = _units_by_type(pack["cv_content"], "cv_bullet")
+    if bullets:
+        _add_heading(document, "Tailored Highlights")
+        for unit in bullets:
+            document.add_paragraph(unit["text"], style="List Bullet")
+
+    if candidate["education"]:
+        _add_heading(document, "Education")
+        for record in candidate["education"]:
+            header_values = _available_values(
+                record["qualification"],
+                record["institution"],
+                record["date_range"],
+                record["location"],
+            )
+            if header_values:
+                header = document.add_paragraph(" | ".join(header_values))
+                header.runs[0].bold = True
+            for field in ("key_topics", "details"):
+                if record[field] is not None:
+                    document.add_paragraph(record[field]["value"])
+
+    simple_sections = (
+        ("Certifications", candidate["certifications"], lambda row: row["name"]["value"]),
+        (
+            "Skills",
+            candidate["skills"],
+            lambda row: f"{row['category']}: {row['value']['value']}",
+        ),
+        (
+            "Languages",
+            candidate["languages"],
+            lambda row: " | ".join(
+                _available_values(row["language"], row["proficiency"], row["notes"])
+            ),
+        ),
+    )
+    for title, records, formatter in simple_sections:
+        if records:
+            _add_heading(document, title)
+            for record in records:
+                document.add_paragraph(formatter(record), style="List Bullet")
+
+    if candidate["projects"]:
+        _add_heading(document, "Projects")
+        for record in candidate["projects"]:
+            if record["name"] is not None:
+                paragraph = document.add_paragraph(record["name"]["value"])
+                paragraph.runs[0].bold = True
+            if record["description"] is not None:
+                document.add_paragraph(record["description"]["value"])
+
+    for title, records in (
+        ("Publications", candidate["publications"]),
+        ("Awards", candidate["awards"]),
+    ):
+        if records:
+            _add_heading(document, title)
+            for record in records:
+                document.add_paragraph(record["value"]["value"], style="List Bullet")
+
+    buffer = BytesIO()
+    document.save(buffer)
+    return _freeze_docx_bytes(buffer.getvalue())
+
+
+def _render_cover_letter_document_v1(pack: dict[str, Any]) -> bytes:
+    _validate_v1_for_render(pack)
+    candidate = pack["candidate_snapshot"]
+    document = Document()
+    _set_base_style(document)
+
+    name = document.add_paragraph(candidate["identity"]["name"]["value"])
+    name.runs[0].bold = True
+    contact = candidate["contact"]
+    contact_values = _available_values(
+        contact["email"],
+        contact["phone"],
+        contact["linkedin"],
+        contact["github"],
+        contact["location"],
+    )
+    if contact_values:
+        document.add_paragraph(" | ".join(contact_values))
+    job = pack["job"]
+    subject_parts = [part for part in (job.get("title"), job.get("company")) if part]
+    if subject_parts:
+        subject = document.add_paragraph(f"Re: {' - '.join(subject_parts)}")
+        subject.runs[0].bold = True
+    for unit in pack["cover_letter_content"]:
+        document.add_paragraph(unit["text"])
+
+    buffer = BytesIO()
+    document.save(buffer)
+    return _freeze_docx_bytes(buffer.getvalue())
+
+
 def render_cv_document(pack: dict[str, Any]) -> bytes:
     version = _schema_version(pack)
     if version == APPLICATION_PACK_V0:
         return _render_cv_document_v0(pack)
-    raise RendererError("application pack v1 renderer is not available")
+    return _render_cv_document_v1(pack)
 
 
 def render_cover_letter_document(pack: dict[str, Any]) -> bytes:
     version = _schema_version(pack)
     if version == APPLICATION_PACK_V0:
         return _render_cover_letter_document_v0(pack)
-    raise RendererError("application pack v1 renderer is not available")
+    return _render_cover_letter_document_v1(pack)
 
 
 def render_application_pack(
@@ -250,8 +399,6 @@ def render_application_pack(
     version = _schema_version(pack)
     if not source_pack_id:
         raise RendererError("source_pack_id is required for traceability")
-    if version == APPLICATION_PACK_V1:
-        raise RendererError("application pack v1 renderer is not available")
 
     stem = _build_filename_stem(pack)
 
@@ -275,5 +422,9 @@ def render_application_pack(
         ),
     )
     return RenderedApplicationPack(
-        source_pack_id=source_pack_id, renderer_version=RENDERER_VERSION, files=files,
+        source_pack_id=source_pack_id,
+        renderer_version=(
+            RENDERER_VERSION if version == APPLICATION_PACK_V0 else V1_RENDERER_VERSION
+        ),
+        files=files,
     )
