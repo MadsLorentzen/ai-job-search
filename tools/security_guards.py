@@ -38,7 +38,11 @@ errors: list[str] = []
 # an entry must add it here too - that is the point: the diff shows both.
 ALLOWED_PERMISSIONS = {
     "Skill(job-application-assistant)",
+    "Skill(job-scraper)",
     "Bash(bun run:*)",
+    "Bash(bun test:*)",
+    "Bash(bun install)",
+    "Bash(bunx playwright:*)",
     "Bash(python salary_lookup.py:*)",
     "Bash(python3 salary_lookup.py:*)",
     "Bash(pdftotext:*)",

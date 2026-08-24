@@ -4,21 +4,24 @@
 
 # AI Job Search
 
-*The job search that runs on your machine.*
+*US-market fork. The job search that runs on your machine.*
 
 <p align="center">
-  <a href="https://trendshift.io/repositories/43622?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-43622" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/43622/daily" alt="MadsLorentzen%2Fai-job-search | Trendshift" width="250" height="55"/></a>
+  <a href="https://github.com/iLevyTate/ai-job-search/actions/workflows/ci.yml"><img src="https://github.com/iLevyTate/ai-job-search/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/iLevyTate/ai-job-search/releases/latest"><img src="https://img.shields.io/github/v/release/iLevyTate/ai-job-search?label=Job%20Search%20Desk" alt="Latest Job Search Desk release"></a>
 </p>
 
-[![CI](https://github.com/MadsLorentzen/ai-job-search/actions/workflows/ci.yml/badge.svg)](https://github.com/MadsLorentzen/ai-job-search/actions/workflows/ci.yml)
+US boards, English defaults, and an installable **[Job Search Desk](https://github.com/iLevyTate/ai-job-search/releases/latest)** for macOS, Windows, and Linux. Built on [Claude Code](https://claude.com/claude-code). Clone it, fill in your profile, and let Claude evaluate postings, tailor your CV, write cover letters, and prep interviews.
 
-An AI-powered job application framework built on [Claude Code](https://claude.com/claude-code). Fork it, fill in your profile, and let Claude evaluate job postings, tailor your CV, write cover letters, and prepare you for interviews.
+This is a North American fork of [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search). The upstream template remains the methodology source; this repo is the shareable US-market starting point.
 
 > Note: This is an independent open-source project and is not affiliated with, endorsed by, sponsored by, or maintained by Anthropic. Anthropic and Claude Code are referenced only to describe the toolchain this workflow uses.
 >
 > This project has **no affiliated cryptocurrency, token, or paid sponsorship program**. Anything claiming otherwise is unauthorized and should be treated as a scam. The only ways to support the project are the Ko-fi link below and contributing on GitHub.
 
 ## Does it actually work?
+
+*(Upstream author's result. This fork keeps that workflow and retargets it to the US market.)*
 
 I'm a geophysicist by training. When my position was cut in late 2025, I built this framework to run my own job search - the same `/scrape`, `/apply`, and `/interview` workflow in this repo, used weekly, on my own career. I was upfront about it with every employer I spoke to, and instead of counting against me, it usually sparked a genuine technical conversation.
 
@@ -77,9 +80,11 @@ The framework encodes career guidance best practices, including structured evalu
 ### 1. Fork and clone
 
 ```bash
-gh repo fork MadsLorentzen/ai-job-search --clone
+gh repo clone iLevyTate/ai-job-search
 cd ai-job-search
 ```
+
+To contribute methodology back to the original template, fork [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search) instead.
 
 > [!IMPORTANT]
 > **A fork of this repo is always public.** GitHub does not allow private forks of

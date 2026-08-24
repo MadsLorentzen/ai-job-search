@@ -13,6 +13,12 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Changed
+
+- Public README now identifies this repo as the US-market fork, points CI and
+  Desk release badges at `iLevyTate/ai-job-search`, and clones this repo in
+  Quick start instead of the Danish template.
+
 ### Added
 
 - **Installable Job Search Desk** - GitHub Releases ship a one-click desktop app

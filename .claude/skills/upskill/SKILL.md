@@ -47,7 +47,7 @@ In targeted mode, derive a slug from the job title and company for the report fi
 3. Read `.claude/skills/job-application-assistant/01-candidate-profile.md` for the candidate's current skills.
 4. No tracker data is used in targeted mode.
 
-## Step 3: Pass 1, Hard Skill Diff
+## Step 3: Pass 1 — Hard Skill Diff
 
 Extract required and preferred technical skills from each job source:
 
@@ -69,7 +69,7 @@ Remove any skill from the list that is already present in the candidate profile 
 
 What remains is the **hard skill gap list**. In aggregate mode, rank by score descending. In targeted mode, list required skill gaps before preferred skill gaps, then sort alphabetically within each group.
 
-## Step 4: Pass 2, LLM Synthesis
+## Step 4: Pass 2 — LLM Synthesis
 
 Now reason holistically about gaps that the hard skill diff would miss. Consider:
 
