@@ -57,12 +57,7 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: desk-${{ matrix.label }}
-          path: |
-            gui/release/JobSearchDesk-*
-            gui/release/*.exe
-            gui/release/*.dmg
-            gui/release/*.zip
-            gui/release/*.AppImage
+          path: gui/release/JobSearchDesk-*
           if-no-files-found: error
 
   release:
@@ -88,10 +83,5 @@ jobs:
             4. macOS: if Gatekeeper blocks the unsigned build, open it from Finder with right-click → Open.
 
             The app talks to your local Claude Code subscription. It does not replace `/setup` for your profile.
-          files: |
-            artifacts/JobSearchDesk-*
-            artifacts/*.exe
-            artifacts/*.dmg
-            artifacts/*.zip
-            artifacts/*.AppImage
+          files: artifacts/JobSearchDesk-*
           fail_on_unmatched_files: true
