@@ -5,9 +5,11 @@ import json
 import socket
 import threading
 import time
+from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import urlsplit
 
 import pytest
 import uvicorn
@@ -19,8 +21,8 @@ from product.job_understanding_providers import ProviderResponse as Understandin
 from webapp.app import create_app
 from webapp.config import Settings
 from webapp.persistence.accounts import create_account
-from webapp.persistence.application_documents import create_document_version
-from webapp.persistence.artifacts import list_artifact_history
+from webapp.persistence.application_documents import create_document_version, get_selection
+from webapp.persistence.artifacts import get_current_artifact, list_artifact_history
 from webapp.persistence.db import connect
 from webapp.persistence.search_workspaces import create_search_workspace
 from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID, create_workspace
@@ -434,6 +436,14 @@ def _edited_docx_bytes(label: str) -> bytes:
     document = Document()
     document.add_heading(label, level=1)
     document.add_paragraph("Human-owned final wording edited outside JobSearch.")
+    output = BytesIO()
+    document.save(output)
+    return output.getvalue()
+
+
+def _edit_existing_docx_bytes(original: bytes, label: str) -> bytes:
+    document = Document(BytesIO(original))
+    document.add_paragraph(label)
     output = BytesIO()
     document.save(output)
     return output.getvalue()
@@ -909,6 +919,151 @@ def test_user_managed_documents_upload_select_confirm_replace_and_apply_exact_by
     assert page.locator(".document-upload-form").count() == 0
     assert page.get_by_role("button", name="Generate AI documents").is_disabled()
     _assert_no_private_browser_content(page, live_server)
+
+
+def test_confirmed_pack_survives_upload_only_with_no_hidden_mutation_and_long_filename(
+    page, live_server,
+):
+    _refresh_profile(page, live_server)
+    workspace_url = _run_to_intelligence(page, live_server)
+    workspace_id = workspace_url.rsplit("/", 1)[-1]
+    _resolve_all_pending_reviews(page, "acknowledged_and_proceed")
+    _click_reload(page, page.get_by_role("button", name="Generate AI documents"))
+
+    for kind in ("cv", "cover_letter"):
+        panel = page.locator(f'[data-document-kind="{kind}"]')
+        original = panel.locator(".document-version").filter(has_text="AI original")
+        _click_reload(page, original.get_by_role("button", name="Use this version"))
+
+    page.once("dialog", lambda dialog: dialog.accept())
+    _click_reload(
+        page,
+        page.get_by_role("button", name="Confirm selected files — does not submit"),
+    )
+    conn = connect(live_server.db_path)
+    pack_a_id = get_current_artifact(conn, workspace_id, "application_pack")["id"]
+    selection_before = get_selection(
+        conn, workspace_id, "cv", account_id="account_local"
+    )
+    pack_count_before = conn.execute(
+        "SELECT count(*) FROM artifacts WHERE workspace_id=? AND artifact_type='application_pack'",
+        (workspace_id,),
+    ).fetchone()[0]
+    conn.close()
+
+    cv_link = page.get_by_role("link", name="Download CV")
+    pack_a_href = cv_link.get_attribute("href")
+    assert f"pack_artifact_id={pack_a_id}" in pack_a_href
+    assert f"pack_artifact_id={pack_a_id}" in page.get_by_role(
+        "link", name="Download Cover Letter"
+    ).get_attribute("href")
+    original_download = page.request.get(f"{live_server.base_url}{pack_a_href}")
+    assert original_download.status == 200
+    selected_before_text = page.locator(
+        '[data-document-kind="cv"] .selected-document'
+    ).inner_text()
+
+    long_filename = "Edited_" + ("deliberately_long_filename_" * 8) + "CV.docx"
+    mutation_responses = []
+
+    def capture_mutation(response):
+        request = response.request
+        if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+            response_headers = response.headers
+            mutation_responses.append({
+                "captured_at_utc": datetime.now(timezone.utc).isoformat(),
+                "method": request.method,
+                "path": urlsplit(request.url).path,
+                "status": response.status,
+                "request_id": response_headers.get("x-request-id")
+                or response_headers.get("x-correlation-id"),
+            })
+
+    page.on("response", capture_mutation)
+    cv_panel = page.locator('[data-document-kind="cv"]')
+    cv_panel.locator('input[type="file"]').set_input_files({
+        "name": long_filename,
+        "mimeType": DOCX_MEDIA_TYPE,
+        "buffer": _edit_existing_docx_bytes(
+            original_download.body(),
+            "Uploaded replacement must remain unselected",
+        ),
+    })
+    _click_reload(page, cv_panel.get_by_role("button", name="Upload"))
+    page.remove_listener("response", capture_mutation)
+
+    upload_path = f"/api/workspaces/{workspace_id}/application-documents/upload/cv"
+    selection_path = f"/api/workspaces/{workspace_id}/application-documents/selection/cv"
+    pack_path = f"/api/workspaces/{workspace_id}/application-pack"
+    assert sum(
+        item["method"] == "POST" and item["path"] == upload_path
+        for item in mutation_responses
+    ) == 1
+    assert not any(
+        item["method"] == "PUT" and item["path"] == selection_path
+        for item in mutation_responses
+    )
+    assert not any(
+        item["method"] == "POST" and item["path"] == pack_path
+        for item in mutation_responses
+    )
+
+    conn = connect(live_server.db_path)
+    selection_after = get_selection(
+        conn, workspace_id, "cv", account_id="account_local"
+    )
+    assert selection_after == selection_before
+    assert get_current_artifact(conn, workspace_id, "application_pack")["id"] == pack_a_id
+    assert conn.execute(
+        "SELECT count(*) FROM artifacts WHERE workspace_id=? AND artifact_type='application_pack'",
+        (workspace_id,),
+    ).fetchone()[0] == pack_count_before
+    conn.close()
+
+    assert page.get_by_role("link", name="Download CV").get_attribute("href") == pack_a_href
+    after_upload_download = page.request.get(f"{live_server.base_url}{pack_a_href}")
+    assert after_upload_download.body() == original_download.body()
+    assert after_upload_download.headers["x-content-hash"] == original_download.headers[
+        "x-content-hash"
+    ]
+    cv_panel = page.locator('[data-document-kind="cv"]')
+    selected_text = cv_panel.locator(".selected-document").inner_text()
+    assert selected_text == selected_before_text
+    assert f"revision {selection_before['revision']}" in selected_text
+    replacement = cv_panel.locator(".document-version").filter(has_text=long_filename)
+    assert replacement.get_by_text("not content-verified by JobSearch").is_visible()
+
+    print("FRESH_ACCEPTANCE_TRACE " + json.dumps({
+        "workspace_id": workspace_id,
+        "pack_artifact_id": pack_a_id,
+        "selection_revision": selection_after["revision"],
+        "selected_document_version_id": selection_after["document_version_id"],
+        "confirmed_cv_sha256": original_download.headers["x-content-hash"],
+        "mutation_responses_after_upload_started": mutation_responses,
+    }, sort_keys=True))
+
+    page.set_viewport_size({"width": 480, "height": 900})
+    layout = replacement.evaluate("""element => {
+      const panel = element.closest('.document-kind-panel');
+      const panelBox = panel.getBoundingClientRect();
+      const controls = [...element.querySelectorAll('a, button')].map(control => {
+        const box = control.getBoundingClientRect();
+        return {left: box.left, right: box.right};
+      });
+      return {
+        panelLeft: panelBox.left,
+        panelRight: panelBox.right,
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth,
+        controls,
+      };
+    }""")
+    assert layout["scrollWidth"] <= layout["clientWidth"] + 1
+    assert all(
+        layout["panelLeft"] - 1 <= control["left"]
+        and control["right"] <= layout["panelRight"] + 1
+        for control in layout["controls"]
+    )
 
 
 def test_stale_and_review_negative_paths_are_enforced_in_rendered_ui(page, live_server):
