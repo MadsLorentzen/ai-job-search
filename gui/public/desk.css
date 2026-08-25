@@ -349,6 +349,15 @@ body.working .workline {
   letter-spacing: -0.035em;
 }
 
+.workspace-path {
+  margin: 0.2rem 0 0;
+  color: var(--fade);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
 .session, .status, .first-run-status {
   margin: 0.3rem 0 0;
   color: var(--fade);
@@ -766,7 +775,8 @@ body.working .status::before {
 
 .gate-card,
 .first-run-shell {
-  width: min(38rem, 100%);
+  width: min(44rem, 100%);
+  margin-bottom: 2rem;
   padding: 2.1rem 1.9rem 1.7rem;
   border: 1px solid var(--line);
   background:
@@ -847,11 +857,81 @@ body.working .status::before {
 
 .ghost-link:hover { text-decoration: underline; }
 
+html:has(body.first-run),
+body.first-run {
+  height: auto;
+  min-height: 100%;
+}
+
 body.first-run {
   display: grid;
   place-items: center;
+  place-content: safe center;
   grid-template-columns: none;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 1.5rem;
+}
+
+.hint {
+  margin: 0.85rem 0 0;
+  color: var(--fade);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.found-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1.15rem;
+  max-height: min(22rem, 46vh);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 0.15rem;
+}
+
+.found-list[hidden] { display: none; }
+
+.choice.found {
+  width: 100%;
+}
+
+.choice.found.here {
+  border-color: rgba(208, 138, 58, 0.55);
+  background: var(--brass-soft);
+}
+
+.found-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
+.here-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  flex: 0 0 auto;
+  color: var(--brass);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.here-mark svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+}
+
+.choice.found em {
+  word-break: break-all;
 }
 
 .choice-grid {
@@ -859,6 +939,21 @@ body.first-run {
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
   margin-top: 1.5rem;
+}
+
+.choice-grid .choice.wide {
+  grid-column: 1 / -1;
+}
+
+.found-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: stretch;
+}
+
+.found-cli {
+  align-self: stretch;
 }
 
 .choice {

@@ -11,19 +11,24 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   buildClaudeArgs,
   chromeEnabled,
+  clearDeskSession,
   commandLooksInstalled,
+  exitErrorText,
   extractHttpsUrls,
   getClaudeHealth,
   loadDeskSession,
   loginNeedsCode,
   loginSucceeded,
+  MISSING_CLAUDE_TEXT,
   resolveCommand,
   saveDeskSession,
+  shouldRetryWithoutResume,
   spawnClaude,
   spawnOfficialInstall,
   spawnSubscriptionLogin,
 } from "./claude.mjs";
 import { CHROME_EXTENSION_URL, CLAUDE_AI_URL, CLAUDE_PRICING_URL, DESK_SESSION_NAME } from "./defaults.mjs";
+import { existingWorkspaceHint, rememberWorkspace, resolveWorkspace, startCli } from "./workspace.mjs";
 
 const IS_WIN = process.platform === "win32";
 const IS_MAC = process.platform === "darwin";
@@ -46,6 +51,8 @@ let sessionId = null;
 let child = null;
 let helper = null;
 let streamedText = false;
+let sawInit = false;
+let stopRequested = false;
 
 function send(event, data) {
   const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -57,6 +64,7 @@ function snapshot() {
     sessionId,
     busy,
     chromeGroup: chromeEnabled() ? DESK_SESSION_NAME : null,
+    workspace,
   };
 }
 
@@ -91,13 +99,14 @@ function handleStreamLine(line) {
     return;
   }
 
-  if (typeof event.session_id === "string") {
+  if (typeof event.session_id === "string" && event.session_id !== sessionId) {
     sessionId = event.session_id;
     saveDeskSession(workspace, sessionId);
     send("session", { sessionId, chromeGroup: snapshot().chromeGroup });
   }
 
   if (event.type === "system" && event.subtype === "init") {
+    sawInit = true;
     send("status", { text: "Claude is in the repo" });
     return;
   }
@@ -157,6 +166,7 @@ function stopProcess(proc, group) {
 
 function stopClaude(reason = "Stopped") {
   if (!child) return;
+  stopRequested = true;
   stopProcess(child, !IS_WIN);
   send("status", { text: reason });
 }
@@ -213,32 +223,31 @@ function runHelper(kind, factory) {
   return true;
 }
 
-function missingClaudeMessage() {
-  return "Claude Code is not installed yet. Use the Connect Claude button.";
-}
-
-function runClaude(prompt) {
+function runClaude(prompt, { retried = false } = {}) {
   if (busy) {
     send("error", { text: "Claude is already working. Stop the turn, or wait." });
     return;
   }
 
   if (!commandLooksInstalled(resolveCommand("claude"))) {
-    send("error", { text: missingClaudeMessage() });
+    send("error", { text: MISSING_CLAUDE_TEXT });
     send("idle", snapshot());
     return;
   }
 
+  const usedResume = Boolean(sessionId);
   const args = buildClaudeArgs(prompt, { sessionId });
 
   busy = true;
   streamedText = false;
+  sawInit = false;
+  stopRequested = false;
   send("status", {
     text: sessionId
       ? `Continuing in the ${DESK_SESSION_NAME} Chrome group`
       : `Opening the ${DESK_SESSION_NAME} Chrome group`,
   });
-  send("user", { text: prompt });
+  if (!retried) send("user", { text: prompt });
 
   child = spawnClaude(args, { cwd: workspace, detached: !IS_WIN });
   try {
@@ -265,7 +274,7 @@ function runClaude(prompt) {
     child = null;
     send("error", {
       text:
-        err.code === "ENOENT" ? missingClaudeMessage() : err.message,
+        err.code === "ENOENT" ? MISSING_CLAUDE_TEXT : err.message,
     });
     send("idle", snapshot());
   });
@@ -273,12 +282,16 @@ function runClaude(prompt) {
     if (buffer.trim()) handleStreamLine(buffer);
     busy = false;
     child = null;
-    if (code && code !== 0) {
-      send("error", {
-        text:
-          code === -4058 ? missingClaudeMessage() : `Claude exited with code ${code}`,
-      });
+    if (!stopRequested && shouldRetryWithoutResume({ code, sawInit, usedResume, retried })) {
+      sessionId = null;
+      clearDeskSession(workspace);
+      send("status", { text: "The saved session was stale. Starting a fresh one." });
+      send("session", { sessionId: null, chromeGroup: snapshot().chromeGroup });
+      runClaude(prompt, { retried: true });
+      return;
     }
+    const failure = exitErrorText(code, stopRequested);
+    if (failure) send("error", { text: failure });
     send("idle", snapshot());
   });
 }
@@ -316,6 +329,16 @@ function createDeskServer() {
       res.write(`event: hello\ndata: ${JSON.stringify(snapshot())}\n\n`);
       clients.add(res);
       req.on("close", () => clients.delete(res));
+      return;
+    }
+
+    if (req.method === "GET" && url.pathname === "/workspace") {
+      json(res, 200, { root: workspace });
+      return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/workspace/cli") {
+      json(res, 200, startCli(workspace));
       return;
     }
 
@@ -385,9 +408,14 @@ function createDeskServer() {
     }
 
     if (req.method === "POST" && url.pathname === "/reset") {
-      stopClaude("View cleared. The Chrome group stays with this desk.");
+      stopClaude("New conversation. The Chrome group stays with this desk.");
+      sessionId = null;
+      clearDeskSession(workspace);
+      send("session", { sessionId: null, chromeGroup: snapshot().chromeGroup });
       send("reset", {});
-      send("idle", snapshot());
+      // A stopped turn sends its own idle from the close handler; an eager
+      // idle here would re-enable Send while the old child still holds busy.
+      if (!busy) send("idle", snapshot());
       json(res, 200, { ok: true });
       return;
     }
@@ -450,7 +478,14 @@ function listen(server, host, port) {
 }
 
 export async function startDesk(options = {}) {
-  workspace = options.root || process.env.JOB_SEARCH_ROOT || join(HERE, "..");
+  workspace = resolveWorkspace({
+    explicit: options.root || "",
+    here: join(HERE, ".."),
+  });
+  if (!workspace) {
+    throw new Error(existingWorkspaceHint());
+  }
+  rememberWorkspace(workspace);
   sessionId = loadDeskSession(workspace);
   const open = options.openBrowser ?? process.env.JOB_SEARCH_GUI_NO_BROWSER !== "1";
   const server = createDeskServer();
@@ -481,6 +516,8 @@ export async function startDesk(options = {}) {
 
   const href = `http://${HOST}:${bound}/`;
   console.log(`Job search desk: ${href}`);
+  console.log(`Workspace: ${workspace}`);
+  console.log("Same folder as node gui/server.mjs --cli. Scrapes, CVs, and applications stay here.");
   console.log("Claude Code runs locally with --dangerously-skip-permissions.");
   console.log("Localhost only. Close this window to stop.");
   if (open) openBrowser(href);
@@ -490,8 +527,23 @@ export async function startDesk(options = {}) {
 const launchedDirectly =
   Boolean(process.argv[1]) && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (launchedDirectly) {
-  startDesk().catch((err) => {
-    console.error(err);
+  const root = resolveWorkspace({ here: join(HERE, "..") });
+  if (!root) {
+    console.error(existingWorkspaceHint());
     process.exit(1);
-  });
+  }
+  rememberWorkspace(root);
+  if (process.argv.includes("--cli")) {
+    const started = startCli(root, { inherit: true });
+    if (started.error) {
+      console.error(started.error);
+      process.exit(1);
+    }
+    started.child.on("exit", (code) => process.exit(code ?? 0));
+  } else {
+    startDesk({ root }).catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
+  }
 }

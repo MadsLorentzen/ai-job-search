@@ -20,17 +20,24 @@
     <p class="brand">Desk</p>
     <p class="brand-sub">US job search</p>
     <h2>Choose a job-search folder</h2>
-    <p class="lede">This app talks to Claude Code inside a copy of the repo. Nothing leaves this computer.</p>
+    <p class="lede">Desk and Claude Code both write scrapes, CVs, and applications into the same folder. Nothing leaves this computer.</p>
+    <p id="browse-hint" class="hint">This build looks in the usual git folders for this system. Open a folder that already has AGENTS.md and gui/.</p>
+    <div id="found-list" class="found-list" hidden></div>
     <div class="choice-grid">
       <button type="button" id="open-folder" class="choice">
         <span class="n">01</span>
         <strong>Open existing folder</strong>
-        <em>A clone you already have, with AGENTS.md and gui/</em>
+        <em id="open-folder-hint">Opens the folder picker in this system's usual git folder</em>
       </button>
       <button type="button" id="clone-folder" class="choice">
         <span class="n">02</span>
         <strong>Create a new copy</strong>
         <em>Downloads the public US framework. Git is optional.</em>
+      </button>
+      <button type="button" id="open-cli" class="choice wide">
+        <span class="n">03</span>
+        <strong>Open in Claude Code</strong>
+        <em>Terminal CLI in the same folder Desk will use</em>
       </button>
     </div>
     <p id="first-run-status" class="status first-run-status">Pick a folder to continue.</p>
@@ -38,42 +45,145 @@
   </main>
   <script>
     const status = document.getElementById("first-run-status");
+    const hint = document.getElementById("browse-hint");
+    const foundList = document.getElementById("found-list");
     const openBtn = document.getElementById("open-folder");
+    const openHint = document.getElementById("open-folder-hint");
     const cloneBtn = document.getElementById("clone-folder");
+    const cliBtn = document.getElementById("open-cli");
 
     function api() {
       return window.deskApp;
     }
 
+    function relaunchHint() {
+      const ua = navigator.userAgent;
+      if (/Windows/i.test(ua)) return "Quit and reopen Job Search Desk from the Start Menu.";
+      if (/Mac/i.test(ua)) return "Quit and reopen Job Search Desk from Applications or the Dock.";
+      return "Quit and reopen Job Search Desk from your app launcher.";
+    }
+
+    function missingBridge() {
+      return `This window is missing the Desk connection. ${relaunchHint()}`;
+    }
+
     if (!api()) {
-      status.textContent = "This window is missing the Desk connection. Quit and reopen Job Search Desk from the Start Menu.";
+      status.textContent = missingBridge();
     }
 
     async function run(kind) {
       const desk = api();
       if (!desk) {
-        status.textContent = "This window is missing the Desk connection. Quit and reopen Job Search Desk from the Start Menu.";
+        status.textContent = missingBridge();
         return;
       }
-      openBtn.disabled = true;
-      cloneBtn.disabled = true;
+      setBusy(true);
       status.textContent =
         kind === "open"
           ? "Pick the folder that contains AGENTS.md and gui/."
-          : "Choose where to create the folder, then wait while it downloads.";
+          : kind === "cli"
+            ? "Pick the folder to open in Claude Code. Desk will use the same files."
+            : "Choose where to create the folder, then wait while it downloads.";
       try {
-        const result = kind === "open" ? await desk.openFolder() : await desk.cloneWorkspace();
+        const result =
+          kind === "open"
+            ? await desk.openFolder()
+            : kind === "cli"
+              ? await desk.openCli()
+              : await desk.cloneWorkspace();
         if (result?.error) status.textContent = result.error;
+        else if (kind === "cli" && result?.ok) {
+          status.textContent = `Claude Code is using ${result.root}. Scrapes, CVs, and applications stay in that folder.`;
+        }
       } catch (err) {
         status.textContent = err.message || "The folder dialog did not open.";
       } finally {
-        openBtn.disabled = false;
-        cloneBtn.disabled = false;
+        setBusy(false);
+      }
+    }
+
+    function setBusy(next) {
+      openBtn.disabled = next;
+      cloneBtn.disabled = next;
+      cliBtn.disabled = next;
+      foundList.querySelectorAll("button").forEach((button) => {
+        button.disabled = next;
+      });
+    }
+
+    async function openFound(root, kind) {
+      const desk = api();
+      if (!desk) {
+        status.textContent = missingBridge();
+        return;
+      }
+      setBusy(true);
+      status.textContent = kind === "cli" ? `Opening Claude Code in ${root}` : `Opening ${root}`;
+      try {
+        const result = kind === "cli" ? await desk.openCli(root) : await desk.openWorkspace(root);
+        if (result?.error) status.textContent = result.error;
+        else if (kind === "cli" && result?.ok) {
+          status.textContent = `Claude Code is using ${result.root}. Scrapes, CVs, and applications stay in that folder.`;
+        }
+      } catch (err) {
+        status.textContent = err.message || "Could not open that folder.";
+      } finally {
+        setBusy(false);
       }
     }
 
     openBtn.addEventListener("click", () => run("open"));
     cloneBtn.addEventListener("click", () => run("clone"));
+    cliBtn.addEventListener("click", () => run("cli"));
+
+    async function showFound() {
+      const desk = api();
+      if (!desk?.listWorkspaces) return;
+      try {
+        const info = await desk.listWorkspaces();
+        if (info?.hint) hint.textContent = info.hint;
+        if (info?.openHint) openHint.textContent = info.openHint;
+        if (!info?.found?.length) return;
+        foundList.hidden = false;
+        for (const item of info.found) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = item.here ? "choice found here" : "choice found";
+          const title = document.createElement("span");
+          title.className = "found-title";
+          const name = document.createElement("strong");
+          name.textContent = item.name || "Existing folder";
+          title.append(name);
+          if (item.here) {
+            const mark = document.createElement("span");
+            mark.className = "here-mark";
+            mark.title = "This is the folder Desk and Claude Code already use";
+            mark.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.2A7 7 0 0 0 5 9.8C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.2"/></svg>';
+            const label = document.createElement("span");
+            label.textContent = "Here";
+            mark.append(label);
+            title.append(mark);
+          }
+          const path = document.createElement("em");
+          path.textContent = item.root;
+          button.append(title, path);
+          const cli = document.createElement("button");
+          cli.type = "button";
+          cli.className = "ghost found-cli";
+          cli.textContent = "CLI";
+          const row = document.createElement("div");
+          row.className = "found-row";
+          row.append(button, cli);
+          button.addEventListener("click", () => openFound(item.root, "desk"));
+          cli.addEventListener("click", () => openFound(item.root, "cli"));
+          foundList.append(row);
+        }
+      } catch {
+        // Keep the static hint if discovery fails.
+      }
+    }
+
+    showFound();
   </script>
 </body>
 </html>

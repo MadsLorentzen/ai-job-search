@@ -1,11 +1,21 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isJobSearchWorkspace } from "./claude.mjs";
 import { startDesk } from "./server.mjs";
-import { createWorkspace } from "./workspace.mjs";
+import {
+  createWorkspace,
+  defaultBrowseDir,
+  existingWorkspaceHint,
+  findExistingWorkspaces,
+  openFolderHint,
+  readSharedWorkspace,
+  rememberWorkspace,
+  resolveWorkspace,
+  sameWorkspace,
+  startCli,
+} from "./workspace.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -16,26 +26,25 @@ function statePath() {
   return join(app.getPath("userData"), "workspace.json");
 }
 
-function readStoredWorkspace() {
-  try {
-    const data = JSON.parse(readFileSync(statePath(), "utf8"));
-    if (isJobSearchWorkspace(data.root)) return data.root;
-  } catch {
-    // First launch, or the last folder was moved.
-  }
-  return "";
-}
-
 function writeWorkspace(root) {
   mkdirSync(app.getPath("userData"), { recursive: true });
   writeFileSync(statePath(), JSON.stringify({ root }, null, 2));
+  rememberWorkspace(root);
+}
+
+function wantsFirstRun() {
+  return process.argv.includes("--first-run") || process.env.JOB_SEARCH_FORCE_FIRST_RUN === "1";
 }
 
 function sourceWorkspace() {
-  if (!app.isPackaged && isJobSearchWorkspace(join(HERE, ".."))) {
-    return join(HERE, "..");
-  }
-  return readStoredWorkspace();
+  if (wantsFirstRun()) return "";
+  const here = join(HERE, "..");
+  const root = resolveWorkspace({
+    here: !app.isPackaged && isJobSearchWorkspace(here) ? here : "",
+    extraPointers: [statePath()],
+  });
+  if (root && !readSharedWorkspace()) rememberWorkspace(root);
+  return root;
 }
 
 let mainWindow = null;
@@ -75,6 +84,12 @@ function createWindow() {
     },
   });
   mainWindow.once("ready-to-show", () => mainWindow.show());
+  // claude.ai logins and the Chrome Web Store need the user's real browser,
+  // with its cookies and extension support, never a bare Electron window.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) shell.openExternal(url);
+    return { action: "deny" };
+  });
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
@@ -87,9 +102,60 @@ function focusMainWindow() {
   mainWindow.focus();
 }
 
+ipcMain.handle("list-workspaces", async () => {
+  const current =
+    readSharedWorkspace() ||
+    resolveWorkspace({
+      here: isJobSearchWorkspace(join(HERE, "..")) ? join(HERE, "..") : "",
+      extraPointers: [statePath()],
+    });
+  const found = findExistingWorkspaces()
+    .map((item) => ({ ...item, here: sameWorkspace(item.root, current) }))
+    .sort((a, b) => Number(b.here) - Number(a.here));
+  return {
+    found,
+    current,
+    browseDir: defaultBrowseDir(),
+    hint: existingWorkspaceHint(),
+    openHint: openFolderHint(),
+    platform: process.platform,
+  };
+});
+
+ipcMain.handle("open-cli", async (_event, chosen) => {
+  let root = typeof chosen === "string" ? chosen : "";
+  if (!isJobSearchWorkspace(root)) {
+    const picked = await dialog.showOpenDialog(mainWindow, {
+      title: "Open job-search folder in Claude Code",
+      defaultPath: defaultBrowseDir(),
+      properties: ["openDirectory"],
+    });
+    if (picked.canceled || !picked.filePaths[0]) return { error: "No folder selected." };
+    root = picked.filePaths[0];
+  }
+  if (!isJobSearchWorkspace(root)) {
+    return { error: "That folder is not a job-search repo. It needs AGENTS.md and gui/." };
+  }
+  writeWorkspace(root);
+  return startCli(root);
+});
+
+ipcMain.handle("open-workspace", async (_event, root) => {
+  if (typeof root !== "string" || !isJobSearchWorkspace(root)) {
+    return { error: "That folder is not a job-search repo. It needs AGENTS.md and gui/." };
+  }
+  try {
+    await openDesk(root);
+    return { ok: true };
+  } catch (err) {
+    return { error: err.message || "The desk could not start in that folder." };
+  }
+});
+
 ipcMain.handle("open-folder", async () => {
   const picked = await dialog.showOpenDialog(mainWindow, {
     title: "Open job-search folder",
+    defaultPath: defaultBrowseDir(),
     properties: ["openDirectory"],
   });
   if (picked.canceled || !picked.filePaths[0]) return { error: "No folder selected." };
@@ -108,7 +174,7 @@ ipcMain.handle("open-folder", async () => {
 ipcMain.handle("clone-workspace", async () => {
   const destParent = await dialog.showOpenDialog(mainWindow, {
     title: "Choose where to create ai-job-search",
-    defaultPath: join(homedir(), "Documents"),
+    defaultPath: defaultBrowseDir(),
     properties: ["openDirectory", "createDirectory"],
   });
   if (destParent.canceled || !destParent.filePaths[0]) {

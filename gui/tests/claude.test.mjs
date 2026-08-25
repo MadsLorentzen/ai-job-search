@@ -6,7 +6,10 @@ import { test } from "node:test";
 import {
   buildClaudeArgs,
   chromeEnabled,
+  claudeSpawnPlan,
+  clearDeskSession,
   commandLooksInstalled,
+  exitErrorText,
   extraBinDirs,
   extractHttpsUrls,
   isJobSearchWorkspace,
@@ -18,6 +21,8 @@ import {
   parseAuthStatus,
   resolveCommand,
   saveDeskSession,
+  shouldRetryWithoutResume,
+  windowsShimTarget,
   withClaudePath,
 } from "../claude.mjs";
 
@@ -143,4 +148,109 @@ test("desk session persists the same id", () => {
   assert.equal(loadDeskSession(root), null);
   saveDeskSession(root, "session-one");
   assert.equal(loadDeskSession(root), "session-one");
+});
+
+function makeShim(dir, content) {
+  const shim = join(dir, "claude.cmd");
+  writeFileSync(shim, content);
+  return shim;
+}
+
+test("windowsShimTarget resolves the npm exe shim next to the .cmd", () => {
+  const dir = mkdtempSync(join(tmpdir(), "desk-shim-"));
+  const bin = join(dir, "node_modules", "@anthropic-ai", "claude-code", "bin");
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(join(bin, "claude.exe"), "");
+  const shim = makeShim(
+    dir,
+    '@ECHO off\r\nGOTO start\r\n:find_dp0\r\nSET dp0=%~dp0\r\nEXIT /b\r\n:start\r\nSETLOCAL\r\nCALL :find_dp0\r\n"%dp0%\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe"   %*\r\n',
+  );
+  assert.equal(windowsShimTarget(shim), join(bin, "claude.exe"));
+});
+
+test("windowsShimTarget resolves node-script shims to the cli.js", () => {
+  const dir = mkdtempSync(join(tmpdir(), "desk-shim-js-"));
+  const pkg = join(dir, "node_modules", "claude-code");
+  mkdirSync(pkg, { recursive: true });
+  writeFileSync(join(pkg, "cli.js"), "");
+  const shim = makeShim(dir, '@ECHO off\r\n"%_prog%"  "%dp0%\\node_modules\\claude-code\\cli.js" %*\r\n');
+  assert.equal(windowsShimTarget(shim), join(pkg, "cli.js"));
+});
+
+test("windowsShimTarget returns empty when the target is missing or the file is not a shim", () => {
+  const dir = mkdtempSync(join(tmpdir(), "desk-shim-none-"));
+  const shim = makeShim(dir, '@ECHO off\r\n"%dp0%\\node_modules\\gone\\cli.js" %*\r\n');
+  assert.equal(windowsShimTarget(shim), "");
+  assert.equal(windowsShimTarget(join(dir, "missing.cmd")), "");
+});
+
+test("claudeSpawnPlan bypasses cmd.exe when the shim wraps a real exe", () => {
+  const dir = mkdtempSync(join(tmpdir(), "desk-plan-"));
+  const bin = join(dir, "bin");
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(join(bin, "claude.exe"), "");
+  const shim = makeShim(dir, '"%dp0%\\bin\\claude.exe" %*\r\n');
+  const plan = claudeSpawnPlan(shim, "win32");
+  assert.equal(plan.file, join(bin, "claude.exe"));
+  assert.deepEqual(plan.prefixArgs, []);
+  assert.equal(plan.shell, false);
+});
+
+test("claudeSpawnPlan runs script shims through node without a shell", () => {
+  const dir = mkdtempSync(join(tmpdir(), "desk-plan-js-"));
+  const pkg = join(dir, "pkg");
+  mkdirSync(pkg, { recursive: true });
+  writeFileSync(join(pkg, "cli.js"), "");
+  const shim = makeShim(dir, '"%_prog%" "%dp0%\\pkg\\cli.js" %*\r\n');
+  const plan = claudeSpawnPlan(shim, "win32");
+  assert.equal(plan.viaNode, true);
+  assert.deepEqual(plan.prefixArgs, [join(pkg, "cli.js")]);
+  assert.equal(plan.shell, false);
+});
+
+test("claudeSpawnPlan keeps shell fallback only for unresolvable .cmd wrappers", () => {
+  const dir = mkdtempSync(join(tmpdir(), "desk-plan-opaque-"));
+  const shim = makeShim(dir, "@ECHO off\r\nsome-custom-launcher %*\r\n");
+  const plan = claudeSpawnPlan(shim, "win32");
+  assert.equal(plan.file, shim);
+  assert.equal(plan.shell, true);
+});
+
+test("claudeSpawnPlan leaves plain binaries untouched", () => {
+  assert.deepEqual(claudeSpawnPlan("/usr/local/bin/claude", "darwin"), {
+    file: "/usr/local/bin/claude",
+    prefixArgs: [],
+    shell: false,
+  });
+  assert.deepEqual(claudeSpawnPlan("C:\\Tools\\claude.exe", "win32"), {
+    file: "C:\\Tools\\claude.exe",
+    prefixArgs: [],
+    shell: false,
+  });
+});
+
+test("desk session can be cleared after it goes stale", () => {
+  const root = mkdtempSync(join(tmpdir(), "desk-clear-"));
+  saveDeskSession(root, "abc-123");
+  assert.equal(loadDeskSession(root), "abc-123");
+  clearDeskSession(root);
+  assert.equal(loadDeskSession(root), null);
+  clearDeskSession(root); // clearing twice stays quiet
+});
+
+test("a failed resume retries once without the stale session", () => {
+  const base = { code: 1, sawInit: false, usedResume: true, retried: false };
+  assert.equal(shouldRetryWithoutResume(base), true);
+  assert.equal(shouldRetryWithoutResume({ ...base, code: 0 }), false);
+  assert.equal(shouldRetryWithoutResume({ ...base, sawInit: true }), false);
+  assert.equal(shouldRetryWithoutResume({ ...base, usedResume: false }), false);
+  assert.equal(shouldRetryWithoutResume({ ...base, retried: true }), false);
+});
+
+test("exitErrorText stays silent after a requested stop", () => {
+  assert.equal(exitErrorText(1, true), null);
+  assert.equal(exitErrorText(0, false), null);
+  assert.equal(exitErrorText(null, false), null);
+  assert.match(exitErrorText(1, false), /exited with code 1/);
+  assert.match(exitErrorText(-4058, false), /not installed/);
 });

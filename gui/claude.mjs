@@ -3,9 +3,9 @@
  * install / claude.ai login flows. Used by the localhost desk and the app.
  */
 import { execFile, execFileSync, spawn } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { delimiter, join } from "node:path";
+import { delimiter, dirname, join } from "node:path";
 import { promisify } from "node:util";
 import { CLAUDE_INSTALL_PS1, CLAUDE_INSTALL_SH, DESK_SESSION_NAME } from "./defaults.mjs";
 
@@ -84,8 +84,18 @@ function windowsRunnable(found) {
   return found;
 }
 
+const commandCache = new Map();
+
 export function resolveCommand(name, env = process.env) {
   if (env.CLAUDE_BIN && name === "claude") return env.CLAUDE_BIN;
+
+  // `where` spawns a process on every call; cache hits that still exist on disk
+  // so each desk message does not pay that cost again.
+  if (env === process.env) {
+    const hit = commandCache.get(name);
+    if (hit && existsSync(hit)) return hit;
+    commandCache.delete(name);
+  }
 
   const merged = withClaudePath(env);
   try {
@@ -97,7 +107,7 @@ export function resolveCommand(name, env = process.env) {
       .map((line) => line.trim())
       .filter(Boolean);
     const preferred = found.find((line) => /\.(cmd|exe|bat)$/i.test(line)) || found[0];
-    if (preferred) return windowsRunnable(preferred);
+    if (preferred) return remember(name, windowsRunnable(preferred), env);
   } catch {
     // Packaged Electron often has a PATH that never saw the Claude installer.
   }
@@ -105,10 +115,17 @@ export function resolveCommand(name, env = process.env) {
   for (const dir of extraBinDirs(merged)) {
     for (const file of candidateNames(name)) {
       const path = join(dir, file);
-      if (existsSync(path)) return windowsRunnable(path);
+      if (existsSync(path)) return remember(name, windowsRunnable(path), env);
     }
   }
   return name;
+}
+
+function remember(name, resolved, env) {
+  if (env === process.env && resolved !== name && existsSync(resolved)) {
+    commandCache.set(name, resolved);
+  }
+  return resolved;
 }
 
 export function commandLooksInstalled(command) {
@@ -167,6 +184,47 @@ function useShell(command) {
   return IS_WIN && /\.(cmd|bat)$/i.test(command);
 }
 
+/**
+ * npm's `claude.cmd` shim just launches a file next to itself (today a native
+ * claude.exe). Resolve that target so prompts travel as real argv instead of
+ * through cmd.exe, where Node applies no escaping and any `&` or newline in
+ * the prompt becomes a command.
+ */
+export function windowsShimTarget(shim) {
+  let content;
+  try {
+    content = readFileSync(shim, "utf8");
+  } catch {
+    return "";
+  }
+  const dir = dirname(shim);
+  for (const match of content.matchAll(/"%dp0%([^"]+)"/g)) {
+    const target = join(dir, ...match[1].split(/[\\/]/).filter(Boolean));
+    if (existsSync(target)) return target;
+  }
+  return "";
+}
+
+export function claudeSpawnPlan(command, platform = process.platform) {
+  if (platform === "win32" && /\.(cmd|bat)$/i.test(command)) {
+    const target = windowsShimTarget(command);
+    if (/\.exe$/i.test(target)) return { file: target, prefixArgs: [], shell: false };
+    if (/\.(js|cjs|mjs)$/i.test(target)) {
+      return { file: "", prefixArgs: [target], shell: false, viaNode: true };
+    }
+    // Opaque wrapper: cmd.exe is the only way to run it. Callers keep args safe.
+    return { file: command, prefixArgs: [], shell: true };
+  }
+  return { file: command, prefixArgs: [], shell: false };
+}
+
+function nodeRunner(env = process.env) {
+  const found = resolveCommand("node", env);
+  if (found !== "node" && existsSync(found)) return { file: found, asNode: false };
+  // Packaged Electron machines may have no system Node; Electron can be one.
+  return { file: process.execPath, asNode: Boolean(process.versions.electron) };
+}
+
 export function chromeEnabled(env = process.env) {
   return env.JOB_SEARCH_CLAUDE_CHROME !== "0";
 }
@@ -189,6 +247,27 @@ export function saveDeskSession(root, id) {
   writeFileSync(deskSessionPath(root), `${JSON.stringify({ sessionId: id, name: DESK_SESSION_NAME }, null, 2)}\n`);
 }
 
+export function clearDeskSession(root) {
+  try {
+    rmSync(deskSessionPath(root), { force: true });
+  } catch {
+    // A desk without a saved session is already clear.
+  }
+}
+
+export const MISSING_CLAUDE_TEXT = "Claude Code is not installed yet. Use the Connect Claude button.";
+
+/** A --resume that dies before Claude's init event means the saved session is stale. */
+export function shouldRetryWithoutResume({ code, sawInit, usedResume, retried }) {
+  return Boolean(code) && !sawInit && Boolean(usedResume) && !retried;
+}
+
+export function exitErrorText(code, stopRequested) {
+  if (stopRequested || !code) return null;
+  if (code === -4058) return MISSING_CLAUDE_TEXT;
+  return `Claude exited with code ${code}`;
+}
+
 export function buildClaudeArgs(prompt, { sessionId = null, chrome = chromeEnabled(), name = DESK_SESSION_NAME } = {}) {
   const args = [];
   if (chrome) args.push("--chrome");
@@ -207,12 +286,22 @@ export function buildClaudeArgs(prompt, { sessionId = null, chrome = chromeEnabl
   return args;
 }
 
-export function spawnClaude(args, { cwd, env, detached = false } = {}) {
+function claudeInvocation(env) {
   const command = resolveCommand("claude", env);
-  return spawn(command, args, {
+  const plan = claudeSpawnPlan(command);
+  const runEnv = withClaudePath(env || process.env);
+  if (!plan.viaNode) return { file: plan.file, prefixArgs: plan.prefixArgs, shell: plan.shell, env: runEnv };
+  const node = nodeRunner(env);
+  if (node.asNode) runEnv.ELECTRON_RUN_AS_NODE = "1";
+  return { file: node.file, prefixArgs: plan.prefixArgs, shell: false, env: runEnv };
+}
+
+export function spawnClaude(args, { cwd, env, detached = false } = {}) {
+  const run = claudeInvocation(env);
+  return spawn(run.file, [...run.prefixArgs, ...args], {
     cwd,
-    env: withClaudePath(env || process.env),
-    shell: useShell(command),
+    env: run.env,
+    shell: run.shell,
     windowsHide: true,
     detached,
   });
@@ -234,12 +323,13 @@ export async function getClaudeHealth(cwd) {
   if (!installed) return empty;
 
   try {
-    const { stdout } = await execFileAsync(claude, ["auth", "status", "--json"], {
+    const run = claudeInvocation();
+    const { stdout } = await execFileAsync(run.file, [...run.prefixArgs, "auth", "status", "--json"], {
       cwd,
-      env: withClaudePath(),
+      env: run.env,
       timeout: 20000,
       windowsHide: true,
-      shell: useShell(claude),
+      shell: run.shell,
     });
     return { ...empty, installed: true, claude, ...parseAuthStatus(stdout) };
   } catch (err) {

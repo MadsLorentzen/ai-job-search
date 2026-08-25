@@ -166,7 +166,13 @@ From a clone, the same desk also starts with:
 node gui/server.mjs
 ```
 
-That opens `http://127.0.0.1:8765/` and runs Claude Code locally with `--dangerously-skip-permissions`. See [gui/README.md](gui/README.md).
+The same files, in the terminal:
+
+```bash
+node gui/server.mjs --cli
+```
+
+That opens `http://127.0.0.1:8765/` (or Claude Code) against one remembered workspace. Scrapes, CVs, and applications stay in that folder. See [gui/README.md](gui/README.md).
 
 ## Other commands
 

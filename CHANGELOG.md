@@ -15,6 +15,22 @@ per-file diff commands.
 
 ### Changed
 
+- Job Search Desk 1.2.3: prompts reach Claude Code intact on Windows. The desk
+  resolves the npm `claude.cmd` shim to its real `claude.exe` and spawns it
+  without `cmd.exe`, so prompts with `&`, quotes, or pasted multi-line postings
+  no longer split or execute as shell commands. New chat actually starts a new
+  session, a stale saved session retries fresh instead of failing every turn,
+  Stop no longer reports a fake exit error, "Open in Claude Code" launches
+  correctly, login and Chrome links open in the real browser, the Windows
+  release ships both the installer and a separately named portable exe, and
+  the markdown renderer is bundled locally instead of loaded from a CDN.
+- Job Search Desk 1.2.2: first-run finds an existing clone instead of forcing a
+  new copy. Each OS build names and scans its own usual folders (Windows:
+  Documents\\GitHub, Documents, source\\repos; macOS: Documents/GitHub,
+  Developer, Documents; Linux: Documents/GitHub, Documents, src). Desk and
+  Claude Code share one workspace pointer so scrapes, CVs, and applications
+  stay in the same folder whether you run the page (`node gui/server.mjs`)
+  or the CLI (`node gui/server.mjs --cli`).
 - Job Search Desk 1.2.1: first-run Open / Create buttons work in the installed
   app. The packaged preload is CommonJS and unpacked from asar, so the folder
   dialogs are no longer a silent no-op.

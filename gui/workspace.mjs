@@ -2,14 +2,14 @@
  * Create a job-search folder for the installable desk. Prefer git. If git is
  * missing (common after a Start Menu launch), download the public zip instead.
  */
-import { execFile, execFileSync } from "node:child_process";
-import { createWriteStream, existsSync } from "node:fs";
+import { execFile, execFileSync, spawn } from "node:child_process";
+import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { cp, mkdtemp, rename, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { delimiter, join } from "node:path";
+import { homedir, tmpdir } from "node:os";
+import { basename, delimiter, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { get as httpsGet } from "node:https";
-import { isJobSearchWorkspace } from "./claude.mjs";
+import { commandLooksInstalled, isJobSearchWorkspace, resolveCommand, withClaudePath } from "./claude.mjs";
 import { TEMPLATE_REPO, templateArchiveRoot, templateArchiveUrl } from "./defaults.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -91,11 +91,16 @@ async function moveDir(from, to) {
   }
 }
 
+/** Single-quote a value for PowerShell so $, backticks, and spaces stay literal. */
+export function psQuote(value) {
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
 async function extractZip(zip, dest) {
   if (IS_WIN) {
     await execFileAsync(
       "powershell.exe",
-      ["-NoProfile", "-Command", `Expand-Archive -LiteralPath "${zip}" -DestinationPath "${dest}" -Force`],
+      ["-NoProfile", "-Command", `Expand-Archive -LiteralPath ${psQuote(zip)} -DestinationPath ${psQuote(dest)} -Force`],
       { windowsHide: true, timeout: 120000 },
     );
     return;
@@ -171,4 +176,267 @@ export async function createWorkspace(dest, env = process.env) {
   return {
     error: `${cloned.error} ${downloaded.error || ""}`.trim(),
   };
+}
+
+const COMMON_WORKSPACE_NAMES = ["ai-job-search", "ai-job-search-personal"];
+
+export function platformLabel(platform = process.platform) {
+  if (platform === "win32") return "Windows";
+  if (platform === "darwin") return "macOS";
+  if (platform === "linux") return "Linux";
+  return "this";
+}
+
+function formatList(items) {
+  if (items.length <= 1) return items[0] || "";
+  if (items.length === 2) return `${items[0]} or ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, or ${items[items.length - 1]}`;
+}
+
+function addParent(parents, dir, label) {
+  if (!dir || parents.some((item) => item.dir === dir)) return;
+  parents.push({ dir, label });
+}
+
+/**
+ * Usual clone locations for this OS build. Windows, Mac, and Linux installers
+ * each get their own list so first-run names folders people actually use.
+ */
+export function workspaceLocationPlan(platform = process.platform, home = homedir(), env = process.env) {
+  const parents = [];
+  const slash = platform === "win32" ? "\\" : "/";
+
+  if (platform === "win32") {
+    addParent(parents, join(home, "Documents", "GitHub"), `Documents${slash}GitHub`);
+    addParent(parents, join(home, "Documents"), "Documents");
+    addParent(parents, join(home, "source", "repos"), `source${slash}repos`);
+    addParent(parents, join(home, "Desktop"), "Desktop");
+  } else if (platform === "darwin") {
+    addParent(parents, join(home, "Documents", "GitHub"), "Documents/GitHub");
+    addParent(parents, join(home, "Developer"), "Developer");
+    addParent(parents, join(home, "Documents"), "Documents");
+    addParent(parents, join(home, "Projects"), "Projects");
+    addParent(parents, join(home, "src"), "src");
+    addParent(parents, join(home, "Desktop"), "Desktop");
+  } else {
+    if (env.XDG_DOCUMENTS_DIR) addParent(parents, env.XDG_DOCUMENTS_DIR, "Documents");
+    addParent(parents, join(home, "Documents", "GitHub"), "Documents/GitHub");
+    addParent(parents, join(home, "Documents"), "Documents");
+    addParent(parents, join(home, "src"), "src");
+    addParent(parents, join(home, "Projects"), "Projects");
+    addParent(parents, join(home, "code"), "code");
+    addParent(parents, env.XDG_DESKTOP_DIR || join(home, "Desktop"), "Desktop");
+  }
+
+  return { platform, parents };
+}
+
+export function defaultBrowseDir(home = homedir(), platform = process.platform, env = process.env) {
+  for (const { dir } of workspaceLocationPlan(platform, home, env).parents) {
+    if (existsSync(dir)) return dir;
+  }
+  return home;
+}
+
+export function workspaceScanParents(home = homedir(), platform = process.platform, env = process.env) {
+  return workspaceLocationPlan(platform, home, env)
+    .parents
+    .map((item) => item.dir)
+    .filter((dir) => existsSync(dir));
+}
+
+export function existingWorkspaceHint(home = homedir(), platform = process.platform, env = process.env) {
+  const labels = [...new Set(workspaceLocationPlan(platform, home, env).parents.map((item) => item.label))];
+  const browse = defaultBrowseDir(home, platform, env);
+  return `This ${platformLabel(platform)} build looks in ${formatList(labels)}. Open a folder that already has AGENTS.md and gui/. The folder picker starts in ${browse}.`;
+}
+
+export function openFolderHint(home = homedir(), platform = process.platform, env = process.env) {
+  return `Opens the folder picker in ${defaultBrowseDir(home, platform, env)}`;
+}
+
+export function sameWorkspace(left, right) {
+  if (!left || !right) return false;
+  const a = resolve(left);
+  const b = resolve(right);
+  return process.platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b;
+}
+
+export function findExistingWorkspaces(home = homedir(), platform = process.platform, env = process.env) {
+  const found = [];
+  const seen = new Set();
+  const add = (root) => {
+    if (!root || seen.has(root) || !isJobSearchWorkspace(root)) return;
+    seen.add(root);
+    found.push({ root, name: basename(root) });
+  };
+
+  const parents = workspaceLocationPlan(platform, home, env).parents.map((item) => item.dir);
+  for (const name of COMMON_WORKSPACE_NAMES) {
+    add(join(home, name));
+    for (const parent of parents) add(join(parent, name));
+  }
+  for (const parent of parents) {
+    if (!existsSync(parent)) continue;
+    add(parent);
+    try {
+      for (const entry of readdirSync(parent, { withFileTypes: true })) {
+        if (entry.isDirectory()) add(join(parent, entry.name));
+      }
+    } catch {
+      // Skip folders we cannot read.
+    }
+  }
+  return found;
+}
+
+/**
+ * Pointer both the installable Desk and `node gui/server.mjs --cli` read.
+ * Job files stay in the repo. This file only remembers which repo.
+ */
+export function sharedStateDir(home = homedir(), platform = process.platform, env = process.env) {
+  if (platform === "win32") {
+    return join(env.APPDATA || join(home, "AppData", "Roaming"), "ai-job-search");
+  }
+  if (platform === "darwin") {
+    return join(home, "Library", "Application Support", "ai-job-search");
+  }
+  return join(env.XDG_CONFIG_HOME || join(home, ".config"), "ai-job-search");
+}
+
+export function sharedWorkspacePath(home = homedir(), platform = process.platform, env = process.env) {
+  return join(sharedStateDir(home, platform, env), "workspace.json");
+}
+
+function pointerFiles(home = homedir(), platform = process.platform, env = process.env, extra = []) {
+  return [sharedWorkspacePath(home, platform, env), join(home, ".ai-job-search", "workspace.json"), ...extra];
+}
+
+export function readSharedWorkspace(home = homedir(), platform = process.platform, env = process.env, extraPointers = []) {
+  for (const file of pointerFiles(home, platform, env, extraPointers)) {
+    try {
+      const data = JSON.parse(readFileSync(file, "utf8"));
+      if (isJobSearchWorkspace(data.root)) return data.root;
+    } catch {
+      // Missing or stale pointer.
+    }
+  }
+  return "";
+}
+
+export function writeSharedWorkspace(root, home = homedir(), platform = process.platform, env = process.env) {
+  if (!isJobSearchWorkspace(root)) {
+    return { error: "That folder is not a job-search repo. It needs AGENTS.md and gui/." };
+  }
+  const dir = sharedStateDir(home, platform, env);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(sharedWorkspacePath(home, platform, env), `${JSON.stringify({ root }, null, 2)}\n`);
+  return { ok: true, root };
+}
+
+export function resolveWorkspace({
+  explicit = "",
+  here = "",
+  env = process.env,
+  home = homedir(),
+  platform = process.platform,
+  extraPointers = [],
+} = {}) {
+  for (const root of [explicit, env.JOB_SEARCH_ROOT, readSharedWorkspace(home, platform, env, extraPointers), here]) {
+    if (isJobSearchWorkspace(root)) return root;
+  }
+  return findExistingWorkspaces(home, platform, env)[0]?.root || "";
+}
+
+export function rememberWorkspace(root, home = homedir(), platform = process.platform, env = process.env) {
+  return writeSharedWorkspace(root, home, platform, env);
+}
+
+/**
+ * spawn() surfaces a missing binary as an async "error" event, not a throw.
+ * Probe PATH first so the terminal loop can move on to the next candidate
+ * instead of reporting success and leaving an unhandled error behind.
+ */
+export function hasBinary(bin, env = process.env) {
+  try {
+    execFileSync(IS_WIN ? "where" : "which", [bin], { env, stdio: "ignore", windowsHide: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The /k payload must be the bare path: Node quotes spawn args itself, and a
+ * pre-quoted path comes out as \" escapes that cmd.exe cannot parse.
+ */
+export function windowsCliLaunch(command, ready) {
+  return ready ? command : "echo Claude Code is missing. Install it, then run claude here. Desk already uses this folder.";
+}
+
+function openCliTerminal(root, command, env) {
+  const ready = commandLooksInstalled(command);
+  if (process.platform === "win32") {
+    const launch = windowsCliLaunch(command, ready);
+    const child = spawn("cmd.exe", ["/c", "start", "Job Search CLI", "cmd.exe", "/k", launch], {
+      cwd: root,
+      env,
+      detached: true,
+      stdio: "ignore",
+      windowsHide: false,
+    });
+    child.on("error", () => {});
+    child.unref();
+    return { ok: true, root };
+  }
+  if (process.platform === "darwin") {
+    const script = ready
+      ? `cd ${JSON.stringify(root)} && exec ${JSON.stringify(command)}`
+      : `cd ${JSON.stringify(root)} && echo Claude Code is missing. Install it, then run claude here.`;
+    const child = spawn("osascript", ["-e", `tell application "Terminal" to do script ${JSON.stringify(script)}`], {
+      detached: true,
+      stdio: "ignore",
+    });
+    child.on("error", () => {});
+    child.unref();
+    return { ok: true, root };
+  }
+  const argv = ready ? [command] : ["bash"];
+  const terminals = [
+    ["x-terminal-emulator", ["-e", ...argv]],
+    ["gnome-terminal", ["--working-directory", root, "--", ...argv]],
+    ["konsole", ["--workdir", root, "-e", ...argv]],
+    ["xterm", ["-e", ...argv]],
+  ];
+  for (const [bin, args] of terminals) {
+    if (!hasBinary(bin, env)) continue;
+    const child = spawn(bin, args, { cwd: root, env, detached: true, stdio: "ignore" });
+    child.on("error", () => {});
+    child.unref();
+    return { ok: true, root };
+  }
+  return { error: "Could not open a terminal. Run node gui/server.mjs --cli from this folder." };
+}
+
+export function startCli(root, { inherit = false, env = process.env } = {}) {
+  const remembered = rememberWorkspace(root);
+  if (remembered.error) return remembered;
+  const runEnv = withClaudePath(env);
+  const command = resolveCommand("claude", runEnv);
+  if (inherit) {
+    if (!commandLooksInstalled(command)) {
+      return {
+        error: "Claude Code is not installed. Install it, then run node gui/server.mjs --cli again. The folder is already saved for Desk.",
+        root,
+      };
+    }
+    const child = spawn(command, [], {
+      cwd: root,
+      env: runEnv,
+      stdio: "inherit",
+      shell: process.platform === "win32" && /\.(cmd|bat)$/i.test(command),
+    });
+    return { ok: true, root, child };
+  }
+  return openCliTerminal(root, command, runEnv);
 }

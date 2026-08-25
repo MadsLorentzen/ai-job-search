@@ -106,7 +106,7 @@
       </button>
     </nav>
     <div class="dock-foot">
-      <p>Same conversation as the CLI. Talk in plain English, or use a step.</p>
+      <p>Same files as the CLI. Scrapes, CVs, and applications stay in this folder.</p>
       <p class="account" id="account-label">localhost only</p>
     </div>
   </aside>
@@ -121,10 +121,12 @@
           <p class="kicker">Workspace</p>
           <h1>Conversation</h1>
           <p id="session-label" class="session">New session</p>
+          <p id="workspace-label" class="workspace-path">Same folder as the CLI</p>
         </div>
       </div>
       <div class="bar-actions">
         <time id="clock" class="clock" datetime=""></time>
+        <button type="button" id="open-cli" class="ghost">Open CLI</button>
         <button type="button" id="stop" hidden>Stop</button>
         <button type="button" id="reset" class="ghost">New chat</button>
       </div>
@@ -186,8 +188,8 @@
     </form>
   </dialog>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+  <script src="/vendor/marked.min.js"></script>
+  <script src="/vendor/purify.min.js"></script>
   <script src="/desk.js"></script>
 </body>
 </html>

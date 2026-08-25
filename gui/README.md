@@ -33,7 +33,15 @@ From the repo root:
 node gui/server.mjs
 ```
 
-Or `bun gui/server.mjs`. Wrappers: `./gui/start.sh` (macOS / Linux) or `.\gui\start.ps1` (Windows). From `gui/`: `npm start`.
+Same folder, terminal instead of the page:
+
+```bash
+node gui/server.mjs --cli
+```
+
+Or `bun gui/server.mjs`. Wrappers: `./gui/start.sh` (macOS / Linux) or `.\gui\start.ps1` (Windows). Add `--cli` to those too. From `gui/`: `npm start` or `npm run cli`.
+
+Desk and Claude Code share one workspace pointer (`%APPDATA%\ai-job-search\workspace.json` on Windows, `~/Library/Application Support/ai-job-search/workspace.json` on macOS, `~/.config/ai-job-search/workspace.json` on Linux). Scrapes, CVs, applications, and tracker files stay in that repo. Launch either entry point and they keep using the same folder.
 
 If `claude` lives somewhere unusual:
 
