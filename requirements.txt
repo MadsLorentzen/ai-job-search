@@ -3,3 +3,4 @@ fastapi==0.115.6
 uvicorn==0.34.0
 jinja2==3.1.5
 python-docx==1.1.2
+python-multipart==0.0.20
