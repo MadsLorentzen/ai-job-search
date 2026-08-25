@@ -17,6 +17,7 @@ ARTIFACT_TYPES = (
     "application_intelligence_request",
     "application_intelligence_result",
     "application_pack",
+    "application_document_generation",
 )
 
 
@@ -33,10 +34,11 @@ def _row_to_artifact(row: sqlite3.Row) -> dict[str, Any]:
 def save_artifact(
     conn: sqlite3.Connection, *, workspace_id: str, artifact_type: str,
     payload: dict[str, Any], content_id: str | None = None, commit: bool = True,
+    artifact_id: str | None = None,
 ) -> dict[str, Any]:
     if artifact_type not in ARTIFACT_TYPES:
         raise ValueError(f"unknown artifact_type: {artifact_type!r}")
-    artifact_id = f"art_{uuid.uuid4().hex[:20]}"
+    artifact_id = artifact_id or f"art_{uuid.uuid4().hex[:20]}"
     now = _now()
     conn.execute(
         "INSERT INTO artifacts (id, workspace_id, artifact_type, content_id, payload_json, created_at) "

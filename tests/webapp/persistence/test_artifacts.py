@@ -23,7 +23,7 @@ def test_artifact_types_includes_all_three_request_types():
     assert "job_understanding_request" in ARTIFACT_TYPES
     assert "job_fit_request" in ARTIFACT_TYPES
     assert "application_intelligence_request" in ARTIFACT_TYPES
-    assert len(ARTIFACT_TYPES) == len(set(ARTIFACT_TYPES)) == 10
+    assert len(ARTIFACT_TYPES) == len(set(ARTIFACT_TYPES)) == 11
 
 
 def test_save_artifact_becomes_current(tmp_path):

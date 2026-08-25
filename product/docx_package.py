@@ -18,7 +18,7 @@ MAX_ENTRIES = 2048
 MAX_EXPANSION_RATIO = 100
 _WORD_MAIN = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"
 _FORBIDDEN_CONTENT_MARKERS = ("macroenabled", "vba", "activex", "oleobject")
-_FORBIDDEN_REL_MARKERS = ("vbaproject", "activex", "oleobject", "package")
+_FORBIDDEN_REL_SUFFIXES = ("/vbaproject", "/activexcontrol", "/oleobject", "/package")
 
 
 class DocxPackageError(ValueError):
@@ -111,6 +111,6 @@ def validate_docx_package(
             rels = _xml(archive.read(info), "relationships")
             for node in rels.iter():
                 rel_type = node.attrib.get("Type", "").casefold()
-                if any(marker in rel_type for marker in _FORBIDDEN_REL_MARKERS):
+                if any(rel_type.endswith(suffix) for suffix in _FORBIDDEN_REL_SUFFIXES):
                     raise DocxPackageError("active or embedded DOCX relationship is not allowed")
     return DocxPackageMetadata(len(content), hashlib.sha256(content).hexdigest())
