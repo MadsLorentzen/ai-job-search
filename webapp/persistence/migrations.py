@@ -19,6 +19,7 @@ from webapp.persistence.accounts import (
 SEARCH_WORKSPACES_MIGRATION_ID = "001_search_workspaces"
 PROFILE_MANAGER_MIGRATION_ID = "002_evidence_profile_manager"
 ACCOUNTS_OWNERSHIP_MIGRATION_ID = "003_accounts_ownership"
+APPLICATION_DOCUMENTS_MIGRATION_ID = "004_application_documents"
 
 
 def _now() -> str:
@@ -43,6 +44,7 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
         (SEARCH_WORKSPACES_MIGRATION_ID, _migrate_search_workspaces, True),
         (PROFILE_MANAGER_MIGRATION_ID, _migrate_evidence_profile_manager, False),
         (ACCOUNTS_OWNERSHIP_MIGRATION_ID, _migrate_accounts_ownership, False),
+        (APPLICATION_DOCUMENTS_MIGRATION_ID, _migrate_application_documents, False),
     )
     for migration_id, operation, disable_foreign_keys in migrations:
         if conn.execute(
@@ -230,6 +232,79 @@ def _migrate_evidence_profile_manager(conn: sqlite3.Connection) -> None:
         CREATE INDEX idx_profile_source_entries_lookup
             ON profile_source_entries(source_path, entry_kind, fingerprint, occurrence);
         """,
+    )
+
+
+def _migrate_application_documents(conn: sqlite3.Connection) -> None:
+    _execute_statements(
+        conn,
+        """
+        CREATE TABLE application_document_versions (
+            id TEXT PRIMARY KEY,
+            account_id TEXT NOT NULL REFERENCES accounts(id),
+            source_workspace_id TEXT NOT NULL,
+            document_kind TEXT NOT NULL CHECK (document_kind IN ('cv', 'cover_letter')),
+            origin TEXT NOT NULL CHECK (origin IN ('ai_generated', 'user_uploaded')),
+            original_filename TEXT NOT NULL,
+            media_type TEXT NOT NULL,
+            byte_length INTEGER NOT NULL CHECK (byte_length > 0),
+            sha256 TEXT NOT NULL CHECK (length(sha256) = 64),
+            storage_key TEXT NOT NULL,
+            source_generation_artifact_id TEXT REFERENCES artifacts(id),
+            created_at TEXT NOT NULL,
+            UNIQUE (id, account_id),
+            UNIQUE (id, account_id, document_kind),
+            FOREIGN KEY (source_workspace_id, account_id)
+                REFERENCES workspaces(id, account_id),
+            CHECK ((origin = 'ai_generated' AND source_generation_artifact_id IS NOT NULL)
+                OR (origin = 'user_uploaded' AND source_generation_artifact_id IS NULL))
+        );
+
+        CREATE INDEX idx_application_documents_workspace
+            ON application_document_versions(account_id, source_workspace_id, created_at);
+
+        CREATE TABLE application_document_selections (
+            workspace_id TEXT NOT NULL,
+            account_id TEXT NOT NULL,
+            document_kind TEXT NOT NULL CHECK (document_kind IN ('cv', 'cover_letter')),
+            document_version_id TEXT NOT NULL,
+            revision INTEGER NOT NULL CHECK (revision >= 1),
+            selected_at TEXT NOT NULL,
+            PRIMARY KEY (workspace_id, document_kind),
+            FOREIGN KEY (workspace_id, account_id) REFERENCES workspaces(id, account_id),
+            FOREIGN KEY (document_version_id, account_id, document_kind)
+                REFERENCES application_document_versions(id, account_id, document_kind)
+        );
+
+        CREATE TABLE reusable_application_documents (
+            account_id TEXT NOT NULL REFERENCES accounts(id),
+            document_version_id TEXT NOT NULL,
+            label TEXT,
+            saved_at TEXT NOT NULL,
+            PRIMARY KEY (account_id, document_version_id),
+            FOREIGN KEY (document_version_id, account_id)
+                REFERENCES application_document_versions(id, account_id)
+        );
+        """,
+    )
+    conn.execute(
+        "CREATE TRIGGER application_document_versions_immutable_update "
+        "BEFORE UPDATE ON application_document_versions "
+        "BEGIN SELECT RAISE(ABORT, 'application document versions are immutable'); END"
+    )
+    conn.execute(
+        "CREATE TRIGGER application_document_versions_immutable_delete "
+        "BEFORE DELETE ON application_document_versions "
+        "BEGIN SELECT RAISE(ABORT, 'application document versions are immutable'); END"
+    )
+    conn.execute("DROP TRIGGER accounts_owned_aggregate_delete")
+    conn.execute(
+        "CREATE TRIGGER accounts_owned_aggregate_delete BEFORE DELETE ON accounts "
+        "WHEN EXISTS (SELECT 1 FROM workspaces WHERE account_id = OLD.id) "
+        "OR EXISTS (SELECT 1 FROM search_workspaces WHERE account_id = OLD.id) "
+        "OR EXISTS (SELECT 1 FROM application_document_versions WHERE account_id = OLD.id) "
+        "OR EXISTS (SELECT 1 FROM reusable_application_documents WHERE account_id = OLD.id) "
+        "BEGIN SELECT RAISE(ABORT, 'account owns application data'); END"
     )
 
 
