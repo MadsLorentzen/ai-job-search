@@ -275,13 +275,21 @@ Reject:
 
 - malformed or truncated ZIPs;
 - encrypted entries;
-- absolute paths, drive paths, `..` traversal, or duplicate normalized names;
+- absolute paths, UNC paths, drive paths, `..` traversal, or duplicate
+  normalized names, including backslash variants;
 - macro payloads such as `word/vbaProject.bin`;
-- `.doc`, `.docm`, PDF, HTML, RTF, executable, or polyglot inputs; and
+- OLE objects or embedded packages under `word/embeddings/`;
+- ActiveX content or relationships under `word/activeX/`;
+- `.doc`, `.docm`, PDF, HTML, RTF, or executable inputs; and
 - any limit violation.
 
 Validation inspects the archive in memory/streaming form and never extracts it
 to the filesystem. It does not parse prose or attempt factual verification.
+Every ZIP member name is first normalized by converting backslashes to forward
+slashes, rejecting NUL/control characters, drive/UNC/absolute prefixes, and
+collapsing path segments without permitting `..` to escape the package root.
+Duplicate checks use the normalized case-folded name. Normal HTTP/HTTPS
+hyperlinks are not active code and are allowed.
 An antivirus hook may be added at this boundary later, but the first release
 must fail closed if such a configured scanner is unavailable.
 
@@ -326,6 +334,7 @@ V2 is a closed immutable manifest:
       "document_version_id": "docv_...",
       "document_kind": "cv",
       "origin": "user_uploaded",
+      "source_generation_artifact_id": null,
       "sha256": "0123...64 hex...",
       "byte_length": 48123,
       "original_filename": "My final CV.docx"
@@ -334,12 +343,13 @@ V2 is a closed immutable manifest:
       "document_version_id": "docv_...",
       "document_kind": "cover_letter",
       "origin": "ai_generated",
+      "source_generation_artifact_id": "art_...",
       "sha256": "abcd...64 hex...",
       "byte_length": 39210,
       "original_filename": "Company_Role_Cover_Letter.docx"
     }
   },
-  "confirmed_by_account_id": "account_local",
+  "confirmed_account_id": "account_local",
   "confirmed_at": "2026-08-24T20:30:00+00:00",
   "completion_contract_version": "substantive-completion.v1"
 }
@@ -356,7 +366,9 @@ origins.
 
 Construction validates in one transaction that:
 
-- the generation artifact and both selections belong to the workspace/account;
+- the generation artifact belongs to the workspace/account;
+- each selected document belongs to the account and either originated in this
+  workspace or has current reusable-library membership for that account;
 - both required kinds are present and distinct;
 - every embedded document field exactly equals immutable metadata;
 - every referenced blob exists and passes exact length/hash verification;
@@ -375,6 +387,18 @@ Confirmation means only:
 
 It does not mean JobSearch approves every factual statement in user-managed
 files.
+
+### 8.1 Legacy confirmation compatibility
+
+The existing confirmation/API path remains supported. A confirmation request
+without document-selection input follows the unchanged baseline behavior and
+creates `application-pack.v1`. Existing callers, tests, and historical v0/v1
+behavior are not silently redirected to v2.
+
+The new product UI exclusively uses document generation, explicit selection,
+and v2 confirmation. A v2 request must identify the exact current selection
+revisions expected by the caller. Deprecating or removing no-selection v1
+confirmation is a separate future ticket.
 
 ## 9. Gate 4 and workflow behavior
 
@@ -406,6 +430,11 @@ an already generated or user-managed version. Confirmation validates the exact
 immutable generation basis that originally passed completion, not today's live
 Profile. This is intentional: Evidence Profile governs AI generation, not the
 human's final document ownership.
+
+When that condition exists, every affected generated version and the
+confirmation summary must say **This document was generated from earlier
+reviewed material**. It must not use the unqualified current-evidence label.
+The warning is informational and does not disable selection or confirmation.
 
 The `applied` transition continues to bind an explicitly supplied exact pack
 artifact. Submission/handoff must reject mutable selections that do not match
@@ -585,11 +614,15 @@ Implementation planning must include test-first coverage proving:
 3. every repeated upload creates a new version ID, including identical bytes;
 4. published blobs are immutable and verified on read;
 5. invalid, oversized, traversal, encrypted, macro, and ZIP-bomb-like files are
-   rejected without state changes;
+   rejected without state changes, including forward-slash, backslash, drive,
+   UNC, absolute-path, duplicate-normalized-name, OLE/embedded-package, and
+   ActiveX fixtures while ordinary hyperlinks remain accepted;
 6. upload metadata and timestamps cannot be forged by clients;
 7. selection requires exact kind, owner, workspace/reuse eligibility, and
    optimistic revision;
 8. confirmation embeds metadata exactly equal to the selected immutable rows;
+   this includes `source_generation_artifact_id`, and uses
+   `confirmed_account_id` only as account scope rather than human identity;
 9. changing selection requires a new confirmation and cannot mutate an older
    pack;
 10. v2 historical downloads still return exact bytes after Profile deletion,
@@ -602,7 +635,11 @@ Implementation planning must include test-first coverage proving:
     submitted/confirmed pack;
 15. all existing workflow submission restrictions remain; and
 16. Chromium covers generate, download, upload, explicit selection,
-    confirmation, replacement selection, reuse, and historical download.
+    confirmation, replacement selection, reuse, historical download, and the
+    earlier-reviewed-material warning; and
+17. a confirmation request with no document-selection input still creates the
+    unchanged legacy v1 pack, while the new UI always supplies exact selection
+    revisions and creates v2.
 
 ## 17. Protected boundaries
 
