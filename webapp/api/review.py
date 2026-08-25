@@ -47,6 +47,7 @@ class ReviewDecisionBatchBody(StrictBody):
 class ApplicationPackBody(StrictBody):
     confirmed: bool
     effective_date: str
+    document_selection_revisions: dict[str, int] | None = None
 
 
 def _translate(exc: Exception) -> HTTPException:
@@ -121,6 +122,7 @@ def post_application_pack(
             conn, workspace_id, effective_date=body.effective_date,
             documents_root=documents_root, extensions_dir=extensions_dir,
             account_id=scope.account_id,
+            document_selection_revisions=body.document_selection_revisions,
         )
     except (PipelineError, JobWorkspaceNotFound) as exc:
         raise _translate(exc) from exc

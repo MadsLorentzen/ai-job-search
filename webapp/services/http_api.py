@@ -217,11 +217,13 @@ def confirm_job_application_pack(
     conn: sqlite3.Connection, workspace_id: str, *, effective_date: str,
     documents_root: Path, extensions_dir: Path,
     account_id: str = DEFAULT_ACCOUNT_ID,
+    document_selection_revisions: dict[str, int] | None = None,
 ) -> dict[str, Any]:
     require_job_workspace(conn, workspace_id, account_id=account_id)
     return confirm_application_pack(
         conn, workspace_id, effective_date=effective_date, documents_root=documents_root,
         extensions_dir=extensions_dir, account_id=account_id,
+        document_selection_revisions=document_selection_revisions,
     )
 
 

@@ -39,3 +39,11 @@ def test_pure_contract_has_no_webapp_imports():
     tree = ast.parse(Path(contract.__file__).read_text(encoding="utf-8"))
     imports = [node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)]
     assert not any(name and name.startswith("webapp") for name in imports)
+
+
+def test_completion_projection_is_exact_embedded_basis_and_v1_is_identity():
+    generation, docs = _inputs()
+    pack = contract.build_application_pack_v2(generation_artifact=generation, selected_documents=docs, verified_documents=docs, workspace_id="ws_1", account_id="account_local", eligible_reusable_document_ids=set(), confirmed_at="now")
+    assert contract.application_pack_completion_input(pack) is pack["generation_basis"]["reviewed_application_pack"]
+    basis = generation["payload"]["reviewed_application_pack"]
+    assert contract.application_pack_completion_input(basis) is basis

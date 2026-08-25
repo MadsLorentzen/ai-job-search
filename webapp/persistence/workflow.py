@@ -8,6 +8,7 @@ from typing import Any
 from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
 
 from product.application_material_contract import COMPLETION_CONTRACT_VERSION
+from product.application_pack_v2_contract import application_pack_completion_input
 from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_artifact
 from webapp.persistence.workspaces import get_workspace
@@ -52,7 +53,7 @@ def record_status_change(
             raise ValueError("drafted requires a reviewed application pack binding")
         pack = get_artifact(conn, submitted_pack_artifact_id)
         completion = (
-            application_material_completion(pack["payload"])
+            application_material_completion(application_pack_completion_input(pack["payload"]))
             if pack is not None
             and pack["workspace_id"] == workspace_id
             and pack["artifact_type"] == "application_pack"
@@ -91,7 +92,7 @@ def record_status_change(
             )
         pack = get_artifact(conn, submitted_pack_artifact_id)
         completion = (
-            application_material_completion(pack["payload"])
+            application_material_completion(application_pack_completion_input(pack["payload"]))
             if pack is not None
             and pack["workspace_id"] == workspace_id
             and pack["artifact_type"] == "application_pack"

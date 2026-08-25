@@ -9,10 +9,12 @@ from product.application_pack_contract import (
     build_candidate_snapshot,
     validate_application_pack_v1,
 )
+from product.application_pack_v2_contract import build_application_pack_v2
 from product.application_material_contract import COMPLETION_CONTRACT_VERSION
 from product.profile_snapshot import validate_snapshot
 from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_artifact, get_current_artifact, save_artifact
+from webapp.persistence.application_documents import get_document_version, get_selection
 from webapp.persistence.review import list_review_decisions
 from webapp.persistence.workflow import record_status_change
 from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
@@ -355,8 +357,15 @@ def confirm_application_pack(
     documents_root: Path | str = Path("documents"),
     extensions_dir: Path | str = Path("extensions"),
     account_id: str = DEFAULT_ACCOUNT_ID,
+    document_selection_revisions: dict[str, int] | None = None,
 ) -> dict[str, Any]:
     """Gate 4: the sole webapp route to ``drafted`` and an exact pack binding."""
+    if document_selection_revisions is not None:
+        return _confirm_application_pack_v2(
+            conn, workspace_id, effective_date=effective_date,
+            documents_root=Path(documents_root), account_id=account_id,
+            selection_revisions=document_selection_revisions,
+        )
     try:
         # Acquire the write reservation before reading the current chain. This
         # makes the reviewed sources and the persisted Gate-4 binding one
@@ -420,6 +429,73 @@ def confirm_application_pack(
         "projection": projection,
         "archive_path": projection["archive_path"],
     }
+
+
+def _confirm_application_pack_v2(
+    conn: sqlite3.Connection, workspace_id: str, *, effective_date: str,
+    documents_root: Path, account_id: str, selection_revisions: dict[str, int],
+) -> dict[str, Any]:
+    from datetime import datetime, timezone
+    from webapp.services.document_blob_store import DocumentBlobStore
+
+    if set(selection_revisions) != {"cv", "cover_letter"}:
+        raise PipelineError("v2 confirmation requires exact CV and cover-letter selection revisions")
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        workspace = get_workspace(conn, workspace_id, account_id=account_id)
+        if workspace is None:
+            raise PipelineError(f"workspace {workspace_id} does not exist")
+        if workspace["workflow_status"] not in (None, "drafted"):
+            raise PipelineError("cannot confirm selected documents after submission")
+        generation = get_current_artifact(conn, workspace_id, "application_document_generation")
+        if generation is None:
+            raise PipelineError("generate reviewed application documents before confirmation")
+        selected: dict[str, dict[str, Any]] = {}
+        reusable_ids = {
+            row["document_version_id"] for row in conn.execute(
+                "SELECT document_version_id FROM reusable_application_documents WHERE account_id=?",
+                (account_id,),
+            ).fetchall()
+        }
+        store = DocumentBlobStore(documents_root)
+        for kind in ("cv", "cover_letter"):
+            pointer = get_selection(conn, workspace_id, kind, account_id=account_id)
+            if pointer is None or pointer["revision"] != selection_revisions[kind]:
+                raise PipelineError("document selection changed; reload and confirm the current files")
+            document = get_document_version(conn, pointer["document_version_id"], account_id=account_id)
+            if document is None:
+                raise PipelineError("selected application document not found")
+            store.read(document)
+            selected[kind] = document
+        basis = generation["payload"].get("reviewed_application_pack")
+        if application_material_completion(basis)["status"] != "READY":
+            raise PipelineError("generation basis is not completion-ready")
+        pack = build_application_pack_v2(
+            generation_artifact=generation, selected_documents=selected,
+            verified_documents={kind: dict(row) for kind, row in selected.items()},
+            workspace_id=workspace_id, account_id=account_id,
+            eligible_reusable_document_ids=reusable_ids,
+            confirmed_at=datetime.now(timezone.utc).isoformat(),
+        )
+        artifact = save_artifact(conn, workspace_id=workspace_id, artifact_type="application_pack", payload=pack, commit=False)
+        for artifact_type in ("job_fit_result", "application_intelligence_result"):
+            record_dependency_fingerprint(
+                conn, artifact_id=artifact["id"], upstream_artifact_type=artifact_type,
+                upstream_content_id=basis["source_artifacts"][artifact_type]["content_id"],
+                commit=False,
+            )
+        event = record_status_change(
+            conn, workspace_id=workspace_id, new_status="drafted",
+            effective_date=effective_date,
+            note="Exact selected application documents confirmed by user.",
+            submitted_pack_artifact_id=artifact["id"], _allow_drafted=True,
+            commit=False, account_id=account_id,
+        )
+        conn.commit()
+        return {"pack": pack, "artifact": artifact, "workflow_event": event, "gate4_status": "SUCCEEDED", "projection": None, "archive_path": None}
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def retry_application_pack_projection(

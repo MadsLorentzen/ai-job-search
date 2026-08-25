@@ -115,3 +115,11 @@ def validate_application_pack_v2(value: Any) -> dict[str, Any]:
         if item["origin"] == "user_uploaded" and generation_id is not None:
             raise ApplicationPackV2ContractError("user upload cannot claim AI provenance")
     return pack
+
+
+def application_pack_completion_input(payload: dict[str, Any]) -> dict[str, Any]:
+    """Project the exact immutable pack payload into the legacy completion input."""
+    if isinstance(payload, dict) and payload.get("schema_version") == APPLICATION_PACK_V2:
+        validate_application_pack_v2(payload)
+        return payload["generation_basis"]["reviewed_application_pack"]
+    return payload
