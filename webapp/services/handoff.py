@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import secrets
 import sqlite3
+from datetime import datetime, timezone
 from typing import Any
 
 from webapp.persistence.artifacts import get_artifact
@@ -9,12 +10,15 @@ from webapp.persistence.handoff import (
     append_handoff_event,
     create_extension_credential,
     create_handoff_session,
+    create_submission_confirmation,
     find_in_progress_handoff_sessions,
     get_extension_credential_by_hash,
     get_handoff_session,
     hash_pairing_secret,
     list_handoff_events,
+    set_handoff_session_status,
 )
+from webapp.persistence.workflow import record_status_change
 from webapp.services.ownership import AccountScope, account_profile_root
 
 
@@ -181,3 +185,58 @@ def replay_handoff_session(
 ) -> dict[str, Any]:
     session = _require_owned_session(conn, scope, handoff_session_id)
     return {"session": session, "events": list_handoff_events(conn, handoff_session_id)}
+
+
+def confirm_handoff_submission(
+    conn: sqlite3.Connection,
+    scope: AccountScope,
+    *,
+    handoff_session_id: str,
+    mark_workflow_applied: bool = False,
+    effective_date: str | None = None,
+) -> dict[str, Any]:
+    # This is the ONLY function in this module that may call
+    # record_status_change or create a submission_confirmations row — it is
+    # the terminal, explicit "the user confirmed they actually submitted
+    # this application" action for the whole handoff feature (design spec
+    # Section 12, Section 18). No other function here may transition a
+    # workspace to "applied", and mark_workflow_applied=False must result
+    # in zero calls to record_status_change, not merely a no-op transition.
+    session = _require_owned_session(conn, scope, handoff_session_id)
+    if session["status"] != "in_progress":
+        raise HandoffSessionNotActive(
+            f"handoff session {handoff_session_id!r} is {session['status']!r}, "
+            "not in_progress"
+        )
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    workflow_event = None
+    if mark_workflow_applied:
+        # Reused exactly as-is; this module adds no new path to "applied"
+        # and no automatic transition (design spec Section 12, Section 18).
+        workflow_event = record_status_change(
+            conn,
+            workspace_id=session["workspace_id"],
+            new_status="applied",
+            effective_date=effective_date or now_iso[:10],
+            submitted_pack_artifact_id=session["pack_artifact_id"],
+            account_id=scope.account_id,
+            commit=False,
+        )
+
+    updated_session = set_handoff_session_status(
+        conn, handoff_session_id, status="user_confirmed_submitted",
+        user_confirmed_submitted_at=now_iso, commit=False,
+    )
+    confirmation = create_submission_confirmation(
+        conn,
+        handoff_session_id=handoff_session_id,
+        workflow_event_id=workflow_event["id"] if workflow_event else None,
+        commit=False,
+    )
+    conn.commit()
+    return {
+        "session": updated_session,
+        "confirmation": confirmation,
+        "workflow_event": workflow_event,
+    }

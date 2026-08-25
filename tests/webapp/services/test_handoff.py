@@ -347,3 +347,72 @@ def test_replay_handoff_session_rejects_session_not_owned_by_scope(tmp_path):
     except HandoffSessionNotFound:
         pass
     conn.close()
+
+
+from webapp.persistence.workflow import record_status_change
+from webapp.services.handoff import confirm_handoff_submission
+
+
+def test_confirm_handoff_submission_without_workflow_update(tmp_path):
+    conn = _conn(tmp_path)
+    scope = _scope(tmp_path)
+    workspace, artifact = _workspace_with_pack(conn)
+    session = start_handoff_session(
+        conn, scope, workspace_id=workspace["id"], pack_artifact_id=artifact["id"],
+        target_url="https://x.test/apply", target_domain="x.test",
+        ats_adapter_id="generic", ats_adapter_version="generic@1",
+    )
+
+    result = confirm_handoff_submission(
+        conn, scope, handoff_session_id=session["id"], mark_workflow_applied=False,
+    )
+    assert result["session"]["status"] == "user_confirmed_submitted"
+    assert result["confirmation"]["handoff_session_id"] == session["id"]
+    assert result["workflow_event"] is None
+    conn.close()
+
+
+def test_confirm_handoff_submission_rejects_session_not_owned(tmp_path):
+    from webapp.persistence.accounts import create_account
+
+    conn = _conn(tmp_path)
+    scope = _scope(tmp_path)
+    workspace, artifact = _workspace_with_pack(conn)
+    session = start_handoff_session(
+        conn, scope, workspace_id=workspace["id"], pack_artifact_id=artifact["id"],
+        target_url="https://x.test/apply", target_domain="x.test",
+        ats_adapter_id="generic", ats_adapter_version="generic@1",
+    )
+
+    create_account(conn, account_id="account_other", display_name="Other")
+    other_scope = AccountScope(
+        account_id="account_other",
+        profile_root=account_profile_root(str(tmp_path), "account_other"),
+    )
+    try:
+        confirm_handoff_submission(
+            conn, other_scope, handoff_session_id=session["id"],
+        )
+        assert False, "expected HandoffSessionNotFound"
+    except HandoffSessionNotFound:
+        pass
+    conn.close()
+
+
+def test_confirming_twice_is_rejected_not_double_recorded(tmp_path):
+    conn = _conn(tmp_path)
+    scope = _scope(tmp_path)
+    workspace, artifact = _workspace_with_pack(conn)
+    session = start_handoff_session(
+        conn, scope, workspace_id=workspace["id"], pack_artifact_id=artifact["id"],
+        target_url="https://x.test/apply", target_domain="x.test",
+        ats_adapter_id="generic", ats_adapter_version="generic@1",
+    )
+    confirm_handoff_submission(conn, scope, handoff_session_id=session["id"])
+
+    try:
+        confirm_handoff_submission(conn, scope, handoff_session_id=session["id"])
+        assert False, "expected HandoffSessionNotActive"
+    except HandoffSessionNotActive:
+        pass
+    conn.close()
