@@ -15,6 +15,7 @@ per-file diff commands.
 
 ### Added
 
+- **pypdf ATS text-layer fallback** - `/apply` Step 5d and `tools/verify_pdf.py` extract the CV PDF text layer with **pypdf** first (BSD, `pip install pypdf`) so Windows machines without Poppler still get a mechanical parseability check. Poppler `pdftotext -layout -enc UTF-8` remains the fallback; if both are missing the check still degrades to a visual keyword review. No extra cache or installer. `05-cv-templates.md` `framework_version` 1.4.2 → 1.4.3.
 - **Company-research cache for `/apply` and `/interview`** - `/apply` Step 3's reviewer
   agent and `/interview` Step 2 each independently execute the Company Research
   Checklist (`04-job-evaluation.md`) for the same company, so applying and later
