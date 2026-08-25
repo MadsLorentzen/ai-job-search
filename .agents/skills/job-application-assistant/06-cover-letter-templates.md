@@ -22,34 +22,46 @@ Expected output: `Output written on cover_<company>_<role>.pdf (1 page, ...)`. A
 
 ## Compile-and-Inspect Loop (MANDATORY)
 
-After writing the cover letter and before presenting to the user, always compile and visually inspect the PDF:
+After writing the cover letter and before presenting to the user, always compile and visually inspect the PDF. Iterate until the layout is clean:
 
 1. Run `xelatex -interaction=nonstopmode cover_<company>_<role>.tex`
 2. Confirm page count is exactly 1 and compile succeeded
-3. Visually check: signature fits at the bottom, no text cut off, bullet font matches body
+3. Read the PDF via the Read tool and visually check: signature fits at the bottom, no text cut off, bullet font matches body
 
 ### Known template pitfall: itemize inside `\lettercontent{}`
 
-The `\lettercontent{}` macro appends `\\` to its argument. This breaks when the argument ends in `\end{itemize}`.
+The `\lettercontent{}` macro appends `\\` to its argument. This breaks when the argument ends in `\end{itemize}` because `\\` has no line to break after the environment closes, producing `! LaTeX Error: There's no line here to end.` and no PDF output.
 
-**Correct — close `\lettercontent{}` before the list and wrap the list in the matching Raleway-Medium font:**
+**Wrong (breaks compile):**
+```latex
+\lettercontent{Here is how my experience maps:
+\begin{itemize}
+    \item ...
+\end{itemize}}
+```
+
+**Correct — close `\lettercontent{}` before the list and wrap the list in the matching Raleway-Medium font so typography stays consistent:**
 ```latex
 \lettercontent{Here is how my experience maps:}
 
 {\raggedright\fontspec[Path = OpenFonts/fonts/raleway/]{Raleway-Medium}\fontsize{11pt}{13pt}\selectfont
 \begin{itemize}
-    \item {[Concrete achievement/skill 1]}
-    \item {[Concrete achievement/skill 2]}
-    \item {[Concrete achievement/skill 3]}
+    \item ...
 \end{itemize}\par}
 \vspace{6pt}
 
 \lettercontent{[next paragraph]}
 ```
 
+The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\lettercontent{}` without the `\fontspec` block, bullets render in the default body font (Lato) and visually mismatch the rest of the letter.
+
 ## Document Structure
 
 ```latex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cover Letter - [Company], [Role]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \documentclass[]{cover}
 \usepackage{fancyhdr}
 
@@ -61,11 +73,18 @@ The `\lettercontent{}` macro appends `\\` to its argument. This breaks when the 
 \renewcommand{\headrulewidth}{0pt}
 \begin{document}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     TITLE NAME
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \namesection{}{Nehul Bhatnagar}{  \href{mailto:nbhatnagar3010@gmail.com}{nbhatnagar3010@gmail.com} | +91-8949446740 |  \urlstyle{same}\href{https://www.linkedin.com/in/nehulbhatnagar}{LinkedIn}
 }
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     MAIN COVER LETTER CONTENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \currentdate{\today}
-\lettercontent{Dear [Name / Hiring Team],}
+\lettercontent{Dear [Name/Team],}
 
 \lettercontent{[Opening paragraph - role, connection to background, 2-3 sentences]}
 
@@ -85,9 +104,77 @@ The `\lettercontent{}` macro appends `\\` to its argument. This breaks when the 
 \lettercontent{I look forward to hearing from you.}
 
 \begin{flushright}
+% No trailing \\ inside \closing{} - cover.cls appends its own \\, and a
+% doubled break triggers "! LaTeX Error: There's no line here to end."
 \closing{Kind regards,}
 
 \signature{Nehul Bhatnagar}
 \end{flushright}
 \end{document}
 ```
+
+## Key Commands Reference
+
+| Command | Purpose |
+|---------|---------|
+| `\namesection{}{Name}{contact info}` | Header with name and contact |
+| `\currentdate{date}` | Date field (use `\today` or explicit date) |
+| `\lettercontent{text}` | Body paragraph (adds spacing after) |
+| `\closing{text}` | Closing line |
+| `\signature{name}` | Printed name below signature |
+
+## Tailoring Guidelines
+
+### Salutation
+- If you know the hiring manager's name: "Dear [First Last],"
+- If you know the team: "Dear [Company] hiring team,"
+- Generic: "Dear [Company]," (avoid "To whom it may concern")
+
+### Length - Hard 1-Page Limit
+- Target: 1 page including signature block
+- Maximum: **never exceed 1 page**
+- **Word budget: 250-300 words** of body text (not counting LaTeX markup). This is the safe maximum. 350 words will overflow.
+- **Always count**: opening paragraph + bullet list paragraph + closing paragraph = 3 blocks. Add a 4th only if the others are short.
+- When adding company-specific content, trim other content to compensate rather than adding net length
+
+### Line Spacing
+- Add `\usepackage{setspace}` and `\setstretch{1.0}` if the letter is long and needs to fit on one page
+- Use `\vspace{.5cm}` between major sections for readability (only if space permits)
+
+### Bullet Lists
+- Place `\begin{itemize}...\end{itemize}` **outside** a `\lettercontent{}` block (see "Known template pitfall" above), wrapped in the matching Raleway-Medium `\fontspec` so the bullet font matches the body
+- 3-5 bullets is ideal
+- Start each bullet with bold label or action verb
+- Use `\textbf{Label:}` for category-style bullets
+- A bullet whose text begins with a literal `[` must be braced: `\item {[text]}`. Unbraced, LaTeX parses `[text]` as `\item`'s optional label and renders it off the left page edge, missing from the PDF text layer entirely
+
+### LaTeX Special Characters
+Escape these wherever they appear in body text:
+- Ampersand: `\&` (company names: Brüel \& Kjær, H\&M) - unescaped, the compile fails loudly
+- Percent: `\%` ("grew revenue 30\%") - unescaped, it does **not** fail: everything after the `%` on that line is silently eaten as a LaTeX comment
+- Dollar: `\$`, hash: `\#`, underscore: `\_`
+- Tilde: `\textasciitilde{}`, caret: `\textasciicircum{}`, backslash: `\textbackslash{}`
+
+### Non-English Cover Letters
+- Same template structure, just write content in the posting's language
+- Adjust date format to local convention
+- Adjust closing to local convention (e.g. "Sincerely," for English)
+
+## Checklist Before Finalizing
+- [ ] No em-dashes (use commas or periods instead)
+- [ ] No cliches or empty filler
+- [ ] Every claim backed by specific example
+- [ ] Forward-looking framing: focuses on tasks you'll solve, not just past duties
+- [ ] Motivation section references this specific company's mission/values
+- [ ] Company name and role are correct throughout
+- [ ] Date is current
+- [ ] Fits on one page
+- [ ] Language matches the job posting language
+- [ ] Salutation is appropriate (named person if possible)
+- [ ] Headline is engaging and specific, not generic
+
+## Submission Guidelines (Best Practice)
+- Submit only the documents the employer requests
+- Export as PDF to preserve formatting
+- Name files clearly: "Nehul Bhatnagar CV" and "Nehul Bhatnagar Cover Letter"
+- Follow all employer instructions regarding anonymity or specific materials
