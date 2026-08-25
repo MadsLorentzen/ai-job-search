@@ -18,7 +18,7 @@ If `$ARGUMENTS` is empty or does not contain a recognized scope keyword, ask:
 
 > **What would you like to reset?**
 >
-> - **`profile`** — Clears candidate data from the skill files (profile, behavioral, STAR examples, profile statements). The framework structure and writing rules are preserved. Use this to re-run `/setup` from scratch.
+> - **`profile`** — Clears candidate data from the skill files (profile, behavioral, STAR examples, profile statements, personalized evaluation criteria, search queries). The framework structure, scoring framework, and writing rules are preserved. Use this to re-run `/setup` from scratch.
 >
 > - **`documents`** — Deletes all files you've placed in the `documents/` folder (CV PDFs, LinkedIn export, diplomas, references, pasted job postings, past applications). The folder structure and `README.md` are preserved.
 >
@@ -40,8 +40,12 @@ Read the current state of these files and report whether each has content or is 
 
 - `.claude/skills/job-application-assistant/01-candidate-profile.md`
 - `.claude/skills/job-application-assistant/02-behavioral-profile.md`
+- `.claude/skills/job-application-assistant/04-job-evaluation.md` *(personalized match areas, career goals, and life-situation constraints only — the scoring framework is preserved)*
 - `.claude/skills/job-application-assistant/05-cv-templates.md` *(profile statements section only — framework structure is preserved)*
 - `.claude/skills/job-application-assistant/07-interview-prep.md` *(STAR examples and STAR candidates sections only — framework structure is preserved)*
+- `.claude/skills/job-scraper/search-queries.md` *(role titles, domain keywords, and location terms only — query structure is preserved)*
+
+This list must stay in step with what `/setup` Step 3 populates: every skill file it writes candidate data into is cleared here.
 
 Present as:
 
@@ -54,16 +58,27 @@ Present as:
 - 02-behavioral-profile.md — [has content / already empty]
   Full file will be replaced with a blank template.
 
+- 04-job-evaluation.md — [has personalized criteria / already blank]
+  Your match areas, career goals, energizing/draining tasks, and life-situation
+  constraints will be restored to placeholders. The scoring framework (dimensions,
+  score bands, weights, Language Gate, Company Research Checklist) is preserved.
+
 - 05-cv-templates.md — [has profile statements / already blank]
   Profile statement templates will be cleared. LaTeX structure and tailoring guidelines are preserved.
 
 - 07-interview-prep.md — [has STAR examples / already blank]
   STAR examples and any STAR candidate stubs will be cleared. Framework, tough questions, and roleplay guidelines are preserved.
 
+- job-scraper/search-queries.md — [has personalized queries / already blank]
+  Your job boards, role titles, domain keywords, city, and commute tiers will be
+  restored to placeholders. The query structure and filter sections are preserved.
+
 The following files are NOT touched (they contain framework rules, not candidate data):
   - 03-writing-style.md
-  - 04-job-evaluation.md
   - 06-cover-letter-templates.md
+
+Outside the profile scope, still holding your personal data: CLAUDE.md and
+cv/main_example.tex. This scope covers skill files only.
 ```
 
 ### If scope includes `documents`:
@@ -163,6 +178,27 @@ Wait for the user's response.
 ## Using This in Applications
 ```
 
+**For `04-job-evaluation.md`**, restore the values `/setup` Step 3.4 personalized back to their placeholder tokens, leaving every surrounding line untouched:
+
+| Line to restore | Token |
+|---|---|
+| `**Strong match areas:**` | `[YOUR_PRIMARY_SKILLS]` |
+| `**Moderate match areas:**` | `[YOUR_SECONDARY_SKILLS]` |
+| `**Weak match areas:**` | `[SKILLS_YOU_LACK]` |
+| `**Strong:**` (Experience Match) | `[YOUR_DIRECT_EXPERIENCE_DOMAINS]` |
+| `**Moderate:**` (Experience Match) | `[YOUR_ADJACENT_EXPERIENCE]` |
+| `**Entry-level:**` (Experience Match) | `[ROLES_WITH_LIMITED_EXPERIENCE]` |
+| the three `**Career goals:**` bullets | `[YOUR_CAREER_GOAL_1]`, `[YOUR_CAREER_GOAL_2]`, `[YOUR_CAREER_GOAL_3]` |
+| `- Tasks that energize:` | `[YOUR_ENERGIZING_TASKS]` |
+| `- Tasks that drain:` | `[YOUR_DRAINING_TASKS]` |
+| `- **Security**:` | `[YOUR_FINANCIAL_SITUATION_CONTEXT]` |
+| `- **Flexibility**:` | `[YOUR_SCHEDULE_CONSTRAINTS]` |
+| `- **Professional development**:` | `[YOUR_GROWTH_PRIORITIES]` |
+
+Also remove any `## Calibration from Past Applications` section, which `/setup` Path A writes from the user's own application outcomes.
+
+Leave the rest of `04-job-evaluation.md` intact: the five scoring dimensions and their score bands, the weighting, the Language Gate, the red-flag guidance, the Company Research Checklist and cache schema, and the salary benchmark section. If `/setup` Step 3.4 ever personalizes a value not in the table above, add it here too.
+
 **For `05-cv-templates.md`**, locate the section that begins with `**Profile statement templates` and extends through the role-specific template blocks. Replace only that section with:
 
 ```markdown
@@ -186,6 +222,15 @@ Replace with:
 ```
 
 Leave all other content in `07-interview-prep.md` intact (STAR format explanation, tough questions, questions to ask interviewers, phone/video tips, follow-up etiquette, roleplay guidelines).
+
+**For `.claude/skills/job-scraper/search-queries.md`**, restore the values `/setup` Step 3.8 personalized back to their placeholder tokens:
+
+- **Search Sites**: the board names back to `[YOUR_JOB_BOARD]`, `[YOUR_INDUSTRY_JOB_BOARD]`, `[YOUR_ADDITIONAL_JOB_BOARD]`, and the LinkedIn filter back to `[YOUR_COUNTRY]` / `[YOUR_CITY]`.
+- **Query Categories**: the four priority headings back to `[YOUR_PRIMARY_ROLE_TYPE]`, `[YOUR_DOMAIN_EXPERTISE]`, `[YOUR_ADJACENT_ROLE_TYPE]`, and `Broader Technical / Consulting`; inside the query blocks, the titles, skills, and domain terms back to `[YOUR_PRIMARY_JOB_TITLE_1]`, `[YOUR_PRIMARY_JOB_TITLE_2]`, `[YOUR_ADJACENT_TITLE_1]`, `[YOUR_ADJACENT_TITLE_2]`, `[YOUR_KEY_SKILL]`, `[YOUR_DOMAIN_KEYWORD_1]`, `[YOUR_DOMAIN_KEYWORD_2]`, `[YOUR_DOMAIN]`, and the location terms back to `[YOUR_CITY]`, `[YOUR_COUNTRY]`, `[YOUR_REGION]`.
+- **Location Filter**: the commute tiers back to `[YOUR_CITY]`, `[ACCEPTABLE_AREA_1]`, `[ACCEPTABLE_AREA_2]`, `[BORDERLINE_AREA]`, `[TOO_FAR_AREA]`.
+- Remove any extra priority categories or translated query duplicates `/setup` added beyond the four shipped tiers.
+
+Leave the rest of the file intact: the portal-CLI and WebSearch-fallback explanation, the Language scope note, the "organize by function, not job title" guidance, and the Language, Date, and Adapting Queries sections.
 
 ### Documents reset
 
@@ -219,7 +264,9 @@ After the reset is complete, report:
 Then tell the user what to do next based on what was reset:
 
 **If profile was reset:**
-> Your candidate profile is now blank. Run `/setup` to repopulate it. The command auto-detects any files in your `documents/` folder and offers to read from there; otherwise it walks you through a CV import or interactive interview.
+> The skill files are now blank. Run `/setup` to repopulate them. The command auto-detects any files in your `documents/` folder and offers to read from there; otherwise it walks you through a CV import or interactive interview.
+>
+> Note that `CLAUDE.md` and `cv/main_example.tex` are outside the `profile` scope and still hold your personal data. If you are handing this fork over or making it public, clear them by hand.
 
 **If documents were reset:**
 > The `documents/` folder is now empty. Add your career documents and run `/setup` to populate your profile. See `documents/README.md` for instructions on what to put where.

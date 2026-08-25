@@ -51,6 +51,28 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/reset profile` left candidate data in two of the skill files it claims to clear**
+  (#364) - `/setup` Step 3 populates six skill files; the profile scope cleared four.
+  `04-job-evaluation.md` was listed by name under "files NOT touched (they contain
+  framework rules, not candidate data)" while Step 3.4 writes the user's match areas,
+  career goals, energizing/draining tasks, financial situation and schedule constraints
+  into it - and CI's placeholder-integrity job already guards it under "personal data may
+  have been committed". `job-scraper/search-queries.md`, which Step 3.8 fills with their
+  job boards, role titles, domain keywords, city and commute tiers, appeared nowhere in
+  `reset.md` at all. Both are tracked and unignored, so the Step 1 preview asked the user
+  to confirm a wipe list that omitted them and Step 4 then reported a blank profile while
+  `/rank` kept scoring against the old skills and career goals and `/scrape` kept running
+  the old city and queries. Both files are now previewed and cleared, restoring their
+  `/setup` placeholders while preserving the scoring framework and the query structure;
+  `04-job-evaluation.md` is out of the preserved list, which keeps `03-writing-style.md`
+  and `06-cover-letter-templates.md` (correctly - the latter's `[YOUR_NAME]` tokens are
+  LaTeX scaffolding Step 3 never writes to). `CLAUDE.md` and `cv/main_example.tex` stay
+  outside the `profile` scope, which covers skill files only, and the preview and Step 4
+  now say so instead of implying a full wipe. `tests/test_reset_command.py` gains a
+  profile-scope guard alongside its documents-scope one, deriving the file list from
+  `/setup` Step 3's own headings so a future `/setup` target that `/reset` forgets fails
+  in CI; the third case pins that a personalized file is never labelled framework-only,
+  which a filename search alone would have missed.
 - **`salary_lookup.py` never stripped the dotted "A.M.B.A." legal suffix** (#356) - the
   `STRIP_PATTERNS` regex ended in `\.\b`, and a word boundary can't sit between a literal
   dot and the space or end-of-string that follows it in real company names, so the
