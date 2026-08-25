@@ -19,6 +19,9 @@ from product.application_material_contract import (
 )
 from webapp.application_material import application_material_completion
 from webapp.persistence.artifacts import get_current_artifact
+from webapp.persistence.artifacts import get_artifact, list_artifact_history
+from webapp.persistence.application_documents import get_selection, list_document_versions, list_reusable
+from product.application_pack_v2_contract import application_pack_completion_input
 from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
 from webapp.persistence.review import list_review_decisions
 from webapp.persistence.workflow import list_workflow_events
@@ -548,6 +551,9 @@ def build_workspace_view_model(
         "fit": get_current_artifact(conn, workspace_id, "job_fit_result"),
         "intelligence": get_current_artifact(conn, workspace_id, "application_intelligence_result"),
         "pack": get_current_artifact(conn, workspace_id, "application_pack"),
+        "document_generation": get_current_artifact(
+            conn, workspace_id, "application_document_generation"
+        ),
     }
     stale = {
         name: check_staleness(
@@ -608,10 +614,13 @@ def build_workspace_view_model(
         if pack_payload.get("completion_contract_version") != COMPLETION_CONTRACT_VERSION:
             reviewed_output_status = "Legacy pack — not revalidated"
         else:
-            reviewed_output_status = application_material_completion(pack_payload)["status"]
+            reviewed_output_status = application_material_completion(
+                application_pack_completion_input(pack_payload)
+            )["status"]
     if artifacts["pack"]:
-        reviewed_cv_content = artifacts["pack"]["payload"].get("cv_content", [])
-        reviewed_cover_letter_content = artifacts["pack"]["payload"].get("cover_letter_content", [])
+        reviewed_basis = application_pack_completion_input(artifacts["pack"]["payload"])
+        reviewed_cv_content = reviewed_basis.get("cv_content", [])
+        reviewed_cover_letter_content = reviewed_basis.get("cover_letter_content", [])
     else:
         reviewed_cv_content = [
             item["item"] for item in acknowledged_content_items
@@ -708,6 +717,65 @@ def build_workspace_view_model(
             {"id": item["id"], "version": item["version"], "name": item["name"]}
             for item in list_installed_extensions(extensions_dir)
         ]
+    own_versions = list_document_versions(
+        conn, account_id=account_id, workspace_id=workspace_id
+    )
+    reusable_versions = list_reusable(conn, account_id=account_id)
+    current_source_ids = {
+        key: artifact["id"] for key, artifact in (
+            ("profile_snapshot", artifacts["profile"]),
+            ("job_posting_snapshot", artifacts["job"]),
+            ("job_fit_result", artifacts["fit"]),
+            ("application_intelligence_result", artifacts["intelligence"]),
+        ) if artifact
+    }
+    for version in own_versions:
+        version["hash_suffix"] = version["sha256"][-10:]
+        version["from_earlier_reviewed_material"] = False
+        generation_id = version.get("source_generation_artifact_id")
+        if generation_id:
+            generation = get_artifact(conn, generation_id)
+            refs = (generation or {}).get("payload", {}).get(
+                "reviewed_application_pack", {}
+            ).get("source_artifacts", {})
+            version["from_earlier_reviewed_material"] = any(
+                refs.get(kind, {}).get("artifact_id") != artifact_id
+                for kind, artifact_id in current_source_ids.items()
+            )
+    selections = {
+        kind: get_selection(conn, workspace_id, kind, account_id=account_id)
+        for kind in ("cv", "cover_letter")
+    }
+    by_id = {item["id"]: item for item in own_versions}
+    by_id.update({item["document_version_id"]: item for item in reusable_versions})
+    for pointer in selections.values():
+        if pointer:
+            pointer["document"] = by_id.get(pointer["document_version_id"])
+    confirmed_manifest = (
+        artifacts["pack"]["payload"].get("final_documents")
+        if artifacts["pack"] and artifacts["pack"]["payload"].get("schema_version") == "application-pack.v2"
+        else None
+    )
+    selection_differs = bool(confirmed_manifest) and any(
+        not selections[kind]
+        or selections[kind]["document_version_id"]
+        != confirmed_manifest[kind]["document_version_id"]
+        for kind in ("cv", "cover_letter")
+    )
+    writable_documents = workspace["workflow_status"] in (None, "drafted")
+    document_finalization = {
+        "versions": own_versions,
+        "reusable": reusable_versions,
+        "selections": selections,
+        "confirmed_manifest": confirmed_manifest,
+        "selection_differs_from_confirmed": selection_differs,
+        "pack_history": list_artifact_history(conn, workspace_id, "application_pack"),
+        "can_generate": writable_documents and review_state == "current" and has_reviewed_usable_material,
+        "can_upload": writable_documents,
+        "can_select": writable_documents,
+        "can_confirm": writable_documents and artifacts["document_generation"] is not None
+        and all(selections.values()),
+    }
     return {
         "workspace": workspace, "profile": artifacts["profile"],
         "job_posting": artifacts["job"], "resolved_job_evidence": artifacts["bundle"],
@@ -740,6 +808,7 @@ def build_workspace_view_model(
         "reviewed_cover_letter_content": reviewed_cover_letter_content,
         "readiness_answer": readiness_answer,
         "readiness_problem": readiness_problem,
+        "document_finalization": document_finalization,
         "controls": {
             "can_understand": bool(artifacts["job"]),
             "can_fit": understanding_state == "complete" and profile_ready,

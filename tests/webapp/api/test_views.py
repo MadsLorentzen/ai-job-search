@@ -217,7 +217,7 @@ def test_workspace_renders_stepper_all_evidence_and_safe_controls(tmp_path):
             assert label in text
         for detail in ("Subsurface models", "Model workflows", "geophysics", "Confirm context", "Does not prove employment"):
             assert detail in text
-        assert "Create reviewed pack — does not submit" in text
+        assert "Confirm selected files — does not submit" in text
         assert "Mark applied" not in text
         assert 'data-item-id="unit_ready"' in text
         assert 'data-item-id="unit_review"' in text
@@ -332,7 +332,7 @@ def test_stale_downstream_action_is_not_rendered(tmp_path):
         text = client.get(f"/workspaces/{ws['id']}").text
         assert ">stale<" in text.lower()
         assert "Run Application Intelligence" not in text
-        assert 'class="button confirm-pack"' in text and "disabled" in text
+        assert 'class="button confirm-documents"' in text and "disabled" in text
 
 
 def test_workspace_unknown_and_profile_pseudo_are_404(tmp_path):

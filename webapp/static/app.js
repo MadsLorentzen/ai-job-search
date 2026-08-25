@@ -13,7 +13,7 @@ async function api(url, options) {
 }
 
 document.addEventListener("click", async (event) => {
-  const button = event.target.closest("button[data-action], button.stage-action, button.review-action, button.review-batch-action, button.confirm-pack, button.status-action, button.discovery-status, button.discovery-promote, button.discovery-evaluate-selected");
+  const button = event.target.closest("button[data-action], button.stage-action, button.review-action, button.review-batch-action, button.confirm-pack, button.status-action, button.discovery-status, button.discovery-promote, button.discovery-evaluate-selected, button.document-generate, button.document-select, button.document-reuse, button.confirm-documents");
   if (!button) return;
   button.disabled = true;
   try {
@@ -53,6 +53,33 @@ document.addEventListener("click", async (event) => {
       }
       await api(`/api/workspaces/${button.dataset.workspaceId}/review-decisions/batch`, {
         method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({decisions})
+      });
+    } else if (button.classList.contains("document-generate")) {
+      await api(`/api/workspaces/${button.dataset.workspaceId}/application-documents/generate`, {method: "POST"});
+    } else if (button.classList.contains("document-select")) {
+      await api(`/api/workspaces/${button.dataset.workspaceId}/application-documents/selection/${button.dataset.kind}`, {
+        method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify({
+          document_version_id: button.dataset.documentId,
+          expected_revision: Number(button.dataset.expectedRevision)
+        })
+      });
+    } else if (button.classList.contains("document-reuse")) {
+      await api(`/api/workspaces/${button.dataset.workspaceId}/application-documents/${button.dataset.documentId}/save-for-reuse`, {
+        method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({label: null})
+      });
+    } else if (button.classList.contains("confirm-documents")) {
+      if (!window.confirm("Confirm these exact selected files? This does not submit an application.")) {
+        button.disabled = false;
+        return;
+      }
+      await api(`/api/workspaces/${button.dataset.workspaceId}/application-pack`, {
+        method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({
+          confirmed: true, effective_date: new Date().toISOString().slice(0, 10),
+          document_selection_revisions: {
+            cv: Number(button.dataset.cvRevision),
+            cover_letter: Number(button.dataset.coverLetterRevision)
+          }
+        })
       });
     } else if (button.classList.contains("confirm-pack")) {
       if (!window.confirm("Create an immutable reviewed pack? This does not submit an application.")) {
@@ -102,6 +129,19 @@ document.addEventListener("click", async (event) => {
     button.disabled = false;
   }
 });
+
+document.querySelectorAll(".document-upload-form").forEach(form => form.addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+  button.disabled = true;
+  try {
+    const data = new FormData(event.currentTarget);
+    await api(`/api/workspaces/${event.currentTarget.dataset.workspaceId}/application-documents/upload/${event.currentTarget.dataset.kind}`, {
+      method: "POST", body: data
+    });
+    window.location.reload();
+  } catch (error) { showMessage(error.message, true); button.disabled = false; }
+}));
 
 function discoveryApiBase() {
   return document.querySelector("[data-discovery-api-base]")?.dataset.discoveryApiBase;
