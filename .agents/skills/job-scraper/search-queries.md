@@ -19,93 +19,62 @@ Secondary (company career pages via Google):
 
 ## Query Categories
 
-Queries are grouped by role family. Replace `[ROLE]` with a target job title from the family and `[SKILLS]` with your key skills.
+Queries are grouped by role family and prioritized accordingly. Replace `[ROLE]` with a target job title from the category and `[SKILLS]` with your key skills.
 
 **Priority rule:** within every category, **Remote India queries are TOP PRIORITY — run them first and present remote matches at the top**. City-scoped queries rotate geography in this order: `"Bengaluru" OR "Bangalore"` → `"Hyderabad"` → `"Pune"` → `("Delhi" OR "Gurugram" OR "Gurgaon") / "Delhi NCR"`.
 
-### Software Engineering
+### Priority 1: AI & Machine Learning Engineering
 
-Suggested `[ROLE]`: software engineer, backend developer, full stack developer, SDET
+Suggested `[ROLE]`: Senior AI Engineer, Senior Machine Learning Engineer, Senior MLE, MLE-2, AI Engineer - 2, Lead AI Engineer, Generative AI Engineer, LLM Engineer, Applied Scientist, MLOps Engineer
 
 ```
 site:naukri.com "[ROLE]" ("remote" OR "work from home") India
 site:instahyre.com [ROLE] remote
 site:linkedin.com/jobs "[ROLE]" remote India
-site:naukri.com "[SKILLS]" ("Bengaluru" OR "Bangalore")
-site:foundit.in "[ROLE]" ("Hyderabad")
-site:shine.com "[SKILLS]" developer ("Pune")
+site:naukri.com "[SKILLS]" ("Senior AI Engineer" OR "Senior MLE" OR "MLE-2" OR "AI Engineer 2") ("Bengaluru" OR "Bangalore")
+site:foundit.in "[ROLE]" ("Bengaluru" OR "Hyderabad")
+site:shine.com "[ROLE]" ("Pune" OR "Bengaluru")
 site:timesjobs.com "[ROLE]" ("Delhi" OR "Gurgaon" OR "Gurugram" OR "Delhi NCR")
 ```
 
-### Data Engineering
+### Priority 2: Software & Backend Engineering (SWE / SDE / Backend)
 
-Suggested `[ROLE]`: data engineer, analytics engineer, ETL developer, big data engineer
-
-```
-site:naukri.com "[ROLE]" ("remote" OR "work from home") India
-site:linkedin.com/jobs "[SKILLS]" remote India
-site:naukri.com "[ROLE]" ("Bengaluru" OR "Bangalore")
-site:foundit.in "[SKILLS]" ("Hyderabad" OR "Pune")
-site:shine.com "[ROLE]" ("Delhi" OR "Gurgaon" OR "Gurugram" OR "Delhi NCR")
-```
-
-### Data Science & Analytics
-
-Suggested `[ROLE]`: data scientist, data analyst, BI analyst, analytics consultant
+Suggested `[ROLE]`: Senior Software Engineer, Senior SDE, Senior Backend Engineer, SDE-2, SDE II, Backend Engineer - 2, Software Engineer - 2, Lead Backend Engineer
 
 ```
 site:naukri.com "[ROLE]" ("remote" OR "work from home") India
 site:instahyre.com [ROLE] remote
-site:naukri.com "[SKILLS]" ("Bengaluru" OR "Bangalore")
-site:timesjobs.com "[ROLE]" ("Hyderabad" OR "Pune")
-site:foundit.in "[SKILLS]" analyst ("Delhi" OR "Gurgaon" OR "Gurugram" OR "Delhi NCR")
-```
-
-### Machine Learning & AI
-
-Suggested `[ROLE]`: machine learning engineer, AI engineer, MLOps engineer, applied scientist
-
-```
-site:naukri.com "[ROLE]" ("remote" OR "work from home") India
 site:linkedin.com/jobs "[ROLE]" remote India
-site:instahyre.com "[SKILLS]" ("Bengaluru" OR "Bangalore")
-site:foundit.in "[ROLE]" ("Hyderabad" OR "Pune")
-site:shine.com "[ROLE]" ("Delhi" OR "Gurgaon" OR "Gurugram" OR "Delhi NCR")
+site:naukri.com "[SKILLS]" ("Senior Backend Engineer" OR "SDE-2" OR "Senior Software Engineer") ("Bengaluru" OR "Bangalore")
+site:foundit.in "[ROLE]" ("Bengaluru" OR "Hyderabad")
+site:shine.com "[ROLE]" ("Pune" OR "Bengaluru")
+site:timesjobs.com "[ROLE]" ("Delhi" OR "Gurgaon" OR "Gurugram" OR "Delhi NCR")
 ```
 
-### DevOps & Cloud
+### Priority 3: Data Science
 
-Suggested `[ROLE]`: DevOps engineer, site reliability engineer, platform engineer, cloud engineer
+Suggested `[ROLE]`: Senior Data Scientist, Data Scientist - 2, Lead Data Scientist, Staff Data Scientist
 
 ```
 site:naukri.com "[ROLE]" ("remote" OR "work from home") India
-site:naukri.com "[SKILLS]" ("Bengaluru" OR "Bangalore")
-site:foundit.in "[ROLE]" ("Hyderabad")
-site:timesjobs.com "[SKILLS]" ("Pune" OR "Delhi" OR "Gurgaon" OR "Gurugram" OR "Delhi NCR")
+site:instahyre.com [ROLE] remote
+site:linkedin.com/jobs "[ROLE]" remote India
+site:naukri.com "[SKILLS]" ("Senior Data Scientist" OR "Lead Data Scientist") ("Bengaluru" OR "Bangalore")
+site:timesjobs.com "[ROLE]" ("Bengaluru" OR "Hyderabad" OR "Pune")
+site:foundit.in "[ROLE]" ("Delhi" OR "Gurgaon" OR "Gurugram" OR "Delhi NCR")
 ```
 
-### Product Management
+### Priority 4: Product Management (PM / PO)
 
-Suggested `[ROLE]`: product manager, associate product manager, technical product manager
+Suggested `[ROLE]`: Product Manager, Technical Product Manager, Senior Product Manager, Product Owner, AI Product Manager, Lead Product Manager
 
 ```
 site:naukri.com "[ROLE]" ("remote" OR "work from home") India
 site:instahyre.com "[ROLE]" product remote
-site:linkedin.com/jobs "[ROLE]" ("Bengaluru" OR "Bangalore")
-site:naukri.com "[ROLE]" ("Hyderabad" OR "Pune")
-site:foundit.in "[ROLE]" ("Delhi" OR "Gurgaon" OR "Gurugram" OR "Delhi NCR")
-```
-
-### Business & Operations Analyst
-
-Suggested `[ROLE]`: business analyst, operations analyst, program analyst, strategy analyst
-
-```
-site:naukri.com "[ROLE]" ("remote" OR "work from home") India
-site:shine.com "[ROLE]" remote India
-site:foundit.in "[SKILLS]" ("Bengaluru" OR "Bangalore" OR "Hyderabad")
-site:naukri.com "[ROLE]" ("Pune")
-site:timesjobs.com "[SKILLS]" ("Delhi" OR "Gurgaon" OR "Gurugram" OR "Delhi NCR")
+site:linkedin.com/jobs "[ROLE]" remote India
+site:naukri.com "[ROLE]" ("Bengaluru" OR "Bangalore")
+site:foundit.in "[ROLE]" ("Bengaluru" OR "Hyderabad" OR "Pune")
+site:timesjobs.com "[ROLE]" ("Delhi" OR "Gurgaon" OR "Gurugram" OR "Delhi NCR")
 ```
 
 ## Geography & Priority Filter
