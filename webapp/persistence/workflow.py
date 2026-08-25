@@ -29,7 +29,7 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def record_status_change(
+def _record_status_change_reserved(
     conn: sqlite3.Connection, *, workspace_id: str, new_status: str, effective_date: str,
     note: str | None = None, submitted_pack_artifact_id: str | None = None,
     _allow_drafted: bool = False, commit: bool = True,
@@ -116,6 +116,26 @@ def record_status_change(
                 "substantive-completion contract"
                 + (f": {', '.join(completion['issues'])}" if completion else "")
             )
+        if pack["payload"].get("schema_version") == "application-pack.v2":
+            final_documents = pack["payload"]["final_documents"]
+            current = {
+                row["document_kind"]: row["document_version_id"]
+                for row in conn.execute(
+                    "SELECT document_kind, document_version_id "
+                    "FROM application_document_selections "
+                    "WHERE workspace_id=? AND account_id=?",
+                    (workspace_id, account_id),
+                ).fetchall()
+            }
+            expected = {
+                kind: final_documents[kind]["document_version_id"]
+                for kind in ("cv", "cover_letter")
+            }
+            if current != expected:
+                raise ValueError(
+                    "applied is blocked because current document selections differ "
+                    "from the confirmed pack; reconfirm the selected files"
+                )
 
     event_id = f"evt_{uuid.uuid4().hex[:20]}"
 
@@ -142,6 +162,35 @@ def record_status_change(
         raise
 
     return dict(conn.execute("SELECT * FROM workflow_events WHERE id = ?", (event_id,)).fetchone())
+
+
+def record_status_change(
+    conn: sqlite3.Connection, *, workspace_id: str, new_status: str, effective_date: str,
+    note: str | None = None, submitted_pack_artifact_id: str | None = None,
+    _allow_drafted: bool = False, commit: bool = True,
+    account_id: str = DEFAULT_ACCOUNT_ID,
+) -> dict[str, Any]:
+    """Record one transition, reserving exact-pack reads and event writes together."""
+    if not commit:
+        return _record_status_change_reserved(
+            conn, workspace_id=workspace_id, new_status=new_status,
+            effective_date=effective_date, note=note,
+            submitted_pack_artifact_id=submitted_pack_artifact_id,
+            _allow_drafted=_allow_drafted, commit=False, account_id=account_id,
+        )
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        result = _record_status_change_reserved(
+            conn, workspace_id=workspace_id, new_status=new_status,
+            effective_date=effective_date, note=note,
+            submitted_pack_artifact_id=submitted_pack_artifact_id,
+            _allow_drafted=_allow_drafted, commit=False, account_id=account_id,
+        )
+        conn.commit()
+        return result
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def list_workflow_events(conn: sqlite3.Connection, workspace_id: str) -> list[dict[str, Any]]:
