@@ -8,6 +8,8 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@types/jsdom": "^30.0.0",
+    "jsdom": "^29.1.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.11"
   }
