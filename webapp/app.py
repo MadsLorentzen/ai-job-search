@@ -9,6 +9,7 @@ from fastapi.templating import Jinja2Templates
 
 from webapp.api.profile import router as profile_router
 from webapp.api.discovery import router as discovery_router
+from webapp.api.handoff import router as handoff_router
 from webapp.api.review import router as review_router
 from webapp.api.search_workspaces import router as search_workspaces_router
 from webapp.api.status import router as status_router
@@ -38,6 +39,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(profile_router)
     app.include_router(discovery_router)
+    app.include_router(handoff_router)
     app.include_router(user_profile_router)
     app.include_router(search_workspaces_router)
     app.include_router(workspaces_router)

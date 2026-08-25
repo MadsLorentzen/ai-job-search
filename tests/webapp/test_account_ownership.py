@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 from webapp.app import create_app
 from webapp.api.dependencies import get_account_scope
+from webapp.api.handoff import get_extension_scope
 from webapp.config import Settings
 from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID, create_account
 from webapp.persistence.artifacts import save_artifact
@@ -26,6 +27,11 @@ ACCOUNT_B = "account_b"
 def test_every_user_facing_route_resolves_account_scope(tmp_path):
     app = create_app(_settings(tmp_path))
     system_routes = {"/health", "/api/extensions"}
+    # Two legitimate account-scoping mechanisms exist: get_account_scope
+    # (webapp session) and get_extension_scope (X-Handoff-Credential header,
+    # for routes reached by a browser extension with no webapp session).
+    # Either one satisfies the "resolves account scope" invariant.
+    scoping_dependencies = {get_account_scope, get_extension_scope}
 
     unscoped = []
     for route in app.routes:
@@ -34,7 +40,7 @@ def test_every_user_facing_route_resolves_account_scope(tmp_path):
         dependency_calls = {
             dependency.call for dependency in route.dependant.dependencies
         }
-        if get_account_scope not in dependency_calls:
+        if not (scoping_dependencies & dependency_calls):
             unscoped.append(f"{','.join(sorted(route.methods or []))} {route.path}")
 
     assert unscoped == []
