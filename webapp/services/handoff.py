@@ -6,11 +6,14 @@ from typing import Any
 
 from webapp.persistence.artifacts import get_artifact
 from webapp.persistence.handoff import (
+    append_handoff_event,
     create_extension_credential,
     create_handoff_session,
     find_in_progress_handoff_sessions,
     get_extension_credential_by_hash,
+    get_handoff_session,
     hash_pairing_secret,
+    list_handoff_events,
 )
 from webapp.services.ownership import AccountScope, account_profile_root
 
@@ -112,3 +115,69 @@ def discover_resumable_handoff_sessions(
         conn, account_id=scope.account_id, workspace_id=workspace_id,
         target_domain=target_domain,
     )
+
+
+class HandoffSessionNotFound(HandoffError):
+    pass
+
+
+class HandoffSessionNotActive(HandoffError):
+    pass
+
+
+class HandoffEventRejected(HandoffError):
+    pass
+
+
+_PRESENCE_ONLY_EVENT_TYPES = frozenset({"user_value_present_observed"})
+
+
+def _require_owned_session(
+    conn: sqlite3.Connection, scope: AccountScope, handoff_session_id: str,
+) -> dict[str, Any]:
+    session = get_handoff_session(conn, handoff_session_id)
+    if session is None or session["account_id"] != scope.account_id:
+        raise HandoffSessionNotFound(f"handoff session {handoff_session_id!r} not found")
+    return session
+
+
+def record_handoff_event(
+    conn: sqlite3.Connection,
+    scope: AccountScope,
+    *,
+    handoff_session_id: str,
+    event_id: str,
+    event_type: str,
+    event_payload: dict[str, Any],
+    normalized_field_type: str | None = None,
+    page_field_key: str | None = None,
+    observed_at: str | None = None,
+) -> dict[str, Any]:
+    session = _require_owned_session(conn, scope, handoff_session_id)
+    if session["status"] != "in_progress":
+        raise HandoffSessionNotActive(
+            f"handoff session {handoff_session_id!r} is {session['status']!r}, "
+            "not in_progress"
+        )
+    if event_type in _PRESENCE_ONLY_EVENT_TYPES and "value" in event_payload:
+        raise HandoffEventRejected(
+            f"{event_type!r} events must never carry a 'value' field "
+            "(sensitive-value minimization, design spec Section 11.3)"
+        )
+    return append_handoff_event(
+        conn,
+        handoff_session_id=handoff_session_id,
+        event_id=event_id,
+        event_type=event_type,
+        event_payload=event_payload,
+        normalized_field_type=normalized_field_type,
+        page_field_key=page_field_key,
+        observed_at=observed_at,
+    )
+
+
+def replay_handoff_session(
+    conn: sqlite3.Connection, scope: AccountScope, handoff_session_id: str,
+) -> dict[str, Any]:
+    session = _require_owned_session(conn, scope, handoff_session_id)
+    return {"session": session, "events": list_handoff_events(conn, handoff_session_id)}

@@ -193,3 +193,132 @@ def test_discover_resumable_sessions_scoped_to_owned_workspace(tmp_path):
     )
     assert len(found) == 1
     conn.close()
+
+
+from webapp.services.handoff import (
+    HandoffEventRejected,
+    HandoffSessionNotActive,
+    HandoffSessionNotFound,
+    record_handoff_event,
+    replay_handoff_session,
+)
+
+
+def test_record_handoff_event_succeeds_for_owned_in_progress_session(tmp_path):
+    conn = _conn(tmp_path)
+    scope = _scope(tmp_path)
+    workspace, artifact = _workspace_with_pack(conn)
+    session = start_handoff_session(
+        conn, scope, workspace_id=workspace["id"], pack_artifact_id=artifact["id"],
+        target_url="https://x.test/apply", target_domain="x.test",
+        ats_adapter_id="generic", ats_adapter_version="generic@1",
+    )
+
+    event = record_handoff_event(
+        conn, scope, handoff_session_id=session["id"], event_id="evt_1",
+        event_type="value_inserted",
+        event_payload={"value": "shola@example.com"},
+        normalized_field_type="email", page_field_key="generic:email",
+    )
+    assert event["event_type"] == "value_inserted"
+    conn.close()
+
+
+def test_record_handoff_event_rejects_value_on_presence_only_event_type(tmp_path):
+    conn = _conn(tmp_path)
+    scope = _scope(tmp_path)
+    workspace, artifact = _workspace_with_pack(conn)
+    session = start_handoff_session(
+        conn, scope, workspace_id=workspace["id"], pack_artifact_id=artifact["id"],
+        target_url="https://x.test/apply", target_domain="x.test",
+        ats_adapter_id="generic", ats_adapter_version="generic@1",
+    )
+
+    try:
+        record_handoff_event(
+            conn, scope, handoff_session_id=session["id"], event_id="evt_sensitive",
+            event_type="user_value_present_observed",
+            event_payload={"value": "should not be here"},
+            normalized_field_type="salary_expectation",
+            page_field_key="generic:salary",
+        )
+        assert False, "expected HandoffEventRejected"
+    except HandoffEventRejected:
+        pass
+    conn.close()
+
+
+def test_record_handoff_event_rejects_session_not_owned_by_scope(tmp_path):
+    from webapp.persistence.accounts import create_account
+
+    conn = _conn(tmp_path)
+    scope = _scope(tmp_path)
+    workspace, artifact = _workspace_with_pack(conn)
+    session = start_handoff_session(
+        conn, scope, workspace_id=workspace["id"], pack_artifact_id=artifact["id"],
+        target_url="https://x.test/apply", target_domain="x.test",
+        ats_adapter_id="generic", ats_adapter_version="generic@1",
+    )
+
+    create_account(conn, account_id="account_other", display_name="Other")
+    other_scope = AccountScope(
+        account_id="account_other",
+        profile_root=account_profile_root(str(tmp_path), "account_other"),
+    )
+    try:
+        record_handoff_event(
+            conn, other_scope, handoff_session_id=session["id"], event_id="evt_x",
+            event_type="field_detected", event_payload={},
+        )
+        assert False, "expected HandoffSessionNotFound"
+    except HandoffSessionNotFound:
+        pass
+    conn.close()
+
+
+def test_record_handoff_event_rejects_terminal_session(tmp_path):
+    from webapp.persistence.handoff import set_handoff_session_status
+
+    conn = _conn(tmp_path)
+    scope = _scope(tmp_path)
+    workspace, artifact = _workspace_with_pack(conn)
+    session = start_handoff_session(
+        conn, scope, workspace_id=workspace["id"], pack_artifact_id=artifact["id"],
+        target_url="https://x.test/apply", target_domain="x.test",
+        ats_adapter_id="generic", ats_adapter_version="generic@1",
+    )
+    set_handoff_session_status(conn, session["id"], status="expired")
+
+    try:
+        record_handoff_event(
+            conn, scope, handoff_session_id=session["id"], event_id="evt_late",
+            event_type="field_detected", event_payload={},
+        )
+        assert False, "expected HandoffSessionNotActive"
+    except HandoffSessionNotActive:
+        pass
+    conn.close()
+
+
+def test_replay_handoff_session_returns_session_and_ordered_events(tmp_path):
+    conn = _conn(tmp_path)
+    scope = _scope(tmp_path)
+    workspace, artifact = _workspace_with_pack(conn)
+    session = start_handoff_session(
+        conn, scope, workspace_id=workspace["id"], pack_artifact_id=artifact["id"],
+        target_url="https://x.test/apply", target_domain="x.test",
+        ats_adapter_id="generic", ats_adapter_version="generic@1",
+    )
+    record_handoff_event(
+        conn, scope, handoff_session_id=session["id"], event_id="evt_1",
+        event_type="field_detected", event_payload={},
+    )
+    record_handoff_event(
+        conn, scope, handoff_session_id=session["id"], event_id="evt_2",
+        event_type="value_inserted", event_payload={"value": "x"},
+    )
+
+    replay = replay_handoff_session(conn, scope, session["id"])
+    assert replay["session"]["id"] == session["id"]
+    assert [e["event_id"] for e in replay["events"]] == ["evt_1", "evt_2"]
+    conn.close()
