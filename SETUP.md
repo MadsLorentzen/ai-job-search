@@ -14,6 +14,8 @@ npm install -g @anthropic-ai/claude-code
 
 You'll need an Anthropic API key or a Claude Pro/Team subscription. See the [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for details.
 
+This fork can optionally run Claude Code through [Free Claude Code](https://github.com/Alishahryar1/free-claude-code) so parallel ranking (`/rank`) and other token-heavy work use free or cheap models instead of paid Claude tokens. Commands stay the same. Windows-first steps: [FCC-SETUP.md](FCC-SETUP.md).
+
 ### Python
 
 Python 3.10+ is required for the salary lookup tool. Check with:
@@ -335,7 +337,9 @@ Make sure Bun is installed and you ran `bun install` in each CLI directory. The 
 The cover letter template expects fonts in `cover_letters/OpenFonts/fonts/`. Make sure this directory exists and contains the Lato and Raleway font files.
 
 ### Stale `.claude/settings.local.json` from an older clone
-Shared Claude Code permissions now live in `.claude/settings.json` (scoped to `bun run`, `python salary_lookup.py`, and `python3 salary_lookup.py`). Earlier versions of this repo committed a broader `.claude/settings.local.json` that pre-approved `Bash(curl:*)`, `Bash(python:*)` and `Bash(bun:*)`. If you cloned before that change, git leaves the old file behind in your working copy, and its permissions still apply on top of `settings.json`. Delete it (or trim it to your own personal overrides):
+Shared Claude Code permissions now live in `.claude/settings.json` (scoped to `bun run`, `python salary_lookup.py`, and `python3 salary_lookup.py`). Earlier versions of this repo committed a broader `.claude/settings.local.json` that pre-approved `Bash(curl:*)`, `Bash(python:*)` and `Bash(bun:*)`. If you cloned before that change, git leaves the old file behind in your working copy, and its permissions still apply on top of `settings.json`.
+
+If you are using Free Claude Code, keep a `settings.local.json` that **only** sets the FCC env vars (copy `.claude/settings.local.json.example`). See [FCC-SETUP.md](FCC-SETUP.md). Delete or trim the file only if it still contains the old broad Bash permissions:
 
 ```bash
 rm .claude/settings.local.json

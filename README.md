@@ -66,6 +66,7 @@ The framework encodes career guidance best practices, including structured evalu
 - [Bun](https://bun.sh) (for job search CLI tools)
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/), [MacTeX](https://tug.org/mactex/), [TinyTeX](https://yihui.org/tinytex/), or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`. If using a minimal TeX install such as TinyTeX or BasicTeX, install the extra packages listed in [SETUP.md](SETUP.md#minimal-tex-install-tinytexbasictex).
 - Optional: `pdftotext` from [poppler](https://poppler.freedesktop.org/) (macOS: `brew install poppler`, Debian/Ubuntu: `apt install poppler-utils`, Windows: `choco install poppler`) — used by `/apply`'s ATS parseability check on the compiled CV. If missing, the check degrades gracefully to a visual keyword review.
+- Optional: [Free Claude Code](https://github.com/Alishahryar1/free-claude-code) if you want `/rank` and other parallel work to use free/cheap models instead of paid Claude tokens. This fork's Windows setup is in [FCC-SETUP.md](FCC-SETUP.md).
 
 ## Quick start
 
@@ -117,6 +118,14 @@ claude
 # Then inside Claude Code:
 /setup
 ```
+
+On Windows, to run that same session through Free Claude Code (free/cheap models for token-heavy `/rank` work):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start-with-fcc.ps1
+```
+
+Details: [FCC-SETUP.md](FCC-SETUP.md).
 
 `/setup` offers three paths: read your `documents/` folder if you have one populated (CV PDF, LinkedIn export, diplomas, reference letters, past applications), import a single CV pasted in chat, or walk through an interview. It auto-detects what you have and asks. Documents-folder mode is idempotent and safe to re-run as you add more material; see `documents/README.md` for the layout.
 
@@ -192,7 +201,8 @@ ai-job-search/
 │   │   │   └── 07-interview-prep.md   # STAR examples + interview framework
 │   │   ├── job-scraper/               # Job search orchestration
 │   │   └── upskill/                   # /upskill skill gap analysis and learning plan
-│   └── settings.json                  # Claude Code permissions (shared, scoped)
+│   ├── settings.json                  # Claude Code permissions (shared, scoped)
+│   └── settings.local.json.example    # Template: point Claude Code at the FCC proxy
 ├── .agents/skills/                    # Job portal CLI tools
 │   ├── jobbank-search/                # Akademikernes Jobbank (Denmark)
 │   ├── jobdanmark-search/             # Jobdanmark.dk (Denmark)
@@ -231,6 +241,8 @@ ai-job-search/
 ├── gmail_sync/                        # /gmail-sync state (processed message IDs, last sync date)
 ├── upskill/                           # /upskill report output (markdown reports per run)
 ├── job_search_tracker.csv             # Application tracking spreadsheet
+├── start-with-fcc.ps1                 # Launch Claude Code through Free Claude Code
+├── FCC-SETUP.md                       # Optional: free/cheap models via FCC proxy
 └── SETUP.md                           # Detailed setup guide
 ```
 

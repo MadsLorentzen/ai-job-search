@@ -51,6 +51,9 @@ Thumbs.db
 # Memory files (Claude Code user-specific)
 .claude/projects/
 
+# Local Claude Code overrides (FCC proxy env vars, machine-specific)
+.claude/settings.local.json
+
 # Skills lock (auto-generated)
 skills-lock.json
 
