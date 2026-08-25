@@ -1,3 +1,7 @@
+---
+framework_version: 1.1.1
+---
+
 # Candidate Profile: Nehul Bhatnagar
 
 ## Identity
@@ -6,6 +10,7 @@
 - **Phone:** +91-8949446740
 - **Email:** nbhatnagar3010@gmail.com
 - **LinkedIn:** https://www.linkedin.com/in/nehulbhatnagar
+- **GitHub:** https://github.com/zerodoxxx
 - **Languages:** English (Fluent), Hindi (Native)
 - **Status:** Employed (Machine Learning Engineer - II at Revionics / Goldman Sachs Portfolio)
 - **Target Roles:** Machine Learning Engineer, Senior MLE, Applied Scientist, AI/LLM Engineer

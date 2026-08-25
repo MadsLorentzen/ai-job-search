@@ -1,6 +1,6 @@
 # Documents Folder
 
-This folder holds your actual career documents. The `/setup` command reads everything here and uses it to populate the candidate skill files under `.claude/skills/job-application-assistant/`. It is safe to re-run `/setup` as you add new documents — it merges intelligently and will never overwrite existing content without asking you first.
+This folder holds your actual career documents. The `/setup` command reads everything here and uses it to populate the candidate skill files under `.agents/skills/job-application-assistant/` and guidelines in `AGENTS.md`. It is safe to re-run `/setup` as you add new documents — it merges intelligently and will never overwrite existing content without asking you first.
 
 ---
 
