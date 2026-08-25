@@ -219,6 +219,8 @@ Build small in-memory ZIP fixtures. Test:
 - duplicate normalized names using slash/backslash and case variants;
 - NUL/control characters;
 - `word/vbaProject.bin`;
+- macro-enabled Word main-document content types or relationships, even when
+  `word/vbaProject.bin` is absent;
 - `word/embeddings/*` OLE/package content;
 - `word/activeX/*` content or ActiveX relationships; and
 - `.doc`, `.docm`, PDF, HTML, RTF, and executable signatures.
@@ -644,6 +646,9 @@ Prove:
 - all existing status transitions/restrictions remain;
 - before `applied`, current selections must still match the exact current v2
   pack, otherwise status change blocks and asks for reconfirmation;
+- that selection comparison, exact-pack resolution, and creation of the
+  `applied` workflow event occur under the same `BEGIN IMMEDIATE` reservation,
+  with no caller-visible or transaction-level TOCTOU gap;
 - v1 application remains compatible without selection rows; and
 - `applied` records the exact pack ID that resolves both submitted files.
 
@@ -928,7 +933,25 @@ git diff --stat 9f99898...HEAD
 
 Verify the main worktree remains on `master @ 9f99898`, the candidate-profile
 hash remains unchanged, and `6743d70` remains frozen. Stop after the final
-validated feature commit. Do not merge or push.
+validated feature commit. Then start an isolated deterministic demo workspace
+for the human UI acceptance flow:
+
+```text
+Generate AI documents
+  -> download
+  -> upload edited Word file
+  -> Use this version
+  -> confirm selected files
+  -> replace selection
+  -> verify old confirmed files remain exact
+```
+
+The demo must use isolated data and must not change code, fixtures, the real
+database, or the candidate profile. Report its URL and leave integration gated
+on the human result. The UI must contain none of the rejected classification,
+attestation, generated-vs-final editor, or presentation-control machinery.
+
+Do not merge or push.
 
 Final report must include:
 
