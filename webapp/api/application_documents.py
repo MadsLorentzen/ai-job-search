@@ -14,19 +14,27 @@ from webapp.api.dependencies import get_account_scope, get_conn, get_documents_r
 from webapp.services.application_documents import (
     download_application_document, generate_application_documents,
     list_application_documents, select_application_document, upload_application_document,
+    set_application_document_reusable, unset_application_document_reusable,
 )
+from webapp.persistence.application_documents import list_reusable
 from webapp.services.document_blob_store import DocumentBlobError
 from webapp.services.ownership import AccountScope
 from webapp.services.pipeline import PipelineError
 
 
 router = APIRouter(prefix="/api/workspaces/{workspace_id}/application-documents", tags=["application-documents"])
+reusable_router = APIRouter(prefix="/api/reusable-application-documents", tags=["application-documents"])
 
 
 class SelectionBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
     document_version_id: str
     expected_revision: int
+
+
+class ReusableBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    label: str | None = None
 
 
 def _error(exc: Exception) -> HTTPException:
@@ -83,3 +91,24 @@ def get_download(workspace_id: str, document_version_id: str, conn: sqlite3.Conn
     fallback = "CV.docx" if document["document_kind"] == "cv" else "Cover_Letter.docx"
     disposition = f"attachment; filename=\"{fallback}\"; filename*=UTF-8''{quote(document['original_filename'])}"
     return Response(content=content, media_type=DOCX_MEDIA_TYPE, headers={"Content-Disposition": disposition, "Content-Length": str(document["byte_length"]), "X-Content-Hash": "sha256:" + document["sha256"], "X-Document-Kind": document["document_kind"], "X-Document-Origin": document["origin"]})
+
+
+@router.post("/{document_version_id}/save-for-reuse")
+def post_reusable(workspace_id: str, document_version_id: str, body: ReusableBody, conn: sqlite3.Connection = Depends(get_conn), scope: AccountScope = Depends(get_account_scope)):
+    try:
+        return set_application_document_reusable(conn, workspace_id, document_version_id, label=body.label, account_id=scope.account_id)
+    except PipelineError as exc:
+        raise _error(exc) from exc
+
+
+@router.delete("/{document_version_id}/save-for-reuse", status_code=204)
+def delete_reusable(workspace_id: str, document_version_id: str, conn: sqlite3.Connection = Depends(get_conn), scope: AccountScope = Depends(get_account_scope)):
+    try:
+        unset_application_document_reusable(conn, workspace_id, document_version_id, account_id=scope.account_id)
+    except PipelineError as exc:
+        raise _error(exc) from exc
+
+
+@reusable_router.get("")
+def get_reusable(conn: sqlite3.Connection = Depends(get_conn), scope: AccountScope = Depends(get_account_scope)):
+    return {"documents": list_reusable(conn, account_id=scope.account_id)}

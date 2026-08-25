@@ -69,3 +69,19 @@ def test_use_this_version_is_explicit_and_optimistically_concurrent(tmp_path):
         assert stale.status_code == 409
     finally:
         client.__exit__(None, None, None)
+
+
+def test_user_upload_can_be_reused_in_another_owned_workspace(tmp_path):
+    client, settings, workspace_id = _client(tmp_path)
+    try:
+        conn = connect(settings.db_path)
+        other = create_workspace(conn, company="Other", title="Role")
+        conn.close()
+        version = client.post(f"/api/workspaces/{workspace_id}/application-documents/upload/cv", files={"file": ("Reusable CV.docx", _docx(), DOCX_MEDIA_TYPE)}).json()
+        saved = client.post(f"/api/workspaces/{workspace_id}/application-documents/{version['id']}/save-for-reuse", json={"label": "  General   CV  "})
+        assert saved.json()["label"] == "General CV"
+        assert client.get("/api/reusable-application-documents").json()["documents"][0]["document_version_id"] == version["id"]
+        selected = client.put(f"/api/workspaces/{other['id']}/application-documents/selection/cv", json={"document_version_id": version["id"], "expected_revision": 0})
+        assert selected.status_code == 200
+    finally:
+        client.__exit__(None, None, None)
