@@ -56,3 +56,36 @@ def test_rejects_wrong_extension_or_media(filename, media):
 def test_rejects_non_docx_or_truncated_archive(content):
     with pytest.raises(DocxPackageError):
         validate_docx_package(content, original_filename="x.docx")
+
+
+def test_rejects_missing_required_member():
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w") as archive:
+        archive.writestr("[Content_Types].xml", TYPES)
+        archive.writestr("word/document.xml", b"<document/>")
+    with pytest.raises(DocxPackageError, match="missing required"):
+        validate_docx_package(output.getvalue(), original_filename="x.docx")
+
+
+def test_rejects_encrypted_flag_before_attempting_to_read_member():
+    content = bytearray(_docx())
+    local = content.find(b"PK\x03\x04")
+    central = content.find(b"PK\x01\x02")
+    content[local + 6:local + 8] = (1).to_bytes(2, "little")
+    content[central + 8:central + 10] = (1).to_bytes(2, "little")
+    with pytest.raises(DocxPackageError, match="encrypted"):
+        validate_docx_package(bytes(content), original_filename="x.docx")
+
+
+def test_rejects_zip_bomb_expansion_ratio():
+    with pytest.raises(DocxPackageError, match="expansion ratio"):
+        validate_docx_package(
+            _docx([("word/large.xml", b"0" * 1_000_000)]),
+            original_filename="x.docx",
+        )
+
+
+def test_rejects_more_than_entry_limit():
+    extras = [(f"custom/item-{index}.xml", b"x") for index in range(2046)]
+    with pytest.raises(DocxPackageError, match="too many"):
+        validate_docx_package(_docx(extras), original_filename="x.docx")

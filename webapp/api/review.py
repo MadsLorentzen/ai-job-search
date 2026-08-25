@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
@@ -170,7 +171,10 @@ def get_application_pack_document(
         content=rendered_file.content,
         media_type=rendered_file.mime_type,
         headers={
-            "Content-Disposition": f'attachment; filename="{rendered_file.filename}"',
+            "Content-Disposition": (
+                f"attachment; filename*=UTF-8''{quote(rendered_file.filename)}; "
+                f'filename="{kind}.docx"'
+            ),
             "X-Content-Hash": rendered_file.content_hash,
         },
     )
