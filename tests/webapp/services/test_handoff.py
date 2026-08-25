@@ -322,3 +322,28 @@ def test_replay_handoff_session_returns_session_and_ordered_events(tmp_path):
     assert replay["session"]["id"] == session["id"]
     assert [e["event_id"] for e in replay["events"]] == ["evt_1", "evt_2"]
     conn.close()
+
+
+def test_replay_handoff_session_rejects_session_not_owned_by_scope(tmp_path):
+    from webapp.persistence.accounts import create_account
+
+    conn = _conn(tmp_path)
+    scope = _scope(tmp_path)
+    workspace, artifact = _workspace_with_pack(conn)
+    session = start_handoff_session(
+        conn, scope, workspace_id=workspace["id"], pack_artifact_id=artifact["id"],
+        target_url="https://x.test/apply", target_domain="x.test",
+        ats_adapter_id="generic", ats_adapter_version="generic@1",
+    )
+
+    create_account(conn, account_id="account_other", display_name="Other")
+    other_scope = AccountScope(
+        account_id="account_other",
+        profile_root=account_profile_root(str(tmp_path), "account_other"),
+    )
+    try:
+        replay_handoff_session(conn, other_scope, session["id"])
+        assert False, "expected HandoffSessionNotFound"
+    except HandoffSessionNotFound:
+        pass
+    conn.close()
