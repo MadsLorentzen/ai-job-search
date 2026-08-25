@@ -1,0 +1,159 @@
+{
+  "schema_version": "application-pack.v2",
+  "generation_basis": {
+    "generation_artifact_id": "art_generation_fixture",
+    "reviewed_application_pack": {
+      "schema_version": "application-pack.v1",
+      "source_artifacts": {
+        "profile_snapshot": {
+          "artifact_id": "art_profile_exact",
+          "artifact_type": "profile_snapshot",
+          "content_id": "content_profile_exact"
+        },
+        "job_posting_snapshot": {
+          "artifact_id": "art_job",
+          "artifact_type": "job_posting_snapshot",
+          "content_id": "content_job"
+        },
+        "job_fit_result": {
+          "artifact_id": "art_fit",
+          "artifact_type": "job_fit_result",
+          "content_id": "content_fit"
+        },
+        "application_intelligence_result": {
+          "artifact_id": "art_ai",
+          "artifact_type": "application_intelligence_result",
+          "content_id": "content_ai"
+        }
+      },
+      "candidate_snapshot": {
+        "profile_schema_version": "candidate-profile-evidence-snapshot.v0",
+        "identity": {
+          "name": {
+            "value": "Ada Lovelace",
+            "profile_evidence_ids": [
+              "clm_0000000000000001"
+            ]
+          }
+        },
+        "contact": {
+          "email": null,
+          "phone": null,
+          "linkedin": null,
+          "github": null,
+          "location": null
+        },
+        "employment": [],
+        "education": [],
+        "certifications": [],
+        "skills": [],
+        "languages": [],
+        "projects": [],
+        "publications": [],
+        "awards": []
+      },
+      "job": {
+        "company": "Acme Corp",
+        "title": "Backend Engineer",
+        "location": "London"
+      },
+      "fit_summary": {},
+      "recommendation": "PROCEED",
+      "recommendation_reason": "Reviewed evidence supports proceeding.",
+      "cv_content": [
+        {
+          "unit_id": "cv_summary_1",
+          "unit_type": "cv_summary_line",
+          "text": "Reviewed summary.",
+          "status": "READY",
+          "profile_evidence_ids": [
+            "clm_0000000000000001"
+          ]
+        },
+        {
+          "unit_id": "cv_bullet_1",
+          "unit_type": "cv_bullet",
+          "text": "Reviewed highlight.",
+          "status": "READY",
+          "profile_evidence_ids": [
+            "clm_0000000000000001"
+          ]
+        }
+      ],
+      "cover_letter_content": [
+        {
+          "unit_id": "cover_1",
+          "unit_type": "cover_letter_paragraph",
+          "text": "Reviewed cover-letter paragraph.",
+          "status": "READY",
+          "profile_evidence_ids": [
+            "clm_0000000000000001"
+          ]
+        }
+      ],
+      "review_record": {
+        "decisions_consulted": [
+          {
+            "id": "rev_cv_summary",
+            "workspace_id": "workspace_1",
+            "review_item_type": "content_unit",
+            "source_artifact_id": "art_ai",
+            "domain_item_id": "cv_summary_1",
+            "disposition": "acknowledged_and_proceed",
+            "note": null,
+            "created_at": "2026-08-24T10:00:00+00:00"
+          },
+          {
+            "id": "rev_cv_bullet",
+            "workspace_id": "workspace_1",
+            "review_item_type": "content_unit",
+            "source_artifact_id": "art_ai",
+            "domain_item_id": "cv_bullet_1",
+            "disposition": "acknowledged_and_proceed",
+            "note": null,
+            "created_at": "2026-08-24T10:01:00+00:00"
+          },
+          {
+            "id": "rev_cover",
+            "workspace_id": "workspace_1",
+            "review_item_type": "content_unit",
+            "source_artifact_id": "art_ai",
+            "domain_item_id": "cover_1",
+            "disposition": "acknowledged_and_proceed",
+            "note": null,
+            "created_at": "2026-08-24T10:02:00+00:00"
+          }
+        ],
+        "exclusions": [],
+        "informational_items": {}
+      },
+      "completion_contract_version": "application-material-completion.v1",
+      "completion_status": "READY",
+      "completion_issues": [],
+      "completion_metrics": {}
+    }
+  },
+  "final_documents": {
+    "cv": {
+      "document_version_id": "docv_fixture_cv",
+      "document_kind": "cv",
+      "origin": "user_uploaded",
+      "source_generation_artifact_id": null,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "byte_length": 12345,
+      "original_filename": "Final CV.docx"
+    },
+    "cover_letter": {
+      "document_version_id": "docv_fixture_cover",
+      "document_kind": "cover_letter",
+      "origin": "ai_generated",
+      "source_generation_artifact_id": "art_generation_fixture",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "byte_length": 12000,
+      "original_filename": "Cover Letter.docx"
+    }
+  },
+  "confirmed_account_id": "account_local",
+  "confirmed_at": "2026-08-25T00:00:00+00:00",
+  "completion_contract_version": "application-material-completion.v1"
+}

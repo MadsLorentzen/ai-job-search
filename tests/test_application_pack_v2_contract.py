@@ -24,6 +24,14 @@ def test_builds_and_validates_closed_exact_manifest():
     assert pack["final_documents"]["cv"]["source_generation_artifact_id"] is None
 
 
+def test_canonical_selected_files_fixture_is_valid():
+    fixture = json.loads(
+        (Path(__file__).parent / "fixtures/application_pack/v2_selected_files_valid.json")
+        .read_text(encoding="utf-8")
+    )
+    assert contract.validate_application_pack_v2(fixture) == fixture
+
+
 def test_construction_rejects_metadata_mismatch_or_ineligible_other_workspace():
     generation, docs = _inputs()
     verified = copy.deepcopy(docs)
