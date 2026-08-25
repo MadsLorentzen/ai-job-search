@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   SAFE_CATALOG_FIELD_TYPES,
-  matchSafeCatalogField,
   matchSafeCatalogFieldForAdapter,
 } from "../src/adapters/safe-catalog";
 
@@ -12,20 +11,27 @@ describe("safe catalog", () => {
     ]);
   });
 
+  // The raw, unguarded matcher (formerly `matchSafeCatalogField`) is no
+  // longer exported — every adapter must go through
+  // `matchSafeCatalogFieldForAdapter` so the context guards can never be
+  // bypassed. Its behavior is still fully covered here, indirectly, through
+  // the guarded function: none of these labels trip either guard, so the
+  // guarded function's output equals what the raw matcher would have
+  // returned.
   it("matches an email label to the email field type", () => {
-    expect(matchSafeCatalogField("Email address")).toBe("email");
+    expect(matchSafeCatalogFieldForAdapter("Email address")).toBe("email");
   });
 
   it("matches a LinkedIn label to the linkedin field type", () => {
-    expect(matchSafeCatalogField("LinkedIn profile URL")).toBe("linkedin");
+    expect(matchSafeCatalogFieldForAdapter("LinkedIn profile URL")).toBe("linkedin");
   });
 
   it("returns null for a field outside the safe catalog", () => {
-    expect(matchSafeCatalogField("Desired salary")).toBeNull();
+    expect(matchSafeCatalogFieldForAdapter("Desired salary")).toBeNull();
   });
 
   it("returns null for an employment field even though it sounds similar", () => {
-    expect(matchSafeCatalogField("Current employer")).toBeNull();
+    expect(matchSafeCatalogFieldForAdapter("Current employer")).toBeNull();
   });
 });
 
@@ -50,33 +56,43 @@ describe("matchSafeCatalogFieldForAdapter (employer-context guard)", () => {
     expect(matchSafeCatalogFieldForAdapter("Company location")).toBeNull();
   });
 
-  // Judgment call (documented, not silently papered over): the current
-  // EMPLOYER_CONTEXT_QUALIFIER regex covers employer/company/institution/
-  // university/school/organization, but NOT "office" or "work". Labels like
-  // "Office location" or "Work location" are just as ambiguous as "Employer
-  // location" in principle, but adding a bare "work" (or "office") qualifier
-  // word would also suppress extremely common, legitimate safe-catalog
-  // labels such as "Work email" or "Work phone" (and plausibly "Office
-  // phone"), which SHOULD still autofill. Since a qualifier word can't be
-  // scoped to "location" only without adding field-type-aware logic the
-  // project owner did not ask for here, the regex is left as-is and this
-  // gap is pinned explicitly by the following two tests rather than fixed
-  // silently.
-  it("KNOWN GAP: 'Office location' still autofills under the current qualifier regex (not extended to cover 'office')", () => {
-    expect(matchSafeCatalogFieldForAdapter("Office location")).toBe("location");
-  });
-
-  it("KNOWN GAP: 'Work location' still autofills under the current qualifier regex (not extended to cover 'work')", () => {
-    expect(matchSafeCatalogFieldForAdapter("Work location")).toBe("location");
-  });
-
-  it("confirms 'Work email' and 'Work phone' still autofill (why 'work' was not added as a qualifier word)", () => {
-    expect(matchSafeCatalogFieldForAdapter("Work email")).toBe("email");
-    expect(matchSafeCatalogFieldForAdapter("Work phone")).toBe("phone");
-  });
-
   it("is case-insensitive and whitespace-tolerant for the employer-context guard", () => {
     expect(matchSafeCatalogFieldForAdapter("EMPLOYER LOCATION")).toBeNull();
     expect(matchSafeCatalogFieldForAdapter("employer   Location")).toBeNull();
+  });
+});
+
+describe("matchSafeCatalogFieldForAdapter (work/office location phrase guard)", () => {
+  // Fix: "Work location" and "Office location" are just as ambiguous as
+  // "Employer location" (candidate's own address vs. a job's worksite
+  // address), so they must NOT autofill. This is a narrow phrase-adjacency
+  // pattern (work/office immediately followed by "location"), not a bare
+  // qualifier word, specifically so it does not collide with legitimate
+  // labels like "Work email" or "Office phone".
+  it("does not match 'Work location' (work/office location phrase present)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Work location")).toBeNull();
+  });
+
+  it("does not match 'Office location' (work/office location phrase present)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Office location")).toBeNull();
+  });
+
+  it("still matches 'Work email' as email (no false suppression)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Work email")).toBe("email");
+  });
+
+  it("still matches 'Work phone' as phone (no false suppression)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Work phone")).toBe("phone");
+  });
+
+  it("still matches 'Office phone' as phone (no false suppression)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Office phone")).toBe("phone");
+  });
+
+  it("is case-insensitive and separator-tolerant for the work/office location phrase", () => {
+    expect(matchSafeCatalogFieldForAdapter("OFFICE LOCATION")).toBeNull();
+    expect(matchSafeCatalogFieldForAdapter("office  location")).toBeNull();
+    expect(matchSafeCatalogFieldForAdapter("Office Location:")).toBeNull();
+    expect(matchSafeCatalogFieldForAdapter("Work-Location")).toBeNull();
   });
 });

@@ -16,7 +16,12 @@ const LABEL_PATTERNS: Record<(typeof SAFE_CATALOG_FIELD_TYPES)[number], RegExp> 
 // semantics only; it must never be extended to match employment/education
 // labels, which belong to adapter-specific rules, never to this shared
 // catalog.
-export function matchSafeCatalogField(labelText: string): string | null {
+//
+// Not exported: every consumer must go through matchSafeCatalogFieldForAdapter
+// below, which applies the employer/institution and work/office location
+// context guards. Keeping this private prevents a future adapter from
+// accidentally importing the unguarded matcher and bypassing those guards.
+function matchSafeCatalogField(labelText: string): string | null {
   for (const fieldType of SAFE_CATALOG_FIELD_TYPES) {
     if (LABEL_PATTERNS[fieldType].test(labelText)) {
       return fieldType;
@@ -40,16 +45,29 @@ export function matchSafeCatalogField(labelText: string): string | null {
 // normally.
 const EMPLOYER_CONTEXT_QUALIFIER = /\b(employer|company|institution|university|school|organization)\b/i;
 
+// Narrow, phrase-level exclusion (distinct from the qualifier above): only
+// fires when "work" or "office" sits immediately in front of "location"
+// (tolerating whitespace/hyphen between them and any surrounding
+// punctuation/casing). This intentionally does NOT use a bare "work"/"office"
+// qualifier word the way EMPLOYER_CONTEXT_QUALIFIER does, because a bare
+// qualifier would also wrongly suppress extremely common, legitimate
+// safe-catalog labels such as "Work email", "Work phone", or "Office phone"
+// — none of which contain the word "location" at all, so this phrase pattern
+// never matches them.
+const LOCATION_SPECIFIC_EXCLUSION = /\b(work|office)[\s-]*location\b/i;
+
 function isAmbiguousEmployerContextField(labelText: string): boolean {
   return EMPLOYER_CONTEXT_QUALIFIER.test(labelText);
 }
 
-// Adapters should call this instead of the raw `matchSafeCatalogField` for
+function isWorkOrOfficeLocationField(labelText: string): boolean {
+  return LOCATION_SPECIFIC_EXCLUSION.test(labelText);
+}
+
+// Adapters must call this (never the private raw matcher above) for
 // classify()/map() decisions: it applies the employer/institution-context
-// guard above so an ambiguous label never escalates to "autofill". The raw
-// matcher above remains available, unguarded, for any legitimate use case
-// that needs to ask "does this label match ANY safe-catalog field, ignoring
-// context" (e.g. diagnostics).
+// guard and the work/office-location phrase guard so an ambiguous label
+// never escalates to "autofill".
 export function matchSafeCatalogFieldForAdapter(labelText: string): string | null {
   const safeType = matchSafeCatalogField(labelText);
   if (safeType && isAmbiguousEmployerContextField(labelText)) {
@@ -57,6 +75,16 @@ export function matchSafeCatalogFieldForAdapter(labelText: string): string | nul
     // employer/institution-scoped field wearing a safe-catalog label
     // (e.g. "location"). Treat as unmatched so it falls through to the
     // generic `ask` default instead of escalating to `autofill`.
+    return null;
+  }
+  if (safeType && isWorkOrOfficeLocationField(labelText)) {
+    // Same reasoning as above, but for the "work location" / "office
+    // location" phrase specifically: it is just as ambiguous (candidate's
+    // own address vs. a job's worksite address) as the employer-context
+    // cases, but a bare "work"/"office" qualifier word would also wrongly
+    // suppress legitimate labels like "Work email" or "Office phone".
+    // isWorkOrOfficeLocationField only matches the adjacent phrase, so it
+    // cannot fire on those.
     return null;
   }
   return safeType;
