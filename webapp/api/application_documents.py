@@ -6,13 +6,14 @@ from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import Response
+from pydantic import BaseModel, ConfigDict
 
 from product.application_document_contract import DOCX_MEDIA_TYPE, ApplicationDocumentContractError
 from product.docx_package import DocxPackageError
 from webapp.api.dependencies import get_account_scope, get_conn, get_documents_root, get_extensions_dir
 from webapp.services.application_documents import (
     download_application_document, generate_application_documents,
-    list_application_documents, upload_application_document,
+    list_application_documents, select_application_document, upload_application_document,
 )
 from webapp.services.document_blob_store import DocumentBlobError
 from webapp.services.ownership import AccountScope
@@ -22,9 +23,25 @@ from webapp.services.pipeline import PipelineError
 router = APIRouter(prefix="/api/workspaces/{workspace_id}/application-documents", tags=["application-documents"])
 
 
+class SelectionBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    document_version_id: str
+    expected_revision: int
+
+
 def _error(exc: Exception) -> HTTPException:
     text = str(exc)
     return HTTPException(status_code=404 if "not found" in text else 400, detail=text)
+
+
+@router.put("/selection/{kind}")
+def put_selection(workspace_id: str, kind: str, body: SelectionBody, conn: sqlite3.Connection = Depends(get_conn), scope: AccountScope = Depends(get_account_scope)):
+    try:
+        return select_application_document(conn, workspace_id, kind=kind, document_version_id=body.document_version_id, expected_revision=body.expected_revision, account_id=scope.account_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except PipelineError as exc:
+        raise _error(exc) from exc
 
 
 @router.post("/generate", status_code=201)

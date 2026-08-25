@@ -56,3 +56,16 @@ def test_invalid_upload_leaves_no_version_and_strict_route_does_not_accept_metad
         assert client.get(f"/api/workspaces/{workspace_id}/application-documents").json()["versions"] == []
     finally:
         client.__exit__(None, None, None)
+
+
+def test_use_this_version_is_explicit_and_optimistically_concurrent(tmp_path):
+    client, _, workspace_id = _client(tmp_path)
+    try:
+        version = client.post(f"/api/workspaces/{workspace_id}/application-documents/upload/cv", files={"file": ("CV.docx", _docx(), DOCX_MEDIA_TYPE)}).json()
+        selected = client.put(f"/api/workspaces/{workspace_id}/application-documents/selection/cv", json={"document_version_id": version["id"], "expected_revision": 0})
+        assert selected.status_code == 200
+        assert selected.json()["revision"] == 1
+        stale = client.put(f"/api/workspaces/{workspace_id}/application-documents/selection/cv", json={"document_version_id": version["id"], "expected_revision": 0})
+        assert stale.status_code == 409
+    finally:
+        client.__exit__(None, None, None)
