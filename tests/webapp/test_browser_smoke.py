@@ -416,11 +416,24 @@ def _resolve_all_pending_reviews(page, disposition: str) -> None:
 
 
 def _confirm_pack(page) -> None:
+    _click_reload(page, page.get_by_role("button", name="Generate AI documents"))
+    for kind in ("cv", "cover_letter"):
+        panel = page.locator(f'[data-document-kind="{kind}"]')
+        _click_reload(page, panel.get_by_role("button", name="Use this version").first)
     page.once("dialog", lambda dialog: dialog.accept())
     _click_reload(
         page,
-        page.get_by_role("button", name="Create reviewed pack — does not submit"),
+        page.get_by_role("button", name="Confirm selected files — does not submit"),
     )
+
+
+def _edited_docx_bytes(label: str) -> bytes:
+    document = Document()
+    document.add_heading(label, level=1)
+    document.add_paragraph("Human-owned final wording edited outside JobSearch.")
+    output = BytesIO()
+    document.save(output)
+    return output.getvalue()
 
 
 def _assert_no_private_browser_content(page, live_server) -> None:
@@ -625,8 +638,7 @@ def test_full_visible_journey_reaches_interview_with_explicit_submission(page, l
     assert page.get_by_text("0 outstanding", exact=True).is_visible()
     assert page.locator("button.confirm-pack").is_enabled()
 
-    page.once("dialog", lambda dialog: dialog.accept())
-    _click_reload(page, page.get_by_role("button", name="Create reviewed pack — does not submit"))
+    _confirm_pack(page)
     assert page.get_by_text("Workflow status:").locator("strong").inner_text() == "drafted"
     assert page.get_by_text("Generating or reviewing material never means it was submitted.").is_visible()
     assert page.get_by_role("heading", name="Is this application ready to send?").is_visible()
@@ -759,6 +771,85 @@ def test_application_pack_v1_embeds_candidate_facts_and_renders_history_exactly(
         for paragraph in Document(BytesIO(cv_after.body())).paragraphs
     )
     assert "Must not enter the historical pack" not in historical_text
+    _assert_no_private_browser_content(page, live_server)
+
+
+def test_user_managed_documents_upload_select_confirm_replace_and_apply_exact_bytes(
+    page, live_server,
+):
+    _refresh_profile(page, live_server)
+    workspace_url = _run_to_intelligence(page, live_server)
+    workspace_id = workspace_url.rsplit("/", 1)[-1]
+    _resolve_all_pending_reviews(page, "acknowledged_and_proceed")
+
+    _click_reload(page, page.get_by_role("button", name="Generate AI documents"))
+    cv_panel = page.locator('[data-document-kind="cv"]')
+    cover_panel = page.locator('[data-document-kind="cover_letter"]')
+    assert cv_panel.get_by_text("No file selected").is_visible()
+    assert cover_panel.get_by_text("No file selected").is_visible()
+
+    edited = {
+        "cv": ("Ada Final CV.docx", _edited_docx_bytes("Ada Final CV")),
+        "cover_letter": (
+            "Ada Final Cover Letter.docx",
+            _edited_docx_bytes("Ada Final Cover Letter"),
+        ),
+    }
+    for kind, panel in (("cv", cv_panel), ("cover_letter", cover_panel)):
+        filename, content = edited[kind]
+        panel.locator('input[type="file"]').set_input_files({
+            "name": filename,
+            "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "buffer": content,
+        })
+        _click_reload(page, panel.get_by_role("button", name="Upload"))
+        panel = page.locator(f'[data-document-kind="{kind}"]')
+        assert panel.get_by_text("No file selected").is_visible()
+        version = panel.locator(".document-version").filter(has_text=filename)
+        assert version.get_by_text("not content-verified by JobSearch").is_visible()
+        _click_reload(page, version.get_by_role("button", name="Use this version"))
+
+    page.once("dialog", lambda dialog: dialog.accept())
+    _click_reload(
+        page,
+        page.get_by_role("button", name="Confirm selected files — does not submit"),
+    )
+    assert page.get_by_text("Workflow status:").locator("strong").inner_text() == "drafted"
+    cv_download = page.request.get(
+        f"{live_server.base_url}{page.get_by_role('link', name='Download CV').get_attribute('href')}"
+    )
+    cover_download = page.request.get(
+        f"{live_server.base_url}{page.get_by_role('link', name='Download Cover Letter').get_attribute('href')}"
+    )
+    assert cv_download.body() == edited["cv"][1]
+    assert cover_download.body() == edited["cover_letter"][1]
+
+    conn = connect(live_server.db_path)
+    first_pack = list_artifact_history(conn, workspace_id, "application_pack")[0]
+    conn.close()
+    first_cv_url = (
+        f"{live_server.base_url}/api/workspaces/{workspace_id}/application-pack/render/cv"
+        f"?pack_artifact_id={first_pack['id']}"
+    )
+    assert page.request.get(first_cv_url).body() == edited["cv"][1]
+
+    cv_panel = page.locator('[data-document-kind="cv"]')
+    ai_original = cv_panel.locator(".document-version").filter(has_text="AI original").first
+    _click_reload(page, ai_original.get_by_role("button", name="Use this version"))
+    assert page.get_by_text("Your selection has changed since confirmation").is_visible()
+    assert page.request.get(first_cv_url).body() == edited["cv"][1]
+
+    page.once("dialog", lambda dialog: dialog.accept())
+    _click_reload(
+        page,
+        page.get_by_role("button", name="Confirm selected files — does not submit"),
+    )
+    assert page.request.get(first_cv_url).body() == edited["cv"][1]
+    page.once("dialog", lambda dialog: dialog.accept())
+    _click_reload(page, page.get_by_role("button", name="Mark applied — I submitted externally"))
+    assert page.get_by_text("Workflow status:").locator("strong").inner_text() == "applied"
+    assert page.locator(".document-upload-form").count() == 0
+    assert page.get_by_role("button", name="Generate AI documents").is_disabled()
     _assert_no_private_browser_content(page, live_server)
 
 
@@ -899,7 +990,9 @@ def test_gate_four_reason_survives_an_existing_confirmed_pack(page, live_server)
 
     assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
     assert page.locator("button.confirm-pack").is_disabled()
-    assert page.get_by_text("not ready to create a replacement").is_visible()
+    assert page.get_by_text(
+        "Reviewed material must be completion-ready before AI documents can be generated."
+    ).is_visible()
     _assert_no_private_browser_content(page, live_server)
 
 
@@ -1006,12 +1099,14 @@ def test_historical_pack_and_incomplete_current_material_never_read_as_contradic
     # 2. The historical pack is explicitly labeled as previous/confirmed, not
     #    presented as if it were the freshly reviewed material.
     assert page.get_by_text(
-        "previously confirmed application pack is still available"
+        "Confirmed files remain immutable and downloadable:"
     ).is_visible()
 
     # 3. A separate, distinct statement says the replacement pack is not ready,
     #    with the actual current completion issue visible.
-    assert page.get_by_text("not ready to create a replacement").is_visible()
+    assert page.get_by_text(
+        "Reviewed material must be completion-ready before AI documents can be generated."
+    ).is_visible()
     assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
     assert page.get_by_text("required CV bullets").is_visible()
 
