@@ -1,3 +1,7 @@
+---
+framework_version: 1.0.0
+---
+
 # Behavioral Profile
 
 <!-- SETUP: This file is populated by running /setup -->

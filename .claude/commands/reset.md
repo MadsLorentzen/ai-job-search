@@ -20,7 +20,7 @@ If `$ARGUMENTS` is empty or does not contain a recognized scope keyword, ask:
 >
 > - **`profile`** — Clears candidate data from the skill files (profile, behavioral, STAR examples, profile statements). The framework structure and writing rules are preserved. Use this to re-run `/setup` from scratch.
 >
-> - **`documents`** — Deletes all files you've placed in the `documents/` folder (CV PDFs, LinkedIn export, diplomas, references, past applications). The folder structure and `README.md` are preserved.
+> - **`documents`** — Deletes all files you've placed in the `documents/` folder (CV PDFs, LinkedIn export, diplomas, references, pasted job postings, past applications). The folder structure and `README.md` are preserved.
 >
 > - **`all`** — Both of the above.
 >
@@ -68,7 +68,7 @@ The following files are NOT touched (they contain framework rules, not candidate
 
 ### If scope includes `documents`:
 
-Use Glob to list all files present in `documents/cv/`, `documents/linkedin/`, `documents/diplomas/`, `documents/references/`, and `documents/applications/`. Present as:
+Use Glob to list all files present in `documents/cv/`, `documents/linkedin/`, `documents/diplomas/`, `documents/references/`, `documents/postings/`, and `documents/applications/`. Present as:
 
 ```
 ## Documents reset will delete:
@@ -83,6 +83,9 @@ documents/diplomas/
   - [filename] or "(empty)"
 
 documents/references/
+  - [filename] or "(empty)"
+
+documents/postings/
   - [filename] or "(empty)"
 
 documents/applications/
@@ -193,6 +196,7 @@ rm -f documents/cv/*
 rm -f documents/linkedin/*
 rm -f documents/diplomas/*
 rm -f documents/references/*
+rm -f documents/postings/*
 rm -rf documents/applications/*/
 ```
 

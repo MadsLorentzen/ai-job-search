@@ -1,189 +1,183 @@
-%-------------------------
-% Resume in LaTeX - Nehul Bhatnagar
-% Based off of: https://github.com/sb2nov/resume
-% License : MIT
-% Compile with: pdflatex -interaction=nonstopmode main_example.tex
-%------------------------
+%% Example CV - [YOUR_NAME]
+%% Comprehensive overview of all competencies, experience, and achievements.
+%% Use as a master reference when tailoring role-specific CVs.
+%%
+%% SETUP: Run /setup to populate this with your actual information.
+%% Compile with: lualatex main_example.tex
+%% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
-\documentclass[letterpaper,11pt]{article}
+\documentclass[11pt,a4paper,sans]{moderncv}
+\moderncvstyle{banking}
+\moderncvcolor{blue}
 
-\usepackage{latexsym}
-\usepackage[empty]{fullpage}
-\usepackage{titlesec}
-\usepackage{marvosym}
-\usepackage[usenames,dvipsnames]{color}
-\usepackage{verbatim}
-\usepackage{enumitem}
-\usepackage[hidelinks]{hyperref}
-\usepackage{fancyhdr}
-\usepackage[english]{babel}
-\usepackage{tabularx}
-\input{glyphtounicode}
+% Force the name and section headings to render in moderncv blue (color1).
+% Default banking leaves them black: moderncvstylebanking.sty's \colorlet
+% copies (not aliases) the pre-scheme accent colour, so the name colours are
+% frozen before \moderncvcolor runs. Re-let them after. \namefont is the hook
+% every name-style macro routes through, so this also works on moderncv 2.3.1
+% (Debian/Ubuntu apt), which has no \firstnamestyle/\lastnamestyle at all.
+\renewcommand*{\namefont}{\fontsize{34}{36}\bfseries\upshape}
+\colorlet{firstnamecolor}{color1}
+\colorlet{lastnamecolor}{color1}
+\colorlet{namecolor}{color1}
+\renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
 
-\pagestyle{fancy}
-\fancyhf{} % clear all header and footer fields
-\fancyfoot{}
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
+\usepackage[utf8]{inputenc}
+% moderncv loads hyperref itself in an \AtEndPreamble hook, so \hypersetup
+% must go in an \AtEndPreamble of our own: on moderncv < 2.4 a top-level
+% \usepackage{hyperref} clashes with the class's own
+% \RequirePackage[unicode]{hyperref}. From 2.4.0 the class passes its options
+% through \PassOptionsToPackage instead, which is what removes that clash.
+\AtEndPreamble{\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=blue,
+    pdftitle={[YOUR_NAME] - CV},
+    % Keep pdfpagemode=UseNone: this block runs after moderncv's own
+    % \AtEndPreamble (moderncv.cls sets pdfpagemode there), so a FullScreen
+    % value here would win and open every CV in fullscreen presentation mode.
+    pdfpagemode=UseNone,
+}}
+\usepackage[scale=0.80]{geometry}
+\usepackage{import}
 
-% Adjust margins
-\addtolength{\oddsidemargin}{-0.5in}
-\addtolength{\evensidemargin}{-0.5in}
-\addtolength{\textwidth}{1in}
-\addtolength{\topmargin}{-.5in}
-\addtolength{\textheight}{1.0in}
-
-\urlstyle{same}
-
-\raggedbottom
-\raggedright
-\setlength{\tabcolsep}{0in}
-
-% Sections formatting
-\titleformat{\section}{
-  \vspace{-4pt}\scshape\raggedright\large
-}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
-
-% Ensure that generate pdf is machine readable/ATS parsable
-\pdfgentounicode=1
-
-%-------------------------
-% Custom commands
-\newcommand{\resumeItem}[1]{
-  \item\small{
-    {#1 \vspace{-2pt}}
-  }
-}
-
-\newcommand{\skillItem}[1]{
-  \item\small{
-    {#1 \vspace{-2pt}}
-  }
-}
-
-\newcommand{\resumeSubheading}[4]{
-  \vspace{-2pt}\item
-    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
-      \textbf{#1} & #2 \\
-      \textit{\small#3} & \textit{\small #4} \\
-    \end{tabular*}\vspace{-7pt}
-}
-
-\newcommand{\workExSubheading}[5]{
-  \vspace{-2pt}\item
-    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
-      \textbf{#1} & #2 \\
-      \textit{\small#3} & \textit{\small #4} \\
-      \multicolumn{2}{l}{\sloppy \textit{\small #5}}
-    \end{tabular*}\vspace{-7pt}
-}
-
-\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
-\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
-\newcommand{\resumeItemListStart}{\begin{itemize}}
-\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
-
-%-------------------------------------------
-%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% personal data
+\name{[First]}{[Last]}
+% If you have no address to list, DELETE this whole line. \address{}{}{} fails
+% with "There's no line here to end" on every moderncv version.
+\address{[Your Address, City, Country]}{}{}
+\phone[mobile]{[+XX XXXXXXXXXX]}
+\email{[your.email@example.com]}
+\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
 
 \begin{document}
 
-%----------HEADING----------
-\begin{center}
-    \textbf{\Huge \scshape Nehul Bhatnagar} \\ \vspace{1pt}
-    \small +91-8949446740 $|$ \href{mailto:nbhatnagar3010@gmail.com}{\underline{nbhatnagar3010@gmail.com}} $|$ 
-    \href{https://www.linkedin.com/in/nehulbhatnagar}{\underline{linkedin.com/in/nehulbhatnagar}}
-\end{center}
+\makecvtitle
 
-%-----------EDUCATION-----------
-\vspace{-10pt}
-\section{Education}
-  \resumeSubHeadingListStart
-    \resumeSubheading
-      {National Institute of Technology, Jalandhar}{Jalandhar, India}
-      {B.Tech in Electronics and Communication Engineering}{2019 -- 2023}
-  \resumeSubHeadingListEnd
+% ============================================================
+%     PROFILE STATEMENT
+% ============================================================
 
-%-----------WORK EXPERIENCE-----------
-\section{Work Experience}
-  \resumeSubHeadingListStart        
-        
-    \workExSubheading
-      {Machine Learning Engineer - II}{Nov. 2023 -- Present}
-      {\textbf{Revionics} — portfolio of \textbf{Goldman Sachs}}{Bengaluru, India}
-      {MLE leading production-grade ML/LLM systems, API engineering, and infrastructure for retail optimization}
-    
-      \resumeItemListStart
+\vspace{6pt}
+\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
 
-        \resumeItem{\textbf{Architected and deployed an enterprise RAG system} for internal help documentation and complex client documents using \textbf{LLM pipelines and Vector DBs}, streamlining domain knowledge retrieval and reducing ticket resolution time by \textbf{70\%+}.}
+% ============================================================
+%     CORE COMPETENCIES
+% ============================================================
 
-        \resumeItem{Led technical design of a \textbf{multi-agent LLM pricing platform}, crafting optimized prompt strategies, evaluations, and workflow execution engines via high-throughput \textbf{FastAPI} services.}
+\section{Core Competencies}
+\vspace{1pt}
+\begin{itemize}
 
-        \resumeItem{\textbf{Reduced cloud compute costs by \$100k+ annually} and \textbf{improved latency by \textgreater{}80\%} by developing and containerizing a high-performance REST API (\textit{CostChangeWizard}) deployed via \textbf{Docker} on \textbf{Kubernetes}.}
+\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
 
-        \resumeItem{\textbf{Eliminated 95\%+ of manual data linkage efforts} by training, fine-tuning, and optimizing inference for a \textbf{Siamese network} (triplet loss) paired with \textbf{Leiden clustering} across enterprise datasets.}
+\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
 
-        \resumeItem{\textbf{Generated \$2M+ in new European revenue} by developing modular, VAT-aware forecasting libraries in Python (\textit{FinanPy}), establishing robust monitoring, logging, and evaluation frameworks.}
+\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
 
-      \resumeItemListEnd
+\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
 
-    \workExSubheading
-      {Machine Learning Engineering Intern}{May 2023 -- Aug. 2023}
-      {\textbf{Coinbase}}{India}
-      {Built LLM-powered social intelligence systems and scalable data ingestion pipelines}
-      \resumeItemListStart
+\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
 
-        \resumeItem{Designed and deployed an end-to-end \textbf{Social Intelligence pipeline} utilizing \textbf{LLM-powered NLP} to extract crypto market signals from high-volume social media streams in near real-time.}
-
-        \resumeItem{Engineered fault-tolerant automated data pipelines using \textbf{Apache Airflow} to ingest and process \textbf{15K+ tweets/hour} for downstream model inference.}
-
-        \resumeItem{Implemented narrative detection pipelines combining \textbf{BERTopic} and \textbf{LLM vector embeddings}, optimizing topic clustering accuracy on unstructured context.}
-
-      \resumeItemListEnd
-
-  \workExSubheading
-  {Summer Analyst (SWE Intern)}{Jun. 2022 -- Jul. 2022}
-  {\textbf{Goldman Sachs}}{Bengaluru, India}
-  {Engineered high-throughput distributed pipelines and optimized microservices processing trade data}
-  
-  \resumeItemListStart
-
-    \resumeItem{\textbf{Accelerated Apache Kafka processing by 700\% (14 hours to \textless{}120 mins)} by architecting a scalable multiprocessing pipeline handling 6M+ messages (60GB+) per run.}
-
-    \resumeItem{Unified 6 globally fragmented regression environments into a single pipeline, improving API consistency and adopted across 6 international engineering teams.}
-
-  \resumeItemListEnd
-    
-\resumeSubHeadingListEnd
-
-%-----------PUBLICATIONS-----------
-\section{Publications}
-  \resumeSubHeadingListStart
-    \workExSubheading
-      {Co-Author \& Core ML Contributor}{Feb. 2026}
-      {\href{https://arxiv.org/abs/2602.07248}
-      {\underline{\textbf{SocialPulse: Open-Source Subreddit Sensemaking Toolkit}}}}{ICWSM 2026 / arXiv}
-      {}
-      \vspace{-14pt}
-      \resumeItemListStart
-    
-        \resumeItem{\textbf{Contributed to “SocialPulse: An Open-Source Subreddit Sensemaking Toolkit”}, published at \textbf{ICWSM 2026}, developing NLP + GenAI modules to extract structured analytics from unstructured community datasets.}
-    
-      \resumeItemListEnd
-  \resumeSubHeadingListEnd
-
-%-----------SKILLS & EXPERTISE-----------
-\section{Skills and Expertise}
-\begin{itemize}[leftmargin=0.15in, label={}]
-    \skillItem{ \textbf{Languages \& Frameworks:} Python (Expert), SQL, C++, FastAPI, Flask, PyTorch, TensorFlow, Scikit-learn}
-          \vspace{-4pt}
-    \skillItem{ \textbf{Machine Learning \& LLMs:} RAG Systems, Multi-Agent Systems, Prompt Engineering, Model Finetuning, Vector Databases (FAISS, Pinecone), Inference Optimization, Embeddings, NLP}
-          \vspace{-4pt}
-    \skillItem{ \textbf{Backend \& Infrastructure:} REST APIs, Docker, Kubernetes (EKS/GKE), Microservices Architecture, CI/CD, Monitoring, Rate Limiting, Logging \& Alerting}
-          \vspace{-4pt}
-    \skillItem{ \textbf{Data \& Distributed Systems:} Apache Airflow, Apache Kafka, Databricks, Snowflake, BigQuery, Spark, MSSQL, MongoDB}
-          \vspace{-4pt}
 \end{itemize}
 
-%-------------------------------------------
+% ============================================================
+%     PROFESSIONAL EXPERIENCE
+% ============================================================
+
+\section{Professional Experience}
+\vspace{3pt}
+\begin{itemize}
+
+% --- Most Recent Role ---
+\item{\cventry{[YYYY-Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\begin{itemize}
+    \item {[Achievement or responsibility 1 - be specific, use numbers where possible]}
+    \item {[Achievement or responsibility 2]}
+    \item {[Achievement or responsibility 3]}
+    \item {[Achievement or responsibility 4]}
+\end{itemize}}}
+
+\vspace{3pt}
+
+% --- Previous Role ---
+\item{\cventry{[YYYY-YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\begin{itemize}
+    \item {[Achievement or responsibility 1]}
+    \item {[Achievement or responsibility 2]}
+    \item {[Achievement or responsibility 3]}
+\end{itemize}}}
+
+\vspace{3pt}
+
+% --- Earlier Role ---
+\item{\cventry{[YYYY-YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\begin{itemize}
+    \item {[Achievement or responsibility 1]}
+    \item {[Achievement or responsibility 2]}
+\end{itemize}}}
+
+\end{itemize}
+
+% ============================================================
+%     EDUCATION
+% ============================================================
+
+\section{Education}
+\vspace{1pt}
+\begin{itemize}
+
+\item{\cventry{[YYYY-YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
+Thesis: ``[Thesis Title].'' [Brief description of research focus.]
+}}
+
+\vspace{3pt}
+
+\item{\cventry{[YYYY-YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
+[Brief description or key topics.]
+}}
+
+\end{itemize}
+
+% ============================================================
+%     LANGUAGES
+% ============================================================
+
+\section{Languages}
+\vspace{1pt}
+\begin{itemize}
+\item {[Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).}
+\end{itemize}
+
+% ============================================================
+%     PUBLICATIONS (optional)
+% ============================================================
+
+\section{Publications}
+\vspace{1pt}
+\begin{itemize}
+\item {[Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}}
+\end{itemize}
+
+% ============================================================
+%     HONORS AND AWARDS (optional)
+% ============================================================
+
+\section{Honors and Awards}
+\vspace{1pt}
+\begin{itemize}
+\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\end{itemize}
+
+% ============================================================
+%     REFERENCES
+% ============================================================
+
+\section{References}
+\vspace{1pt}
+\begin{itemize}
+\item{Available upon request.}
+\end{itemize}
+
 \end{document}

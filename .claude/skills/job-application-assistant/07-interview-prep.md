@@ -1,3 +1,7 @@
+---
+framework_version: 1.0.0
+---
+
 # Interview Preparation Guide
 
 <!-- SETUP: STAR examples are personalized by running /setup based on your actual experience -->

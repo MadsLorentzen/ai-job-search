@@ -11,7 +11,8 @@ description: >
   positions open, remote jobs, "are there any X jobs in <place>", look up this
   job posting.
 context: fork
-allowed-tools: Bash(bun run skills/linkedin-search/cli/src/cli.ts *)
+enabled: true  # set to false to keep this portal installed but have /scrape skip it
+allowed-tools: Bash(bun run .agents/skills/linkedin-search/cli/src/cli.ts *)
 ---
 
 # LinkedIn Search Skill
@@ -42,13 +43,14 @@ Run it on your own responsibility.
 ### Search job listings
 
 ```bash
-bun run skills/linkedin-search/cli/src/cli.ts search --location "<place>" [flags]
+bun run .agents/skills/linkedin-search/cli/src/cli.ts search --location "<place>" [flags]
 ```
 
 Key flags:
 - `--location <text>` / `-l <text>` — **required.** A LinkedIn place string, e.g. `"Bengaluru, Karnataka, India"`, `"Hyderabad, Telangana, India"`, `"Pune, Maharashtra, India"`, `"Delhi, India"`, `"Gurugram, Haryana, India"`, or `"Remote"`.
 - `--query <text>` / `-q <text>` — keyword search (title, skill, role). Recommended.
 - `--jobage <days>` — posted within N days: `1`, `7`, `14`, `30`. Omit for all postings.
+- `--jobage-minutes <n>` — posted within N minutes (sub-day precision, e.g. `30`). Conflicts with `--jobage` — pass only one.
 - `--remote <mode>` — `remote`, `hybrid`, or `onsite` (workplace-type filter).
 - `--page <n>` — page number (1-indexed, 10 results per page).
 - `--limit <n>` / `-n <n>` — cap total results emitted (client-side).
@@ -57,30 +59,33 @@ Key flags:
 ### Fetch full job detail
 
 ```bash
-bun run skills/linkedin-search/cli/src/cli.ts detail <id|url> [--format json|plain]
+bun run .agents/skills/linkedin-search/cli/src/cli.ts detail <id|url> [--format json|plain]
 ```
 
 `id` is the job ID from `search` results (e.g. `4426311357`). You may also pass a full
 LinkedIn `jobs/view/...` URL or a `urn:li:jobPosting:...` URN. Returns the full description,
-seniority, employment type, job function, industries, and apply link.
+seniority, employment type, job function, and industries.
 
 ## Usage examples
 
 ```bash
 # Data engineer roles in Bengaluru, last 30 days
-bun run skills/linkedin-search/cli/src/cli.ts search -q "data engineer" -l "Bengaluru, Karnataka, India" --jobage 30 --format table
+bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "data engineer" -l "Bengaluru, Karnataka, India" --jobage 30 --format table
 
 # Product manager roles in Hyderabad, hybrid
-bun run skills/linkedin-search/cli/src/cli.ts search -q "product manager" -l "Hyderabad, Telangana, India" --remote hybrid --format table
+bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "product manager" -l "Hyderabad, Telangana, India" --remote hybrid --format table
 
 # Backend engineer roles in Pune, posted this week
-bun run skills/linkedin-search/cli/src/cli.ts search -q "backend engineer" -l "Pune, Maharashtra, India" --jobage 7 --format table
+bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "backend engineer" -l "Pune, Maharashtra, India" --jobage 7 --format table
 
-# Any role, fully remote (top-priority search for this setup)
-bun run skills/linkedin-search/cli/src/cli.ts search -q "data analyst" -l "Remote" --format table
+# Any role, fully remote
+bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "machine learning engineer" -l "Remote" --format table
+
+# Engineer roles, remote, posted in the last 30 minutes
+bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "engineer" -l "Remote" --jobage-minutes 30 --format table
 
 # Full details for a specific job
-bun run skills/linkedin-search/cli/src/cli.ts detail 4426311357 --format plain
+bun run .agents/skills/linkedin-search/cli/src/cli.ts detail 4426311357 --format plain
 ```
 
 ## Output formats

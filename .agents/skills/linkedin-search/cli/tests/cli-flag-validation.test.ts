@@ -47,6 +47,49 @@ describe("LinkedIn CLI flag validation", () => {
     });
   });
 
+  describe("--jobage-minutes validation", () => {
+    test("non-numeric string exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "foo"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage-minutes/);
+    });
+
+    test("zero exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "0"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage-minutes/);
+    });
+
+    test("negative value is parsed as a missing value and exits 1 with BAD_ARG", async () => {
+      // parseFlags in cli.ts treats a next-token starting with "-" as absent
+      // (`next.startsWith("-")` → flag becomes boolean `true`), and there is no
+      // `--flag=value` syntax. So "-5" never reaches --jobage-minutes as a value;
+      // it parses as a stray flag named "5", which the unknown-flag guard now
+      // rejects before the NaN branch can. Either way the invariant holds: a
+      // negative value fails loudly with exit 1 and a JSON error, never a
+      // silent unfiltered search.
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "-5"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("UNKNOWN_FLAG");
+    });
+  });
+
+  describe("--jobage / --jobage-minutes conflict", () => {
+    test("both set exits 1 with CONFLICTING_AGE_FLAGS", async () => {
+      const result = await runCLI([
+        "search", "-l", LOCATION, "--jobage", "7", "--jobage-minutes", "30",
+      ]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("CONFLICTING_AGE_FLAGS");
+    });
+  });
+
   describe("--page NaN validation", () => {
     test("non-numeric string exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "-l", LOCATION, "--page", "abc"]);
@@ -82,5 +125,22 @@ describe("LinkedIn CLI flag validation", () => {
       const err = parsedStderr(result.stderr);
       expect(err.code).not.toBe("BAD_ARG");
     });
+  });
+});
+
+
+describe("unknown flag rejection", () => {
+  // add-portal.md's contract: "a bogus flag or missing required arg exits 1
+  // with a JSON error on stderr". A silently discarded flag is worse than an
+  // error: on jobdanmark a wrong flag name returned the entire database
+  // (13,862 results) as if it matched the query (review finding F13,
+  // 2026-08-19). Rejection happens before dispatch, so these are network-free.
+  test("a bogus --flag exits 1 with a JSON error instead of being silently discarded", async () => {
+    const result = await runCLI(["search", "-l", "Denmark", "-q", "test", "--bogus-flag", "xyz"]);
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toBe("");
+    const error = JSON.parse(result.stderr);
+    expect(error.code).toBe("UNKNOWN_FLAG");
+    expect(error.error).toContain("--bogus-flag");
   });
 });
