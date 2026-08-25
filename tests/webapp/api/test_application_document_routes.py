@@ -8,6 +8,7 @@ from webapp.app import create_app
 from webapp.config import Settings
 from webapp.persistence.db import connect
 from webapp.persistence.workspaces import create_workspace
+from webapp.persistence.accounts import create_account
 
 
 def _docx():
@@ -83,5 +84,23 @@ def test_user_upload_can_be_reused_in_another_owned_workspace(tmp_path):
         assert client.get("/api/reusable-application-documents").json()["documents"][0]["document_version_id"] == version["id"]
         selected = client.put(f"/api/workspaces/{other['id']}/application-documents/selection/cv", json={"document_version_id": version["id"], "expected_revision": 0})
         assert selected.status_code == 200
+    finally:
+        client.__exit__(None, None, None)
+
+
+def test_known_cross_account_workspace_and_document_ids_are_not_found(tmp_path):
+    client, settings, _ = _client(tmp_path)
+    try:
+        conn = connect(settings.db_path)
+        create_account(conn, account_id="account_b", display_name="B")
+        private = create_workspace(conn, company="Private", title="Role", account_id="account_b")
+        conn.close()
+        b_app = create_app(Settings(db_path=settings.db_path, documents_root=settings.documents_root, account_id="account_b"))
+        with TestClient(b_app) as b_client:
+            uploaded = b_client.post(f"/api/workspaces/{private['id']}/application-documents/upload/cv", files={"file": ("Private.docx", _docx(), DOCX_MEDIA_TYPE)})
+            assert uploaded.status_code == 201
+            version_id = uploaded.json()["id"]
+        assert client.get(f"/api/workspaces/{private['id']}/application-documents").status_code == 404
+        assert client.get(f"/api/workspaces/{private['id']}/application-documents/{version_id}/download").status_code == 404
     finally:
         client.__exit__(None, None, None)

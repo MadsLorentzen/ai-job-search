@@ -41,3 +41,18 @@ def test_handoff_blocks_when_selection_differs_but_historical_download_remains_e
         resolve_application_handoff(conn, workspace_id, pack_artifact_id=confirmed["artifact"]["id"], documents_root=root, account_id="account_local")
     rendered = render_job_application_pack_document(conn, workspace_id, kind="cv", pack_artifact_id=confirmed["artifact"]["id"], documents_root=root, account_id="account_local")
     assert rendered.content == DocumentBlobStore(root).read(cv)
+
+
+def test_historical_v2_download_survives_deleted_live_profile_generation_and_selections(tmp_path):
+    conn, workspace_id, root, generated, confirmed = _confirmed(tmp_path)
+    expected = {
+        row["document_kind"]: DocumentBlobStore(root).read(row)
+        for row in generated["documents"]
+    }
+    conn.execute("DELETE FROM application_document_selections WHERE workspace_id=?", (workspace_id,))
+    conn.execute("DELETE FROM current_artifacts WHERE workspace_id=? AND artifact_type='application_document_generation'", (workspace_id,))
+    conn.execute("DELETE FROM current_artifacts WHERE artifact_type='profile_snapshot'")
+    conn.commit()
+    for kind in ("cv", "cover_letter"):
+        rendered = render_job_application_pack_document(conn, workspace_id, kind=kind, pack_artifact_id=confirmed["artifact"]["id"], documents_root=root, account_id="account_local")
+        assert rendered.content == expected[kind]
