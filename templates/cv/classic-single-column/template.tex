@@ -1,0 +1,172 @@
+%-------------------------
+% Resume Template (sb2nov / Classic Single Column)
+% License : MIT
+% Compile with: pdflatex -interaction=nonstopmode <file>.tex
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\skillItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\workExSubheading}[5]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+      \multicolumn{2}{l}{\sloppy \textit{\small #5}}
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+    \textbf{\Huge \scshape [YOUR_NAME]} \\ \vspace{1pt}
+    \small [YOUR_PHONE] $|$ \href{mailto:[YOUR_EMAIL]}{\underline{[YOUR_EMAIL]}} $|$ 
+    \href{https://[YOUR_LINKEDIN_URL]}{\underline{[YOUR_LINKEDIN_HANDLE]}}
+\end{center}
+
+%-----------EDUCATION-----------
+\vspace{-10pt}
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {[DEGREE_INSTITUTION]}{[INSTITUTION_LOCATION]}
+      {[DEGREE_TITLE]}{[YEAR_START] -- [YEAR_END]}
+  \resumeSubHeadingListEnd
+
+%-----------WORK EXPERIENCE-----------
+\section{Work Experience}
+  \resumeSubHeadingListStart        
+        
+    \workExSubheading
+      {[JOB_TITLE_1]}{[START_DATE_1] -- [END_DATE_1]}
+      {\textbf{[COMPANY_NAME_1]}}{[JOB_LOCATION_1]}
+      {[ROLE_SUMMARY_SUBTITLE_1]}
+    
+      \resumeItemListStart
+        \resumeItem{[KEY_ACHIEVEMENT_1]}
+        \resumeItem{[KEY_ACHIEVEMENT_2]}
+        \resumeItem{[KEY_ACHIEVEMENT_3]}
+        \resumeItem{[KEY_ACHIEVEMENT_4]}
+        \resumeItem{[KEY_ACHIEVEMENT_5]}
+      \resumeItemListEnd
+
+    \workExSubheading
+      {[JOB_TITLE_2]}{[START_DATE_2] -- [END_DATE_2]}
+      {\textbf{[COMPANY_NAME_2]}}{[JOB_LOCATION_2]}
+      {[ROLE_SUMMARY_SUBTITLE_2]}
+      \resumeItemListStart
+        \resumeItem{[KEY_ACHIEVEMENT_6]}
+        \resumeItem{[KEY_ACHIEVEMENT_7]}
+        \resumeItem{[KEY_ACHIEVEMENT_8]}
+      \resumeItemListEnd
+
+  \workExSubheading
+  {[JOB_TITLE_3]}{[START_DATE_3] -- [END_DATE_3]}
+  {\textbf{[COMPANY_NAME_3]}}{[JOB_LOCATION_3]}
+  {[ROLE_SUMMARY_SUBTITLE_3]}
+  \resumeItemListStart
+    \resumeItem{[KEY_ACHIEVEMENT_9]}
+    \resumeItem{[KEY_ACHIEVEMENT_10]}
+  \resumeItemListEnd
+    
+\resumeSubHeadingListEnd
+
+%-----------PUBLICATIONS-----------
+\section{Publications}
+  \resumeSubHeadingListStart
+    \workExSubheading
+      {[PUBLICATION_ROLE]}{[PUBLICATION_DATE]}
+      {\href{[PAPER_URL]}
+      {\underline{\textbf{[PUBLICATION_TITLE]}}}}{[CONFERENCE_OR_JOURNAL]}
+      {}
+      \vspace{-14pt}
+      \resumeItemListStart
+        \resumeItem{[PUBLICATION_DESCRIPTION]}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+%-----------SKILLS & EXPERTISE-----------
+\section{Skills and Expertise}
+\begin{itemize}[leftmargin=0.15in, label={}]
+    \skillItem{ \textbf{Languages \& Frameworks:} [SKILLS_LANGUAGES_FRAMEWORKS]}
+          \vspace{-4pt}
+    \skillItem{ \textbf{Machine Learning \& LLMs:} [SKILLS_ML_LLMS]}
+          \vspace{-4pt}
+    \skillItem{ \textbf{Backend \& Infrastructure:} [SKILLS_BACKEND_INFRA]}
+          \vspace{-4pt}
+    \skillItem{ \textbf{Data \& Distributed Systems:} [SKILLS_DATA_DISTRIBUTED]}
+          \vspace{-4pt}
+\end{itemize}
+
+%-------------------------------------------
+\end{document}

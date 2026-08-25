@@ -16,7 +16,7 @@ Follow these steps **exactly in order**. Do not skip steps.
 
 - If `$ARGUMENTS` looks like a URL, use `WebFetch` to retrieve the job posting content.
 - If it is pasted text, use it directly.
-- Extract: **company name**, **role title**, **department** (if mentioned), **location**, and **language** of the posting (Danish or English).
+- Extract: **company name**, **role title**, **department** (if mentioned), **location**, and **language** of the posting.
 - Store these for use throughout the workflow.
 
 ---
@@ -71,7 +71,7 @@ Also read the most recent existing CV and cover letter files for concrete struct
 - Keep to 2 pages
 
 ### Cover Letter (`cover_letters/cover_<company>_<role>.tex`)
-- **Match the language of the job posting** (Danish posting -> Danish cover letter, English posting -> English cover letter)
+- **Match the language of the job posting** (write the cover letter in the language the posting uses)
 - Follow the structure from `06-cover-letter-templates.md`
 - Use the `cover.cls` template
 - Tailor the opening paragraph to the specific role and company
@@ -241,7 +241,7 @@ Read the `.txt` file.
 
 Failures here are template-level problems: fix them in the `.tex` (e.g. print the email as text rather than icon-only), then re-run 5a–5c and re-extract. If a custom template's layout fundamentally scrambles extraction order, tell the user prominently — they may be trading ATS compatibility for looks.
 
-**3. Keyword coverage.** Reuse the required/preferred keyword list you extracted in Step 1 — do not re-derive it. Match each keyword against the extracted text, **in the posting's language** (a Danish posting's keywords are matched in Danish even though the CV is in English — where the CV legitimately covers the concept in English, count it as synonym-only and note the language difference). Report a table:
+**3. Keyword coverage.** Reuse the required/preferred keyword list you extracted in Step 1 — do not re-derive it. Match each keyword against the extracted text, **in the posting's language** (a non-English posting's keywords are matched in that language even though the CV is in English — where the CV legitimately covers the concept in English, count it as synonym-only and note the language difference). Report a table:
 
 | Keyword | Priority | Status | Note |
 |---------|----------|--------|------|

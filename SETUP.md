@@ -26,7 +26,7 @@ On Windows, `py --version` is often the most reliable check if `python` is not o
 
 ### Bun (for job search tools)
 
-The job portal CLIs (four Danish portals plus the country-agnostic LinkedIn tool) are written in TypeScript and run with Bun.
+The job search CLI (`linkedin-search`) is written in TypeScript and runs with Bun.
 
 - macOS/Linux:
 
@@ -71,30 +71,26 @@ cd ai-job-search
 
 Or manually: fork on GitHub, then clone your fork.
 
-## 3. Install job search CLI dependencies
-Run these from the repository root.
+## 3. Optional: Install job search CLI dev dependencies
+Run this from the repository root.
 
 - PowerShell:
 
 ```powershell
-$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search")
-foreach ($tool in $tools) {
-  Set-Location ".agents/skills/$tool/cli"
-  bun install
-  Set-Location "..\..\..\.."
-}
+Set-Location ".agents/skills/linkedin-search/cli"
+bun install
+Set-Location "..\..\..\.."
 ```
 
 - Bash / zsh / Git Bash:
+
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search; do
-  cd .agents/skills/$tool/cli && bun install && cd ../../../..
-done
+cd .agents/skills/linkedin-search/cli && bun install && cd ../../../..
 ```
 
-For `linkedin-search` the install is optional: it has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls TypeScript dev types.
+This step is optional: `linkedin-search` has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls the TypeScript dev types used by typechecking and tests.
 
-If you're outside Denmark, you can generate an equivalent search skill for your local job board with `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
+If you later want a direct CLI integration for another public job board, you can generate an equivalent search skill with `/add-portal` — it scaffolds the same CLI structure for any public portal and test-runs a live query before registering. See the "Job search tools" section in the README.
 
 ## 4. Run the setup interview
 
@@ -161,7 +157,7 @@ This creates `salary_data.json` which the `/apply` workflow uses for salary benc
 Find a job posting you're interested in, then:
 
 ```
-/apply https://jobindex.dk/job/1234567
+/apply https://www.linkedin.com/jobs/view/4426311357
 ```
 
 Or paste the job description directly:
@@ -201,7 +197,7 @@ These commands apply to the stock templates (moderncv CV, `cover.cls` cover lett
 This is expected if you haven't set up salary benchmarking. The `/apply` workflow skips this step automatically.
 
 ### Job search CLI tools not working
-Make sure Bun is installed and you ran `bun install` in each CLI directory. The tools require network access to fetch job listings.
+Make sure Bun is installed and you ran `bun install` in the CLI directory. The tools require network access to fetch job listings.
 
 ### LaTeX compilation errors
 - CV: uses `lualatex` (pdflatex often fails on modern MiKTeX with `fontawesome5` font-expansion errors; lualatex handles the same sources cleanly)

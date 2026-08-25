@@ -46,7 +46,7 @@ bun run skills/linkedin-search/cli/src/cli.ts search --location "<place>" [flags
 ```
 
 Key flags:
-- `--location <text>` / `-l <text>` — **required.** A LinkedIn place string, e.g. `"Mumbai, Maharashtra, India"`, `"Berlin, Germany"`, `"London, United Kingdom"`, or `"Remote"`.
+- `--location <text>` / `-l <text>` — **required.** A LinkedIn place string, e.g. `"Bengaluru, Karnataka, India"`, `"Hyderabad, Telangana, India"`, `"Pune, Maharashtra, India"`, `"Delhi, India"`, `"Gurugram, Haryana, India"`, or `"Remote"`.
 - `--query <text>` / `-q <text>` — keyword search (title, skill, role). Recommended.
 - `--jobage <days>` — posted within N days: `1`, `7`, `14`, `30`. Omit for all postings.
 - `--remote <mode>` — `remote`, `hybrid`, or `onsite` (workplace-type filter).
@@ -70,11 +70,14 @@ seniority, employment type, job function, industries, and apply link.
 # Data engineer roles in Bengaluru, last 30 days
 bun run skills/linkedin-search/cli/src/cli.ts search -q "data engineer" -l "Bengaluru, Karnataka, India" --jobage 30 --format table
 
-# Product manager roles in Berlin, remote
-bun run skills/linkedin-search/cli/src/cli.ts search -q "product manager" -l "Berlin, Germany" --remote remote --format table
+# Product manager roles in Hyderabad, hybrid
+bun run skills/linkedin-search/cli/src/cli.ts search -q "product manager" -l "Hyderabad, Telangana, India" --remote hybrid --format table
 
-# Any role, fully remote
-bun run skills/linkedin-search/cli/src/cli.ts search -q "paralegal" -l "Remote" --format table
+# Backend engineer roles in Pune, posted this week
+bun run skills/linkedin-search/cli/src/cli.ts search -q "backend engineer" -l "Pune, Maharashtra, India" --jobage 7 --format table
+
+# Any role, fully remote (top-priority search for this setup)
+bun run skills/linkedin-search/cli/src/cli.ts search -q "data analyst" -l "Remote" --format table
 
 # Full details for a specific job
 bun run skills/linkedin-search/cli/src/cli.ts detail 4426311357 --format plain
@@ -93,6 +96,8 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 ## Notes
 
 - Data is from LinkedIn's public `jobs-guest` endpoints — no credentials required.
+- **Remote first:** fully-remote roles are this owner's top priority — prefer a `-l "Remote"` sweep before city-specific searches.
+- Naukri, Foundit, Shine, TimesJobs, and Instahyre have **no CLI** here: Naukri sits behind Akamai bot protection (HTTP 406 even with a warmed session), so these portals are covered by the WebSearch lane inside `/scrape` instead.
 - Page size is fixed at 10 results per page.
 - LinkedIn may rate-limit; the CLI retries 429/5xx with exponential backoff. Keep volume low (see ToS note above).
 - Job IDs are numeric (e.g. `4426311357`) — pass them as-is to `detail`.

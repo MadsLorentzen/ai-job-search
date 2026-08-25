@@ -5,7 +5,6 @@ description: >
   web search) for new positions matching your profile. Deduplicates across runs.
   Triggers on: job scrape, find jobs, search jobs, new jobs, job search, scrape jobs,
   jobs india, naukri, /scrape
-allowed-tools: Read, Write, Edit, Glob, Grep, WebFetch, WebSearch, Bash, Agent, AskUserQuestion
 ---
 
 # Job Scraper
@@ -19,7 +18,7 @@ This skill searches multiple Indian job sites using targeted queries based on yo
 Search runs in two lanes:
 
 - **Lane A (structured):** The `linkedin-search` CLI at `.agents/skills/linkedin-search/cli/src/cli.ts` (zero dependencies, run with `bun`, personal-use tool). Returns clean JSON per query.
-- **Lane B (web search):** Site-scoped **WebSearch** queries from `search-queries.md` covering **naukri.com**, **foundit.in**, **shine.com**, **timesjobs.com**, and **instahyre.com**. These portals cannot be scraped directly — e.g. Naukri's JSON API requires a JS-generated signed token behind Akamai bot protection and returns HTTP 406 without it — so they are covered through search results instead.
+- **Lane B (web search):** Site-scoped **web search** queries from `search-queries.md` covering **naukri.com**, **foundit.in**, **shine.com**, **timesjobs.com**, and **instahyre.com**. These portals cannot be scraped directly — e.g. Naukri's JSON API requires a JS-generated signed token behind Akamai bot protection and returns HTTP 406 without it — so they are covered through search results instead.
 
 ## Location & Priority
 
@@ -76,7 +75,7 @@ bun run .agents/skills/linkedin-search/cli/src/cli.ts search -q "<keywords>" -l 
 
 #### Lane B: Web Search (Naukri / Foundit / Shine / TimesJobs / Instahyre)
 
-Run the site-scoped **WebSearch** queries from `search-queries.md` (`site:naukri.com`, `site:foundit.in`, `site:shine.com`, `site:timesjobs.com`, `site:instahyre.com`). Remote-India variants of each query run first.
+Run the site-scoped **web search** queries from `search-queries.md` (`site:naukri.com`, `site:foundit.in`, `site:shine.com`, `site:timesjobs.com`, `site:instahyre.com`). Remote-India variants of each query run first.
 
 For each lane's results:
 - Look for postings from the last 14 days
@@ -85,15 +84,15 @@ For each lane's results:
 
 For each promising result from Step 1:
 
-- Use `WebFetch` to retrieve the job posting page (Lane B hits), or `detail <id>` (Lane A) for enrichment
+- Use web fetch to retrieve the job posting page (Lane B hits), or `detail <id>` (Lane A) for enrichment
 - Extract: **job title**, **company**, **location**, **posting date** (or "recent"), **URL**, **key requirements** (brief), **application deadline** (if listed)
-- **Honest fallback for blocked pages:** Naukri (and occasionally Foundit/Shine/TimesJobs/Instahyre) pages are behind Akamai bot protection and may be blocked or return empty. If WebFetch fails or returns nothing usable, take title/company/location/date from the **search snippet metadata** and keep the URL as-is. If a field is not present in the snippet, mark it honestly (e.g. "date unknown") — never guess or invent requirements/deadlines.
+- **Honest fallback for blocked pages:** Naukri (and occasionally Foundit/Shine/TimesJobs/Instahyre) pages are behind Akamai bot protection and may be blocked or return empty. If web fetch fails or returns nothing usable, take title/company/location/date from the **search snippet metadata** and keep the URL as-is. If a field is not present in the snippet, mark it honestly (e.g. "date unknown") — never guess or invent requirements/deadlines.
 - Skip if the URL or company+title combo already exists in `seen_jobs.json`
 - Skip if the company+role already appears in `job_search_tracker.csv`
 
 ### Step 3: Quick Fit Assessment
 
-For each new job, do a rapid fit check (NOT the full evaluation from `04-job-evaluation.md` - just a quick signal):
+For each new job, do a rapid fit check (NOT the full evaluation from `.agents/skills/job-application-assistant/04-job-evaluation.md` - just a quick signal):
 
 - **High match**: Role directly involves your core skills
 - **Medium match**: Role is adjacent to your experience
@@ -152,9 +151,9 @@ If the user decides to apply to any job, add a row to `job_search_tracker.csv`.
 
 ## Important Rules
 
-1. **Never fabricate job postings.** Only present jobs found via actual CLI/WebSearch/WebFetch results. If portal pages are blocked (Akamai), fall back to snippet metadata and mark unknown fields honestly.
+1. **Never fabricate job postings.** Only present jobs found via actual CLI/web search/web fetch results. If portal pages are blocked (Akamai), fall back to snippet metadata and mark unknown fields honestly.
 2. **Respect deduplication.** Always check seen_jobs.json AND job_search_tracker.csv before presenting.
 3. **Focus on configured locations.** Remote (India) roles are always in scope and come first; on-site jobs must match Bengaluru, Hyderabad, Pune, Delhi, or Gurugram. Skip anything requiring relocation outside these.
 4. **Only open positions.** Skip postings with expired deadlines or those marked as closed.
-5. **Be efficient with WebFetch.** Don't fetch every search result - use titles and snippets to pre-filter before fetching. Blocked fetches get one snippet-based fallback, not retries.
-6. **Parallel searches, low volume.** Use the Agent tool or parallel WebSearch calls to speed up Lane B, and parallel CLI calls in Lane A — but keep the total number of requests low; this is a personal-use tool.
+5. **Be efficient with web fetch.** Don't fetch every search result - use titles and snippets to pre-filter before fetching. Blocked fetches get one snippet-based fallback, not retries.
+6. **Parallel searches, low volume.** Use subagents (via `invoke_subagent`) or parallel web search calls to speed up Lane B, and parallel CLI calls in Lane A — but keep the total number of requests low; this is a personal-use tool.

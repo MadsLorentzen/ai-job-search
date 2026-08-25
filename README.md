@@ -14,7 +14,7 @@ An AI-powered job application framework built on [Claude Code](https://claude.co
 
 ## What this is
 
-A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Danish market (Jobindex, Jobnet, Akademikernes Jobbank, etc.), but the pattern is designed to be swapped for your local job boards.
+A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. Job search ships a country-agnostic LinkedIn CLI skill; Indian portals (Naukri, Foundit, Shine, TimesJobs, Instahyre) are covered by a web-search lane inside `/scrape`, and `/add-portal` can scaffold direct integrations for other public boards.
 
 ```
 /setup          /scrape              /apply <url>
@@ -38,7 +38,7 @@ The framework encodes career guidance best practices, including structured evalu
 
 - [Claude Code](https://claude.com/claude-code) (CLI)
 - Python 3.10+
-- [Bun](https://bun.sh) (for Danish job search CLI tools)
+- [Bun](https://bun.sh) (for the `linkedin-search` CLI tool)
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/) or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`.
 - Optional: `pdftotext` from [poppler](https://poppler.freedesktop.org/) (macOS: `brew install poppler`, Debian/Ubuntu: `apt install poppler-utils`, Windows: `choco install poppler`) — used by `/apply`'s ATS parseability check on the compiled CV. If missing, the check degrades gracefully to a visual keyword review.
 
@@ -54,14 +54,10 @@ cd ai-job-search
 ### 2. Install job search tools
 
 ```bash
-cd .agents/skills/jobbank-search/cli && bun install && cd ../../../..
-cd .agents/skills/jobdanmark-search/cli && bun install && cd ../../../..
-cd .agents/skills/jobindex-search/cli && bun install && cd ../../../..
-cd .agents/skills/jobnet-search/cli && bun install && cd ../../../..
 cd .agents/skills/linkedin-search/cli && bun install && cd ../../../..
 ```
 
-For `linkedin-search` the install is optional: it has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls TypeScript dev types.
+This step is optional: `linkedin-search` has zero runtime dependencies and runs with plain `bun`; `bun install` only pulls TypeScript dev types.
 
 ### 3. Set up your profile
 
@@ -84,7 +80,7 @@ This searches multiple job portals for positions matching your profile, deduplic
 ### 5. Apply to a job
 
 ```bash
-/apply https://jobindex.dk/job/1234567
+/apply https://www.linkedin.com/jobs/view/4426311357
 ```
 
 If the URL can't be fetched (some job portals block automated access), you can paste the job description directly instead:
@@ -133,10 +129,6 @@ ai-job-search/
 │   │   └── upskill/                   # /upskill skill gap analysis and learning plan
 │   └── settings.json                  # Claude Code permissions (shared, scoped)
 ├── .agents/skills/                    # Job portal CLI tools
-│   ├── jobbank-search/                # Akademikernes Jobbank (Denmark)
-│   ├── jobdanmark-search/             # Jobdanmark.dk (Denmark)
-│   ├── jobindex-search/               # Jobindex.dk (Denmark)
-│   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
 │   └── linkedin-search/               # LinkedIn public job listings (country-agnostic)
 ├── cv/
 │   └── main_example.tex               # moderncv LaTeX template
@@ -231,15 +223,17 @@ If you prefer doing it by hand, the manual route still works: update the guidanc
 
 ### Job search tools
 
-The four Danish CLI tools in `.agents/skills/` (Jobbank, Jobdanmark, Jobindex, Jobnet) demonstrate the pattern for building a job-portal integration for a specific market. If you're in a different country, run:
+The repo ships one CLI skill in `.agents/skills/`: **`linkedin-search`** — a country-agnostic job-search skill built on LinkedIn's public, unauthenticated `jobs-guest` endpoints. It is field-agnostic, has **zero runtime dependencies** (runs with just `bun`), and takes the search location as an explicit flag, so it works for any market out of the box (`-l "Bengaluru, Karnataka, India"`, `-l "Gurugram, Haryana, India"`, `-l "Remote"`, …). Fully-remote roles are this setup's top-priority search. It is intended for **personal use only** — automated access is against LinkedIn's Terms of Service, so keep volume low. See `.agents/skills/linkedin-search/SKILL.md`.
+
+Indian portals — Naukri, Foundit, Shine, TimesJobs, Instahyre — deliberately have no CLI here: Naukri sits behind Akamai bot protection (it answers HTTP 406 even to a warmed-up session), which rules out reliable direct scraping. They are covered instead by the **WebSearch lane inside `/scrape`**, which runs site-specific queries against each portal and deduplicates those hits alongside LinkedIn results.
+
+To integrate another public job board directly, run:
 
 ```
 /add-portal
 ```
 
-Give it your local job board's URL. The command investigates the portal (search-URL pattern, result-page structure, robots.txt/access rules), scaffolds a CLI skill with the same structure, commands, and output contract as the shipped ones, and test-runs a live query before registering anything. Auth-walled portals are declined, and portals with restrictive terms get a prominent personal-use-only warning in the generated skill. The generated skill is market-specific and lives in your fork; the generator itself is the universal part.
-
-For a **country-agnostic** starting point, the repo also includes **`linkedin-search`** — a job-search skill built on LinkedIn's public, unauthenticated `jobs-guest` endpoints. It is field-agnostic, has **zero runtime dependencies** (runs with just `bun`), and takes the search location as an explicit flag, so it works for any market out of the box (`-l "Berlin, Germany"`, `-l "Mumbai, Maharashtra, India"`, `-l "Remote"`, …). It is intended for **personal use only** — automated access is against LinkedIn's Terms of Service, so keep volume low. See `.agents/skills/linkedin-search/SKILL.md`.
+Give it the job board's URL. The command investigates the portal (search-URL pattern, result-page structure, robots.txt/access rules), scaffolds a CLI skill with the same structure, commands, and output contract as `linkedin-search`, and test-runs a live query before registering anything. Auth-walled portals are declined, and portals with restrictive terms get a prominent personal-use-only warning in the generated skill. The generated skill is market-specific and lives in your fork; the generator itself is the universal part.
 
 ### Salary benchmarking
 

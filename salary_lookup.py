@@ -26,7 +26,7 @@ from pathlib import Path
 
 DATA_FILE = Path(__file__).parent / "salary_data.json"
 
-# Common Danish <-> anglicized spelling variants
+# Common Nordic-character <-> anglicized spelling variants
 SPELLING_VARIANTS = {
     "ø": "o", "æ": "ae", "å": "aa",
     "ö": "o", "ä": "ae", "ü": "u",
@@ -67,10 +67,10 @@ def normalize(s):
 
 
 def anglicize(s):
-    """Convert Danish/Nordic characters to anglicized equivalents."""
+    """Convert Nordic characters to anglicized equivalents."""
     s = s.lower()
-    for danish, english in SPELLING_VARIANTS.items():
-        s = s.replace(danish, english)
+    for nordic, english in SPELLING_VARIANTS.items():
+        s = s.replace(nordic, english)
     return s
 
 

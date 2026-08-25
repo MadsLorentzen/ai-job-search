@@ -1,7 +1,7 @@
 import { describe, test, expect } from "bun:test";
 import { runCLI } from "./helpers";
 
-const LOCATION = "Copenhagen, Denmark";
+const LOCATION = "Bengaluru, Karnataka, India";
 
 function parsedStderr(stderr: string): { error?: string; code?: string } {
   try {
