@@ -1,38 +1,9 @@
 import type { Adapter, CandidateSnapshot, DetectedField, FieldDecision } from "./types";
-import { matchSafeCatalogField } from "./safe-catalog";
+import { matchSafeCatalogFieldForAdapter } from "./safe-catalog";
 import { isLegalDeclarationField } from "./legal-patterns";
 
 const ADAPTER_ID = "generic";
 const ADAPTER_VERSION = "generic@1";
-
-// Guard scoped narrowly to this adapter's calling site (does NOT modify
-// safe-catalog.ts). The shared safe catalog's `location` pattern matches on
-// the bare word "location", which also fires on labels like "Employer
-// location", "Company location", or "University location" — an ambiguous
-// EMPLOYMENT/EDUCATION field, not the candidate's own contact location. The
-// design spec (Section 8.1) already protects ambiguous employment fields
-// (e.g. a bare "Employer" field) from over-eager autofill; this extends the
-// same protection to location so we never write the candidate's own address
-// into a field meant for an employer's or institution's address. A bare
-// "Location" or "City" label with no such qualifier is unaffected and still
-// autofills normally.
-const EMPLOYER_CONTEXT_QUALIFIER = /\b(employer|company|institution|university|school|organization)\b/i;
-
-function isAmbiguousEmployerContextField(labelText: string): boolean {
-  return EMPLOYER_CONTEXT_QUALIFIER.test(labelText);
-}
-
-function safeCatalogMatchFor(labelText: string): string | null {
-  const safeType = matchSafeCatalogField(labelText);
-  if (safeType && isAmbiguousEmployerContextField(labelText)) {
-    // Refuse to trust the safe-catalog match: this looks like an
-    // employer/institution-scoped field wearing a safe-catalog label
-    // (e.g. "location"). Treat as unmatched so it falls through to the
-    // generic `ask` default instead of escalating to `autofill`.
-    return null;
-  }
-  return safeType;
-}
 
 function labelFor(input: HTMLInputElement, document: Document): string {
   if (input.id) {
@@ -74,7 +45,7 @@ export const genericAdapter: Adapter = {
         adapterVersion: ADAPTER_VERSION,
       };
     }
-    const safeType = safeCatalogMatchFor(field.labelText);
+    const safeType = matchSafeCatalogFieldForAdapter(field.labelText);
     if (safeType) {
       return {
         normalizedFieldType: safeType,
@@ -100,7 +71,7 @@ export const genericAdapter: Adapter = {
   },
 
   map(field: DetectedField, snapshot: CandidateSnapshot): string | null {
-    const safeType = safeCatalogMatchFor(field.labelText);
+    const safeType = matchSafeCatalogFieldForAdapter(field.labelText);
     if (safeType === "name") return snapshot.identity.name?.value ?? null;
     if (safeType && safeType in snapshot.contact) {
       return snapshot.contact[safeType]?.value ?? null;

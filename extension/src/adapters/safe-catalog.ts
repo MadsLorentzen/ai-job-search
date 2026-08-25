@@ -24,3 +24,40 @@ export function matchSafeCatalogField(labelText: string): string | null {
   }
   return null;
 }
+
+// Guard centralized here (originally scoped to the generic adapter's calling
+// site only) so every adapter that wants a safe-catalog match gets the same
+// protection instead of each adapter having to duplicate it. The shared
+// safe catalog's `location` pattern matches on the bare word "location",
+// which also fires on labels like "Employer location", "Company location",
+// or "University location" — an ambiguous EMPLOYMENT/EDUCATION field, not
+// the candidate's own contact location. The design spec (Section 8.1)
+// already protects ambiguous employment fields (e.g. a bare "Employer"
+// field) from over-eager autofill; this extends the same protection to
+// location so we never write the candidate's own address into a field
+// meant for an employer's or institution's address. A bare "Location" or
+// "City" label with no such qualifier is unaffected and still autofills
+// normally.
+const EMPLOYER_CONTEXT_QUALIFIER = /\b(employer|company|institution|university|school|organization)\b/i;
+
+function isAmbiguousEmployerContextField(labelText: string): boolean {
+  return EMPLOYER_CONTEXT_QUALIFIER.test(labelText);
+}
+
+// Adapters should call this instead of the raw `matchSafeCatalogField` for
+// classify()/map() decisions: it applies the employer/institution-context
+// guard above so an ambiguous label never escalates to "autofill". The raw
+// matcher above remains available, unguarded, for any legitimate use case
+// that needs to ask "does this label match ANY safe-catalog field, ignoring
+// context" (e.g. diagnostics).
+export function matchSafeCatalogFieldForAdapter(labelText: string): string | null {
+  const safeType = matchSafeCatalogField(labelText);
+  if (safeType && isAmbiguousEmployerContextField(labelText)) {
+    // Refuse to trust the safe-catalog match: this looks like an
+    // employer/institution-scoped field wearing a safe-catalog label
+    // (e.g. "location"). Treat as unmatched so it falls through to the
+    // generic `ask` default instead of escalating to `autofill`.
+    return null;
+  }
+  return safeType;
+}
