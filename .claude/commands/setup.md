@@ -404,6 +404,8 @@ Present a summary:
 > - `cv/main_example.tex` - Your LaTeX CV template
 > - `.claude/skills/job-scraper/search-queries.md` - Job search queries for `/scrape`
 >
+> **Document engine:** stock output is LaTeX. New users, especially on Windows, should switch to Typst (`/add-template --use typst`) — one binary, fewer broken drafts. Stay on LaTeX if you already have a working TeX install and want maximum control. Ask which they prefer and, if they pick Typst, run `/add-template --use typst` now (confirm `typst --version` first).
+>
 > **Privacy note:** the files above now contain your personal data and are *tracked by git*.
 > A GitHub fork of the template is always public (forks of public repos cannot be made
 > private), so do not push these commits to a fork. Keep them local, or push to a private

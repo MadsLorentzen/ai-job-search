@@ -143,15 +143,45 @@ Copy-Item cover_letters\cover.cls, cover_letters\OpenFonts -Destination $SmokeDi
 Push-Location $SmokeDir; xelatex -interaction=nonstopmode -halt-on-error cover_smoke.tex; Pop-Location
 ```
 
-### Optional: pdftotext (for the ATS check)
+### Optional: ATS text extraction (pymupdf default, Poppler fallback)
 
-`/apply` runs an ATS parseability check on the compiled CV: it extracts the PDF's text layer and verifies contact details, reading order, and keyword coverage the way an applicant-tracking system sees them. This uses `pdftotext` from [poppler](https://poppler.freedesktop.org/), which is not part of TeX distributions:
+`/apply` runs an ATS parseability check on the compiled CV: it extracts the PDF's text layer and verifies contact details, reading order, and keyword coverage the way an applicant-tracking system sees them.
+
+The default extractor is **pure Python** (`pymupdf`, then `pypdf`). You do not need Poppler on Windows.
+
+```powershell
+pip install pymupdf
+```
+
+Or install several Windows helpers at once (pymupdf, optional Typst, optional Poppler):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\install-windows-deps.ps1
+```
+
+Poppler (`pdftotext`) remains an optional extra in the fallback chain:
 
 - **macOS:** `brew install poppler`
 - **Debian/Ubuntu:** `sudo apt install poppler-utils`
-- **Windows:** `choco install poppler`
+- **Windows:** `choco install poppler` or `winget install oschwartz10612.Poppler`
 
-If `pdftotext` is missing, `/apply` skips the mechanical check with a warning and falls back to a visual keyword review — everything else works normally.
+If a command still uses `pdftotext -layout`, it must pass `-enc UTF-8` as well (Xpdf builds otherwise emit Latin-1). If **every** extractor is missing, `/apply` skips the mechanical check with a warning (`extractor: visual-review`) and falls back to a visual keyword review — everything else works normally. The Step 6 report always names which extractor ran.
+
+### Optional: Typst (recommended document engine for new users)
+
+LaTeX remains fully supported. New users, especially on Windows, should start with [Typst](https://typst.app/) instead — one binary, fast compiles, no MiKTeX package hunt.
+
+- **Windows:** `winget install --id Typst.Typst` (or the installer script above)
+- **macOS:** `brew install typst`
+- **Linux:** `https://github.com/typst/typst/releases`
+
+Then activate the shipped templates:
+
+```
+/add-template --use typst
+```
+
+`/add-template --use default` restores the stock LaTeX templates. Details in [templates/README.md](templates/README.md).
 
 ## 2. Fork and clone
 

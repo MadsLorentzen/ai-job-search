@@ -5,7 +5,7 @@ description: >
   and preparing for interviews. Triggers on keywords like: job posting, job application, CV,
   cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling
 allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Bash, Edit, Write, AskUserQuestion
-framework_version: 1.3.4
+framework_version: 1.4.0
 ---
 
 # Job Application Assistant
@@ -30,13 +30,13 @@ When the user provides a job posting (URL or text), follow this workflow:
 - Before writing either document, derive `<company>_<role>` once by the **Subfolder naming** rule in `documents/README.md`; reuse that exact value for the CV, cover letter, and Step 3b archive path. If the rule says to stop because the derived name is empty, stop before creating any file.
 - Read the most relevant existing CV variant from `cv/` as a starting point
 - Follow the guidelines in `05-cv-templates.md`
-- Create `cv/main_<company>_<role>.tex` with tailored content
+- Create `cv/main_<company>_<role><CV_EXT>` with tailored content (`.tex` unless an `ACTIVE-TEMPLATE` block in `05-cv-templates.md` names another engine, e.g. Typst `.typ`)
 - Adjust: profile statement, skills section, experience bullet emphasis, section order
 
 ### Step 3: Write Cover Letter
 - Follow the writing style rules in `03-writing-style.md` (critical: no em-dashes, no cliches)
 - Follow the template structure in `06-cover-letter-templates.md`
-- Create `cover_letters/cover_<company>_<role>.tex`
+- Create `cover_letters/cover_<company>_<role><COVER_EXT>` (`.tex` unless an `ACTIVE-TEMPLATE` block names another engine)
 - Ensure the letter connects specific experience to the role requirements
 
 ### Step 3b: Record the Application

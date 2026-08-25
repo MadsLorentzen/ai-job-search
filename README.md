@@ -65,7 +65,8 @@ The framework encodes career guidance best practices, including structured evalu
 - Python 3.10+
 - [Bun](https://bun.sh) (for job search CLI tools)
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/), [MacTeX](https://tug.org/mactex/), [TinyTeX](https://yihui.org/tinytex/), or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`. If using a minimal TeX install such as TinyTeX or BasicTeX, install the extra packages listed in [SETUP.md](SETUP.md#minimal-tex-install-tinytexbasictex).
-- Optional: `pdftotext` from [poppler](https://poppler.freedesktop.org/) (macOS: `brew install poppler`, Debian/Ubuntu: `apt install poppler-utils`, Windows: `choco install poppler`) — used by `/apply`'s ATS parseability check on the compiled CV. If missing, the check degrades gracefully to a visual keyword review.
+- Optional: `pip install pymupdf` for `/apply`'s ATS parseability check (pure Python; recommended on Windows). Poppler `pdftotext` remains a fallback (macOS: `brew install poppler`, Debian/Ubuntu: `apt install poppler-utils`, Windows: `choco install poppler`). If every extractor is missing, the check degrades to a visual keyword review. The report always names which extractor ran.
+- Optional: [Typst](https://github.com/typst/typst) if you want the recommended non-LaTeX CV/cover-letter path (`/add-template --use typst`). LaTeX stays fully supported.
 - Optional: [Free Claude Code](https://github.com/Alishahryar1/free-claude-code) if you want `/rank` and other parallel work to use free/cheap models instead of paid Claude tokens. This fork's Windows setup is in [FCC-SETUP.md](FCC-SETUP.md).
 
 ## Quick start
@@ -93,7 +94,7 @@ cd ai-job-search
 PowerShell:
 
 ```powershell
-$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
+$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search", "ats-boards-search", "rss-search")
 foreach ($tool in $tools) {
   Push-Location ".agents/skills/$tool/cli"
   bun install
@@ -104,7 +105,7 @@ foreach ($tool in $tools) {
 Bash / zsh / Git Bash:
 
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search; do
+for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search ats-boards-search rss-search; do
   (cd .agents/skills/$tool/cli && bun install)
 done
 ```
@@ -208,16 +209,20 @@ ai-job-search/
 │   ├── jobdanmark-search/             # Jobdanmark.dk (Denmark)
 │   ├── jobindex-search/               # Jobindex.dk (Denmark)
 │   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
-│   ├── linkedin-search/               # LinkedIn public job listings (country-agnostic)
-│   └── freehire-search/               # freehire.me tech job aggregator (multi-market, REST API)
+│   ├── linkedin-search/               # LinkedIn public job listings (country-agnostic, primary)
+│   ├── freehire-search/               # freehire.me tech job aggregator (multi-market, REST API)
+│   ├── ats-boards-search/             # Greenhouse / Lever / Ashby public JSON boards
+│   └── rss-search/                    # RSS/Atom job feeds
 ├── cv/
 │   └── main_example.tex               # moderncv LaTeX template
 ├── cover_letters/
 │   ├── cover.cls                      # Custom cover letter LaTeX class
 │   ├── cover_example.tex              # Example cover letter (structural reference + CI smoke test)
 │   └── OpenFonts/                     # Lato + Raleway fonts
-├── templates/                         # Custom templates registered via /add-template
-│   └── README.md                      # Folder layout instructions
+├── templates/                         # Document templates (/add-template)
+│   ├── README.md                      # Typst vs LaTeX, folder layout
+│   ├── cv/typst-modern/               # Shipped Typst CV
+│   └── cover_letters/typst-modern/    # Shipped Typst cover letter
 ├── documents/                         # Career source materials for /setup Path A and /expand
 │   ├── README.md                      # Folder layout instructions
 │   ├── cv/                            # Master CV (PDF or .tex)
@@ -236,6 +241,8 @@ ai-job-search/
 │   ├── security_guards.py             # CI guards: permission allowlist, gitignore rules, manifests
 │   ├── upstream_triage.py             # Sort upstream commits into worth-reviewing vs probably-skip
 │   ├── verify_pdf.py                  # Verify a compiled PDF's page count and extractable text
+│   ├── extract_pdf_text.py            # ATS text layer: pymupdf → pypdf → pdftotext
+│   ├── install-windows-deps.ps1       # pymupdf + optional Typst/Poppler on Windows
 │   └── README_SALARY_TOOL.md          # Salary tool setup instructions
 ├── job_scraper/                       # Scraper state (seen jobs, results)
 ├── gmail_sync/                        # /gmail-sync state (processed message IDs, last sync date)
@@ -243,6 +250,7 @@ ai-job-search/
 ├── job_search_tracker.csv             # Application tracking spreadsheet
 ├── start-with-fcc.ps1                 # Launch Claude Code through Free Claude Code
 ├── FCC-SETUP.md                       # Optional: free/cheap models via FCC proxy
+├── PORTALS.md                         # Generic + regional portal strategy for this fork
 └── SETUP.md                           # Detailed setup guide
 ```
 
@@ -252,11 +260,11 @@ The `/apply` command runs a **drafter-reviewer workflow** with mandatory PDF com
 
 1. **Parse** the job posting (URL or text)
 2. **Evaluate fit** against your profile (skills, experience, culture, location, career alignment)
-3. **Draft** a tailored CV and cover letter in LaTeX
+3. **Draft** a tailored CV and cover letter (stock LaTeX, or Typst if `/add-template --use typst` is active)
 4. **Spawn a reviewer agent** that researches the company and critiques the drafts
 5. **Revise** based on the reviewer's feedback
 6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. Claude reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
-7. **ATS-check the CV**: extract the PDF's text layer (`pdftotext`, optional dependency) and verify it the way an ATS parser sees it — contact details present as literal text, no garbled glyphs, sane reading order — then score the posting's keyword coverage against the extraction. Keywords the profile genuinely supports get added; genuine gaps stay visible, never stuffed.
+7. **ATS-check the CV**: extract the PDF's text layer (`python tools/extract_pdf_text.py` — pymupdf, then pypdf, then optional `pdftotext`) and verify it the way an ATS parser sees it — contact details present as literal text, no garbled glyphs, sane reading order — then score the posting's keyword coverage against the extraction. The report names which extractor ran. Keywords the profile genuinely supports get added; genuine gaps stay visible, never stuffed.
 8. **Present** the final output with a verification checklist
 
 All claims in the CV and cover letter are verified against your actual profile. The system never fabricates skills or experience.
@@ -264,7 +272,7 @@ All claims in the CV and cover letter are verified against your actual profile. 
 ### What makes this workflow different
 
 - **PDF verification loop.** Most LaTeX-resume templates produce "looks fine in the .tex" output that breaks in the PDF: job titles orphan to the next page, cover letters spill onto page 2, bullet fonts silently fall back to the body font. The `/apply` command compiles and visually inspects every PDF and applies targeted fixes (`\needspace`, `\enlargethispage`, font-matching wrappers for list items) until the layout is clean. This runs automatically on every application.
-- **ATS verification on the PDF text layer.** An ATS reads the PDF's embedded text, not the rendered page — and LaTeX can silently produce PDFs whose text extracts as garbage (icon glyphs where the email should be, interleaved lines from multi-column layouts). `/apply` extracts the compiled CV's text layer with `pdftotext` and verifies contact details, reading order, and the posting's keyword coverage against what a parser actually sees. Honesty rule enforced: a keyword the profile doesn't support is acknowledged as a gap, never stuffed in.
+- **ATS verification on the PDF text layer.** An ATS reads the PDF's embedded text, not the rendered page — and LaTeX can silently produce PDFs whose text extracts as garbage (icon glyphs where the email should be, interleaved lines from multi-column layouts). `/apply` extracts the compiled CV's text layer with `tools/extract_pdf_text.py` (pymupdf by default, pypdf next, Poppler last) and verifies contact details, reading order, and keyword coverage. Honesty rule enforced: a keyword the profile doesn't support is acknowledged as a gap, never stuffed in.
 - **Relevance-weighted CV cutting.** When a CV overflows 2 pages, the workflow does not cut mechanically from the "oldest" section. It scores each candidate line by (a) relevance to the target posting, (b) uniqueness in the document, and (c) whether the cover letter depends on it, and cuts the lowest-total-score line first. An older-role bullet that hits posting keywords survives ahead of a recent-role bullet that does not.
 - **Drafter-reviewer separation.** The drafter writes; a second Claude agent, spawned with a fresh context, researches the company and critiques the drafts. The drafter then revises. This catches missed keywords, weak framing, and generic language that a single pass often leaves in.
 - **Token-efficient reviewer dispatch.** The reviewer agent receives drafts inline rather than re-reading them, and the verification checklist runs once at the end of the workflow rather than being duplicated by both agents. Note: the new compile-and-inspect step in Step 5 spends some of those savings on PDF rendering and layout iteration — the workflow trades some end-to-end token cost for a real reduction in broken PDFs reaching the user.
@@ -308,6 +316,7 @@ To use your own template instead — LaTeX, [Typst](https://typst.app/), or any 
 Point it at your source file (a `.tex` file plus any `.cls`/`.sty` files or bundled fonts; a `.typ` file plus any local packages; or an equivalent for another toolchain). The command interviews you for the template's instructions — source extension, compile command, fonts and where they live, style rules to preserve, hard page limit — stores everything under `templates/`, runs a mandatory test compile, and activates the template so `/apply` drafts and compiles from it. Templates are stored with `[PLACEHOLDER]` tokens instead of personal data, so they're safe to commit and share.
 
 - `/add-template --list` shows registered templates
+- `/add-template --use typst` activates the shipped Typst CV + cover letter (recommended for new users)
 - `/add-template --use <name>` switches between them
 - `/add-template --use default` reverts to the stock moderncv / cover.cls templates
 
@@ -315,7 +324,16 @@ If you prefer doing it by hand, the manual route still works: update the guidanc
 
 ### Job search tools
 
-The four Danish CLI tools in `.agents/skills/` (Jobbank, Jobdanmark, Jobindex, Jobnet) demonstrate the pattern for building a job-portal integration for a specific market. If you're in a different country, run:
+**Start with the country-agnostic CLIs**, not the Danish demos:
+
+1. **`linkedin-search`** — primary. Pass `--location` for any city or `Remote`.
+2. **`freehire-search`** — public tech-job API, multi-market.
+3. **`ats-boards-search`** — Greenhouse / Lever / Ashby company boards (opt-in).
+4. **`rss-search`** — RSS/Atom employer feeds (opt-in).
+
+Region cheat sheet, Indeed/Naukri guidance, and how to disable Danish demos: [PORTALS.md](PORTALS.md).
+
+The four Danish CLI tools (Jobbank, Jobdanmark, Jobindex, Jobnet) demonstrate the pattern for a specific market. If you're in a different country, run:
 
 ```
 /add-portal

@@ -11,6 +11,7 @@ Follow these steps **in order**.
 ## Step 0: Parse Arguments
 
 - If `$ARGUMENTS` contains `--list`: run **List Mode** below and stop.
+- If `$ARGUMENTS` contains `--use typst` or `--use typst-modern`: run **Shipped Typst Mode** below (activates both official Typst templates) and stop.
 - If `$ARGUMENTS` contains `--use <name>`: run **Switch Mode** below, then continue to **Step 5: Activate** with the resolved template metadata. `--use default` deactivates any custom template and restores the stock guidance (see Step 5).
 - If `$ARGUMENTS` contains a file path or @-mentioned file: treat it as the template source and carry it into Step 1.
 - Otherwise: start the registration flow at Step 1.
@@ -28,6 +29,25 @@ Use Glob with `templates/**/TEMPLATE.md` to find registered templates. For each,
 ```
 
 A template is **active** if `05-cv-templates.md` (CV) or `06-cover-letter-templates.md` (cover letter) contains an `ACTIVE-TEMPLATE` managed block naming it. If no custom templates exist, say so and explain that `/add-template` registers one. Stop here.
+
+### Shipped Typst Mode
+
+The fork ships two official Typst templates. `--use typst` and `--use typst-modern` are aliases that activate **both**:
+
+1. Confirm `typst --version` works. If it does not, tell the user to install Typst (`winget install --id Typst.Typst` on Windows, or `tools/install-windows-deps.ps1`) and stop.
+2. Read `templates/cv/typst-modern/TEMPLATE.md` and `templates/cover_letters/typst-modern/TEMPLATE.md`. Verify `template.typ` exists in each folder.
+3. Run **Step 5: Activate** twice — once for the CV (`templates/cv/typst-modern`, type `cv`) and once for the cover letter (`templates/cover_letters/typst-modern`, type `cover_letters`). Use each manifest's compile command, `.typ` source extension, 2-page CV limit, 1-page cover-letter limit, and Libertinus Serif font note.
+4. Confirm:
+
+> **Typst is now the active document engine.**
+>
+> - CV: `templates/cv/typst-modern/` → `/apply` writes `cv/main_<company>_<role>.typ`
+> - Cover letter: `templates/cover_letters/typst-modern/` → `cover_letters/cover_<company>_<role>.typ`
+> - Compile: `typst compile <file>.typ <file>.pdf`
+>
+> New users should stay on Typst. Power users who need academic-level control can run `/add-template --use default` to restore LaTeX. A one-off custom template is still `/add-template` with a file path.
+
+Do not re-run Steps 1-4. Stop after the confirmation.
 
 ### Switch Mode
 

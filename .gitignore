@@ -25,6 +25,8 @@ salary_data.json
 # A rooted `job_scraper/...` pattern silently fails to match them.
 **/job_scraper/seen_jobs.json
 **/job_scraper/notion_sync.json
+**/job_scraper/ats_boards.json
+**/job_scraper/rss_feeds.json
 **/job_scraper/*.md
 *_BehavioralReport.pdf
 linkedin_Profile.pdf
@@ -53,6 +55,9 @@ Thumbs.db
 
 # Local Claude Code overrides (FCC proxy env vars, machine-specific)
 .claude/settings.local.json
+
+# ATS text-layer cache (sha256 of the PDF bytes)
+**/.pdf_extract_cache/
 
 # Skills lock (auto-generated)
 skills-lock.json

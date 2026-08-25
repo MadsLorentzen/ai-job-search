@@ -19,6 +19,11 @@ This skill searches job portals using the **installed portal-search CLIs** in
 It deduplicates against previously seen jobs and the application tracker, and
 presents new matches with a quick fit assessment.
 
+**Non-Danish default:** treat `linkedin-search` as the primary CLI (always pass the
+user's location). Then `freehire-search`. Then any enabled `ats-boards-search` /
+`rss-search`. Danish demo portals stay installed but should be skipped when their
+`enabled` flag is `false`. See `PORTALS.md`.
+
 ## Invocation
 
 The user triggers this skill by saying things like:

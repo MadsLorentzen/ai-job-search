@@ -4,6 +4,8 @@ You are helping the user build a job-portal search skill for a job board in thei
 
 The generator is **country-agnostic**: it works for any portal in any market and language. The skills it produces are typically market-specific and live in the user's fork (per repo policy, country-specific portal skills are not merged upstream — the generator is the upstream feature, its output is yours).
 
+**Before scaffolding a new HTML scraper, check [PORTALS.md](../../PORTALS.md):** LinkedIn, freehire, Greenhouse/Lever/Ashby (`ats-boards-search`), and RSS may already cover the need. Indeed is usually a "stop and use LinkedIn" outcome, not a new skill.
+
 `$ARGUMENTS` may contain a subcommand, a portal URL, or nothing.
 
 Follow these steps **in order**.
@@ -147,6 +149,32 @@ Present a summary:
 > Try it: `bun run .agents/skills/<name>/cli/src/cli.ts search -q "<test query>" --format table`
 >
 > Per upstream policy, market-specific skills like this live in your fork rather than being PR'd upstream. If the portal changes its markup later, `url-reference.md` records the parsing anchors to update.
+
+---
+
+## Recipes (read before Step 2)
+
+Use these as investigation shortcuts. They do **not** skip robots.txt, login-wall, or terms checks.
+
+### Greenhouse, Lever, Ashby
+
+Do not generate a new skill. Enable `ats-boards-search` and add `kind:token` to `job_scraper/ats_boards.json`. Tokens come from the public careers URL (`boards.greenhouse.io/<token>`, `jobs.lever.co/<token>`, `jobs.ashbyhq.com/<token>`).
+
+### RSS / Atom
+
+Do not generate a new skill. Enable `rss-search` and add feed URLs to `job_scraper/rss_feeds.json`.
+
+### Indeed (any country)
+
+Tell the user Indeed's terms restrict automated access and the HTML is aggressively blocked. Recommend `linkedin-search` with an explicit `--location` plus company ATS boards. Only scaffold an Indeed skill if they still insist on personal-use-only, keep volume tiny, and accept a ToS warning in `SKILL.md`.
+
+### Naukri / national boards (India and elsewhere)
+
+Good `/add-portal` candidates **for this fork**. Canonical architecture: `.agents/skills/linkedin-search/`. Include local-language trigger phrases in `SKILL.md`. Do not open an upstream PR with the result.
+
+### Workday tenant sites
+
+Usually a login or JS wall. Prefer the employer's Greenhouse/Lever/Ashby board. Otherwise: user pastes the posting into `/apply` or `documents/postings/`.
 
 ---
 

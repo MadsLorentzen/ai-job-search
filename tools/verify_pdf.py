@@ -2,10 +2,14 @@
 """Verify that a generated PDF has the expected pages and extractable text."""
 
 import argparse
-import re
 import subprocess
 import sys
 from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from tools.extract_pdf_text import ExtractionError, extract_pdf_text
 
 
 class VerificationError(Exception):
@@ -13,6 +17,7 @@ class VerificationError(Exception):
 
 
 def run_tool(command):
+    """Run a Poppler command. Kept for callers and tests that probe missing binaries."""
     try:
         return subprocess.run(
             command,
@@ -24,7 +29,8 @@ def run_tool(command):
         raise VerificationError(
             f"required command '{command[0]}' was not found. "
             "Install poppler-utils (macOS: brew install poppler, "
-            "Debian/Ubuntu: apt install poppler-utils, Windows: choco install poppler)"
+            "Debian/Ubuntu: apt install poppler-utils, Windows: choco install poppler). "
+            "Or skip Poppler entirely: pip install pymupdf"
         ) from exc
     except subprocess.CalledProcessError as exc:
         detail = (exc.stderr or "").strip() or (exc.stdout or "").strip()
@@ -33,6 +39,8 @@ def run_tool(command):
 
 
 def parse_page_count(pdfinfo_output):
+    import re
+
     match = re.search(r"^Pages:\s+(\d+)\s*$", pdfinfo_output, re.MULTILINE)
     if not match:
         raise VerificationError("pdfinfo output did not contain a page count")
@@ -43,29 +51,46 @@ def normalize_text(text):
     return " ".join(text.split())
 
 
-def verify_pdf(pdf_path, expected_pages=None, min_chars=1, required_text=()):
+def verify_pdf(
+    pdf_path,
+    expected_pages=None,
+    min_chars=1,
+    required_text=(),
+    prefer=None,
+    use_cache=True,
+):
     pdf_path = Path(pdf_path)
     if not pdf_path.is_file():
         raise VerificationError(f"PDF does not exist: {pdf_path}")
 
-    if expected_pages is not None:
-        actual_pages = parse_page_count(run_tool(["pdfinfo", str(pdf_path)]))
-        if actual_pages != expected_pages:
-            raise VerificationError(
-                f"expected {expected_pages} page(s), found {actual_pages}"
-            )
+    try:
+        extraction = extract_pdf_text(
+            pdf_path, prefer=prefer, use_cache=use_cache
+        )
+    except ExtractionError as exc:
+        raise VerificationError(str(exc)) from exc
 
-    extracted_text = normalize_text(
-        run_tool(["pdftotext", "-layout", str(pdf_path), "-"])
-    )
+    if expected_pages is not None and extraction.pages != expected_pages:
+        raise VerificationError(
+            f"expected {expected_pages} page(s), found {extraction.pages} "
+            f"(extractor: {extraction.extractor})"
+        )
+
+    extracted_text = normalize_text(extraction.text)
     if len(extracted_text) < min_chars:
         raise VerificationError(
-            f"text layer has {len(extracted_text)} character(s); expected at least {min_chars}"
+            f"text layer has {len(extracted_text)} character(s); expected at least {min_chars} "
+            f"(extractor: {extraction.extractor})"
         )
 
     for required in required_text:
         if normalize_text(required) not in extracted_text:
-            raise VerificationError(f"text layer is missing required text: {required!r}")
+            raise VerificationError(
+                f"text layer is missing required text: {required!r} "
+                f"(extractor: {extraction.extractor})"
+            )
+
+    return extraction
 
 
 def build_parser():
@@ -86,17 +111,37 @@ def build_parser():
         default=[],
         help="text that must appear after whitespace normalization; repeatable",
     )
+    parser.add_argument(
+        "--extractor",
+        default="auto",
+        help="auto (pymupdf, pypdf, pdftotext), or a specific extractor name",
+    )
+    parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="do not use the on-disk extraction cache",
+    )
     return parser
 
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
-        verify_pdf(args.pdf, args.pages, args.min_chars, args.contains)
+        extraction = verify_pdf(
+            args.pdf,
+            args.pages,
+            args.min_chars,
+            args.contains,
+            prefer=args.extractor,
+            use_cache=not args.no_cache,
+        )
     except VerificationError as exc:
         print(f"Error: {args.pdf}: {exc}", file=sys.stderr)
         return 1
-    print(f"Verified {args.pdf}")
+    print(
+        f"Verified {args.pdf} (extractor: {extraction.extractor}, "
+        f"pages: {extraction.pages}, cached: {str(extraction.cached).lower()})"
+    )
     return 0
 
 

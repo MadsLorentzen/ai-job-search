@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from tools.extract_pdf_text import Extraction, ExtractionError
 from tools.verify_pdf import VerificationError, parse_page_count, run_tool, verify_pdf
 
 
@@ -25,40 +26,59 @@ class VerifyPdfTests(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
-    @patch("tools.verify_pdf.run_tool")
-    def test_accepts_expected_pages_and_text(self, mock_run_tool):
-        mock_run_tool.side_effect = [
-            "Pages:          2\n",
-            "Professional\nExperience   [your.email@example.com]\n",
-        ]
+    @patch("tools.verify_pdf.extract_pdf_text")
+    def test_accepts_expected_pages_and_text(self, mock_extract):
+        mock_extract.return_value = Extraction(
+            text="Professional\nExperience   [your.email@example.com]\n",
+            pages=2,
+            extractor="pymupdf",
+        )
 
-        verify_pdf(
+        result = verify_pdf(
             self.pdf,
             expected_pages=2,
             min_chars=20,
             required_text=("Professional Experience", "[your.email@example.com]"),
+            use_cache=False,
         )
+        self.assertEqual(result.extractor, "pymupdf")
 
-    @patch("tools.verify_pdf.run_tool")
-    def test_rejects_wrong_page_count(self, mock_run_tool):
-        mock_run_tool.return_value = "Pages:          3\n"
+    @patch("tools.verify_pdf.extract_pdf_text")
+    def test_rejects_wrong_page_count(self, mock_extract):
+        mock_extract.return_value = Extraction(text="ok", pages=3, extractor="pypdf")
 
         with self.assertRaisesRegex(VerificationError, "expected 2 page.*found 3"):
-            verify_pdf(self.pdf, expected_pages=2)
+            verify_pdf(self.pdf, expected_pages=2, use_cache=False)
 
-    @patch("tools.verify_pdf.run_tool")
-    def test_rejects_too_little_extractable_text(self, mock_run_tool):
-        mock_run_tool.return_value = "short"
+    @patch("tools.verify_pdf.extract_pdf_text")
+    def test_rejects_too_little_extractable_text(self, mock_extract):
+        mock_extract.return_value = Extraction(text="short", pages=1, extractor="pymupdf")
 
         with self.assertRaisesRegex(VerificationError, "expected at least 20"):
-            verify_pdf(self.pdf, min_chars=20)
+            verify_pdf(self.pdf, min_chars=20, use_cache=False)
 
-    @patch("tools.verify_pdf.run_tool")
-    def test_rejects_missing_required_text(self, mock_run_tool):
-        mock_run_tool.return_value = "Readable text, but not the expected section."
+    @patch("tools.verify_pdf.extract_pdf_text")
+    def test_rejects_missing_required_text(self, mock_extract):
+        mock_extract.return_value = Extraction(
+            text="Readable text, but not the expected section.",
+            pages=1,
+            extractor="pymupdf",
+        )
 
         with self.assertRaisesRegex(VerificationError, "Professional Experience"):
-            verify_pdf(self.pdf, required_text=("Professional Experience",))
+            verify_pdf(self.pdf, required_text=("Professional Experience",), use_cache=False)
+
+    @patch("tools.verify_pdf.extract_pdf_text")
+    def test_names_extractor_in_failure(self, mock_extract):
+        mock_extract.return_value = Extraction(text="nope", pages=1, extractor="pypdf")
+
+        with self.assertRaisesRegex(VerificationError, "extractor: pypdf"):
+            verify_pdf(self.pdf, required_text=("must appear",), use_cache=False)
+
+    @patch("tools.verify_pdf.extract_pdf_text", side_effect=ExtractionError("pip install pymupdf"))
+    def test_surfaces_extraction_failure(self, _mock_extract):
+        with self.assertRaisesRegex(VerificationError, "pip install pymupdf"):
+            verify_pdf(self.pdf, use_cache=False)
 
     def test_rejects_missing_pdf(self):
         with self.assertRaisesRegex(VerificationError, "PDF does not exist"):

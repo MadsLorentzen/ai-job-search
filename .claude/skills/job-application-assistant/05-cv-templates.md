@@ -1,10 +1,24 @@
 ---
-framework_version: 1.4.2
+framework_version: 1.5.0
 ---
 
 # CV Templates and Tailoring Guide
 
 <!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
+
+## Document engines
+
+**New users: start with Typst.** It is a single binary, compiles in milliseconds, handles Unicode/fonts without MiKTeX, and produces a clean PDF text layer that ATS parsers like. Activate the shipped templates:
+
+```
+/add-template --use typst
+```
+
+That wires `templates/cv/typst-modern/` and `templates/cover_letters/typst-modern/` into `/apply` via the `ACTIVE-TEMPLATE` block. `/add-template --use default` restores LaTeX.
+
+**Power users who need academic-level control can stay on LaTeX** (stock moderncv + `cover.cls` below). `/add-template` registers any other toolchain that compiles to PDF.
+
+Structural advice in this file (tailoring, page budget, relevance-weighted cutting, ATS checks) applies to every engine. Compile commands, page-break macros, and special-character escapes below are **LaTeX-specific** unless an `ACTIVE-TEMPLATE` block says otherwise.
 
 ## Template: LaTeX moderncv (Banking Style)
 
@@ -267,10 +281,10 @@ Restore the highest-relevance item that was previously cut — a CV that ends mi
 Most employers run CVs through an ATS before a human sees them, and the ATS reads the PDF's embedded **text layer**, not the rendered page. A CV can pass visual inspection and still extract as garbage. After the layout passes the compile-and-inspect loop, verify the text layer:
 
 ```bash
-cd cv && pdftotext -layout -enc UTF-8 main_<company>_<role>.pdf main_<company>_<role>.txt
+python tools/extract_pdf_text.py cv/main_<company>_<role>.pdf -o cv/main_<company>_<role>.txt
 ```
 
-`pdftotext` comes from [poppler](https://poppler.freedesktop.org/), not the TeX distribution - it is an **optional** dependency. The `-enc UTF-8` flag is not optional: Xpdf-based `pdftotext` builds default to Latin-1 output, which makes every non-ASCII character in a perfectly good CV read back as a replacement character and fail the parseability check below for no real reason. If it is not installed, skip the mechanical check with a warning and rely on the visual PDF read for keyword coverage.
+Default chain: **pymupdf → pypdf → pdftotext**. pymupdf is the reliable Windows path (`pip install pymupdf` or `tools/install-windows-deps.ps1`). Poppler remains an optional fast path; if a command still uses `pdftotext -layout`, it must also pass `-enc UTF-8` because Xpdf-based builds default to Latin-1 and make every non-ASCII character in a perfectly good CV read back as a replacement character. Always record which extractor ran. If none is available, skip the mechanical check with a warning (`extractor: visual-review`) and rely on the visual PDF read for keyword coverage. Repeat checks on an unchanged PDF hit `cv/.pdf_extract_cache/` and are free.
 
 What to check in the extraction:
 

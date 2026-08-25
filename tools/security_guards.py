@@ -41,6 +41,10 @@ ALLOWED_PERMISSIONS = {
     "Bash(bun run:*)",
     "Bash(python salary_lookup.py:*)",
     "Bash(python3 salary_lookup.py:*)",
+    "Bash(python tools/extract_pdf_text.py:*)",
+    "Bash(python3 tools/extract_pdf_text.py:*)",
+    "Bash(python tools/verify_pdf.py:*)",
+    "Bash(python3 tools/verify_pdf.py:*)",
     "Bash(pdftotext:*)",
 }
 
@@ -52,6 +56,8 @@ REQUIRED_IGNORE_RULES = [
     # a repo-rooted rule silently fails to match it.
     "**/job_scraper/seen_jobs.json",
     "**/job_scraper/notion_sync.json",
+    "**/job_scraper/ats_boards.json",
+    "**/job_scraper/rss_feeds.json",
     "**/job_scraper/*.md",
     "*_BehavioralReport.pdf",
     "linkedin_Profile.pdf",

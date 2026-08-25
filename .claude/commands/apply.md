@@ -258,15 +258,17 @@ Do not proceed to Step 6 until both PDFs pass inspection.
 
 An ATS parser reads the PDF's embedded **text layer**, not the rendered page — a CV that passed visual inspection can still extract as garbage (icon glyphs where the contact details should be, scrambled reading order in multi-column layouts). This step verifies what a parser actually sees. It applies to the **CV only**; cover letters rarely go through keyword screening.
 
-**Availability check:** run `pdftotext -v`. `pdftotext` (poppler) is an optional dependency, not part of TeX distributions. If it is missing, print a one-line warning that the mechanical parse check is skipped, do the keyword-coverage check (item 3 below) against your visual Read of the PDF instead, and note the degraded mode in the Step 6 report. Same graceful-skip pattern as the salary lookup. Keep the `-enc UTF-8` flag: Xpdf-based builds default to Latin-1 output, and without it a correct non-ASCII CV fails the replacement-character check below.
+**Extractor (default is pure Python, so Windows does not need Poppler):** run `python tools/extract_pdf_text.py`. The chain is `pymupdf` → `pypdf` → `pdftotext` (Poppler). If `pymupdf` is missing, install it with `pip install pymupdf` (or run `tools/install-windows-deps.ps1`). Only if **every** extractor fails: print a one-line warning that the mechanical parse check is skipped, do the keyword-coverage check (item 3 below) against your visual Read of the PDF instead, and note the degraded mode (`extractor: visual-review`) in the Step 6 report. Same graceful-skip pattern as the salary lookup.
+
+If a documented fallback still shells out to `pdftotext`, keep the `-enc UTF-8` flag: Xpdf-based builds default to Latin-1 output, and without it a correct non-ASCII CV fails the replacement-character check below.
 
 **1. Extract the text layer:**
 
 ```bash
-cd cv && pdftotext -layout -enc UTF-8 main_<company>_<role>.pdf main_<company>_<role>.txt
+python tools/extract_pdf_text.py cv/main_<company>_<role>.pdf -o cv/main_<company>_<role>.txt
 ```
 
-Read the `.txt` file.
+The command prints `extractor: <name>  pages: N  cached: true|false` on stderr — **record that extractor name** for the Step 6 report. Read the `.txt` file. Repeat checks on the same PDF reuse the cache under `cv/.pdf_extract_cache/` and are free.
 
 **2. Parseability checks** on the extracted text:
 
@@ -314,6 +316,14 @@ Summarize 3-5 key decisions made to tailor the application:
 List the files written:
 - `cv/main_<company>_<role><CV_EXT>`
 - `cover_letters/cover_<company>_<role><COVER_EXT>`
+
+### ATS extractor used
+Always report which text-layer extractor ran (or that the check degraded):
+
+- `extractor: pymupdf` (default, recommended)
+- `extractor: pypdf`
+- `extractor: pdftotext` (Poppler fallback)
+- `extractor: visual-review` (every mechanical extractor failed)
 
 Tell the user: "Both files are ready for your review. Open them to check the final output before compiling."
 

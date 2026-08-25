@@ -1,0 +1,7 @@
+{
+  "boards": [
+    "greenhouse:stripe",
+    "lever:netflix",
+    "ashby:openai"
+  ]
+}

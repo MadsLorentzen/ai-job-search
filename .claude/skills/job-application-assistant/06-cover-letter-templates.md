@@ -1,8 +1,12 @@
 ---
-framework_version: 1.0.2
+framework_version: 1.1.0
 ---
 
 # Cover Letter Templates and Tailoring Guide
+
+## Document engines
+
+**New users: start with Typst** (`/add-template --use typst`). The shipped cover-letter template is `templates/cover_letters/typst-modern/`. LaTeX `cover.cls` below remains the stock default and the power-user path. Structural advice in this file (length, tailoring, honesty) applies to every engine; compile commands and special-character escapes below are LaTeX-specific unless an `ACTIVE-TEMPLATE` block says otherwise.
 
 ## Template: Custom cover.cls (XeLaTeX)
 
