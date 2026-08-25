@@ -389,6 +389,75 @@ def test_newer_acknowledgement_is_the_only_effective_consulted_decision(tmp_path
     ]
 
 
+def test_repeated_reviewed_v1_basis_is_exactly_deterministic(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_completion_ready(conn, workspace_id)
+
+    first = build_application_pack(conn, workspace_id)
+    second = build_application_pack(conn, workspace_id)
+
+    assert first == second
+    assert first["schema_version"] == "application-pack.v1"
+
+
+def test_reviewed_v1_basis_has_one_exact_current_authorization_per_selected_unit(
+    tmp_path,
+):
+    conn, workspace_id = _workspace(tmp_path)
+    intelligence = _seed_completion_ready(conn, workspace_id)
+
+    pack = build_application_pack(conn, workspace_id)
+    selected_ids = {
+        unit["unit_id"]
+        for unit in pack["cv_content"] + pack["cover_letter_content"]
+    }
+    authorizations = [
+        decision
+        for decision in pack["review_record"]["decisions_consulted"]
+        if decision["review_item_type"] == "content_unit"
+    ]
+
+    assert {decision["domain_item_id"] for decision in authorizations} == selected_ids
+    assert len(authorizations) == len(selected_ids)
+    assert all(
+        decision["source_artifact_id"] == intelligence["id"]
+        and decision["disposition"] == "acknowledged_and_proceed"
+        for decision in authorizations
+    )
+
+
+def test_newer_contradictory_decision_changes_basis_without_changing_sources(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _, _, _, intelligence = _seed(conn, workspace_id)
+    older = _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
+    conn.execute(
+        "UPDATE review_decisions SET created_at=? WHERE id=?",
+        ("2026-08-24T10:00:00+00:00", older["id"]),
+    )
+    conn.commit()
+    acknowledged_basis = build_application_pack(conn, workspace_id)
+
+    newer = _decide(
+        conn, workspace_id, intelligence, "content_unit", "cv_1",
+        "omit_from_positioning",
+    )
+    conn.execute(
+        "UPDATE review_decisions SET created_at=? WHERE id=?",
+        ("2026-08-24T10:01:00+00:00", newer["id"]),
+    )
+    conn.commit()
+    omitted_basis = build_application_pack(conn, workspace_id)
+
+    assert acknowledged_basis["source_artifacts"] == omitted_basis["source_artifacts"]
+    assert acknowledged_basis != omitted_basis
+    assert acknowledged_basis["cv_content"]
+    assert omitted_basis["cv_content"] == []
+    assert [
+        decision["id"]
+        for decision in omitted_basis["review_record"]["decisions_consulted"]
+    ] == [newer["id"]]
+
+
 @pytest.mark.parametrize("status", ["READY", "NEEDS_REVIEW"])
 def test_every_eligible_status_needs_disposition_and_acknowledgement_includes(tmp_path, status):
     conn, workspace_id = _workspace(tmp_path)
@@ -644,6 +713,36 @@ def test_stale_fit_or_intelligence_chain_is_rejected(tmp_path):
     )
     with pytest.raises(PipelineError, match="stale artifacts"):
         build_application_pack(conn, workspace_id)
+
+
+def test_stale_chain_rejection_precedes_current_profile_payload_validation(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _, _, _, intelligence = _seed(conn, workspace_id)
+    _decide(conn, workspace_id, intelligence, "content_unit", "cv_1")
+    save_artifact(
+        conn,
+        workspace_id=PROFILE_WORKSPACE_ID,
+        artifact_type="profile_snapshot",
+        payload={"schema_version": "malformed-profile"},
+        content_id="profilesnap_malformed_and_new",
+    )
+
+    with pytest.raises(PipelineError, match="stale artifacts"):
+        build_application_pack(conn, workspace_id)
+
+
+def test_legacy_confirmation_without_draft_id_persists_exact_v1_basis(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    _seed_completion_ready(conn, workspace_id)
+    expected = build_application_pack(conn, workspace_id)
+
+    confirmed = confirm_application_pack(
+        conn, workspace_id, effective_date="2026-08-20", documents_root=tmp_path
+    )
+
+    assert confirmed["artifact"]["payload"] == expected
+    assert confirmed["artifact"]["payload"]["schema_version"] == "application-pack.v1"
+    assert get_workspace(conn, workspace_id)["workflow_status"] == "drafted"
 
 
 def test_missing_dependency_identity_cannot_masquerade_as_fresh_chain(tmp_path):

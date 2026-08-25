@@ -112,6 +112,24 @@ def test_v0_baseline_renderer_bytes_are_frozen_from_a7faadd():
     )
 
 
+def test_v1_baseline_renderer_bytes_are_frozen_from_9f99898():
+    pack = json.loads((_FIXTURES / "v1_valid.json").read_text(encoding="utf-8"))
+
+    rendered = render_application_pack(
+        pack, source_pack_id="art_v1_manual_editing_baseline"
+    )
+
+    assert rendered.renderer_version == "application-pack-renderer.v2"
+    assert len(rendered.file("cv").content) == 36_733
+    assert rendered.file("cv").content_hash == (
+        "sha256:ee9f915b0eaadf9eda5ac758016c44e0017ae7c180e4859d3812fb2241f0d19e"
+    )
+    assert len(rendered.file("cover_letter").content) == 36_668
+    assert rendered.file("cover_letter").content_hash == (
+        "sha256:9e69eb343b4be43317644b7ffd8a6a0029253bd57714bfbbf7acdc97851aaa7e"
+    )
+
+
 @pytest.mark.parametrize("schema_version", [None, "application-pack.v9"])
 def test_renderer_rejects_absent_or_unknown_schema_version(schema_version):
     pack = _pack()

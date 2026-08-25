@@ -27,6 +27,20 @@ def test_v0_archive_projection_baseline_is_frozen_from_a7faadd():
     assert actual == expected
 
 
+def test_v1_archive_projection_baseline_is_frozen_from_9f99898():
+    pack = json.loads((_FIXTURES / "v1_valid.json").read_text(encoding="utf-8"))
+    expected = (_FIXTURES / "v1_archive_projection_baseline.md").read_bytes()
+    actual = _render_markdown(
+        pack, projection_id="art_v1_manual_editing_projection_baseline"
+    ).encode("utf-8")
+
+    assert len(expected) == 2_705
+    assert hashlib.sha256(expected).hexdigest() == (
+        "8811be42ac296b0bd530900d9e6894d62d15574f44c081018c22164bc012a60a"
+    )
+    assert actual == expected
+
+
 def _pack():
     return {
         "schema_version": "application-pack.v0",
