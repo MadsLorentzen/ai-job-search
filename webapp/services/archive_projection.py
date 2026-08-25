@@ -19,6 +19,21 @@ def _json_section(lines: list[str], title: str, value: Any) -> None:
 
 def _render_markdown(pack: dict[str, Any], *, projection_id: str | None = None) -> str:
     version = pack.get("schema_version")
+    if version == "application-pack.v2":
+        lines = ["# Application Pack", ""]
+        if projection_id is not None:
+            lines = [f"<!-- application-pack-artifact: {projection_id} -->", "", *lines]
+        lines.extend([
+            "**Selected-file manifest:** application-pack.v2  ",
+            "**User-managed files are not content-verified by JobSearch.**", "",
+        ])
+        _json_section(lines, "Final Documents", pack.get("final_documents", {}))
+        generation = pack.get("generation_basis", {})
+        _json_section(lines, "Generation Basis", {
+            "generation_artifact_id": generation.get("generation_artifact_id"),
+            "source_artifacts": generation.get("reviewed_application_pack", {}).get("source_artifacts", {}),
+        })
+        return "\n".join(lines)
     if version not in {"application-pack.v0", "application-pack.v1"}:
         raise ValueError("unsupported application pack schema version")
     job = pack.get("job", {})

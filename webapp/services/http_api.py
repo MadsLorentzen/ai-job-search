@@ -23,7 +23,9 @@ from webapp.services.application_pack import (
     confirm_application_pack,
     retry_application_pack_projection,
 )
-from product.application_pack_renderer import RendererError, render_application_pack
+from product.application_pack_renderer import RenderedFile, RendererError, render_application_pack
+from product.application_pack_v2_contract import APPLICATION_PACK_V2
+from webapp.services.application_handoff import resolve_application_handoff
 from webapp.services.extension_registry import (
     ExtensionRegistryError,
     list_installed_extensions,
@@ -246,6 +248,7 @@ def render_job_application_pack_document(
     kind: str,
     pack_artifact_id: str | None = None,
     account_id: str = DEFAULT_ACCOUNT_ID,
+    documents_root: Path = Path("documents"),
 ):
     """Render one document (``kind`` is ``"cv"`` or ``"cover_letter"``) from an
     immutable Application Pack belonging to ``workspace_id``.
@@ -278,6 +281,20 @@ def render_job_application_pack_document(
                 f"application pack artifact {pack_artifact_id!r} does not belong to "
                 f"workspace {workspace_id}"
             )
+    if artifact["payload"].get("schema_version") == APPLICATION_PACK_V2:
+        resolved = resolve_application_handoff(
+            conn, workspace_id, pack_artifact_id=artifact["id"],
+            documents_root=documents_root, account_id=account_id,
+            enforce_handoff_state=False,
+        )
+        item = resolved["files"].get(kind)
+        if item is None:
+            raise PipelineError(f"application pack has no document of kind {kind!r}")
+        metadata = item["metadata"]
+        return RenderedFile(
+            kind=kind, filename=metadata["original_filename"], content=item["content"],
+            mime_type=metadata["media_type"], content_hash="sha256:" + metadata["sha256"],
+        )
     try:
         rendered = render_application_pack(artifact["payload"], source_pack_id=artifact["id"])
         return rendered.file(kind)

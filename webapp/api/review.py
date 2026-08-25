@@ -154,6 +154,7 @@ def get_application_pack_document(
     pack_artifact_id: str | None = None,
     conn: sqlite3.Connection = Depends(get_conn),
     scope: AccountScope = Depends(get_account_scope),
+    documents_root: Path = Depends(get_documents_root),
 ):
     if kind not in _RENDER_KINDS:
         raise HTTPException(status_code=404, detail=f"unknown rendered document kind {kind!r}")
@@ -161,6 +162,7 @@ def get_application_pack_document(
         rendered_file = render_job_application_pack_document(
             conn, workspace_id, kind=kind, pack_artifact_id=pack_artifact_id,
             account_id=scope.account_id,
+            documents_root=documents_root,
         )
     except (PipelineError, JobWorkspaceNotFound) as exc:
         raise _translate(exc) from exc
