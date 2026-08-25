@@ -1,0 +1,8 @@
+{
+  "folders": [{"name": "AI Job Search (Codex)", "path": "."}],
+  "settings": {
+    "chatgpt.openOnStartup": true,
+    "files.exclude": {"**/__pycache__": true, "**/node_modules": true}
+  },
+  "extensions": {"recommendations": ["openai.chatgpt"]}
+}

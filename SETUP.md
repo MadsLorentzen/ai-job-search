@@ -4,15 +4,11 @@ Step-by-step instructions for getting the AI Job Search framework running.
 
 ## 1. Prerequisites
 
-### Claude Code
+### OpenAI Codex for VS Code
 
-Install Claude Code (Anthropic's CLI for Claude):
+Install the OpenAI Codex extension from the VS Code Marketplace and sign in. Open `ai-job-search-codex.code-workspace`, then start a local Codex chat from the repository root. Codex reads `AGENTS.md` and discovers the skills under `.agents/skills/` automatically.
 
-```bash
-npm install -g @anthropic-ai/claude-code
-```
-
-You'll need an Anthropic API key or a Claude Pro/Team subscription. See the [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for details.
+See `CODEX.md` for the short Codex-specific usage guide.
 
 ### Python
 
@@ -197,16 +193,12 @@ If you're outside Denmark, you can generate an equivalent search skill for your 
 
 ## 4. Run the setup interview
 
-Start Claude Code in the repository:
-
-```bash
-claude
-```
+Open `ai-job-search-codex.code-workspace` in VS Code and start a local Codex chat.
 
 Then run the onboarding:
 
 ```
-/setup
+$setup
 ```
 
 Claude will offer three paths:
