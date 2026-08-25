@@ -29,10 +29,11 @@ class DocumentBlobStore:
         digest = parts[2].removesuffix(".docx")
         if storage_key != self.storage_key(digest):
             raise DocumentBlobError("invalid document storage key")
-        path = (self.root / digest[:2] / f"{digest}.docx").resolve()
-        if self.root not in path.parents:
+        root = os.path.abspath(str(self.root))
+        path = os.path.abspath(str(self.root / digest[:2] / f"{digest}.docx"))
+        if os.path.normcase(os.path.commonpath((root, path))) != os.path.normcase(root):
             raise DocumentBlobError("document path escaped storage root")
-        return path
+        return Path(path)
 
     @staticmethod
     def _verify(path: Path, *, expected_length: int, expected_sha256: str) -> bytes:
