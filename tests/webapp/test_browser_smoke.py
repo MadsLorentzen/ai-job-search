@@ -13,15 +13,18 @@ import pytest
 import uvicorn
 from docx import Document
 
+from product.application_document_contract import DOCX_MEDIA_TYPE
 from product.application_intelligence_providers import ProviderResponse as AIResponse
 from product.job_understanding_providers import ProviderResponse as UnderstandingResponse
 from webapp.app import create_app
 from webapp.config import Settings
 from webapp.persistence.accounts import create_account
+from webapp.persistence.application_documents import create_document_version
 from webapp.persistence.artifacts import list_artifact_history
 from webapp.persistence.db import connect
 from webapp.persistence.search_workspaces import create_search_workspace
 from webapp.persistence.workspaces import PROFILE_WORKSPACE_ID, create_workspace
+from webapp.services.document_blob_store import DocumentBlobStore
 
 from tests.webapp.fixtures.acceptance.fixtures import extension
 
@@ -462,6 +465,19 @@ def test_browser_routes_do_not_expose_another_accounts_known_ids(page, live_serv
         company="Private Browser B Company",
         title="Private Browser B Role",
     )
+    private_bytes = _edited_docx_bytes("Private Account B CV")
+    blob = DocumentBlobStore(live_server.db_path.parent / "documents").publish(
+        private_bytes
+    )
+    private_document = create_document_version(conn, {
+        "id": "docv_browser_private_b", "account_id": "account_browser_b",
+        "source_workspace_id": application_b["id"], "document_kind": "cv",
+        "origin": "user_uploaded", "original_filename": "Private B.docx",
+        "media_type": DOCX_MEDIA_TYPE, "byte_length": blob["byte_length"],
+        "sha256": blob["sha256"], "storage_key": blob["storage_key"],
+        "source_generation_artifact_id": None,
+        "created_at": "2026-08-25T00:00:00+00:00",
+    })
     conn.close()
 
     page.goto(live_server.base_url + "/search-workspaces")
@@ -476,6 +492,11 @@ def test_browser_routes_do_not_expose_another_accounts_known_ids(page, live_serv
     )
     assert application_response.status == 404
     assert "Private Browser B Company" not in page.locator("body").inner_text()
+    assert page.request.get(
+        live_server.base_url
+        + f"/api/workspaces/{application_b['id']}/application-documents/"
+        + f"{private_document['id']}/download"
+    ).status == 404
 
 
 def test_user_profile_preferences_are_editable_in_browser(page, live_server):
@@ -788,6 +809,20 @@ def test_user_managed_documents_upload_select_confirm_replace_and_apply_exact_by
     assert cv_panel.get_by_text("No file selected").is_visible()
     assert cover_panel.get_by_text("No file selected").is_visible()
 
+    cv_panel.locator('input[type="file"]').set_input_files({
+        "name": "Not Word.docx", "mimeType": DOCX_MEDIA_TYPE,
+        "buffer": b"not a ZIP package",
+    })
+    cv_panel.get_by_role("button", name="Upload").click()
+    error_toast = page.locator("#toast.error").get_by_text(
+        "file is not a DOCX ZIP package"
+    )
+    error_toast.wait_for(state="visible")
+    assert error_toast.is_visible()
+    assert cv_panel.locator(".document-version").filter(
+        has_text="AI original"
+    ).count() == 1
+
     edited = {
         "cv": ("Ada Final CV.docx", _edited_docx_bytes("Ada Final CV")),
         "cover_letter": (
@@ -807,6 +842,29 @@ def test_user_managed_documents_upload_select_confirm_replace_and_apply_exact_by
         assert panel.get_by_text("No file selected").is_visible()
         version = panel.locator(".document-version").filter(has_text=filename)
         assert version.get_by_text("not content-verified by JobSearch").is_visible()
+        if kind == "cv":
+            _click_reload(page, version.get_by_role("button", name="Save for reuse"))
+            conn = connect(live_server.db_path)
+            reusable_workspace = create_workspace(
+                conn, company="Reuse Demo", title="Second Role"
+            )
+            conn.close()
+            page.goto(
+                f"{live_server.base_url}/workspaces/{reusable_workspace['id']}",
+                wait_until="networkidle",
+            )
+            reusable = page.locator('[data-document-kind="cv"] .document-version').filter(
+                has_text=filename
+            )
+            assert reusable.get_by_text(
+                "not content-verified by JobSearch"
+            ).is_visible()
+            _click_reload(
+                page, reusable.get_by_role("button", name="Use this version")
+            )
+            page.goto(workspace_url, wait_until="networkidle")
+            panel = page.locator(f'[data-document-kind="{kind}"]')
+            version = panel.locator(".document-version").filter(has_text=filename)
         _click_reload(page, version.get_by_role("button", name="Use this version"))
 
     page.once("dialog", lambda dialog: dialog.accept())
@@ -993,6 +1051,9 @@ def test_gate_four_reason_survives_an_existing_confirmed_pack(page, live_server)
     assert page.get_by_text(
         "Reviewed material must be completion-ready before AI documents can be generated."
     ).is_visible()
+    assert page.get_by_text(
+        "This document was generated from earlier reviewed material."
+    ).first.is_visible()
     _assert_no_private_browser_content(page, live_server)
 
 
