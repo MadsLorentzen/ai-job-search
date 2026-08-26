@@ -64,9 +64,25 @@ class DoctorTests(AgencyFixture):
         for executable, _purpose, _remedy, _required in agency.TOOLCHAIN:
             self.assertIn(executable, report)
 
+    def test_version_probe_never_reports_an_error_as_the_version(self):
+        # pdftotext has no --version and treats it as an input filename, so a
+        # naive probe reports "I/O Error: Couldn't open file" as the version.
+        for executable, _p, _r, _q in agency.TOOLCHAIN:
+            if agency.probe(executable):
+                with self.subTest(tool=executable):
+                    version = agency.probe_version(executable)
+                    self.assertNotIn("Error", version)
+                    self.assertNotIn("No such file", version)
+
+    def test_costs_are_reachable_from_the_console(self):
+        self.assertEqual(0, self.run_cli(
+            "costs", "record", "--client", "Jane Doe", "--company", "Acme",
+            "--role", "Data Scientist", "--input", "100000", "--output", "10000"))
+        self.assertEqual(0, self.run_cli("costs", "report"))
+
     def test_a_missing_required_tool_carries_its_fix(self):
-        # This container has no LaTeX, so the remediation path is exercised for
-        # real rather than mocked.
+        # Exercised for real on a machine without LaTeX, skipped on one with it,
+        # rather than mocking a probe whose whole job is to touch the system.
         lines, _ = agency.run_doctor(self.root, self.store)
         report = "\n".join(lines)
         if "[MISS] lualatex" in report:

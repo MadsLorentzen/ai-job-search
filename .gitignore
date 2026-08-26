@@ -124,3 +124,6 @@ build/
 dist/
 *.spec
 packaging/output/
+
+# Per-application cost ledger - business data, references client names
+costs/

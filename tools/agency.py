@@ -13,6 +13,8 @@ consultant needs around that workflow and currently has to do by hand:
     agency client check "Jane Doe"    is this workspace safe to draft from?
     agency client audit "Jane Doe" f  does this draft carry anyone else's identity?
     agency client list                who is on the books
+    agency costs record ...           what did that application cost?
+    agency costs report               cost distribution and a price floor
 
 `doctor` is the reason this exists. The setup cliff is real - a LaTeX
 distribution, two engines, Bun, and poppler, each with its own Windows
@@ -31,12 +33,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import costs  # noqa: E402
 import credentials  # noqa: E402
 import tenancy  # noqa: E402
 
-# Each probe: the executable, what it is for, and how to install it on Windows.
-# The remediation strings mirror SETUP.md so a machine fixed from this report
-# matches one fixed from the docs.
+# Each probe: the executable, what it is for, how to install it on Windows, and
+# whether the workflow can run without it. The remediation strings mirror
+# SETUP.md so a machine fixed from this report matches one fixed from the docs.
+#
+# The version flag varies: poppler's pdftotext has no --version and treats it as
+# an input filename, reporting an I/O error that would otherwise be displayed as
+# if it were the version.
+VERSION_FLAGS = {"pdftotext": "-v"}
+
 TOOLCHAIN = (
     (
         "lualatex",
@@ -72,9 +81,10 @@ def probe(executable):
 
 def probe_version(executable):
     """Best-effort one-line version string. Never raises."""
+    flag = VERSION_FLAGS.get(executable, "--version")
     try:
         result = subprocess.run(
-            [executable, "--version"],
+            [executable, flag],
             capture_output=True,
             text=True,
             timeout=15,
@@ -220,6 +230,26 @@ def build_parser():
     key_clear.set_defaults(func=lambda a: credentials._cmd_clear(
         argparse.Namespace(path=a.store)))
 
+    ledger = sub.add_parser("costs", help="per-application cost ledger")
+    ledger_sub = ledger.add_subparsers(dest="costs_command", required=True)
+
+    record = ledger_sub.add_parser("record", help="record one /apply run")
+    record.add_argument("--client", required=True)
+    record.add_argument("--company", required=True)
+    record.add_argument("--role", required=True)
+    record.add_argument("--model", default=costs.DEFAULT_MODEL)
+    record.add_argument("--input", dest="input_tokens", type=int, default=0)
+    record.add_argument("--output", dest="output_tokens", type=int, default=0)
+    record.add_argument("--cache-read", type=int, default=0)
+    record.add_argument("--cache-write", type=int, default=0)
+    record.add_argument("--notes", default="")
+    record.set_defaults(func=costs._cmd_record)
+
+    report = ledger_sub.add_parser("report", help="cost distribution and a price floor")
+    report.add_argument("--client", help="limit to one client")
+    report.add_argument("--margin", type=float, default=0.5)
+    report.set_defaults(func=costs._cmd_report)
+
     client = sub.add_parser("client", help="manage client workspaces")
     client_sub = client.add_subparsers(dest="client_command", required=True)
 
@@ -248,7 +278,7 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except (tenancy.TenancyError, credentials.CredentialError) as exc:
+    except (tenancy.TenancyError, credentials.CredentialError, costs.CostError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
