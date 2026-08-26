@@ -292,6 +292,10 @@ Failures here are template-level problems: fix them in the `<CV_EXT>` source (e.
 - **missing (have it)** — the profile shows the candidate genuinely has this skill but the CV never says it: add it where it fits naturally, preferring experience bullets (concrete evidence) over the profile statement, then re-run 5a–5c.
 - **missing (gap)** — a genuine gap: leave it missing. **Never stuff keywords.** This is the same honesty rule the reviewer follows — a gap gets acknowledged in the cover letter's framing, not hidden in the CV.
 
+
+> **Note:** A multi-word phrase reported missing may be a punctuation-spacing artifact between extractors (pypdf sometimes inserts spaces around punctuation that Poppler does not). Re-check against the other extractor before concluding the text is absent.
+
+
 **4. Clean up:** delete the extracted `.txt` file.
 
 ### 5e. Clean up build artifacts
