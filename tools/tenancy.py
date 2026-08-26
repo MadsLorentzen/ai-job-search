@@ -72,6 +72,17 @@ TRACKER_HEADER = (
     "fit_rating,notes,cv_file,cover_letter_file,source,deadline"
 )
 
+# Where a client's own candidate profile lives inside their workspace. Claude
+# Code loads CLAUDE.md as project instructions before any command runs, so in a
+# per-client checkout that file *is* the profile; `profile/` covers a layout
+# that keeps the skill-file set alongside it instead.
+PROFILE_GLOBS = ("CLAUDE.md", "profile/*.md")
+
+# /setup replaces these when it personalises a profile. Their survival means the
+# checkout is still the unedited template - running /apply there would draft a CV
+# for nobody.
+PLACEHOLDER_MARKERS = ("[YOUR_", "[PLACEHOLDER", "[First]", "[Last]")
+
 # A token shorter than this matches too much ordinary prose to be evidence of
 # anything. Operators curate tokens themselves, so the floor only has to stop
 # obvious noise ("IT", "SAP" as a word fragment, initials).
@@ -333,6 +344,68 @@ def audit_files(name, paths, root=ROOT):
     return findings
 
 
+def profile_files(name, root=ROOT):
+    """Every profile document inside this client's workspace."""
+    workspace = workspace_path(name, root)
+    found = []
+    for pattern in PROFILE_GLOBS:
+        found.extend(sorted(p for p in workspace.glob(pattern) if p.is_file()))
+    return found
+
+
+def check_profile(name, root=ROOT):
+    """Assert the profile in this client's workspace is theirs and is filled in.
+
+    The contamination audit catches another client's identity in a *draft*.
+    This catches it one step earlier, in the profile the draft would be built
+    from - which is where running a command in the wrong checkout shows up.
+
+    Returns the list of problems; empty means the profile is sound.
+    """
+    manifest = check_workspace(name, root)
+    documents = profile_files(name, root)
+
+    if not documents:
+        return [
+            f"no profile found in {workspace_path(name, root)} "
+            f"(looked for: {', '.join(PROFILE_GLOBS)})"
+        ]
+
+    problems = []
+    own = [normalize_token(t) for t in manifest["tokens"]]
+    foreign = foreign_tokens(name, root)
+    identified = False
+
+    for document in documents:
+        text = document.read_text(encoding="utf-8", errors="replace")
+        label = document.name
+
+        stale = [marker for marker in PLACEHOLDER_MARKERS if marker in text]
+        if stale:
+            problems.append(
+                f"{label}: still holds template placeholders ({', '.join(sorted(set(stale)))}) "
+                "- run /setup in this workspace before drafting"
+            )
+
+        if any(find_token(token, text) for token in own):
+            identified = True
+
+        for token, owner in sorted(foreign.items()):
+            if find_token(token, text):
+                problems.append(
+                    f"{label}: contains {token!r}, which belongs to {owner!r} "
+                    "- this looks like the wrong client's checkout"
+                )
+
+    if not identified:
+        problems.append(
+            f"no profile document mentions {manifest['client']!r} or any of their "
+            "registered identifiers - the profile may belong to someone else"
+        )
+
+    return problems
+
+
 def _cmd_init(args):
     workspace = init_client(args.client, args.token or (), root=args.root)
     manifest = load_manifest(workspace)
@@ -343,7 +416,19 @@ def _cmd_init(args):
 
 def _cmd_check(args):
     manifest = check_workspace(args.client, root=args.root)
-    print(f"OK - workspace for {manifest['client']!r} is intact")
+
+    problems = check_profile(args.client, root=args.root)
+    if problems:
+        print(
+            f"PROFILE - workspace for {manifest['client']!r} is intact, but its "
+            "profile is not ready. Do not draft from it.",
+            file=sys.stderr,
+        )
+        for problem in problems:
+            print(f"  {problem}", file=sys.stderr)
+        return 1
+
+    print(f"OK - workspace and profile for {manifest['client']!r} are sound")
     return 0
 
 

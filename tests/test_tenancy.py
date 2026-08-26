@@ -23,6 +23,11 @@ class TenancyFixture(unittest.TestCase):
     def init(self, name, *tokens):
         return tenancy.init_client(name, tokens, root=self.root)
 
+    def write_profile(self, name, text):
+        """Give a workspace the CLAUDE.md a per-client checkout would carry."""
+        workspace = tenancy.workspace_path(name, root=self.root)
+        (workspace / "CLAUDE.md").write_text(text, encoding="utf-8")
+
 
 class SlugifyTests(TenancyFixture):
     def test_folds_names_to_safe_slugs(self):
@@ -184,6 +189,49 @@ class ContaminationTests(TenancyFixture):
         self.assertEqual(str(draft), findings[0][0])
 
 
+class ProfileTests(TenancyFixture):
+    """Catches the wrong-checkout mistake one step before a draft exists."""
+
+    def setUp(self):
+        super().setUp()
+        self.init("Jane Doe", "jane@example.com")
+        self.init("John Smith", "john@example.com")
+
+    def test_a_personalised_profile_passes(self):
+        self.write_profile("Jane Doe", "# Job assistant for Jane Doe\nEmail: jane@example.com")
+        self.assertEqual([], tenancy.check_profile("Jane Doe", root=self.root))
+
+    def test_a_workspace_with_no_profile_is_reported(self):
+        problems = tenancy.check_profile("Jane Doe", root=self.root)
+        self.assertEqual(1, len(problems))
+        self.assertIn("no profile found", problems[0])
+
+    def test_an_unedited_template_is_reported(self):
+        self.write_profile("Jane Doe", "# Job assistant for [YOUR_NAME]\nJane Doe")
+        problems = tenancy.check_profile("Jane Doe", root=self.root)
+        self.assertTrue(any("template placeholders" in p for p in problems), problems)
+        self.assertTrue(any("/setup" in p for p in problems), problems)
+
+    def test_another_clients_profile_in_this_workspace_is_reported(self):
+        # The wrong-checkout mistake: John's profile sitting in Jane's workspace.
+        self.write_profile("Jane Doe", "# Job assistant for John Smith\njohn@example.com")
+        problems = tenancy.check_profile("Jane Doe", root=self.root)
+        self.assertTrue(any("belongs to 'John Smith'" in p for p in problems), problems)
+
+    def test_a_profile_naming_nobody_registered_is_reported(self):
+        self.write_profile("Jane Doe", "# Job assistant for Someone Else Entirely")
+        problems = tenancy.check_profile("Jane Doe", root=self.root)
+        self.assertTrue(any("may belong to someone else" in p for p in problems), problems)
+
+    def test_a_profile_under_profile_dir_is_found_too(self):
+        workspace = tenancy.workspace_path("Jane Doe", root=self.root)
+        (workspace / "profile").mkdir()
+        (workspace / "profile" / "01-candidate-profile.md").write_text(
+            "Jane Doe, jane@example.com", encoding="utf-8"
+        )
+        self.assertEqual([], tenancy.check_profile("Jane Doe", root=self.root))
+
+
 class CommandLineTests(TenancyFixture):
     """CI and the /apply workflow call this as a subprocess, so exit codes matter."""
 
@@ -194,9 +242,17 @@ class CommandLineTests(TenancyFixture):
             text=True,
         )
 
-    def test_init_then_check_exits_zero(self):
-        self.assertEqual(0, self.run_cli("init", "Acme Ltd").returncode)
+    def test_check_passes_once_the_workspace_has_a_real_profile(self):
+        self.run_cli("init", "Acme Ltd")
+        self.write_profile("Acme Ltd", "# Profile for Acme Ltd")
         self.assertEqual(0, self.run_cli("check", "Acme Ltd").returncode)
+
+    def test_check_fails_on_a_fresh_workspace_with_no_profile_yet(self):
+        # Intact but not yet ready to draft from - that distinction is the point.
+        self.run_cli("init", "Acme Ltd")
+        result = self.run_cli("check", "Acme Ltd")
+        self.assertEqual(1, result.returncode)
+        self.assertIn("no profile found", result.stderr)
 
     def test_check_on_an_unknown_client_exits_one(self):
         result = self.run_cli("check", "Nobody")
