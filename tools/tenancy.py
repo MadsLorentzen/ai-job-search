@@ -44,7 +44,20 @@ import sys
 import unicodedata
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+def _install_root():
+    """Where clients/ lives.
+
+    In a PyInstaller build __file__ points inside the temporary extraction
+    directory, which vanishes when the process exits - so a frozen binary must
+    resolve its data next to the executable instead, or every client workspace
+    is created somewhere that no longer exists a moment later.
+    """
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent.parent
+
+
+ROOT = _install_root()
 
 # Per-client workspaces live here, one subdirectory per client.
 CLIENTS_DIRNAME = "clients"
@@ -254,6 +267,25 @@ def check_workspace(name, root=ROOT):
         )
 
     return manifest
+
+
+def list_clients(root=ROOT):
+    """Every client with a readable manifest, ordered by slug."""
+    base = clients_root(root)
+    if not base.is_dir():
+        return []
+
+    clients = []
+    for entry in sorted(base.iterdir()):
+        if not entry.is_dir():
+            continue
+        try:
+            clients.append(load_manifest(entry))
+        except TenancyError:
+            # Surfaced as a broken workspace by `check`, not hidden - but one
+            # unreadable manifest must not stop the roster from listing.
+            clients.append({"client": entry.name, "slug": entry.name, "tokens": None})
+    return clients
 
 
 def foreign_tokens(name, root=ROOT):

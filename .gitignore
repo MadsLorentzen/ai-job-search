@@ -118,3 +118,9 @@ company_research/*.json
 
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/
+
+# PyInstaller build output
+build/
+dist/
+*.spec
+packaging/output/
