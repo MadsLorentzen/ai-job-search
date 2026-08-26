@@ -2,7 +2,8 @@
 """Verify that a generated PDF has the expected pages and extractable text.
 
 Text-layer extraction tries pypdf (BSD, optional `pip install pypdf`) first,
-then Poppler `pdftotext` if pypdf is missing or cannot read the file.
+then Poppler `pdftotext` if pypdf is missing, raises, or returns zero
+extractable characters. Poppler remains the fallback.
 """
 
 import argparse
@@ -49,7 +50,7 @@ def normalize_text(text):
 
 
 def _extract_pypdf(pdf_path):
-    """Return (text, pages) or None if pypdf is unavailable or cannot read the file."""
+    """Return (text, pages) or None if pypdf is unavailable, raises, or yields no text."""
     try:
         from pypdf import PdfReader
     except ImportError:
@@ -59,6 +60,9 @@ def _extract_pypdf(pdf_path):
         pages = len(reader.pages)
         text = "\n".join((page.extract_text() or "") for page in reader.pages)
     except Exception:
+        return None
+    # Harden: treat empty/degraded extraction as failure so we fall back
+    if len(normalize_text(text)) == 0:
         return None
     return text, pages
 
@@ -79,12 +83,26 @@ def extract_text_layer(pdf_path):
     return text, pages, "pdftotext"
 
 
-def verify_pdf(pdf_path, expected_pages=None, min_chars=1, required_text=()):
+def verify_pdf(pdf_path, expected_pages=None, min_chars=1, required_text=(), dump_text=None):
     pdf_path = Path(pdf_path)
     if not pdf_path.is_file():
         raise VerificationError(f"PDF does not exist: {pdf_path}")
 
     extracted_text, actual_pages, extractor = extract_text_layer(pdf_path)
+
+    # Write dump *before* the checks so a failed verification still leaves a .txt
+    if dump_text is not None:
+        dump_path = Path(dump_text)
+        try:
+            dump_path.parent.mkdir(parents=True, exist_ok=True)
+            dump_path.write_text(
+                extracted_text if extracted_text.endswith("\n") else extracted_text + "\n",
+                encoding="utf-8",
+            )
+        except OSError as exc:
+            raise VerificationError(
+                f"could not write --dump-text to {dump_path}: {exc}"
+            ) from exc
 
     if expected_pages is not None and actual_pages != expected_pages:
         raise VerificationError(
@@ -136,13 +154,15 @@ def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
         extractor, text, pages = verify_pdf(
-            args.pdf, args.pages, args.min_chars, args.contains
+            args.pdf,
+            args.pages,
+            args.min_chars,
+            args.contains,
+            dump_text=args.dump_text,
         )
     except VerificationError as exc:
         print(f"Error: {args.pdf}: {exc}", file=sys.stderr)
         return 1
-    if args.dump_text:
-        args.dump_text.write_text(text if text.endswith("\n") else text + "\n", encoding="utf-8")
     print(f"Verified {args.pdf} (extractor: {extractor}, pages: {pages})")
     return 0
 
