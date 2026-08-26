@@ -139,6 +139,69 @@ describe("runContentScript", () => {
     expect((replacement as HTMLInputElement).value).toBe(""); // never written to the new, unverified node
   });
 
+  it("a persistently-unresolved field emits target_unresolved only once across repeated rescans", () => {
+    const document = loadDoc(FIXTURE_HTML);
+    const sent: ContentScriptMessage[] = [];
+    const first = runContentScript(document, SNAPSHOT, [genericAdapter], (m) => sent.push(m));
+
+    // Simulate an SPA removing the email field's DOM node entirely, and
+    // never bringing it back.
+    const oldInput = document.querySelector("#f_email")!;
+    const replacement = document.createElement("input");
+    replacement.id = "f_email_v2";
+    oldInput.replaceWith(replacement);
+
+    sent.length = 0;
+    const second = runContentScript(document, SNAPSHOT, [genericAdapter], (m) => sent.push(m), first.trackedState);
+    const unresolvedAfterSecondScan = sent.filter((m) => m.type === "target_unresolved");
+    expect(unresolvedAfterSecondScan).toHaveLength(1);
+
+    // Rescan again with the SAME unresolved state (field still gone) — this
+    // must NOT re-emit a second target_unresolved for the same field.
+    sent.length = 0;
+    runContentScript(document, SNAPSHOT, [genericAdapter], (m) => sent.push(m), second.trackedState);
+    const unresolvedAfterThirdScan = sent.filter((m) => m.type === "target_unresolved");
+    expect(unresolvedAfterThirdScan).toHaveLength(0);
+  });
+
+  it("a field that resolves after being unresolved can emit target_unresolved again on a later, distinct unresolution", () => {
+    const document = loadDoc(FIXTURE_HTML);
+    const sent: ContentScriptMessage[] = [];
+    const first = runContentScript(document, SNAPSHOT, [genericAdapter], (m) => sent.push(m));
+
+    // Scan 2: SPA removes the email field entirely -> first unresolution.
+    const oldInput = document.querySelector<HTMLInputElement>("#f_email")!;
+    const parent = oldInput.parentElement!;
+    const placeholder = document.createComment("removed");
+    oldInput.replaceWith(placeholder);
+
+    sent.length = 0;
+    const second = runContentScript(document, SNAPSHOT, [genericAdapter], (m) => sent.push(m), first.trackedState);
+    expect(sent.filter((m) => m.type === "target_unresolved")).toHaveLength(1);
+
+    // Scan 3: the SPA re-renders and restores an attached #f_email node
+    // (same pageFieldKey via the adapter's own keying, since the adapter
+    // re-scans the live DOM fresh each call). This is a real recovery.
+    const restored = document.createElement("input");
+    restored.id = "f_email";
+    restored.setAttribute("name", "email");
+    const label = document.querySelector('label[for="f_email"]');
+    label?.after(restored);
+    placeholder.remove();
+
+    sent.length = 0;
+    const third = runContentScript(document, SNAPSHOT, [genericAdapter], (m) => sent.push(m), second.trackedState);
+    expect(sent.filter((m) => m.type === "target_unresolved")).toHaveLength(0);
+
+    // Scan 4: SPA removes the field again -> this is a NEW, distinct
+    // unresolution (a real recovery happened in between), so it MUST emit
+    // target_unresolved again, not be suppressed as a "duplicate."
+    restored.remove();
+    sent.length = 0;
+    runContentScript(document, SNAPSHOT, [genericAdapter], (m) => sent.push(m), third.trackedState);
+    expect(sent.filter((m) => m.type === "target_unresolved")).toHaveLength(1);
+  });
+
   it("a freshly attached field is not wrongly reported as target_unresolved on first scan", () => {
     // Regression guard for the instanceof-vs-jsdom-global pitfall: under this
     // project's vitest node environment there is no global `Element` or

@@ -8,6 +8,13 @@ interface TrackedFieldState {
   domRef: unknown;
   decision: FieldDecision;
   field: DetectedField;
+  // Whether the most recent scan found this field's target unresolved (not
+  // attached / not writable, or absent from the scan entirely). Gates
+  // target_unresolved emission so a persistently-unresolved field reports
+  // once, not on every rescan — but is cleared back to false the moment the
+  // field is observed attached again, so a later, distinct unresolution
+  // (after a real intervening recovery) is free to emit again.
+  unresolved: boolean;
 }
 
 export interface PendingSuggestion {
@@ -119,7 +126,13 @@ export function runContentScript(
         observedAt: nowIso(),
         decision: decisionSummary(decision),
       });
-      trackedState.set(field.pageFieldKey, { pageFieldKey: field.pageFieldKey, domRef: field.domRef, decision, field });
+      trackedState.set(field.pageFieldKey, {
+        pageFieldKey: field.pageFieldKey,
+        domRef: field.domRef,
+        decision,
+        field,
+        unresolved: false,
+      });
     }
 
     if (decision.behavior === "ask" || decision.behavior === "never") {
@@ -161,13 +174,32 @@ export function runContentScript(
         continue;
       }
       if (!isAttached(field.domRef, document) || !isWritableFormField(field.domRef)) {
-        sendMessage({
-          type: "target_unresolved",
+        const wasAlreadyUnresolved = already?.unresolved === true;
+        // Track this field as unresolved even if it wasn't previously
+        // tracked at all (e.g. field_detected fired this same iteration,
+        // above, before we discovered the target doesn't resolve).
+        trackedState.set(field.pageFieldKey, {
           pageFieldKey: field.pageFieldKey,
-          normalizedFieldType: decision.normalizedFieldType,
-          observedAt: nowIso(),
+          domRef: field.domRef,
+          decision,
+          field,
+          unresolved: true,
         });
+        if (!wasAlreadyUnresolved) {
+          sendMessage({
+            type: "target_unresolved",
+            pageFieldKey: field.pageFieldKey,
+            normalizedFieldType: decision.normalizedFieldType,
+            observedAt: nowIso(),
+          });
+        }
         continue;
+      }
+      // The target resolved successfully this scan — clear any prior
+      // unresolved flag so a FUTURE unresolution (after this real recovery)
+      // is treated as a new, distinct event rather than a suppressed dupe.
+      if (already?.unresolved) {
+        trackedState.set(field.pageFieldKey, { ...already, domRef: field.domRef, decision, field, unresolved: false });
       }
       if (!already) {
         writeValue(field.domRef, value);
@@ -190,12 +222,15 @@ export function runContentScript(
   for (const [pageFieldKey, tracked] of trackedState) {
     if (seenKeys.has(pageFieldKey)) continue;
     if (!isAttached(tracked.domRef, document)) {
-      sendMessage({
-        type: "target_unresolved",
-        pageFieldKey,
-        normalizedFieldType: tracked.decision.normalizedFieldType,
-        observedAt: nowIso(),
-      });
+      if (!tracked.unresolved) {
+        sendMessage({
+          type: "target_unresolved",
+          pageFieldKey,
+          normalizedFieldType: tracked.decision.normalizedFieldType,
+          observedAt: nowIso(),
+        });
+      }
+      trackedState.set(pageFieldKey, { ...tracked, unresolved: true });
     }
   }
 
