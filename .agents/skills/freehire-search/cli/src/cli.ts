@@ -112,9 +112,16 @@ best-effort, no SLA. Override with FREEHIRE_API_URL to use a self-hosted backend
 `
 
 function parseIntFlag(name: string, raw: string | boolean | string[]): number | null {
-  const val = parseInt(raw as string, 10)
-  if (isNaN(val)) {
-    process.stderr.write(JSON.stringify({ error: `--${name} must be a number, got "${raw}"`, code: "BAD_ARG" }) + "\n")
+  // Number(), not parseInt(): parseInt truncates, so "--jobage 0.5" became 0,
+  // which fails search.ts's `jobage > 0` guard and silently drops
+  // posted_within_days from the outbound request while exiting 0 (#373).
+  // Whole numbers >= 1 only — the Danish CLIs' z.coerce.number().int().min(1)
+  // contract; 0 is rejected rather than kept as a "no filter" alias.
+  const val = typeof raw === "string" ? Number(raw.trim()) : NaN
+  if (!Number.isInteger(val) || val < 1) {
+    process.stderr.write(
+      JSON.stringify({ error: `--${name} must be a whole number of at least 1, got "${raw}"`, code: "BAD_ARG" }) + "\n",
+    )
     return null
   }
   return val
