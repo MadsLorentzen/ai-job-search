@@ -240,7 +240,7 @@ async function post(path, body) {
 
 async function sendPrompt(prompt) {
   const text = prompt.trim();
-  if (!text || busy) return;
+  if (!text || busy) return false;
   if (!lastHealth?.loggedIn) {
     // Only pay for a health check while signed out; a check spawns Claude Code.
     try {
@@ -254,7 +254,7 @@ async function sendPrompt(prompt) {
     if (!lastHealth?.installed && !needsInstall(lastHealth) && !needsLogin(lastHealth)) {
       addMessage("error", "Claude Code is not installed yet. Use the Connect Claude button.");
     }
-    return;
+    return false;
   }
   assistant = null;
   setMenu(false);
@@ -262,9 +262,11 @@ async function sendPrompt(prompt) {
   try {
     const res = await post("/send", { prompt: text });
     if (!res.ok) throw new Error();
+    return true;
   } catch {
     setBusy(false);
     addMessage("error", "The desk could not reach the local server. Is the terminal still running?");
+    return false;
   }
 }
 
@@ -317,12 +319,18 @@ function promptFromSheet() {
   return "";
 }
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const value = promptEl.value;
   promptEl.value = "";
   sizePrompt();
-  sendPrompt(value);
+  const sent = await sendPrompt(value);
+  if (!sent && !promptEl.value) {
+    // Busy turn or unreachable server: give the user their text back
+    // instead of eating it.
+    promptEl.value = value;
+    sizePrompt();
+  }
   promptEl.focus();
 });
 
@@ -335,6 +343,9 @@ promptEl.addEventListener("keydown", (event) => {
   }
 });
 
+if (!document.getElementById("empty")) {
+  logEl.insertAdjacentHTML("afterbegin", emptyMarkup());
+}
 bindEmptyActions();
 
 sheetForm.addEventListener("submit", (event) => {
@@ -403,6 +414,14 @@ source.addEventListener("hello", (event) => {
   const data = JSON.parse(event.data);
   setBusy(Boolean(data.busy));
   rememberSession(data);
+  // Replay the conversation after a refresh or reconnect - the session
+  // resumes server-side either way; without this the page just looks empty.
+  if (Array.isArray(data.transcript) && data.transcript.length && !logEl.querySelector("article")) {
+    for (const entry of data.transcript) {
+      addMessage(entry.role === "assistant" ? "assistant" : entry.role === "user" ? "user" : "error", entry.text || "");
+    }
+    assistant = null;
+  }
 });
 
 if (openCliBtn) {
@@ -450,7 +469,7 @@ source.addEventListener("status", (event) => {
 source.addEventListener("log", (event) => {
   statusEl.textContent = JSON.parse(event.data).text.slice(0, 180);
 });
-source.addEventListener("error", (event) => {
+source.addEventListener("turn-error", (event) => {
   if (event.data) addMessage("error", JSON.parse(event.data).text);
 });
 source.addEventListener("reset", () => {
@@ -462,7 +481,10 @@ source.addEventListener("idle", () => {
   assistant = null;
   setBusy(false);
 });
-source.onerror = () => {
+source.onerror = (event) => {
+  // Server-sent frames named "error" would land here too; only a real
+  // connection drop (no data payload) means the server is gone.
+  if (event?.data) return;
   statusEl.textContent = "Lost the local server. Run node gui/server.mjs again.";
 };
 

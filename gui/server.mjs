@@ -53,19 +53,32 @@ let helper = null;
 let streamedText = false;
 let sawInit = false;
 let stopRequested = false;
+// Turn generations: a child spawned before the latest /reset must not write
+// state or stream into the fresh conversation. Without this, "New chat"
+// during a busy turn lets the dying child's buffered stdout re-save the old
+// session id, and the next /send resumes the conversation the user reset.
+let turnGen = 0;
+let resetGen = 0;
+// Rendered conversation, replayed to a client that reconnects (page refresh).
+const transcript = [];
+let turnText = "";
+// tool_use id -> tool name, so "done" chips can show the name, not the id.
+const toolNames = new Map();
 
 function send(event, data) {
   const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
   for (const res of clients) res.write(payload);
 }
 
-function snapshot() {
-  return {
+function snapshot(withTranscript = false) {
+  const base = {
     sessionId,
     busy,
     chromeGroup: chromeEnabled() ? DESK_SESSION_NAME : null,
     workspace,
   };
+  if (withTranscript) base.transcript = transcript.slice(-200);
+  return base;
 }
 
 function extractText(message) {
@@ -83,10 +96,11 @@ function emitTools(message) {
   if (!Array.isArray(content)) return;
   for (const block of content) {
     if (block?.type === "tool_use" && block.name) {
+      if (block.id) toolNames.set(block.id, block.name);
       send("tool", { name: block.name, phase: "start" });
     }
     if (block?.type === "tool_result") {
-      send("tool", { name: block.tool_use_id || "tool", phase: "done" });
+      send("tool", { name: toolNames.get(block.tool_use_id) || "tool", phase: "done" });
     }
   }
 }
@@ -114,7 +128,10 @@ function handleStreamLine(line) {
   if (event.type === "assistant") {
     emitTools(event.message);
     const text = extractText(event.message);
-    if (text && !streamedText) send("delta", { text });
+    if (text && !streamedText) {
+      turnText += text;
+      send("delta", { text });
+    }
     return;
   }
 
@@ -126,11 +143,14 @@ function handleStreamLine(line) {
   if (event.type === "stream_event") {
     const inner = event.event || {};
     if (inner.type === "content_block_start" && inner.content_block?.type === "tool_use") {
-      send("tool", { name: inner.content_block.name || "tool", phase: "start" });
+      const block = inner.content_block;
+      if (block.id && block.name) toolNames.set(block.id, block.name);
+      send("tool", { name: block.name || "tool", phase: "start" });
     }
     const delta = inner.delta;
     if (delta?.type === "text_delta" && delta.text) {
       streamedText = true;
+      turnText += delta.text;
       send("delta", { text: delta.text });
     }
     return;
@@ -138,10 +158,11 @@ function handleStreamLine(line) {
 
   if (event.type === "result") {
     if (typeof event.result === "string" && event.result && !streamedText) {
+      if (!turnText.trim()) turnText = event.result;
       send("result", { text: event.result });
     }
     if (event.is_error) {
-      send("error", { text: event.result || "Claude reported an error." });
+      send("turn-error", { text: event.result || "Claude reported an error." });
     }
   }
 }
@@ -150,7 +171,14 @@ function stopProcess(proc, group) {
   if (!proc) return;
   const pid = proc.pid;
   if (IS_WIN && pid) {
-    spawn("taskkill", ["/pid", String(pid), "/t", "/f"], { stdio: "ignore" });
+    const killer = spawn("taskkill", ["/pid", String(pid), "/t", "/f"], { stdio: "ignore" });
+    killer.on("error", () => {
+      try {
+        proc.kill("SIGTERM");
+      } catch {
+        // Already gone.
+      }
+    });
     return;
   }
   if (pid && group) {
@@ -207,14 +235,20 @@ function runHelper(kind, factory) {
   }
   const proc = factory();
   helper = proc;
+  // A write to a stdin the helper already closed must not crash the desk.
+  proc.stdin?.on("error", () => {});
   send("auth-log", { kind, text: kind === "install" ? "Installing Claude Code…" : "Opening Claude login…" });
   attachHelperOutput(proc, kind);
   proc.on("error", (err) => {
+    // A cancelled-then-restarted helper's late events must not clobber the
+    // live one: only the process that still owns `helper` may clear it.
+    if (helper !== proc) return;
     helper = null;
     send("auth-log", { kind, text: err.message });
     send("auth-done", { kind, ok: false, error: err.message });
   });
   proc.on("close", async (code) => {
+    if (helper !== proc) return;
     helper = null;
     const health = await getClaudeHealth(workspace);
     const ok = kind === "install" ? health.installed : health.loggedIn;
@@ -225,12 +259,12 @@ function runHelper(kind, factory) {
 
 function runClaude(prompt, { retried = false } = {}) {
   if (busy) {
-    send("error", { text: "Claude is already working. Stop the turn, or wait." });
+    send("turn-error", { text: "Claude is already working. Stop the turn, or wait." });
     return;
   }
 
   if (!commandLooksInstalled(resolveCommand("claude"))) {
-    send("error", { text: MISSING_CLAUDE_TEXT });
+    send("turn-error", { text: MISSING_CLAUDE_TEXT });
     send("idle", snapshot());
     return;
   }
@@ -242,14 +276,24 @@ function runClaude(prompt, { retried = false } = {}) {
   streamedText = false;
   sawInit = false;
   stopRequested = false;
+  turnText = "";
+  toolNames.clear();
+  const gen = ++turnGen;
+  const superseded = () => gen <= resetGen;
   send("status", {
     text: sessionId
       ? `Continuing in the ${DESK_SESSION_NAME} Chrome group`
       : `Opening the ${DESK_SESSION_NAME} Chrome group`,
   });
-  if (!retried) send("user", { text: prompt });
+  if (!retried) {
+    send("user", { text: prompt });
+    transcript.push({ role: "user", text: prompt });
+  }
 
   child = spawnClaude(args, { cwd: workspace, detached: !IS_WIN });
+  // Guard the async stream error too: the try/catch below only covers a
+  // synchronous throw, and an EPIPE on a closed stdin would kill the desk.
+  child.stdin?.on("error", () => {});
   try {
     child.stdin?.write("\n");
   } catch {
@@ -258,6 +302,7 @@ function runClaude(prompt, { retried = false } = {}) {
 
   let buffer = "";
   child.stdout.on("data", (chunk) => {
+    if (superseded()) return;
     buffer += chunk.toString("utf8");
     const lines = buffer.split(/\r?\n/);
     buffer = lines.pop() ?? "";
@@ -266,22 +311,30 @@ function runClaude(prompt, { retried = false } = {}) {
     }
   });
   child.stderr.on("data", (chunk) => {
+    if (superseded()) return;
     const text = chunk.toString("utf8").trim();
     if (text) send("log", { text });
   });
   child.on("error", (err) => {
     busy = false;
     child = null;
-    send("error", {
+    send("turn-error", {
       text:
         err.code === "ENOENT" ? MISSING_CLAUDE_TEXT : err.message,
     });
     send("idle", snapshot());
   });
   child.on("close", (code) => {
-    if (buffer.trim()) handleStreamLine(buffer);
+    // A child that outlived a /reset must still release busy, but its
+    // buffered output, retry, and error reporting belong to the old
+    // conversation and are dropped.
+    if (!superseded() && buffer.trim()) handleStreamLine(buffer);
     busy = false;
     child = null;
+    if (superseded()) {
+      send("idle", snapshot());
+      return;
+    }
     if (!stopRequested && shouldRetryWithoutResume({ code, sawInit, usedResume, retried })) {
       sessionId = null;
       clearDeskSession(workspace);
@@ -290,8 +343,12 @@ function runClaude(prompt, { retried = false } = {}) {
       runClaude(prompt, { retried: true });
       return;
     }
+    if (turnText.trim()) {
+      transcript.push({ role: "assistant", text: turnText });
+      turnText = "";
+    }
     const failure = exitErrorText(code, stopRequested);
-    if (failure) send("error", { text: failure });
+    if (failure) send("turn-error", { text: failure });
     send("idle", snapshot());
   });
 }
@@ -305,16 +362,56 @@ function readBody(req) {
   });
 }
 
+async function readJson(req) {
+  try {
+    return JSON.parse((await readBody(req)) || "{}");
+  } catch {
+    return null;
+  }
+}
+
+// The actual bound port (the preferred port may be taken; startDesk scans up).
+let boundPort = PORT;
+
+function hostAllowed(host) {
+  // Exact match only: a prefix check passes DNS-rebinding names like
+  // 127.0.0.1.evil.com, which resolve here while the browser attaches
+  // the attacker's cookies-free but Host-legitimate request.
+  return host === `127.0.0.1:${boundPort}` || host === `localhost:${boundPort}`;
+}
+
+function originAllowed(origin) {
+  // No Origin header = a non-browser local client (curl, the CLI). Browsers
+  // always send Origin on cross-origin POSTs, which is the attack we gate:
+  // any web page can fire a no-preflight POST at 127.0.0.1 and drive Claude
+  // with permissions skipped. Same-origin desk requests carry our origin.
+  if (!origin) return true;
+  return origin === `http://127.0.0.1:${boundPort}` || origin === `http://localhost:${boundPort}`;
+}
+
 function json(res, status, body) {
   res.writeHead(status, { "Content-Type": "application/json" });
   res.end(JSON.stringify(body));
 }
 
 function createDeskServer() {
-  return createServer(async (req, res) => {
-    const host = req.headers.host || "";
-    if (host && !host.startsWith("127.0.0.1") && !host.startsWith("localhost")) {
+  return createServer((req, res) => {
+    handleRequest(req, res).catch(() => {
+      // A handler throw must never take the desk down (in the app the
+      // embedded server dying closes the whole desk).
+      if (!res.headersSent) res.writeHead(500);
+      res.end();
+    });
+  });
+}
+
+async function handleRequest(req, res) {
+    if (!hostAllowed(req.headers.host || "")) {
       res.writeHead(403).end("localhost only");
+      return;
+    }
+    if (req.method === "POST" && !originAllowed(req.headers.origin)) {
+      res.writeHead(403).end("cross-origin requests are not allowed");
       return;
     }
 
@@ -326,7 +423,7 @@ function createDeskServer() {
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
       });
-      res.write(`event: hello\ndata: ${JSON.stringify(snapshot())}\n\n`);
+      res.write(`event: hello\ndata: ${JSON.stringify(snapshot(true))}\n\n`);
       clients.add(res);
       req.on("close", () => clients.delete(res));
       return;
@@ -363,7 +460,11 @@ function createDeskServer() {
     }
 
     if (req.method === "POST" && url.pathname === "/auth/login") {
-      const body = JSON.parse((await readBody(req)) || "{}");
+      const body = await readJson(req);
+      if (!body) {
+        json(res, 400, { ok: false, error: "invalid JSON body" });
+        return;
+      }
       const email = typeof body.email === "string" ? body.email.trim() : "";
       const started = runHelper("login", () => spawnSubscriptionLogin({ cwd: workspace, email }));
       json(res, started ? 202 : 409, { ok: started });
@@ -371,13 +472,17 @@ function createDeskServer() {
     }
 
     if (req.method === "POST" && url.pathname === "/auth/code") {
-      const body = JSON.parse((await readBody(req)) || "{}");
+      const body = await readJson(req);
+      if (!body) {
+        json(res, 400, { ok: false, error: "invalid JSON body" });
+        return;
+      }
       const code = typeof body.code === "string" ? body.code.trim() : "";
-      if (!helper || !code) {
+      if (!helper || !helper.stdin?.writable || !code) {
         json(res, 400, { ok: false, error: "No login waiting for a code." });
         return;
       }
-      helper.stdin?.write(`${code}\n`);
+      helper.stdin.write(`${code}\n`);
       json(res, 200, { ok: true });
       return;
     }
@@ -390,7 +495,11 @@ function createDeskServer() {
     }
 
     if (req.method === "POST" && url.pathname === "/send") {
-      const body = JSON.parse((await readBody(req)) || "{}");
+      const body = await readJson(req);
+      if (!body) {
+        json(res, 400, { ok: false, error: "invalid JSON body" });
+        return;
+      }
       const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
       if (!prompt) {
         json(res, 400, { ok: false, error: "prompt required" });
@@ -408,8 +517,13 @@ function createDeskServer() {
     }
 
     if (req.method === "POST" && url.pathname === "/reset") {
+      // Everything spawned so far belongs to the old conversation: its late
+      // stdout must not re-save the session id it is still printing.
+      resetGen = turnGen;
       stopClaude("New conversation. The Chrome group stays with this desk.");
       sessionId = null;
+      transcript.length = 0;
+      turnText = "";
       clearDeskSession(workspace);
       send("session", { sessionId: null, chromeGroup: snapshot().chromeGroup });
       send("reset", {});
@@ -434,7 +548,6 @@ function createDeskServer() {
     } catch {
       res.writeHead(404).end("not found");
     }
-  });
 }
 
 function openBrowser(href) {
@@ -514,6 +627,7 @@ export async function startDesk(options = {}) {
     }
   }
 
+  boundPort = bound;
   const href = `http://${HOST}:${bound}/`;
   console.log(`Job search desk: ${href}`);
   console.log(`Workspace: ${workspace}`);

@@ -73,6 +73,12 @@ function downloadFile(url, dest) {
         }
         const file = createWriteStream(dest);
         res.pipe(file);
+        // pipe() does not forward source errors: a connection reset mid-body
+        // would otherwise be an uncaught exception that closes the whole app.
+        res.on("error", (err) => {
+          file.destroy();
+          reject(err);
+        });
         file.on("finish", () => file.close((err) => (err ? reject(err) : resolve())));
         file.on("error", reject);
       }).on("error", reject);
@@ -430,11 +436,15 @@ export function startCli(root, { inherit = false, env = process.env } = {}) {
         root,
       };
     }
-    const child = spawn(command, [], {
+    const useShell = process.platform === "win32" && /\.(cmd|bat)$/i.test(command);
+    // cmd.exe /s strips the outer quotes, so an unquoted shim path breaks at
+    // the first space (C:\Users\John Smith\...\claude.cmd). Quote it when
+    // shelling; quotes would be wrong for a direct spawn.
+    const child = spawn(useShell && command.includes(" ") ? `"${command}"` : command, [], {
       cwd: root,
       env: runEnv,
       stdio: "inherit",
-      shell: process.platform === "win32" && /\.(cmd|bat)$/i.test(command),
+      shell: useShell,
     });
     return { ok: true, root, child };
   }
