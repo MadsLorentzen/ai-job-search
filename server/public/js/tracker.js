@@ -8,7 +8,7 @@
  * follow-up dates, filtering, and a collapsed lane for closed outcomes.
  */
 import { api } from './api.js';
-import { $, escapeHtml, showToast, formatDate, relativeDays } from './ui.js';
+import { $, escapeHtml, showToast, formatDate, relativeDays, trapFocus } from './ui.js';
 
 const OPEN_COLUMNS = ['Drafted', 'Applied', 'Interviewing', 'Offer'];
 
@@ -22,6 +22,8 @@ export class Tracker {
     this.dueFollowUps = new Set();
     this.filter = '';
     this.showOnlyDue = false;
+    this.editingApplication = null;
+    this.releaseEditFocus = null;
   }
 
   init() {
@@ -61,6 +63,16 @@ export class Tracker {
       dueButton.setAttribute('aria-pressed', String(this.showOnlyDue));
       dueButton.classList.toggle('active', this.showOnlyDue);
       this.render();
+    });
+
+    $('trackerEditForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.saveDetails();
+    });
+    $('btnCloseTrackerEdit')?.addEventListener('click', () => this.closeEditor());
+    $('btnClearFollowUp')?.addEventListener('click', () => { $('trackerFollowUp').value = ''; });
+    $('trackerEditOverlay')?.addEventListener('click', (e) => {
+      if (e.target === $('trackerEditOverlay')) this.closeEditor();
     });
   }
 
@@ -113,7 +125,7 @@ export class Tracker {
     }
 
     const dueCount = $('countDueFollowUps');
-    if (dueCount) dueCount.textContent = String(this.dueFollowUps.size);
+    if (dueCount) dueCount.textContent = String(visible.filter(app => this.dueFollowUps.has(app.id)).length);
 
     const closedLane = $('closedLane');
     if (closedLane) closedLane.classList.toggle('hidden', counts.Closed === 0);
@@ -200,36 +212,64 @@ export class Tracker {
   }
 
   /**
-   * Notes and a follow-up date.
-   * Uses prompts rather than a bespoke modal: it keeps the interaction
-   * keyboard-accessible with no extra focus management, and the fields are
-   * two short values.
+   * Open an in-app editor instead of native prompts. Native prompts are
+   * disruptive on mobile and cannot offer a reliable date picker.
    */
-  async editDetails(app) {
-    const notes = window.prompt('Notes for this application:', app.notes || '');
-    if (notes === null) return;
+  editDetails(app) {
+    this.editingApplication = app;
+    $('trackerNotes').value = app.notes || '';
+    $('trackerFollowUp').value = app.followUpAt?.slice(0, 10) || '';
+    $('trackerEditSubtitle').textContent = `${app.jobTitle || 'Role'} at ${app.company || 'Company'}`;
+    $('trackerEditError').classList.add('hidden');
+    const overlay = $('trackerEditOverlay');
+    overlay.classList.remove('hidden');
+    this.releaseEditFocus = trapFocus(overlay);
+    $('trackerNotes').focus();
+  }
 
-    const current = app.followUpAt ? app.followUpAt.slice(0, 10) : '';
-    const followUp = window.prompt('Follow up on (YYYY-MM-DD, blank to clear):', current);
-    if (followUp === null) return;
+  closeEditor() {
+    $('trackerEditOverlay')?.classList.add('hidden');
+    this.releaseEditFocus?.();
+    this.releaseEditFocus = null;
+    this.editingApplication = null;
+  }
 
-    const trimmed = followUp.trim();
+  async saveDetails() {
+    const app = this.editingApplication;
+    if (!app) return;
+    const date = $('trackerFollowUp').value;
+    const error = $('trackerEditError');
     let followUpAt = '';
-    if (trimmed) {
-      const parsed = new Date(`${trimmed}T09:00:00`);
-      if (Number.isNaN(parsed.getTime())) {
-        showToast('That date could not be read. Use YYYY-MM-DD.', 'error');
+
+    // An input[type=date] returns YYYY-MM-DD. Reconstruct and compare to
+    // reject JavaScript's otherwise silent normalization of invalid dates.
+    if (date) {
+      const match = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      const parsed = match && new Date(`${date}T12:00:00Z`);
+      if (!parsed || Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
+        error.textContent = 'Choose a valid calendar date.';
+        error.classList.remove('hidden');
         return;
       }
       followUpAt = parsed.toISOString();
     }
 
     try {
+      const button = $('btnSaveTrackerEdit');
+      button.disabled = true;
+      const notes = $('trackerNotes').value.trim();
       await api.patch(`/api/tracker/${app.id}`, { notes, followUpAt });
       showToast('Saved.', 'success');
+      this.closeEditor();
       await this.load();
     } catch (err) {
-      if (err.status !== 401) showToast(err.message, 'error');
+      if (err.status !== 401) {
+        error.textContent = err.message;
+        error.classList.remove('hidden');
+      }
+    } finally {
+      const button = $('btnSaveTrackerEdit');
+      if (button) button.disabled = false;
     }
   }
 }

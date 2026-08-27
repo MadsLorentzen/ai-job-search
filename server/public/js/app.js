@@ -26,7 +26,8 @@ const state = {
   pageSize: 12,
   portals: [],
   detailAvailable: false,
-  activePdfObjectUrl: null
+  activePdfObjectUrl: null,
+  generationSource: ''
 };
 
 let switchTab;
@@ -290,6 +291,15 @@ function setupProfileTab() {
   const btnParseCv = $('btnParseCv');
   const cvFileInput = $('cvFileInput');
   const cvDropzone = $('cvDropzone');
+
+  $('btnExportData')?.addEventListener('click', async () => {
+    try {
+      await downloadFile('/api/profile/export', 'oppertunex-backup.json');
+      showToast('Backup downloaded.', 'success');
+    } catch (err) {
+      if (err.status !== 401) showToast(err.message, 'error');
+    }
+  });
 
   btnSave.addEventListener('click', async () => {
     btnSave.disabled = true;
@@ -642,15 +652,17 @@ function setupApplyTab() {
     if (url && /^https?:\/\//i.test(url)) {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
-      const comp = encodeURIComponent($('targetCompany').value || '');
-      const role = encodeURIComponent($('targetRole').value || '');
-      window.open(`https://www.google.com/search?q=${comp}+${role}+careers`, '_blank', 'noopener,noreferrer');
+      showToast('No verified application URL is available for this role.', 'warning');
     }
   });
 
   $('btnMarkApplied')?.addEventListener('click', async () => {
     if (!state.currentApplication?.id) {
       showToast('Generate an application first.', 'error');
+      return;
+    }
+    if (state.generationSource === 'unavailable') {
+      showToast('Finish the offline template before marking this application as applied.', 'warning');
       return;
     }
     await tracker.setStatus(state.currentApplication.id, 'Applied');
@@ -661,6 +673,10 @@ function setupApplyTab() {
   $('btnDownloadPdf').addEventListener('click', async () => {
     if (!state.currentApplication) {
       showToast('Generate an application first.', 'error');
+      return;
+    }
+    if (state.generationSource === 'unavailable') {
+      showToast('Finish and recompile the offline template before downloading it.', 'warning');
       return;
     }
     const kind = state.activeDocType === 'cv' ? 'cv-pdf' : 'cover-pdf';
@@ -807,6 +823,7 @@ async function generateApplication() {
     state.coverPdfBase64 = data.coverPdfBase64;
     state.cvLatex = data.application.cvLatex;
     state.coverLatex = data.application.coverLetterLatex;
+    state.generationSource = data.source || '';
     renderAuditBadges(data);
     updateDocumentPreview();
   };
@@ -930,17 +947,23 @@ function updateDocumentPreview() {
     reviewerFooter.classList.add('hidden');
     btnOpenApply?.classList.add('hidden');
     btnMarkApplied?.classList.add('hidden');
+    state.generationSource = '';
     return;
   }
 
   emptyState.classList.add('hidden');
   reviewerFooter.classList.remove('hidden');
   btnOpenApply?.classList.remove('hidden');
+  if (btnOpenApply) {
+    const hasVerifiedUrl = /^https?:\/\//i.test(state.currentApplication.jobUrl || $('targetUrl')?.value || '');
+    btnOpenApply.disabled = !hasVerifiedUrl;
+    btnOpenApply.title = hasVerifiedUrl ? 'Open the verified job application link in a new tab' : 'No verified application URL is available';
+  }
 
   if (btnMarkApplied) {
     btnMarkApplied.classList.remove('hidden');
     const applied = state.currentApplication.status === 'Applied';
-    btnMarkApplied.disabled = applied;
+    btnMarkApplied.disabled = applied || state.generationSource === 'unavailable';
     btnMarkApplied.textContent = applied ? 'Applied' : 'Mark Applied';
   }
 
@@ -1013,6 +1036,9 @@ async function recompileCurrentLatex() {
       }
 
       state.isLatexView = false;
+      // A successful user-initiated compile is the explicit acknowledgement
+      // required before an offline template can be downloaded or applied.
+      if (state.generationSource === 'unavailable') state.generationSource = 'user-reviewed';
       updateDocumentPreview();
       showToast(
         data.renderer === 'latex' ? 'Compiled.' : (data.note || 'Preview rendered.'),

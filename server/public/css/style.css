@@ -294,6 +294,7 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+.profile-actions { display: flex; align-items: center; gap: 8px; }
 
 .flex-1 { flex: 1; }
 .flex-2 { flex: 2; }
@@ -1794,6 +1795,43 @@ textarea.latex-input:focus {
 #tab-tracker .closed-lane { background: var(--tracker-panel); border-color: var(--tracker-line); }
 #tab-tracker .closed-lane summary { color: var(--tracker-ink); }
 #tab-tracker [id^="col-"].drag-over { background: #ffedd5; outline-color: var(--tracker-orange); }
+.tracker-swipe-hint { display: none; }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .55);
+  backdrop-filter: blur(5px);
+}
+.tracker-edit-sheet {
+  width: min(100%, 480px);
+  padding: 22px;
+  border: 1px solid #fed7aa;
+  border-radius: 16px;
+  background: #fff;
+  color: #1f2937;
+  box-shadow: 0 20px 48px rgba(67, 20, 7, .25);
+}
+.sheet-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.sheet-header h2 { font-size: 18px; }
+.tracker-edit-sheet > label { display: block; margin: 14px 0 6px; color: #374151; font-size: 13px; font-weight: 700; }
+.tracker-edit-sheet .input-textarea, .tracker-edit-sheet .input-text { background: #fff; color: #1f2937; border-color: #fdba74; }
+.sheet-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+.form-error { margin-top: 8px; color: #b91c1c; font-size: 13px; }
+.sheet-handle { display: none; }
+
+@media (max-width: 1024px) and (min-width: 761px) {
+  .app-header { padding: 0 14px; gap: 12px; }
+  .brand-badge, .status-pill { display: none; }
+  .nav-tabs { overflow-x: auto; max-width: min(100%, 620px); scrollbar-width: none; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab { flex: 0 0 auto; padding: 7px 10px; }
+}
 
 @media (max-width: 760px) {
   body { padding-bottom: env(safe-area-inset-bottom); }
@@ -1834,8 +1872,10 @@ textarea.latex-input:focus {
   .gates-row, .eval-grid { grid-template-columns: 1fr; flex-direction: column; }
   .gates-row { display: flex; }
   .full-height-card { min-height: 580px; }
-  .doc-preview-body, .pdf-container, .pdf-frame, .latex-container { min-height: 520px; }
+  .doc-preview-body, .pdf-container, .pdf-frame, .latex-container { min-height: min(520px, 65dvh); }
   .card-header { align-items: flex-start; gap: 12px; flex-direction: column; }
+  .profile-actions { width: 100%; }
+  .profile-actions .btn { flex: 1; min-height: 40px; }
   .doc-actions { width: 100%; overflow-x: auto; padding-bottom: 2px; }
   .doc-actions .btn { flex: 0 0 auto; min-height: 38px; }
   .doc-switcher { width: 100%; }
@@ -1858,6 +1898,12 @@ textarea.latex-input:focus {
   #tab-tracker .kanban-board { display: flex; overflow-x: auto; margin-left: -12px; margin-right: -12px; padding: 0 12px 12px; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; }
   #tab-tracker .kanban-column { flex: 0 0 min(84vw, 330px); min-height: 360px; scroll-snap-align: start; }
   #tab-tracker .closed-cards { grid-template-columns: 1fr; }
+  #tab-tracker .tracker-swipe-hint { display: block; margin: -2px 0 14px; color: var(--tracker-muted); font-size: 12px; text-align: center; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .tracker-edit-sheet { width: 100%; max-height: min(88dvh, 680px); overflow-y: auto; border-radius: 20px 20px 0 0; padding: 12px 18px calc(18px + env(safe-area-inset-bottom)); }
+  .sheet-handle { display: block; width: 38px; height: 4px; border-radius: 999px; margin: 0 auto 14px; background: #fdba74; }
+  .sheet-actions { flex-direction: column-reverse; }
+  .sheet-actions .btn { min-height: 44px; width: 100%; }
 }
 
 @media (max-width: 380px) {
