@@ -25,6 +25,32 @@ describe("freehire CLI flag validation", () => {
       });
     }
 
+    // Fractional values must be rejected, not truncated: parseInt("0.5") is 0,
+    // and jobage 0 fails search.ts's `> 0` guard, so posted_within_days is
+    // silently omitted from the outbound request while the CLI exits 0 —
+    // the discarded-filter failure the UNKNOWN_FLAG guard exists to prevent (#373).
+    for (const name of ["jobage", "page", "limit"]) {
+      test(`--${name} fractional exits 1 with BAD_ARG instead of truncating`, async () => {
+        const result = await runCLI(["search", `--${name}`, "1.5"]);
+        expect(result.exitCode).not.toBe(0);
+        const err = parsedStderr(result.stderr);
+        expect(err.code).toBe("BAD_ARG");
+        expect(err.error).toMatch(new RegExp(name));
+      });
+    }
+
+    test("--jobage 0.5 (truncates to 0 on master, dropping the freshness filter) exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "--jobage", "0.5"]);
+      expect(result.exitCode).not.toBe(0);
+      expect(parsedStderr(result.stderr).code).toBe("BAD_ARG");
+    });
+
+    test("--jobage 0 exits 1 with BAD_ARG (0 silently disables the filter, like the Danish CLIs' min(1))", async () => {
+      const result = await runCLI(["search", "--jobage", "0"]);
+      expect(result.exitCode).not.toBe(0);
+      expect(parsedStderr(result.stderr).code).toBe("BAD_ARG");
+    });
+
     test("valid integers produce no BAD_ARG", async () => {
       const result = await runCLI(["search", "--jobage", "7", "--page", "1", "--limit", "1"]);
       expect(parsedStderr(result.stderr).code).not.toBe("BAD_ARG");
