@@ -105,6 +105,14 @@ ALLOWED_IGNORE_NEGATIONS = {
     "!cv/main_example.tex",
     "!cover_letters/cover_example.tex",
     "!documents/**/.gitkeep",
+    # Template .env files. The broad `.env` / `.env.*` rules above exclude every
+    # real secrets file; these two re-include only the committed examples, which
+    # must carry placeholders and never live values.
+    "!.env.example",
+    "!server/.env.example",
+    # Keeps the empty server/data/ directory in the tree while `server/data/*.json`
+    # and `server/data/builds/` stay ignored. A .gitkeep carries no data.
+    "!server/data/.gitkeep",
 }
 
 # Hook commands the template legitimately ships, as "<Event>:<command>" strings.

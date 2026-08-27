@@ -75,6 +75,34 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m unittest discover -s tests -t . -v
 
+  server-tests:
+    # The web app under server/ had no CI coverage at all, which is how a
+    # hardcoded auth bypass, a path traversal and an arbitrary file read
+    # shipped. These tests pin each of those fixes.
+    name: Server tests (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["20", "22"]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+        working-directory: server
+      - run: npm test
+        working-directory: server
+      - name: Assert no hardcoded credential crept back in
+        run: |
+          if grep -rniE 'DEFAULT_FALLBACK_PASSWORD|oppertune' server/src server/public; then
+            echo "::error::A hardcoded fallback credential is present in server/"
+            exit 1
+          fi
+
   dependency-review:
     name: Dependency review
     # Requires the repo's Dependency graph, which not every repo (upstream or

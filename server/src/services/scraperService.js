@@ -1,66 +1,93 @@
 import { spawn } from 'child_process';
+import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
-import { storageService } from './storageService.js';
+import { ROOT_DIR } from '../config/env.js';
 
-const ROOT_DIR = storageService.getRootDir();
+const SKILLS_DIR = path.join(ROOT_DIR, '.agents/skills');
+const FREEHIRE_PAGE_SIZE = 50;
+const FREEHIRE_MAX_PAGES = 8;
+const LINKEDIN_MAX_PAGES = 5;
+
+/**
+ * Portals the app knows how to describe.
+ *
+ * `getAvailablePortals()` filters this to the ones that can actually run, so
+ * the UI cannot offer a portal that silently falls back to sample data. Two
+ * entries (jobindex, jobnet) were previously advertised with no CLI behind
+ * them at all: every search against them returned invented postings.
+ */
+const KNOWN_PORTALS = [
+  { id: 'freehire-search', name: 'FreeHire (Global Tech & Remote)', defaultLocation: 'Remote', global: true, direct: true },
+  { id: 'linkedin-search', name: 'LinkedIn (Global Public Postings)', defaultLocation: 'Remote', global: true, direct: true },
+  { id: 'jobbank-search', name: 'Akademikernes Jobbank (Academic/Graduate)', defaultLocation: 'Danmark', global: false },
+  { id: 'jobdanmark-search', name: 'Jobdanmark (Regional Denmark)', defaultLocation: 'Sjælland', global: false }
+];
+
+function cliPathFor(portal) {
+  return path.join(SKILLS_DIR, portal, 'cli/src/cli.ts');
+}
+
+/** Stable id derived from content, so the same posting keeps its id across runs. */
+function stableId(portal, { url, company, title }) {
+  const basis = url || `${portal}|${company || ''}|${title || ''}`;
+  return `${portal}-${crypto.createHash('sha1').update(basis).digest('hex').slice(0, 16)}`;
+}
 
 export const scraperService = {
   getAvailablePortals() {
-    return [
-      { id: 'freehire-search', name: 'FreeHire (Global Tech & Remote Aggregator)', defaultLocation: 'Remote', global: true },
-      { id: 'linkedin-search', name: 'LinkedIn (Global Public Postings)', defaultLocation: 'Remote', global: true },
-      { id: 'jobindex-search', name: 'Jobindex (Denmark)', defaultLocation: 'København', global: false },
-      { id: 'jobnet-search', name: 'Jobnet / STAR (Danish Public Employment)', defaultLocation: 'Danmark', global: false },
-      { id: 'jobbank-search', name: 'Akademikernes Jobbank (Academic/Graduate)', defaultLocation: 'Danmark', global: false },
-      { id: 'jobdanmark-search', name: 'Jobdanmark (Regional Denmark)', defaultLocation: 'Sjælland', global: false }
-    ];
+    return KNOWN_PORTALS
+      .filter(p => p.direct || fs.existsSync(cliPathFor(p.id)))
+      .map(({ direct, ...rest }) => rest);
+  },
+
+  isPortalAvailable(portal) {
+    return this.getAvailablePortals().some(p => p.id === portal);
   },
 
   async searchJobs({ query = '', location = 'Remote', portal = 'freehire-search', remote = 'all' }) {
-    console.log(`Executing un-capped search: portal=${portal}, query="${query}", location="${location}"`);
+    if (!this.isPortalAvailable(portal)) {
+      const err = new Error(`Unknown or unavailable portal "${portal}".`);
+      err.statusCode = 400;
+      throw err;
+    }
 
-    // 1. Direct HTTP multi-page API for FreeHire (fetches ALL available matching postings)
     if (portal === 'freehire-search') {
       try {
-        const freehireResults = await this.fetchFreehireDirect({ query, location });
-        if (freehireResults && freehireResults.length > 0) {
-          console.log(`FreeHire direct API returned ${freehireResults.length} total jobs.`);
-          return freehireResults;
-        }
-      } catch (httpErr) {
-        console.warn('Freehire direct fetch error, falling back to CLI:', httpErr.message);
+        const results = await this.fetchFreehireDirect({ query, location });
+        if (results.length) return { jobs: results, isSample: false, source: 'freehire-api' };
+      } catch (err) {
+        console.warn('FreeHire direct fetch failed, trying CLI:', err.message);
       }
     }
 
-    // 2. Direct HTTP multi-page scraper for LinkedIn (fetches all consecutive pages)
     if (portal === 'linkedin-search') {
       try {
-        const directLinkedin = await this.fetchLinkedinDirect({ query, location });
-        if (directLinkedin && directLinkedin.length > 0) {
-          console.log(`LinkedIn guest scraper returned ${directLinkedin.length} total jobs.`);
-          return directLinkedin;
-        }
-      } catch (liErr) {
-        console.warn('LinkedIn direct fetch error, falling back to CLI:', liErr.message);
+        const results = await this.fetchLinkedinDirect({ query, location });
+        if (results.length) return { jobs: results, isSample: false, source: 'linkedin-guest' };
+      } catch (err) {
+        console.warn('LinkedIn direct fetch failed, trying CLI:', err.message);
       }
     }
 
-    // 3. Bun Skill CLI Execution (for Danish portals and CLI fallback without limit)
-    const skillCliPath = path.join(ROOT_DIR, '.agents/skills', portal, 'cli/src/cli.ts');
+    const skillCliPath = cliPathFor(portal);
     if (fs.existsSync(skillCliPath)) {
       try {
         const results = await this.runBunCli(portal, skillCliPath, { query, location, remote });
-        if (results && results.length > 0) {
-          return results;
-        }
-      } catch (cliErr) {
-        console.warn(`Bun CLI execution for ${portal} returned:`, cliErr.message);
+        if (results.length) return { jobs: results, isSample: false, source: `${portal}-cli` };
+      } catch (err) {
+        console.warn(`Bun CLI for ${portal} failed:`, err.message);
       }
     }
 
-    // 4. Fallback Curated sample results if everything is offline/unreachable
-    return this.getSampleJobs(query, location, portal);
+    // Nothing reachable. Return an empty result rather than sample data
+    // dressed up as live postings.
+    return {
+      jobs: [],
+      isSample: false,
+      source: 'none',
+      warning: `No results. ${portal} could not be reached, or it returned nothing for this query.`
+    };
   },
 
   runBunCli(portal, scriptPath, { query, location, remote }) {
@@ -71,132 +98,114 @@ export const scraperService = {
         const searchLoc = (!location || location.toLowerCase() === 'remote') ? 'United States' : location;
         args.push('-l', searchLoc);
         if (query) args.push('-q', query);
-        if (location && location.toLowerCase() === 'remote') {
-          args.push('--remote', 'remote');
-        } else if (remote && remote !== 'all') {
-          args.push('--remote', remote);
-        }
+        if (location && location.toLowerCase() === 'remote') args.push('--remote', 'remote');
+        else if (remote && remote !== 'all') args.push('--remote', remote);
         args.push('--format', 'json');
       } else if (portal === 'freehire-search') {
         if (query) args.push('-q', query);
-        if (location && location.toLowerCase() !== 'remote' && location.toLowerCase() !== 'all') {
-          args.push('--country', location);
-        }
+        if (location && !['remote', 'all'].includes(location.toLowerCase())) args.push('--country', location);
       } else {
-        // Danish portals (unlimited)
         if (query) args.push('-q', query);
         if (location) args.push('-l', location);
         args.push('--format', 'json');
       }
 
-      console.log(`Spawning Bun CLI: bun ${args.join(' ')}`);
-
-      const proc = spawn('bun', args, {
-        cwd: ROOT_DIR,
-        timeout: 45000
-      });
-
+      const proc = spawn('bun', args, { cwd: ROOT_DIR });
       let stdout = '';
       let stderr = '';
+      let settled = false;
 
-      proc.stdout.on('data', data => { stdout += data.toString(); });
-      proc.stderr.on('data', data => { stderr += data.toString(); });
+      const finish = (fn, arg) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        fn(arg);
+      };
+
+      const timer = setTimeout(() => {
+        proc.kill('SIGKILL');
+        finish(reject, new Error('Portal CLI timed out after 45s'));
+      }, 45000);
+
+      proc.stdout.on('data', d => { stdout += d.toString(); });
+      proc.stderr.on('data', d => { stderr += d.toString(); });
+      proc.on('error', err => finish(reject, err));
 
       proc.on('close', code => {
         if (code !== 0 && !stdout) {
-          return reject(new Error(`Process exited with code ${code}: ${stderr}`));
+          return finish(reject, new Error(`Process exited with code ${code}: ${stderr.slice(0, 400)}`));
         }
-
         try {
           const startIdx = stdout.indexOf('[');
           const endIdx = stdout.lastIndexOf(']');
-          if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-            const jsonSubstring = stdout.substring(startIdx, endIdx + 1);
-            const parsed = JSON.parse(jsonSubstring);
-            const jobsList = Array.isArray(parsed) ? parsed : (parsed.jobs || parsed.results || [parsed]);
-            const normalized = jobsList.map((job, idx) => this.normalizeJob(job, portal, idx));
-            return resolve(normalized);
-          }
-          resolve([]);
+          if (startIdx === -1 || endIdx <= startIdx) return finish(resolve, []);
+
+          const parsed = JSON.parse(stdout.slice(startIdx, endIdx + 1));
+          const list = Array.isArray(parsed) ? parsed : (parsed.jobs || parsed.results || []);
+          finish(resolve, this.dedupe(list.map(job => this.normalizeJob(job, portal))));
         } catch (parseErr) {
-          console.warn('Failed to parse JSON stdout from Bun CLI:', parseErr.message);
-          resolve([]);
+          console.warn('Could not parse portal CLI output:', parseErr.message);
+          finish(resolve, []);
         }
       });
-
-      proc.on('error', err => reject(err));
     });
   },
 
   async fetchFreehireDirect({ query, location }) {
     const baseUrl = process.env.FREEHIRE_API_URL || 'https://freehire.me';
     let allJobs = [];
-    let page = 1;
-    const maxPages = 8; // Crawl up to 8 pages of results to get all available postings
 
-    while (page <= maxPages) {
-      let url = `${baseUrl}/api/v1/jobs?page=${page}&limit=50`;
-      if (query && query.trim()) {
-        url += `&q=${encodeURIComponent(query.trim())}`;
-      }
-      if (location && location.toLowerCase() !== 'remote' && location.toLowerCase() !== 'all') {
+    for (let page = 1; page <= FREEHIRE_MAX_PAGES; page++) {
+      let url = `${baseUrl}/api/v1/jobs?page=${page}&limit=${FREEHIRE_PAGE_SIZE}`;
+      if (query?.trim()) url += `&q=${encodeURIComponent(query.trim())}`;
+      if (location && !['remote', 'all'].includes(location.toLowerCase())) {
         url += `&country=${encodeURIComponent(location.trim())}`;
       }
 
-      console.log(`Direct Fetching FreeHire page ${page}: ${url}`);
-
       const response = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (compatible; AIJobSearch/1.3)'
-        },
+        headers: { Accept: 'application/json', 'User-Agent': 'AIJobSearch/2.0' },
         signal: AbortSignal.timeout(15000)
       });
-
       if (!response.ok) break;
 
       const data = await response.json();
       const jobs = data.jobs || data.data || data.results || (Array.isArray(data) ? data : []);
-      if (jobs.length === 0) break;
+      if (!jobs.length) break;
 
       allJobs = allJobs.concat(jobs);
-      if (jobs.length < 20) break; // Reached last page
-      page++;
+      // Compare against the size actually requested. The old check used a
+      // hardcoded 20 against a limit of 50, so the last page triggered a
+      // pointless extra round trip.
+      if (jobs.length < FREEHIRE_PAGE_SIZE) break;
     }
 
-    return allJobs.map((j, idx) => this.normalizeJob(j, 'freehire-search', idx));
+    return this.dedupe(allJobs.map(j => this.normalizeJob(j, 'freehire-search')));
   },
 
   async fetchLinkedinDirect({ query, location }) {
     const searchLoc = (!location || location.toLowerCase() === 'remote') ? 'United States' : location;
     const isRemote = !location || location.toLowerCase() === 'remote';
-    let allJobs = [];
+    const allJobs = [];
     let start = 0;
-    const maxPages = 5; // Fetch up to 5 consecutive pages from LinkedIn guest API
 
-    for (let page = 0; page < maxPages; page++) {
+    for (let page = 0; page < LINKEDIN_MAX_PAGES; page++) {
       let url = `https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=${encodeURIComponent(query || 'Software')}&location=${encodeURIComponent(searchLoc)}&start=${start}`;
-      if (isRemote) {
-        url += `&f_WT=2`; // Remote workplace filter
-      }
-
-      console.log(`Fetching LinkedIn Guest page ${page + 1}: ${url}`);
+      if (isRemote) url += '&f_WT=2';
 
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.9',
           'X-Requested-With': 'XMLHttpRequest'
         },
         signal: AbortSignal.timeout(15000)
       });
-
       if (!response.ok) break;
 
       const html = await response.text();
       const cardRegex = /<li[\s\S]*?<h3[^>]*class="[^"]*base-search-card__title[^"]*"[^>]*>([\s\S]*?)<\/h3>[\s\S]*?<h4[^>]*class="[^"]*base-search-card__subtitle[^"]*"[^>]*>([\s\S]*?)<\/h4>[\s\S]*?<span[^>]*class="[^"]*job-search-card__location[^"]*"[^>]*>([\s\S]*?)<\/span>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*class="[^"]*base-card__full-link[^"]*"[\s\S]*?<\/li>/gi;
-      
+
       let match;
       let pageFound = 0;
 
@@ -205,98 +214,74 @@ export const scraperService = {
         const company = this.stripHtml(match[2]);
         const jobLocation = this.stripHtml(match[3]);
         const jobUrl = match[4].split('?')[0];
+        pageFound++;
 
         if (title && company) {
           allJobs.push({
-            id: `li-${Date.now()}-${allJobs.length}`,
+            id: stableId('linkedin-search', { url: jobUrl, company, title }),
             title,
             company,
-            location: jobLocation || location || 'Remote',
+            location: jobLocation || location || '',
             url: jobUrl,
             portal: 'linkedin-search',
-            postedDate: 'Recently on LinkedIn',
-            description: `Position: ${title} at ${company}.\nLocation: ${jobLocation || 'Remote'}.\n\nApply directly at: ${jobUrl}`,
-            skills: ['LinkedIn Opening', query || 'Engineering', 'Active Hiring'],
-            seniority: title.toLowerCase().includes('senior') ? 'Senior Level' : title.toLowerCase().includes('lead') ? 'Lead' : 'Mid-Level',
-            employmentType: 'Full-time',
-            salary: 'Competitive'
+            postedDate: '',
+            description: `${title} at ${company}. Location: ${jobLocation || 'not stated'}.\n\nFull description at: ${jobUrl}`,
+            descriptionTruncated: true,
+            skills: [],
+            seniority: '',
+            employmentType: '',
+            salary: ''
           });
-          pageFound++;
         }
       }
 
-      if (pageFound === 0) break; // No more results
-      start += 25;
+      if (pageFound === 0) break;
+      // Advance by what this page actually returned. Advancing by a fixed 25
+      // while the endpoint serves ~10 per call skipped most of the results.
+      start += pageFound;
     }
 
-    return allJobs;
+    return this.dedupe(allJobs);
   },
 
   stripHtml(html) {
-    return (html || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    return String(html || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
   },
 
-  normalizeJob(raw, portal, index) {
+  dedupe(jobs) {
+    const seen = new Set();
+    return jobs.filter(job => {
+      if (seen.has(job.id)) return false;
+      seen.add(job.id);
+      return true;
+    });
+  },
+
+  /**
+   * Map a portal payload onto the app's shape.
+   * Missing values stay empty: filling them with plausible defaults (a fake
+   * salary, an invented skill list) made fabricated data indistinguishable
+   * from real data downstream.
+   */
+  normalizeJob(raw, portal) {
+    const title = raw.title || raw.job_title || '';
+    const company = raw.company || raw.company_name || raw.employer || '';
+    const url = raw.url || raw.link || raw.apply_url ||
+      (raw.slug ? `https://freehire.me/job/${raw.slug}` : '');
+
     return {
-      id: raw.id || raw.slug || `job-${portal}-${Date.now()}-${index}`,
-      title: raw.title || raw.job_title || 'Software Engineer',
-      company: raw.company || raw.company_name || raw.employer || 'Technology Company',
-      location: raw.location || raw.city || raw.region || 'Remote',
-      url: raw.url || raw.link || raw.apply_url || (raw.slug ? `https://freehire.me/job/${raw.slug}` : 'https://linkedin.com'),
-      portal: portal,
-      postedDate: raw.posted_date || raw.date || raw.created_at || 'Recent',
-      description: raw.description || raw.body || raw.summary || 'Full-stack software engineering position involving distributed systems, cloud applications, and modern frameworks.',
-      skills: raw.skills || raw.tags || ['TypeScript', 'Node.js', 'React', 'Cloud'],
-      seniority: raw.seniority || raw.level || 'Mid-Senior Level',
-      employmentType: raw.employment_type || raw.type || 'Full-time',
-      salary: raw.salary || raw.compensation || 'Competitive / Market Standard'
+      id: raw.id || raw.slug || stableId(portal, { url, company, title }),
+      title,
+      company,
+      location: raw.location || raw.city || raw.region || '',
+      url,
+      portal,
+      postedDate: raw.posted_date || raw.date || raw.created_at || '',
+      description: raw.description || raw.body || raw.summary || '',
+      skills: Array.isArray(raw.skills) ? raw.skills : (Array.isArray(raw.tags) ? raw.tags : []),
+      seniority: raw.seniority || raw.level || '',
+      employmentType: raw.employment_type || raw.type || '',
+      salary: raw.salary || raw.compensation || ''
     };
-  },
-
-  getSampleJobs(query = 'Software Engineer', location = 'Remote', portal = 'freehire-search') {
-    return [
-      {
-        id: `sample-1-${Date.now()}`,
-        title: `Senior ${query || 'Full Stack'} Engineer`,
-        company: 'Vortex Cloud Solutions',
-        location: location || 'Remote / San Francisco, CA',
-        url: 'https://example.com/careers/vortex-senior-engineer',
-        portal: portal,
-        postedDate: '2 days ago',
-        description: `We are looking for an experienced Senior Engineer to help lead our distributed platform engineering team. You will architect high-scale backend services, build resilient APIs, and mentor junior engineers.\n\nRequirements:\n- 5+ years building scalable distributed web applications\n- Strong proficiency in Node.js/TypeScript or Go\n- Experience with PostgreSQL, Redis, and cloud infrastructure (AWS/GCP)\n- Passion for clean architecture and developer productivity.`,
-        skills: ['TypeScript', 'Node.js', 'Go', 'PostgreSQL', 'Docker', 'AWS', 'Distributed Systems'],
-        seniority: 'Senior Level',
-        employmentType: 'Full-time',
-        salary: '$160,000 - $195,000 / year'
-      },
-      {
-        id: `sample-2-${Date.now()}`,
-        title: `AI Platform & Backend Engineer`,
-        company: 'Synthetix AI',
-        location: location || 'Remote / New York, NY',
-        url: 'https://example.com/careers/synthetix-ai-backend',
-        portal: portal,
-        postedDate: '1 day ago',
-        description: `Join Synthetix AI to build next-generation enterprise agent orchestration systems. We work on cutting-edge LLM toolchains, streaming architectures, and low-latency API services.\n\nKey Responsibilities:\n- Design scalable backend microservices and streaming pipelines\n- Integrate LLM agents, vector databases, and real-time event streaming\n- Optimize system throughput and ensure 99.99% reliability.`,
-        skills: ['Python', 'TypeScript', 'FastAPI', 'Node.js', 'Kubernetes', 'Redis', 'LLMs'],
-        seniority: 'Mid-Senior Level',
-        employmentType: 'Full-time',
-        salary: '$150,000 - $185,000 / year'
-      },
-      {
-        id: `sample-3-${Date.now()}`,
-        title: `Lead Systems Software Engineer`,
-        company: 'Apex Infrastructure Group',
-        location: location || 'London, UK / Hybrid',
-        url: 'https://example.com/careers/apex-lead-systems',
-        portal: portal,
-        postedDate: '3 days ago',
-        description: `Apex Infrastructure is seeking a Lead Systems Engineer to oversee core platform reliability, API gateways, and data processing pipelines.\n\nIdeal Candidate:\n- Extensive background in microservices and cloud-native architecture\n- Strong experience in performance profiling and database scaling\n- Excellent written and verbal communication skills.`,
-        skills: ['Go', 'TypeScript', 'Docker', 'Kubernetes', 'PostgreSQL', 'Kafka'],
-        seniority: 'Lead / Principal',
-        employmentType: 'Full-time',
-        salary: '£95,000 - £120,000 / year'
-      }
-    ];
   }
 };

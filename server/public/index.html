@@ -180,7 +180,7 @@
               </div>
               <div class="card-body">
                 <div class="pipeline-steps" id="pipelineSteps">
-                  <div class="pipeline-step active" id="step-drafter">
+                  <div class="pipeline-step" id="step-drafter">
                     <div class="step-icon">1</div>
                     <div class="step-content">
                       <div class="step-title">Drafter Agent Synthesis</div>
@@ -283,12 +283,8 @@
 
               <!-- Quality & Reviewer Audit Footer -->
               <div id="reviewerFooter" class="card-footer reviewer-footer hidden">
-                <div class="audit-badges" id="auditBadges">
-                  <span class="audit-pill pass">✓ Zero Em-dashes Verified</span>
-                  <span class="audit-pill pass">✓ Cliches & Fluff Removed</span>
-                  <span class="audit-pill pass">✓ Task-Solving Cover Letter</span>
-                  <span class="audit-pill pass">✓ ATS Readable</span>
-                </div>
+                <!-- Populated from the actual generation result. -->
+                <div class="audit-badges" id="auditBadges"></div>
               </div>
             </div>
           </div>
@@ -315,8 +311,6 @@
               <select id="searchPortal" class="input-select">
                 <option value="freehire-search">FreeHire (Global Tech & Remote)</option>
                 <option value="linkedin-search">LinkedIn (Global Public)</option>
-                <option value="jobindex-search">Jobindex (Denmark)</option>
-                <option value="jobnet-search">Jobnet / STAR (Denmark)</option>
                 <option value="jobbank-search">Akademikernes Jobbank</option>
                 <option value="jobdanmark-search">Jobdanmark</option>
               </select>
@@ -325,7 +319,7 @@
               <label>&nbsp;</label>
               <button id="btnExecuteSearch" class="btn btn-primary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <span>Fetch All Jobs</span>
+                <span>Search Jobs</span>
               </button>
             </div>
           </div>

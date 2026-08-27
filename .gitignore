@@ -39,6 +39,9 @@ linkedin_Profile.pdf
 # Server build artifacts and personal data
 server/data/builds/
 server/data/*.json
+# Signing key for session tokens, generated on first run. Never commit it:
+# anyone holding it can mint a valid session for the app.
+server/data/.session-secret
 !server/data/.gitkeep
 
 

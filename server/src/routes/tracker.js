@@ -1,65 +1,73 @@
 import express from 'express';
-import { storageService } from '../services/storageService.js';
+import { storageService, APPLICATION_STATUSES } from '../services/storageService.js';
 
 const router = express.Router();
 
-// Get all applications
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
   try {
-    const apps = storageService.getApplications();
-    res.json({ success: true, applications: apps });
+    res.json({
+      success: true,
+      statuses: APPLICATION_STATUSES,
+      applications: storageService.getApplications()
+    });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 });
 
-// Update or add an application
-router.post('/', (req, res) => {
+router.post('/', async (req, res, next) => {
   try {
-    const saved = storageService.saveApplication(req.body);
+    // Strips server-owned fields (notably the PDF paths) before anything is
+    // persisted, so a client cannot point a record at an arbitrary file.
+    const clean = storageService.sanitizeApplicationInput(req.body);
+    const saved = await storageService.saveApplication(clean);
     res.json({ success: true, application: saved });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 });
 
-// Update status of an application (e.g. Drafted -> Applied -> Interviewing -> Offer)
-router.patch('/:id/status', (req, res) => {
+router.patch('/:id/status', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
-    
+    const { status } = req.body || {};
+
     if (!status) {
       return res.status(400).json({ success: false, error: 'Status is required.' });
     }
+    if (!APPLICATION_STATUSES.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: `Unknown status "${status}". Expected one of: ${APPLICATION_STATUSES.join(', ')}.`
+      });
+    }
 
-    const apps = storageService.getApplications();
-    const app = apps.find(a => a.id === id);
-
-    if (!app) {
+    const existing = storageService.getApplications().find(a => a.id === id);
+    if (!existing) {
       return res.status(404).json({ success: false, error: 'Application not found.' });
     }
 
-    app.status = status;
-    if (status === 'Applied' && !app.appliedAt) {
-      app.appliedAt = new Date().toISOString();
+    const update = { id, status };
+    if (status === 'Applied' && !existing.appliedAt) {
+      update.appliedAt = new Date().toISOString();
     }
-    app.updatedAt = new Date().toISOString();
 
-    storageService.saveApplication(app);
-    res.json({ success: true, application: app });
+    const saved = await storageService.saveApplication(update);
+    res.json({ success: true, application: saved });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 });
 
-// Delete an application
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res, next) => {
   try {
-    storageService.deleteApplication(req.params.id);
+    const result = await storageService.deleteApplication(req.params.id);
+    if (result.deleted === 0) {
+      return res.status(404).json({ success: false, error: 'Application not found.' });
+    }
     res.json({ success: true, message: 'Application deleted.' });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 });
 

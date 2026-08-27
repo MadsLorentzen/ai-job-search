@@ -1,100 +1,140 @@
 /**
- * AI Job Search - Main Frontend Client Logic
+ * AI Job Search - frontend client.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+  const SESSION_KEY = 'jobsearch_auth_session';
+  const LEGACY_KEY = 'jobsearch_auth_token';
 
-  function getCachedToken() {
-    try {
-      const raw = localStorage.getItem('jobsearch_auth_session');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed.expiresAt && parsed.expiresAt > Date.now()) {
-          return parsed.token;
-        } else {
-          localStorage.removeItem('jobsearch_auth_session');
-          localStorage.removeItem('jobsearch_auth_token');
-          return '';
-        }
-      }
-    } catch (e) {}
-    return localStorage.getItem('jobsearch_auth_token') || '';
-  }
-
-  function setCachedToken(token) {
-    const sessionData = {
-      token,
-      expiresAt: Date.now() + SESSION_DURATION_MS
-    };
-    localStorage.setItem('jobsearch_auth_session', JSON.stringify(sessionData));
-    localStorage.setItem('jobsearch_auth_token', token);
-  }
-
-  function clearCachedToken() {
-    localStorage.removeItem('jobsearch_auth_session');
-    localStorage.removeItem('jobsearch_auth_token');
-  }
-
-  // Global State
+  // ==========================================
+  // State
+  // ==========================================
   const state = {
-    authToken: getCachedToken(),
+    authToken: '',
+    sessionExpiresAt: 0,
     profile: null,
     currentJob: null,
     currentFitEvaluation: null,
     currentApplication: null,
-    activeDocType: 'cv', // 'cv' or 'cover'
+    activeDocType: 'cv',
     isLatexView: false,
     cvPdfBase64: null,
     coverPdfBase64: null,
     cvLatex: '',
-    coverLatex: ''
+    coverLatex: '',
+    // These three were previously left undefined, so the pagination handlers
+    // computed Math.ceil(total / undefined) === NaN and silently did nothing.
+    allSearchResults: [],
+    currentPage: 1,
+    pageSize: 12,
+    lastSearchMeta: null,
+    trackerApps: [],
+    statuses: ['Drafted', 'Applied', 'Interviewing', 'Offer', 'Rejected', 'Withdrawn'],
+    activePdfObjectUrl: null
   };
 
-  // DOM Elements
+  // ==========================================
+  // Token storage
+  // ==========================================
+  function getCachedToken() {
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.expiresAt && parsed.expiresAt > Date.now()) {
+          state.sessionExpiresAt = parsed.expiresAt;
+          return parsed.token;
+        }
+      }
+    } catch (e) { /* fall through to clear */ }
+    clearCachedToken();
+    return '';
+  }
+
+  function setCachedToken(token, expiresAt) {
+    state.authToken = token;
+    state.sessionExpiresAt = expiresAt;
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ token, expiresAt }));
+  }
+
+  // Clears both keys. Clearing only one left a stale token that was restored
+  // from the other on the next page load.
+  function clearCachedToken() {
+    state.authToken = '';
+    state.sessionExpiresAt = 0;
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(LEGACY_KEY);
+  }
+
+  // ==========================================
+  // DOM
+  // ==========================================
+  const $ = (id) => document.getElementById(id);
   const navTabs = document.querySelectorAll('.nav-tab');
   const tabPanes = document.querySelectorAll('.tab-pane');
-  const toastContainer = document.getElementById('toastContainer');
-  const aiStatusBadge = document.getElementById('aiStatusBadge');
-  const aiStatusText = document.getElementById('aiStatusText');
-  const btnLogout = document.getElementById('btnLogout');
-  const loginOverlay = document.getElementById('loginOverlay');
-  const loginForm = document.getElementById('loginForm');
-  const loginPasswordInput = document.getElementById('loginPasswordInput');
-  const loginError = document.getElementById('loginError');
+  const toastContainer = $('toastContainer');
+  const aiStatusBadge = $('aiStatusBadge');
+  const aiStatusText = $('aiStatusText');
+  const btnLogout = $('btnLogout');
+  const loginOverlay = $('loginOverlay');
+  const loginForm = $('loginForm');
+  const loginPasswordInput = $('loginPasswordInput');
+  const loginError = $('loginError');
 
   // ==========================================
-  // 1. Authentication & Network Wrapper
+  // Networking
   // ==========================================
   async function authFetch(url, options = {}) {
-    options.headers = options.headers || {};
-    if (state.authToken) {
-      if (options.headers instanceof Headers) {
-        options.headers.set('Authorization', `Bearer ${state.authToken}`);
-      } else {
-        options.headers['Authorization'] = `Bearer ${state.authToken}`;
-      }
-    }
+    const headers = new Headers(options.headers || {});
+    if (state.authToken) headers.set('Authorization', `Bearer ${state.authToken}`);
 
-    const res = await fetch(url, options);
+    const res = await fetch(url, { ...options, headers });
     if (res.status === 401) {
       clearCachedToken();
-      state.authToken = '';
-      showLoginModal('Session expired or password required.');
+      showLoginModal('Session expired. Please unlock again.');
       throw new Error('Unauthorized');
     }
     return res;
   }
 
+  /** Parse a response as JSON, turning a non-JSON body into a useful message. */
+  async function readJson(res) {
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new Error(
+        res.ok
+          ? 'The server returned an unexpected response.'
+          : `Server error ${res.status}. ${text.slice(0, 140)}`
+      );
+    }
+  }
+
+  async function apiGet(url) {
+    return readJson(await authFetch(url));
+  }
+
+  async function apiPost(url, body) {
+    return readJson(await authFetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }));
+  }
+
+  // ==========================================
+  // Auth
+  // ==========================================
   function setupAuth() {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const password = loginPasswordInput.value;
       if (!password) return;
 
-      const submitBtn = document.getElementById('btnLoginSubmit');
+      const submitBtn = $('btnLoginSubmit');
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<span class="spinner"></span> Verifying...`;
+      submitBtn.innerHTML = '<span class="spinner"></span> Verifying...';
       loginError.classList.add('hidden');
 
       try {
@@ -103,30 +143,28 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password })
         });
-        const data = await res.json();
+        const data = await readJson(res);
 
         if (data.success && data.token) {
-          state.authToken = data.token;
-          setCachedToken(data.token);
+          setCachedToken(data.token, data.expiresAt);
           loginOverlay.classList.add('hidden');
           loginPasswordInput.value = '';
-          showToast('Workspace unlocked! (7-day session active)', 'success');
+          showToast('Workspace unlocked.', 'success');
           await postLoginInit();
         } else {
-          loginError.textContent = data.error || 'Incorrect Password.';
+          loginError.textContent = data.error || 'Incorrect password.';
           loginError.classList.remove('hidden');
         }
       } catch (err) {
-        loginError.textContent = 'Connection error. Please try again.';
+        loginError.textContent = err.message || 'Connection error. Please try again.';
         loginError.classList.remove('hidden');
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = `<span>Unlock Workspace</span>`;
+        submitBtn.innerHTML = '<span>Unlock Workspace</span>';
       }
     });
 
     btnLogout.addEventListener('click', () => {
-      state.authToken = '';
       clearCachedToken();
       showLoginModal('Workspace locked.');
     });
@@ -142,9 +180,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 2. Initial Setup & Health Check
+  // Init
   // ==========================================
   async function init() {
+    state.authToken = getCachedToken();
+
     setupAuth();
     setupNavigation();
     setupProfileTab();
@@ -154,98 +194,110 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTrackerTab();
 
     await checkHealth();
+    await loadPortals();
 
-    // Check cached session
-    if (state.authToken) {
-      // Keep modal hidden and initialize app immediately
-      loginOverlay.classList.add('hidden');
-      postLoginInit().catch(err => console.warn('Post login init:', err));
-
-      // Silently verify in background
-      try {
-        const res = await fetch('/api/auth/verify', {
-          headers: { 'Authorization': `Bearer ${state.authToken}` }
-        });
-        if (!res.ok) {
-          state.authToken = '';
-          localStorage.removeItem('jobsearch_auth_token');
-          showLoginModal('Session expired. Please unlock again.');
-        }
-      } catch (err) {
-        // Network warning - don't lock if offline/slow
-      }
-    } else {
+    if (!state.authToken) {
       showLoginModal();
+      return;
     }
+
+    // Verify before rendering anything, so an invalid token shows the lock
+    // screen rather than a burst of failing requests behind it.
+    try {
+      const res = await fetch('/api/auth/verify', {
+        headers: { Authorization: `Bearer ${state.authToken}` }
+      });
+      if (!res.ok) {
+        clearCachedToken();
+        showLoginModal('Session expired. Please unlock again.');
+        return;
+      }
+    } catch {
+      showToast('Could not reach the server. Working from cache.', 'error');
+    }
+
+    loginOverlay.classList.add('hidden');
+    await postLoginInit();
   }
 
   async function postLoginInit() {
     await loadProfile();
     await loadTrackerApplications();
-    await executeInitialSearch();
   }
 
   async function checkHealth() {
     try {
-      const res = await fetch('/api/health');
-      const data = await res.json();
+      const data = await readJson(await fetch('/api/health'));
       if (data.aiConfigured) {
         aiStatusBadge.className = 'status-pill connected';
-        aiStatusText.textContent = data.provider ? `${data.provider} Active` : 'AI Engine Ready';
+        aiStatusText.textContent = data.provider || 'AI engine ready';
       } else {
-        aiStatusBadge.className = 'status-pill';
-        aiStatusText.textContent = 'Demo Mode (Mock Active)';
+        aiStatusBadge.className = 'status-pill warning';
+        aiStatusText.textContent = 'No AI provider configured';
       }
+      aiStatusBadge.title = data.aiConfigured
+        ? `Provider: ${data.provider}`
+        : 'Set an API key in server/.env. Evaluation and drafting will report themselves unavailable until then.';
     } catch (err) {
-      console.warn('Health check warning:', err);
+      aiStatusBadge.className = 'status-pill warning';
+      aiStatusText.textContent = 'Server unreachable';
+    }
+  }
+
+  /** Build the portal dropdown from what the server can actually run. */
+  async function loadPortals() {
+    const select = $('searchPortal');
+    if (!select) return;
+    try {
+      const data = await readJson(await fetch('/api/scrape/portals'));
+      if (!data.success || !data.portals?.length) return;
+
+      select.innerHTML = '';
+      data.portals.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.name;
+        opt.dataset.defaultLocation = p.defaultLocation || '';
+        select.appendChild(opt);
+      });
+    } catch {
+      // Leave the markup's own options in place if the call fails.
     }
   }
 
   // ==========================================
-  // 3. Navigation
+  // Navigation
   // ==========================================
   function setupNavigation() {
     navTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const targetTab = tab.dataset.tab;
-        switchTab(targetTab);
-      });
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
     });
   }
 
   function switchTab(tabId) {
-    navTabs.forEach(t => {
-      t.classList.toggle('active', t.dataset.tab === tabId);
-    });
-    tabPanes.forEach(pane => {
-      pane.classList.toggle('active', pane.id === `tab-${tabId}`);
-    });
+    navTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+    tabPanes.forEach(p => p.classList.toggle('active', p.id === `tab-${tabId}`));
   }
 
   // ==========================================
-  // 4. Profile Management
+  // Profile
   // ==========================================
   async function loadProfile() {
     try {
-      const res = await authFetch('/api/profile');
-      const data = await res.json();
+      const data = await apiGet('/api/profile');
       if (data.success && data.profile) {
         state.profile = data.profile;
         populateProfileForm(data.profile);
       }
     } catch (err) {
-      showToast('Error loading candidate profile', 'error');
+      if (err.message !== 'Unauthorized') showToast('Could not load your profile.', 'error');
     }
   }
 
   function populateProfileForm(p) {
     if (!p) return;
     const ident = p.identity || {};
-    
-    const setVal = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.value = val || '';
-    };
+    const setVal = (id, val) => { const el = $(id); if (el) el.value = val || ''; };
 
     setVal('profName', ident.name);
     setVal('profTitle', ident.title);
@@ -256,99 +308,109 @@ document.addEventListener('DOMContentLoaded', () => {
     setVal('profSummary', ident.summary);
 
     const skills = p.skills || {};
-    const primarySkills = Array.isArray(skills.primary) ? skills.primary.join(', ') : (skills.primary || '');
-    const secondarySkills = Array.isArray(skills.secondary) ? skills.secondary.join(', ') : (skills.secondary || '');
-    setVal('profPrimarySkills', primarySkills);
-    setVal('profSecondarySkills', secondarySkills);
+    const join = (v) => (Array.isArray(v) ? v.join(', ') : (v || ''));
+    setVal('profPrimarySkills', join(skills.primary));
+    setVal('profSecondarySkills', join(skills.secondary));
 
-    const langs = (ident.languages || [])
-      .map(l => (typeof l === 'string' ? l : `${l.language || l.name || ''} (${l.level || 'Fluent'})`))
+    setVal('profLanguages', (ident.languages || [])
+      .map(l => (typeof l === 'string' ? l : `${l.language || l.name || ''} (${l.level || ''})`.replace(' ()', '')))
       .filter(Boolean)
-      .join(', ');
-    setVal('profLanguages', langs);
+      .join(', '));
   }
 
   function setupProfileTab() {
-    const btnSave = document.getElementById('btnSaveProfile');
-    const btnParseCv = document.getElementById('btnParseCv');
-    const cvFileInput = document.getElementById('cvFileInput');
-    const cvDropzone = document.getElementById('cvDropzone');
+    const btnSave = $('btnSaveProfile');
+    const btnParseCv = $('btnParseCv');
+    const cvFileInput = $('cvFileInput');
+    const cvDropzone = $('cvDropzone');
 
     btnSave.addEventListener('click', async () => {
-      const primaryArr = document.getElementById('profPrimarySkills').value.split(',').map(s => s.trim()).filter(Boolean);
-      const secondaryArr = document.getElementById('profSecondarySkills').value.split(',').map(s => s.trim()).filter(Boolean);
+      const splitList = (id) => $(id).value.split(',').map(s => s.trim()).filter(Boolean);
 
       const updated = {
         ...state.profile,
         identity: {
           ...state.profile?.identity,
-          name: document.getElementById('profName').value,
-          title: document.getElementById('profTitle').value,
-          email: document.getElementById('profEmail').value,
-          phone: document.getElementById('profPhone').value,
-          location: document.getElementById('profLocation').value,
-          linkedin: document.getElementById('profLinkedin').value,
-          summary: document.getElementById('profSummary').value
+          name: $('profName').value,
+          title: $('profTitle').value,
+          email: $('profEmail').value,
+          phone: $('profPhone').value,
+          location: $('profLocation').value,
+          linkedin: $('profLinkedin').value,
+          summary: $('profSummary').value
         },
         skills: {
           ...state.profile?.skills,
-          primary: primaryArr,
-          secondary: secondaryArr
+          primary: splitList('profPrimarySkills'),
+          secondary: splitList('profSecondarySkills')
         }
       };
 
+      btnSave.disabled = true;
       try {
-        const res = await authFetch('/api/profile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updated)
-        });
-        const data = await res.json();
+        const data = await apiPost('/api/profile', updated);
         if (data.success) {
           state.profile = data.profile;
-          showToast('Profile saved successfully!', 'success');
+          showToast('Profile saved.', 'success');
+        } else {
+          showToast(data.error || 'Could not save your profile.', 'error');
         }
       } catch (err) {
-        showToast('Failed to save profile', 'error');
+        if (err.message !== 'Unauthorized') showToast(err.message, 'error');
+      } finally {
+        btnSave.disabled = false;
       }
     });
 
-    // Dropzone triggers file input
     cvDropzone.addEventListener('click', () => cvFileInput.click());
-    cvFileInput.addEventListener('change', async (e) => {
-      if (e.target.files && e.target.files[0]) {
-        await uploadCvFile(e.target.files[0]);
-      }
+
+    // Drag and drop, which the dropzone visually invited but never supported.
+    ['dragenter', 'dragover'].forEach(evt => {
+      cvDropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        cvDropzone.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      cvDropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        cvDropzone.classList.remove('dragover');
+      });
+    });
+    cvDropzone.addEventListener('drop', (e) => {
+      const file = e.dataTransfer?.files?.[0];
+      if (file) uploadCvFile(file);
+    });
+
+    cvFileInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) uploadCvFile(file);
+      cvFileInput.value = '';
     });
 
     btnParseCv.addEventListener('click', async () => {
-      const rawText = document.getElementById('cvRawTextarea').value;
+      const rawText = $('cvRawTextarea').value;
       if (!rawText || rawText.trim().length < 40) {
-        showToast('Please enter your resume text first', 'error');
+        showToast('Paste your resume text first.', 'error');
         return;
       }
-      btnParseCv.disabled = true;
-      btnParseCv.innerHTML = `<span class="spinner"></span> Parsing CV...`;
 
+      btnParseCv.disabled = true;
+      btnParseCv.innerHTML = '<span class="spinner"></span> Parsing...';
       try {
-        const res = await authFetch('/api/profile/upload-cv', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rawText })
-        });
-        const data = await res.json();
+        const data = await apiPost('/api/profile/upload-cv', { rawText });
         if (data.success) {
           state.profile = data.profile;
           populateProfileForm(data.profile);
-          showToast('Resume parsed and profile updated!', 'success');
+          showToast(data.message || 'Profile updated.', data.source === 'local-parser' ? 'warning' : 'success');
         } else {
-          showToast(data.error || 'Failed to parse resume', 'error');
+          showToast(data.error || 'Could not parse that resume.', 'error');
         }
       } catch (err) {
-        showToast('Error communicating with resume parser', 'error');
+        if (err.message !== 'Unauthorized') showToast(err.message, 'error');
       } finally {
         btnParseCv.disabled = false;
-        btnParseCv.innerHTML = `<span>Extract Profile with AI</span>`;
+        btnParseCv.innerHTML = '<span>Extract Profile with AI</span>';
       }
     });
   }
@@ -356,171 +418,147 @@ document.addEventListener('DOMContentLoaded', () => {
   async function uploadCvFile(file) {
     const formData = new FormData();
     formData.append('cvFile', file);
-
-    showToast(`Uploading and parsing ${file.name}...`);
+    showToast(`Reading ${file.name}...`);
 
     try {
-      const res = await authFetch('/api/profile/upload-cv', {
+      const data = await readJson(await authFetch('/api/profile/upload-cv', {
         method: 'POST',
         body: formData
-      });
-      const data = await res.json();
+      }));
       if (data.success) {
         state.profile = data.profile;
         populateProfileForm(data.profile);
-        showToast('CV uploaded and profile updated successfully!', 'success');
+        showToast(data.message || 'Profile updated.', data.source === 'local-parser' ? 'warning' : 'success');
       } else {
-        showToast(data.error || 'Failed to parse uploaded CV', 'error');
+        showToast(data.error || 'Could not read that file.', 'error');
       }
     } catch (err) {
-      showToast('Error uploading CV file', 'error');
+      if (err.message !== 'Unauthorized') showToast(err.message, 'error');
     }
   }
 
   // ==========================================
-  // 5. Job Search & Scraper Tab with Pagination
+  // Search
   // ==========================================
   function setupSearchTab() {
-    const btnSearch = document.getElementById('btnExecuteSearch');
-    btnSearch.addEventListener('click', () => {
-      const query = document.getElementById('searchQuery').value;
-      const location = document.getElementById('searchLocation').value;
-      const portal = document.getElementById('searchPortal').value;
-      executeSearch(query, location, portal);
+    $('btnExecuteSearch').addEventListener('click', () => {
+      executeSearch($('searchQuery').value, $('searchLocation').value, $('searchPortal').value);
     });
 
-    const pageSizeSelect = document.getElementById('pageSizeSelect');
-    if (pageSizeSelect) {
-      pageSizeSelect.addEventListener('change', (e) => {
-        state.pageSize = parseInt(e.target.value, 10) || 12;
-        state.currentPage = 1;
-        renderCurrentJobPage();
+    // Enter submits from either text field.
+    ['searchQuery', 'searchLocation'].forEach(id => {
+      $(id)?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') $('btnExecuteSearch').click();
       });
-    }
+    });
 
-    const btnPrev = document.getElementById('btnPrevPage');
-    const btnNext = document.getElementById('btnNextPage');
-    if (btnPrev) {
-      btnPrev.addEventListener('click', () => {
-        if (state.currentPage > 1) {
-          state.currentPage--;
-          renderCurrentJobPage(true);
-        }
-      });
-    }
-    if (btnNext) {
-      btnNext.addEventListener('click', () => {
-        const maxPages = Math.ceil((state.allSearchResults || []).length / state.pageSize);
-        if (state.currentPage < maxPages) {
-          state.currentPage++;
-          renderCurrentJobPage(true);
-        }
-      });
-    }
-  }
+    $('pageSizeSelect')?.addEventListener('change', (e) => {
+      state.pageSize = parseInt(e.target.value, 10) || 12;
+      state.currentPage = 1;
+      renderCurrentJobPage();
+    });
 
-  async function executeInitialSearch() {
-    await executeSearch('Software Engineer', 'Remote', 'freehire-search');
+    $('btnPrevPage')?.addEventListener('click', () => {
+      if (state.currentPage > 1) {
+        state.currentPage--;
+        renderCurrentJobPage(true);
+      }
+    });
+
+    $('btnNextPage')?.addEventListener('click', () => {
+      const totalPages = Math.max(1, Math.ceil(state.allSearchResults.length / state.pageSize));
+      if (state.currentPage < totalPages) {
+        state.currentPage++;
+        renderCurrentJobPage(true);
+      }
+    });
   }
 
   async function executeSearch(query, location, portal) {
-    const btnSearch = document.getElementById('btnExecuteSearch');
-    const resultsGrid = document.getElementById('jobResultsGrid');
-    const resultsCount = document.getElementById('resultsCount');
-    const paginationBar = document.getElementById('paginationBar');
-    const paginationInfo = document.getElementById('paginationInfo');
+    const btnSearch = $('btnExecuteSearch');
+    const resultsGrid = $('jobResultsGrid');
+    const paginationBar = $('paginationBar');
 
     btnSearch.disabled = true;
-    btnSearch.innerHTML = `<span class="spinner"></span> Fetching All Jobs...`;
-    resultsGrid.innerHTML = `<div class="empty-state"><span class="spinner"></span><p>Fetching all available jobs from ${portal}...</p></div>`;
-    if (paginationBar) paginationBar.classList.add('hidden');
+    btnSearch.innerHTML = '<span class="spinner"></span> Searching...';
+    resultsGrid.innerHTML = '<div class="empty-state"><span class="spinner"></span><p>Searching...</p></div>';
+    paginationBar?.classList.add('hidden');
 
     try {
-      // Fetch all available matching jobs across pages
       const url = `/api/scrape/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&portal=${encodeURIComponent(portal)}`;
-      const res = await authFetch(url);
-      const data = await res.json();
+      const data = await apiGet(url);
 
-      if (data.success && data.jobs && data.jobs.length > 0) {
+      state.lastSearchMeta = { source: data.source, isSample: data.isSample, warning: data.warning };
+
+      if (data.success && data.jobs?.length) {
         state.allSearchResults = data.jobs;
         state.currentPage = 1;
         renderCurrentJobPage();
+        if (data.warning) showToast(data.warning, 'warning');
       } else {
         state.allSearchResults = [];
-        resultsCount.textContent = '0 jobs found';
-        if (paginationInfo) paginationInfo.textContent = 'Showing 0 of 0 jobs';
+        $('resultsCount').textContent = '0 jobs found';
+        $('paginationInfo') && ($('paginationInfo').textContent = '');
         resultsGrid.innerHTML = `
           <div class="empty-state">
-            <h3>No Jobs Found</h3>
-            <p>Try broadening your search keywords or switching to another portal.</p>
-          </div>
-        `;
+            <h3>No jobs found</h3>
+            <p>${escapeHtml(data.warning || 'Try different keywords, another location, or a different portal.')}</p>
+          </div>`;
       }
     } catch (err) {
-      showToast('Job search failed', 'error');
-      resultsGrid.innerHTML = `<div class="empty-state"><p>Error fetching search results.</p></div>`;
+      if (err.message !== 'Unauthorized') {
+        resultsGrid.innerHTML = `<div class="empty-state"><h3>Search failed</h3><p>${escapeHtml(err.message)}</p></div>`;
+      }
     } finally {
       btnSearch.disabled = false;
-      btnSearch.innerHTML = `<span>Fetch All Jobs</span>`;
+      btnSearch.innerHTML = '<span>Search Jobs</span>';
     }
   }
 
   function renderCurrentJobPage(scrollToTop = false) {
-    const jobs = state.allSearchResults || [];
+    const jobs = state.allSearchResults;
     const total = jobs.length;
     const pageSize = state.pageSize || 12;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-    if (state.currentPage > totalPages) state.currentPage = totalPages;
-    if (state.currentPage < 1) state.currentPage = 1;
+    state.currentPage = Math.min(Math.max(1, state.currentPage), totalPages);
 
     const startIndex = (state.currentPage - 1) * pageSize;
     const endIndex = Math.min(startIndex + pageSize, total);
-    const pagedJobs = jobs.slice(startIndex, endIndex);
 
-    // Update Header Counts
-    const resultsCount = document.getElementById('resultsCount');
-    const paginationInfo = document.getElementById('paginationInfo');
-    if (resultsCount) resultsCount.textContent = `Found ${total} live job openings`;
+    $('resultsCount').textContent = total === 1 ? '1 job found' : `${total} jobs found`;
+    const paginationInfo = $('paginationInfo');
     if (paginationInfo) {
-      paginationInfo.textContent = total > 0 
-        ? `Showing ${startIndex + 1}–${endIndex} of ${total} jobs (Page ${state.currentPage} of ${totalPages})`
-        : `Showing 0 of 0 jobs`;
+      paginationInfo.textContent = total > 0
+        ? `Showing ${startIndex + 1}–${endIndex} of ${total} (page ${state.currentPage} of ${totalPages})`
+        : '';
     }
 
-    // Render Cards for this page
-    renderJobCards(pagedJobs);
+    renderJobCards(jobs.slice(startIndex, endIndex));
 
-    // Update Pagination Controls
-    const paginationBar = document.getElementById('paginationBar');
-    const btnPrev = document.getElementById('btnPrevPage');
-    const btnNext = document.getElementById('btnNextPage');
-    const numbersContainer = document.getElementById('pageNumbersContainer');
+    const paginationBar = $('paginationBar');
+    paginationBar?.classList.toggle('hidden', totalPages <= 1);
 
-    if (paginationBar) {
-      if (totalPages > 1) {
-        paginationBar.classList.remove('hidden');
-      } else {
-        paginationBar.classList.add('hidden');
-      }
-    }
-
+    const btnPrev = $('btnPrevPage');
+    const btnNext = $('btnNextPage');
     if (btnPrev) btnPrev.disabled = state.currentPage <= 1;
     if (btnNext) btnNext.disabled = state.currentPage >= totalPages;
 
-    if (numbersContainer) {
-      numbersContainer.innerHTML = '';
+    const numbers = $('pageNumbersContainer');
+    if (numbers) {
+      numbers.innerHTML = '';
       for (let p = 1; p <= totalPages; p++) {
-        // Show all if <= 7 pages, or smart ellipsis
-        if (totalPages <= 7 || p === 1 || p === totalPages || (p >= state.currentPage - 1 && p <= state.currentPage + 1)) {
+        const nearCurrent = p >= state.currentPage - 1 && p <= state.currentPage + 1;
+        if (totalPages <= 7 || p === 1 || p === totalPages || nearCurrent) {
           const btn = document.createElement('button');
           btn.className = `page-num-btn ${p === state.currentPage ? 'active' : ''}`;
           btn.textContent = p;
+          btn.setAttribute('aria-label', `Page ${p}`);
           btn.addEventListener('click', () => {
             state.currentPage = p;
             renderCurrentJobPage(true);
           });
-          numbersContainer.appendChild(btn);
+          numbers.appendChild(btn);
         } else if (
           (p === state.currentPage - 2 && state.currentPage > 3) ||
           (p === state.currentPage + 2 && state.currentPage < totalPages - 2)
@@ -528,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const span = document.createElement('span');
           span.className = 'page-ellipsis';
           span.textContent = '...';
-          numbersContainer.appendChild(span);
+          numbers.appendChild(span);
         }
       }
     }
@@ -539,413 +577,483 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderJobCards(jobs) {
-    const grid = document.getElementById('jobResultsGrid');
+    const grid = $('jobResultsGrid');
     grid.innerHTML = '';
 
     jobs.forEach(job => {
       const card = document.createElement('div');
       card.className = 'job-card';
 
-      const skillsHtml = (job.skills || []).slice(0, 4).map(s => `<span class="meta-tag">${s}</span>`).join('');
+      // Every field is escaped. The skills list previously interpolated raw
+      // scraped strings, which was a stored-XSS path.
+      const tags = [job.location, job.seniority]
+        .filter(Boolean)
+        .concat((job.skills || []).slice(0, 4))
+        .map(t => `<span class="meta-tag">${escapeHtml(t)}</span>`)
+        .join('');
+
+      const description = job.description
+        ? escapeHtml(job.description.slice(0, 320)) + (job.description.length > 320 ? '...' : '')
+        : '<em>No description supplied by this portal.</em>';
 
       card.innerHTML = `
         <div class="job-card-top">
-          <h4 class="job-card-title">${escapeHtml(job.title)}</h4>
-          <span class="job-card-company">${escapeHtml(job.company)}</span>
-          <div class="job-card-meta">
-            <span class="meta-tag">${escapeHtml(job.location || 'Remote')}</span>
-            <span class="meta-tag">${escapeHtml(job.seniority || 'Mid-Senior')}</span>
-            ${skillsHtml}
-          </div>
+          <h4 class="job-card-title">${escapeHtml(job.title || 'Untitled role')}</h4>
+          <span class="job-card-company">${escapeHtml(job.company || 'Unknown company')}</span>
+          <div class="job-card-meta">${tags}</div>
         </div>
-        <div class="job-card-desc">${escapeHtml(job.description)}</div>
+        <div class="job-card-desc">${description}</div>
         <div class="job-card-footer">
-          <span class="job-salary">${escapeHtml(job.salary || 'Competitive')}</span>
-          <button class="btn btn-sm btn-primary btn-apply-job">
-            <span>Analyze & Apply</span>
-          </button>
-        </div>
-      `;
+          <span class="job-salary">${escapeHtml(job.salary || '')}</span>
+          <div class="job-card-actions">
+            ${job.url ? `<a class="btn btn-sm btn-ghost" href="${escapeAttr(job.url)}" target="_blank" rel="noopener noreferrer">View posting</a>` : ''}
+            <button class="btn btn-sm btn-primary btn-apply-job">Analyze &amp; Apply</button>
+          </div>
+        </div>`;
 
-      card.querySelector('.btn-apply-job').addEventListener('click', () => {
-        loadJobIntoApplyTab(job);
-      });
-
+      card.querySelector('.btn-apply-job').addEventListener('click', () => loadJobIntoApplyTab(job));
       grid.appendChild(card);
     });
   }
 
   function loadJobIntoApplyTab(job) {
     state.currentJob = job;
-    document.getElementById('targetCompany').value = job.company || '';
-    document.getElementById('targetRole').value = job.title || '';
-    document.getElementById('targetLocation').value = job.location || '';
-    document.getElementById('targetUrl').value = job.url || '';
-    document.getElementById('targetDescription').value = job.description || '';
+    state.currentFitEvaluation = null;
+
+    $('targetCompany').value = job.company || '';
+    $('targetRole').value = job.title || '';
+    $('targetLocation').value = job.location || '';
+    $('targetUrl').value = job.url || '';
+    $('targetDescription').value = job.description || '';
 
     switchTab('apply');
-    showToast(`Loaded ${job.title} at ${job.company}`, 'success');
 
-    // Automatically trigger Fit Evaluation
+    if (!job.description || job.description.trim().length < 60) {
+      // LinkedIn's guest listing only carries a stub. Evaluating that produces
+      // a meaningless score, so ask for the real text instead of guessing.
+      showToast('Paste the full job description before evaluating. This portal only supplies a summary.', 'warning');
+      $('targetDescription').focus();
+      return;
+    }
+
+    showToast(`Loaded ${job.title}`, 'success');
     evaluateCurrentJob();
   }
 
   // ==========================================
-  // 6. 1-Click Apply & Generator Tab
+  // Apply
   // ==========================================
   function setupApplyTab() {
-    const btnEvaluate = document.getElementById('btnEvaluateFit');
-    const btnGenerate = document.getElementById('btnGenerateAll');
-    const btnDocCv = document.getElementById('btnDocCv');
-    const btnDocCover = document.getElementById('btnDocCover');
-    const btnToggleLatex = document.getElementById('btnToggleLatex');
-    const btnRecompile = document.getElementById('btnRecompile');
-    const btnDownload = document.getElementById('btnDownloadPdf');
-    const btnOpenApply = document.getElementById('btnOpenApplyLink');
-    const btnMarkApplied = document.getElementById('btnMarkApplied');
+    $('btnEvaluateFit').addEventListener('click', evaluateCurrentJob);
+    $('btnGenerateAll').addEventListener('click', generateApplication);
+    $('btnDocCv').addEventListener('click', () => switchDocumentView('cv'));
+    $('btnDocCover').addEventListener('click', () => switchDocumentView('cover'));
 
-    btnEvaluate.addEventListener('click', evaluateCurrentJob);
-    btnGenerate.addEventListener('click', generateApplication);
-
-    // Document switcher
-    btnDocCv.addEventListener('click', () => switchDocumentView('cv'));
-    btnDocCover.addEventListener('click', () => switchDocumentView('cover'));
-
-    // Toggle LaTeX editor vs PDF
-    btnToggleLatex.addEventListener('click', () => {
+    $('btnToggleLatex').addEventListener('click', () => {
       state.isLatexView = !state.isLatexView;
       updateDocumentPreview();
     });
 
-    // Recompile modified LaTeX
-    btnRecompile.addEventListener('click', recompileCurrentLatex);
+    $('btnRecompile').addEventListener('click', recompileCurrentLatex);
 
-    // Apply on Company Portal in new tab
-    if (btnOpenApply) {
-      btnOpenApply.addEventListener('click', () => {
-        const url = document.getElementById('targetUrl')?.value || state.currentApplication?.jobUrl || state.currentJob?.url;
-        if (url && url.startsWith('http')) {
-          window.open(url, '_blank', 'noopener,noreferrer');
-        } else {
-          const comp = encodeURIComponent(document.getElementById('targetCompany').value || '');
-          const role = encodeURIComponent(document.getElementById('targetRole').value || '');
-          window.open(`https://www.google.com/search?q=${comp}+${role}+careers+apply`, '_blank');
-        }
-      });
-    }
+    $('btnOpenApplyLink')?.addEventListener('click', () => {
+      const url = $('targetUrl')?.value || state.currentApplication?.jobUrl || state.currentJob?.url;
+      if (url && /^https?:\/\//i.test(url)) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        const comp = encodeURIComponent($('targetCompany').value || '');
+        const role = encodeURIComponent($('targetRole').value || '');
+        window.open(`https://www.google.com/search?q=${comp}+${role}+careers`, '_blank', 'noopener,noreferrer');
+      }
+    });
 
-    // Mark as Applied in Tracker
-    if (btnMarkApplied) {
-      btnMarkApplied.addEventListener('click', async () => {
-        if (!state.currentApplication?.id) {
-          showToast('Generate application first', 'error');
-          return;
-        }
-        try {
-          const res = await authFetch(`/api/tracker/${state.currentApplication.id}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'Applied' })
-          });
-          const data = await res.json();
-          if (data.success) {
-            state.currentApplication.status = 'Applied';
-            btnMarkApplied.disabled = true;
-            btnMarkApplied.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Applied ✓</span>`;
-            showToast('Application marked as Applied! Logged in Tracker.', 'success');
-            await loadTrackerApplications();
-          }
-        } catch (err) {
-          showToast('Failed to update tracker', 'error');
-        }
-      });
-    }
-
-    // Download PDF
-    btnDownload.addEventListener('click', () => {
-      if (!state.currentApplication) {
-        showToast('Generate an application first', 'error');
+    $('btnMarkApplied')?.addEventListener('click', async () => {
+      if (!state.currentApplication?.id) {
+        showToast('Generate an application first.', 'error');
         return;
       }
-      const type = state.activeDocType === 'cv' ? 'cv-pdf' : 'cover-pdf';
-      const downloadUrl = `/api/apply/download/${state.currentApplication.id}/${type}?token=${encodeURIComponent(state.authToken)}`;
-      window.location.href = downloadUrl;
+      await updateApplicationStatus(state.currentApplication.id, 'Applied');
+      state.currentApplication.status = 'Applied';
+      updateDocumentPreview();
     });
+
+    $('btnDownloadPdf').addEventListener('click', () => {
+      if (!state.currentApplication) {
+        showToast('Generate an application first.', 'error');
+        return;
+      }
+      downloadDocument(state.currentApplication.id, state.activeDocType === 'cv' ? 'cv-pdf' : 'cover-pdf');
+    });
+  }
+
+  /**
+   * Download through fetch so the token travels in a header.
+   * A plain link needed ?token=... in the URL, which put the credential into
+   * browser history, server logs and Referer headers.
+   */
+  async function downloadDocument(appId, kind) {
+    try {
+      const res = await authFetch(`/api/apply/download/${appId}/${kind}`);
+      if (!res.ok) {
+        const data = await readJson(res).catch(() => ({}));
+        showToast(data.error || 'Download failed.', 'error');
+        return;
+      }
+
+      const disposition = res.headers.get('Content-Disposition') || '';
+      const filename = disposition.match(/filename="([^"]+)"/)?.[1] || `${kind}.pdf`;
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      if (err.message !== 'Unauthorized') showToast(err.message, 'error');
+    }
   }
 
   function getJobFromForm() {
     return {
-      company: document.getElementById('targetCompany').value || 'Target Company',
-      title: document.getElementById('targetRole').value || 'Software Engineer',
-      location: document.getElementById('targetLocation').value || 'Remote',
-      url: document.getElementById('targetUrl')?.value || '',
-      description: document.getElementById('targetDescription').value
+      company: $('targetCompany').value.trim(),
+      title: $('targetRole').value.trim(),
+      location: $('targetLocation').value.trim(),
+      url: $('targetUrl')?.value.trim() || '',
+      description: $('targetDescription').value
     };
+  }
+
+  function validateJobForm(job) {
+    if (!job.title) {
+      showToast('Enter the role title.', 'error');
+      $('targetRole').focus();
+      return false;
+    }
+    if (!job.description || job.description.trim().length < 30) {
+      showToast('Paste the job description first.', 'error');
+      $('targetDescription').focus();
+      return false;
+    }
+    return true;
   }
 
   async function evaluateCurrentJob() {
     const job = getJobFromForm();
-    if (!job.description || job.description.trim().length < 30) {
-      showToast('Please paste a job description first', 'error');
-      return;
-    }
+    if (!validateJobForm(job)) return;
 
-    const btnEvaluate = document.getElementById('btnEvaluateFit');
-    btnEvaluate.disabled = true;
-    btnEvaluate.innerHTML = `<span class="spinner"></span> Evaluating...`;
+    const btn = $('btnEvaluateFit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Evaluating...';
 
     try {
-      const res = await authFetch('/api/evaluate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job })
-      });
-      const data = await res.json();
+      const data = await apiPost('/api/evaluate', { job });
       if (data.success && data.evaluation) {
-        state.currentFitEvaluation = data.evaluation;
+        state.currentFitEvaluation = data.evaluation.unavailable ? null : data.evaluation;
         renderFitEvaluation(data.evaluation);
-        showToast(`Fit Evaluation: ${data.evaluation.verdict} (${data.evaluation.overallScore}%)`, 'success');
+
+        if (data.evaluation.unavailable) {
+          showToast(data.evaluation.message, 'warning');
+        } else {
+          showToast(`${data.evaluation.verdict} (${data.evaluation.overallScore}%)`, 'success');
+        }
       }
     } catch (err) {
-      showToast('Evaluation failed', 'error');
+      if (err.message !== 'Unauthorized') showToast(err.message, 'error');
     } finally {
-      btnEvaluate.disabled = false;
-      btnEvaluate.innerHTML = `<span>Run Fit Evaluation</span>`;
+      btn.disabled = false;
+      btn.innerHTML = '<span>Run Fit Evaluation</span>';
     }
   }
 
   function renderFitEvaluation(ev) {
-    const evalCard = document.getElementById('evaluationCard');
+    const evalCard = $('evaluationCard');
     evalCard.classList.remove('hidden');
 
-    // Overall Score
-    const overallScoreBadge = document.getElementById('overallScoreBadge');
-    const scoreVal = ev.overallScore || 90;
-    overallScoreBadge.className = `score-badge ${scoreVal >= 80 ? 'score-high' : scoreVal >= 60 ? 'score-mid' : 'score-low'}`;
-    overallScoreBadge.querySelector('.score-val').textContent = `${scoreVal}%`;
-    overallScoreBadge.querySelector('.score-lbl').textContent = ev.verdict || 'Match';
+    const badge = $('overallScoreBadge');
+    const hasScore = typeof ev.overallScore === 'number';
 
-    // Gating Badges
-    const elig = ev.eligibilityGate || { status: 'PASS', note: 'Open' };
-    const lang = ev.languageGate || { status: 'PASS', note: 'Matches' };
+    // No invented fallback score. "Not evaluated" reads as not evaluated.
+    if (hasScore) {
+      const s = ev.overallScore;
+      badge.className = `score-badge ${s >= 80 ? 'score-high' : s >= 60 ? 'score-mid' : 'score-low'}`;
+      badge.querySelector('.score-val').textContent = `${s}%`;
+    } else {
+      badge.className = 'score-badge score-unknown';
+      badge.querySelector('.score-val').textContent = '--';
+    }
+    badge.querySelector('.score-lbl').textContent = ev.verdict || 'Not evaluated';
 
-    const eligBadge = document.getElementById('eligibilityGateBadge');
-    eligBadge.className = `gate-pill ${elig.status.toLowerCase()}`;
-    eligBadge.innerHTML = `<span class="gate-icon">${elig.status === 'PASS' ? '✓' : '!'}</span><span>Eligibility: ${elig.status}</span>`;
+    const renderGate = (el, gate, label) => {
+      const status = gate?.status || 'UNKNOWN';
+      el.className = `gate-pill ${status.toLowerCase()}`;
+      const icon = status === 'PASS' ? '✓' : status === 'FAIL' ? '!' : '?';
+      el.innerHTML = `<span class="gate-icon">${icon}</span><span>${label}: ${escapeHtml(status)}</span>`;
+      el.title = gate?.note || '';
+    };
+    renderGate($('eligibilityGateBadge'), ev.eligibilityGate, 'Eligibility');
+    renderGate($('languageGateBadge'), ev.languageGate, 'Language');
 
-    const langBadge = document.getElementById('languageGateBadge');
-    langBadge.className = `gate-pill ${lang.status.toLowerCase()}`;
-    langBadge.innerHTML = `<span class="gate-icon">${lang.status === 'PASS' ? '✓' : '!'}</span><span>Language: ${lang.status}</span>`;
-
-    // 5 Dimension Bars
-    const dimContainer = document.getElementById('dimensionBars');
+    const dimContainer = $('dimensionBars');
     dimContainer.innerHTML = '';
-    const dims = ev.dimensions || {};
 
     const dimLabels = {
-      technicalMatch: '1. Technical Skills Match',
-      experienceMatch: '2. Experience & Functional Match',
-      seniorityMatch: '3. Seniority & Scope Match',
-      growthMatch: '4. Growth & Career Trajectory',
-      domainMatch: '5. Domain & Culture Alignment'
+      technicalMatch: 'Technical skills',
+      experienceMatch: 'Experience and function',
+      seniorityMatch: 'Seniority and scope',
+      growthMatch: 'Growth trajectory',
+      domainMatch: 'Domain and culture'
     };
+    const dims = ev.dimensions || {};
 
-    Object.entries(dimLabels).forEach(([key, label]) => {
-      const dimData = dims[key] || { score: 85, analysis: '' };
-      const item = document.createElement('div');
-      item.className = 'dim-item';
-      item.innerHTML = `
-        <div class="dim-label-row">
-          <span class="dim-name">${label}</span>
-          <span class="dim-score">${dimData.score}%</span>
-        </div>
-        <div class="dim-bar-track">
-          <div class="dim-bar-fill" style="width: ${dimData.score}%"></div>
-        </div>
-      `;
-      dimContainer.appendChild(item);
-    });
+    if (!Object.keys(dims).length) {
+      dimContainer.innerHTML = `<p class="muted">${escapeHtml(ev.message || 'No dimension scores available.')}</p>`;
+    } else {
+      Object.entries(dimLabels).forEach(([key, label]) => {
+        const d = dims[key];
+        const score = typeof d?.score === 'number' ? d.score : null;
+        const item = document.createElement('div');
+        item.className = 'dim-item';
+        item.innerHTML = `
+          <div class="dim-label-row">
+            <span class="dim-name">${escapeHtml(label)}</span>
+            <span class="dim-score">${score === null ? '--' : score + '%'}</span>
+          </div>
+          <div class="dim-bar-track">
+            <div class="dim-bar-fill" style="width: ${score === null ? 0 : Math.max(0, Math.min(100, score))}%"></div>
+          </div>
+          ${d?.analysis ? `<p class="dim-analysis">${escapeHtml(d.analysis)}</p>` : ''}`;
+        dimContainer.appendChild(item);
+      });
+    }
 
-    // Strengths & Gaps
-    const strengthsList = document.getElementById('evalStrengthsList');
-    const gapsList = document.getElementById('evalGapsList');
-    strengthsList.innerHTML = (ev.strengths || ['Strong tech stack match', 'Proven high scale experience']).map(s => `<li>${escapeHtml(s)}</li>`).join('');
-    gapsList.innerHTML = (ev.gaps || ['Specific company internal tooling']).map(g => `<li>${escapeHtml(g)}</li>`).join('');
+    const fill = (el, items, emptyText) => {
+      el.innerHTML = items?.length
+        ? items.map(s => `<li>${escapeHtml(s)}</li>`).join('')
+        : `<li class="muted">${escapeHtml(emptyText)}</li>`;
+    };
+    fill($('evalStrengthsList'), ev.strengths, 'None identified.');
+    fill($('evalGapsList'), ev.gaps, 'None identified.');
   }
 
   async function generateApplication() {
     const job = getJobFromForm();
-    if (!job.description || job.description.trim().length < 30) {
-      showToast('Please enter a job description first', 'error');
-      return;
-    }
+    if (!validateJobForm(job)) return;
 
-    const btnGenerate = document.getElementById('btnGenerateAll');
-    const pipelineCard = document.getElementById('pipelineStatusCard');
+    const btnGenerate = $('btnGenerateAll');
+    const pipelineCard = $('pipelineStatusCard');
 
     btnGenerate.disabled = true;
-    btnGenerate.innerHTML = `<span class="spinner"></span> Generating Application...`;
+    btnGenerate.innerHTML = '<span class="spinner"></span> Generating...';
     pipelineCard.classList.remove('hidden');
 
-    // Simulate animated step progression
-    animatePipelineStep('step-drafter');
+    // Real stage tracking. The old version fired timers at fixed delays, so
+    // steps reported themselves complete regardless of what the server did.
+    resetPipelineSteps();
+    setPipelineStep('step-drafter', 'active');
 
     try {
-      setTimeout(() => animatePipelineStep('step-reviewer'), 1200);
-      setTimeout(() => animatePipelineStep('step-latex'), 2500);
-      setTimeout(() => animatePipelineStep('step-ats'), 3600);
-
-      const res = await authFetch('/api/apply/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          job,
-          fitEvaluation: state.currentFitEvaluation
-        })
+      const data = await apiPost('/api/apply/generate', {
+        job,
+        fitEvaluation: state.currentFitEvaluation
       });
 
-      const data = await res.json();
       if (data.success) {
+        setPipelineStep('step-drafter', 'done');
+        setPipelineStep('step-reviewer', data.source === 'ai' ? 'done' : 'skipped');
+        setPipelineStep('step-latex', data.cvRenderer === 'latex' ? 'done' : 'skipped');
+        setPipelineStep('step-ats', data.cvAtsVerification?.verified ? 'done' : 'skipped');
+
         state.currentApplication = data.application;
         state.cvPdfBase64 = data.cvPdfBase64;
         state.coverPdfBase64 = data.coverPdfBase64;
         state.cvLatex = data.application.cvLatex;
         state.coverLatex = data.application.coverLetterLatex;
 
-        completePipelineSteps();
+        renderAuditBadges(data);
         updateDocumentPreview();
         await loadTrackerApplications();
 
-        showToast('Tailored CV and Cover Letter created successfully!', 'success');
+        if (data.warning) showToast(data.warning, 'warning');
+        else showToast('Documents generated.', 'success');
       } else {
-        showToast(data.error || 'Generation failed', 'error');
+        markPipelineFailed();
+        showToast(data.error || 'Generation failed.', 'error');
       }
     } catch (err) {
-      showToast('Generation error occurred', 'error');
+      markPipelineFailed();
+      if (err.message !== 'Unauthorized') showToast(err.message, 'error');
     } finally {
       btnGenerate.disabled = false;
-      btnGenerate.innerHTML = `<span>Generate Tailored Application</span>`;
+      btnGenerate.innerHTML = '<span>Generate Tailored Application</span>';
     }
   }
 
-  function animatePipelineStep(stepId) {
-    document.querySelectorAll('.pipeline-step').forEach(el => el.classList.remove('active'));
-    const target = document.getElementById(stepId);
-    if (target) target.classList.add('active');
+  function resetPipelineSteps() {
+    document.querySelectorAll('.pipeline-step').forEach(el => {
+      el.classList.remove('active', 'done', 'skipped', 'failed');
+    });
   }
 
-  function completePipelineSteps() {
-    document.querySelectorAll('.pipeline-step').forEach(el => {
+  function setPipelineStep(stepId, status) {
+    const el = $(stepId);
+    if (!el) return;
+    el.classList.remove('active', 'done', 'skipped', 'failed');
+    el.classList.add(status);
+    el.title = {
+      active: 'In progress',
+      done: 'Completed',
+      skipped: 'Skipped (not available)',
+      failed: 'Failed'
+    }[status] || '';
+  }
+
+  function markPipelineFailed() {
+    document.querySelectorAll('.pipeline-step.active').forEach(el => {
       el.classList.remove('active');
-      el.classList.add('done');
+      el.classList.add('failed');
+    });
+  }
+
+  /** Show what was actually verified, including when nothing was. */
+  function renderAuditBadges(data) {
+    const container = $('auditBadges');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const badges = [];
+
+    if (data.source === 'unavailable') {
+      badges.push({ text: 'Offline template, not tailored', kind: 'warn' });
+    } else if (data.source === 'ai-draft-only') {
+      badges.push({ text: 'Drafted, not reviewed', kind: 'warn' });
+    } else if (data.source === 'ai') {
+      badges.push({ text: 'Drafted and reviewed', kind: 'ok' });
+    }
+
+    badges.push(data.cvRenderer === 'latex'
+      ? { text: 'Compiled with LaTeX', kind: 'ok' }
+      : { text: 'Preview render (no TeX engine)', kind: 'warn' });
+
+    const ats = data.cvAtsVerification;
+    if (ats?.verified) {
+      badges.push({ text: ats.pass ? 'ATS text layer verified' : 'ATS check failed', kind: ats.pass ? 'ok' : 'warn' });
+    } else {
+      badges.push({ text: 'ATS not verified', kind: 'warn' });
+    }
+
+    (data.auditsPassed || []).forEach(a => badges.push({ text: a, kind: 'ok' }));
+
+    badges.forEach(b => {
+      const span = document.createElement('span');
+      span.className = `audit-badge audit-${b.kind}`;
+      span.textContent = b.text;
+      container.appendChild(span);
     });
   }
 
   function switchDocumentView(docType) {
     state.activeDocType = docType;
-    document.getElementById('btnDocCv').classList.toggle('active', docType === 'cv');
-    document.getElementById('btnDocCover').classList.toggle('active', docType === 'cover');
-    document.getElementById('texFileName').textContent = docType === 'cv' ? 'main.tex' : 'cover.tex';
-
+    $('btnDocCv').classList.toggle('active', docType === 'cv');
+    $('btnDocCover').classList.toggle('active', docType === 'cover');
+    $('texFileName').textContent = docType === 'cv' ? 'main.tex' : 'cover.tex';
     updateDocumentPreview();
   }
 
   function base64ToBlob(base64Data, contentType = 'application/pdf') {
-    const cleanBase64 = (base64Data || '').replace(/\s/g, '');
-    const byteCharacters = atob(cleanBase64);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: contentType });
+    const byteCharacters = atob((base64Data || '').replace(/\s/g, ''));
+    const bytes = new Uint8Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) bytes[i] = byteCharacters.charCodeAt(i);
+    return new Blob([bytes], { type: contentType });
   }
 
   function updateDocumentPreview() {
-    const emptyState = document.getElementById('docEmptyState');
-    const pdfContainer = document.getElementById('pdfContainer');
-    const latexContainer = document.getElementById('latexEditorContainer');
-    const btnToggleLatex = document.getElementById('btnToggleLatex');
-    const btnRecompile = document.getElementById('btnRecompile');
-    const btnOpenApply = document.getElementById('btnOpenApplyLink');
-    const btnMarkApplied = document.getElementById('btnMarkApplied');
-    const reviewerFooter = document.getElementById('reviewerFooter');
-    const pdfFrame = document.getElementById('pdfViewerFrame');
-    const latexTextarea = document.getElementById('latexSourceTextarea');
+    const emptyState = $('docEmptyState');
+    const pdfContainer = $('pdfContainer');
+    const latexContainer = $('latexEditorContainer');
+    const btnToggleLatex = $('btnToggleLatex');
+    const btnRecompile = $('btnRecompile');
+    const btnOpenApply = $('btnOpenApplyLink');
+    const btnMarkApplied = $('btnMarkApplied');
+    const reviewerFooter = $('reviewerFooter');
+    const pdfFrame = $('pdfViewerFrame');
+    const latexTextarea = $('latexSourceTextarea');
 
     if (!state.currentApplication) {
       emptyState.classList.remove('hidden');
       pdfContainer.classList.add('hidden');
       latexContainer.classList.add('hidden');
       reviewerFooter.classList.add('hidden');
-      if (btnOpenApply) btnOpenApply.classList.add('hidden');
-      if (btnMarkApplied) btnMarkApplied.classList.add('hidden');
+      btnOpenApply?.classList.add('hidden');
+      btnMarkApplied?.classList.add('hidden');
       return;
     }
 
     emptyState.classList.add('hidden');
     reviewerFooter.classList.remove('hidden');
-    if (btnOpenApply) btnOpenApply.classList.remove('hidden');
+    btnOpenApply?.classList.remove('hidden');
+
     if (btnMarkApplied) {
       btnMarkApplied.classList.remove('hidden');
-      if (state.currentApplication.status === 'Applied') {
-        btnMarkApplied.disabled = true;
-        btnMarkApplied.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Applied ✓</span>`;
-      } else {
-        btnMarkApplied.disabled = false;
-        btnMarkApplied.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Mark Applied</span>`;
-      }
+      const applied = state.currentApplication.status === 'Applied';
+      btnMarkApplied.disabled = applied;
+      btnMarkApplied.textContent = applied ? 'Applied' : 'Mark Applied';
     }
 
     const currentPdf = state.activeDocType === 'cv' ? state.cvPdfBase64 : state.coverPdfBase64;
-    const currentLatex = state.activeDocType === 'cv' ? state.cvLatex : state.coverLatex;
-
-    latexTextarea.value = currentLatex || '';
+    latexTextarea.value = (state.activeDocType === 'cv' ? state.cvLatex : state.coverLatex) || '';
 
     if (state.isLatexView) {
       pdfContainer.classList.add('hidden');
       latexContainer.classList.remove('hidden');
       btnRecompile.classList.remove('hidden');
-      btnToggleLatex.innerHTML = `<span>View PDF Preview</span>`;
-    } else {
-      latexContainer.classList.add('hidden');
-      pdfContainer.classList.remove('hidden');
-      btnRecompile.classList.add('hidden');
-      btnToggleLatex.innerHTML = `<span>View LaTeX Source</span>`;
+      btnToggleLatex.innerHTML = '<span>View PDF</span>';
+      return;
+    }
 
-      if (currentPdf) {
-        try {
-          const blob = base64ToBlob(currentPdf, 'application/pdf');
-          const blobUrl = URL.createObjectURL(blob);
-          pdfFrame.src = blobUrl;
-        } catch (err) {
-          if (state.currentApplication?.id) {
-            pdfFrame.src = `/api/apply/preview/${state.currentApplication.id}/${state.activeDocType}?token=${encodeURIComponent(state.authToken)}`;
-          }
-        }
+    latexContainer.classList.add('hidden');
+    pdfContainer.classList.remove('hidden');
+    btnRecompile.classList.add('hidden');
+    btnToggleLatex.innerHTML = '<span>View LaTeX</span>';
+
+    // Release the previous object URL. Without this every document switch
+    // leaked a blob for the lifetime of the page.
+    if (state.activePdfObjectUrl) {
+      URL.revokeObjectURL(state.activePdfObjectUrl);
+      state.activePdfObjectUrl = null;
+    }
+
+    if (currentPdf) {
+      try {
+        const blobUrl = URL.createObjectURL(base64ToBlob(currentPdf));
+        state.activePdfObjectUrl = blobUrl;
+        pdfFrame.src = blobUrl;
+      } catch (err) {
+        console.warn('Could not render the inline PDF:', err);
+        pdfFrame.removeAttribute('src');
+        showToast('Could not render the PDF preview. Use Download instead.', 'warning');
       }
     }
   }
 
   async function recompileCurrentLatex() {
-    const latexContent = document.getElementById('latexSourceTextarea').value;
+    const latexContent = $('latexSourceTextarea').value;
     const type = state.activeDocType;
-    const btnRecompile = document.getElementById('btnRecompile');
+    const btn = $('btnRecompile');
 
-    btnRecompile.disabled = true;
-    btnRecompile.innerHTML = `<span class="spinner"></span> Compiling...`;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Compiling...';
 
     try {
-      const res = await authFetch('/api/apply/compile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type,
-          latexContent,
-          appId: state.currentApplication?.id
-        })
+      const data = await apiPost('/api/apply/compile', {
+        type,
+        latexContent,
+        appId: state.currentApplication?.id
       });
-      const data = await res.json();
+
       if (data.success && data.pdfBase64) {
         if (type === 'cv') {
           state.cvPdfBase64 = data.pdfBase64;
@@ -956,181 +1064,290 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         state.isLatexView = false;
         updateDocumentPreview();
-        showToast('LaTeX compiled successfully!', 'success');
+        showToast(data.renderer === 'latex' ? 'Compiled.' : (data.note || 'Preview rendered.'),
+          data.renderer === 'latex' ? 'success' : 'warning');
+      } else {
+        showToast(data.error || 'Compilation failed.', 'error');
       }
     } catch (err) {
-      showToast('Recompilation error', 'error');
+      if (err.message !== 'Unauthorized') showToast(err.message, 'error');
     } finally {
-      btnRecompile.disabled = false;
-      btnRecompile.innerHTML = `<span>Recompile</span>`;
+      btn.disabled = false;
+      btn.innerHTML = '<span>Recompile</span>';
     }
   }
 
   // ==========================================
-  // 7. Interview Prep Tab
+  // Interview prep
   // ==========================================
   function setupInterviewTab() {
-    const btnGen = document.getElementById('btnGenerateInterview');
-    btnGen.addEventListener('click', generateInterviewQuestions);
+    $('btnGenerateInterview').addEventListener('click', generateInterviewQuestions);
   }
 
   async function generateInterviewQuestions() {
     const job = getJobFromForm();
-    const btnGen = document.getElementById('btnGenerateInterview');
-    const content = document.getElementById('interviewContent');
+    if (!job.title) {
+      showToast('Load a job on the Apply tab first.', 'error');
+      switchTab('apply');
+      return;
+    }
 
-    btnGen.disabled = true;
-    btnGen.innerHTML = `<span class="spinner"></span> Generating Prep...`;
-    content.innerHTML = `<div class="empty-state"><span class="spinner"></span><p>Building STAR responses and tactical questions for ${escapeHtml(job.company)}...</p></div>`;
+    const btn = $('btnGenerateInterview');
+    const content = $('interviewContent');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Preparing...';
+    content.innerHTML = '<div class="empty-state"><span class="spinner"></span><p>Building your preparation...</p></div>';
 
     try {
-      const res = await authFetch('/api/interview/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job })
-      });
-      const data = await res.json();
+      const data = await apiPost('/api/interview/generate', { job });
       if (data.success && data.prep) {
         renderInterviewCards(data.prep);
-        showToast('Interview preparation generated!', 'success');
+        if (data.prep.unavailable) showToast(data.prep.message, 'warning');
+        else showToast('Interview preparation ready.', 'success');
       }
     } catch (err) {
-      showToast('Failed to generate interview prep', 'error');
+      content.innerHTML = `<div class="empty-state"><h3>Could not generate preparation</h3><p>${escapeHtml(err.message)}</p></div>`;
     } finally {
-      btnGen.disabled = false;
-      btnGen.innerHTML = `<span>Generate Questions for Current Job</span>`;
+      btn.disabled = false;
+      btn.innerHTML = '<span>Generate Questions for Current Job</span>';
     }
   }
 
   function renderInterviewCards(prep) {
-    const container = document.getElementById('interviewContent');
+    const container = $('interviewContent');
     container.innerHTML = '';
 
-    // STAR Questions
-    const starSection = document.createElement('div');
-    starSection.innerHTML = `<h4 style="font-size: 15px; margin-bottom: 14px; font-weight: 700;">Tailored Behavioral & Technical STAR Answers</h4>`;
+    if (prep.unavailable) {
+      container.innerHTML = `<div class="empty-state"><h3>Not available</h3><p>${escapeHtml(prep.message)}</p></div>`;
+      return;
+    }
 
-    (prep.starQuestions || []).forEach((q, idx) => {
-      const card = document.createElement('div');
-      card.className = 'star-card';
-      card.innerHTML = `
-        <div class="star-question">Q${idx + 1}: ${escapeHtml(q.question)}</div>
-        <div class="star-grid">
-          <div class="star-part">
-            <h5>Situation</h5>
-            <p>${escapeHtml(q.situation)}</p>
-          </div>
-          <div class="star-part">
-            <h5>Task</h5>
-            <p>${escapeHtml(q.task)}</p>
-          </div>
-          <div class="star-part">
-            <h5>Action</h5>
-            <p>${escapeHtml(q.action)}</p>
-          </div>
-          <div class="star-part">
-            <h5>Result</h5>
-            <p>${escapeHtml(q.result)}</p>
-          </div>
-        </div>
-      `;
-      starSection.appendChild(card);
-    });
+    const section = (title) => {
+      const el = document.createElement('div');
+      el.className = 'interview-section';
+      el.innerHTML = `<h4 class="section-heading">${escapeHtml(title)}</h4>`;
+      return el;
+    };
 
-    container.appendChild(starSection);
+    // These two were generated and returned by the API but never rendered.
+    if (prep.companyContext) {
+      const ctx = section('Company context');
+      const p = document.createElement('p');
+      p.className = 'company-context';
+      p.textContent = prep.companyContext;
+      ctx.appendChild(p);
+      container.appendChild(ctx);
+    }
 
-    // Questions to Ask
-    const askSection = document.createElement('div');
-    askSection.style.marginTop = '24px';
-    askSection.innerHTML = `<h4 style="font-size: 15px; margin-bottom: 14px; font-weight: 700;">Strategic Questions to Ask the Interviewer</h4>`;
+    if (prep.starQuestions?.length) {
+      const star = section('Behavioural and technical STAR answers');
+      prep.starQuestions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'star-card';
+        card.innerHTML = `
+          <div class="star-question">Q${idx + 1}: ${escapeHtml(q.question)}</div>
+          ${q.competency ? `<div class="star-competency">${escapeHtml(q.competency)}</div>` : ''}
+          <div class="star-grid">
+            ${['situation', 'task', 'action', 'result'].map(part => `
+              <div class="star-part">
+                <h5>${part[0].toUpperCase() + part.slice(1)}</h5>
+                <p>${escapeHtml(q[part] || '')}</p>
+              </div>`).join('')}
+          </div>`;
+        star.appendChild(card);
+      });
+      container.appendChild(star);
+    }
 
-    (prep.questionsToAsk || []).forEach(item => {
-      const box = document.createElement('div');
-      box.className = 'eval-box';
-      box.style.marginBottom = '10px';
-      box.innerHTML = `
-        <h4 style="color: var(--text-primary); font-size: 13px;">"${escapeHtml(item.question)}"</h4>
-        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;"><strong>Why ask this:</strong> ${escapeHtml(item.rationale)}</p>
-      `;
-      askSection.appendChild(box);
-    });
+    if (prep.questionsToAsk?.length) {
+      const ask = section('Questions to ask the interviewer');
+      prep.questionsToAsk.forEach(item => {
+        const box = document.createElement('div');
+        box.className = 'eval-box';
+        box.innerHTML = `
+          <h4>"${escapeHtml(item.question)}"</h4>
+          <p><strong>Why:</strong> ${escapeHtml(item.rationale || '')}</p>`;
+        ask.appendChild(box);
+      });
+      container.appendChild(ask);
+    }
 
-    container.appendChild(askSection);
+    if (prep.strategicTalkingPoints?.length) {
+      const points = section('Talking points to emphasise');
+      const ul = document.createElement('ul');
+      ul.className = 'talking-points';
+      prep.strategicTalkingPoints.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = p;
+        ul.appendChild(li);
+      });
+      points.appendChild(ul);
+      container.appendChild(points);
+    }
   }
 
   // ==========================================
-  // 8. Tracker Tab (Kanban)
+  // Tracker
   // ==========================================
-  function setupTrackerTab() {}
+  function setupTrackerTab() {
+    // The board used to be inert: setupTrackerTab was an empty function, so
+    // Interviewing and Offer were unreachable and nothing could be deleted.
+    Object.keys(columnIds()).forEach(status => {
+      const col = $(`col-${status}`);
+      if (!col) return;
+
+      col.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        col.classList.add('drag-over');
+      });
+      col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+      col.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        col.classList.remove('drag-over');
+        const id = e.dataTransfer.getData('text/plain');
+        if (id) await updateApplicationStatus(id, status);
+      });
+    });
+  }
+
+  function columnIds() {
+    return { Drafted: 1, Applied: 1, Interviewing: 1, Offer: 1 };
+  }
 
   async function loadTrackerApplications() {
     try {
-      const res = await authFetch('/api/tracker');
-      const data = await res.json();
-      if (data.success && data.applications) {
-        renderKanban(data.applications);
+      const data = await apiGet('/api/tracker');
+      if (data.success) {
+        state.trackerApps = data.applications || [];
+        if (data.statuses) state.statuses = data.statuses;
+        renderKanban(state.trackerApps);
       }
     } catch (err) {
-      console.warn('Error loading tracker applications:', err);
+      if (err.message !== 'Unauthorized') console.warn('Tracker load failed:', err.message);
+    }
+  }
+
+  async function updateApplicationStatus(id, status) {
+    try {
+      const data = await readJson(await authFetch(`/api/tracker/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      }));
+      if (data.success) {
+        showToast(`Moved to ${status}.`, 'success');
+        await loadTrackerApplications();
+      } else {
+        showToast(data.error || 'Could not update status.', 'error');
+      }
+    } catch (err) {
+      if (err.message !== 'Unauthorized') showToast(err.message, 'error');
+    }
+  }
+
+  async function deleteApplication(id, label) {
+    if (!window.confirm(`Delete the application for ${label}? This cannot be undone.`)) return;
+    try {
+      const data = await readJson(await authFetch(`/api/tracker/${id}`, { method: 'DELETE' }));
+      if (data.success) {
+        showToast('Application deleted.', 'success');
+        if (state.currentApplication?.id === id) state.currentApplication = null;
+        await loadTrackerApplications();
+      } else {
+        showToast(data.error || 'Could not delete.', 'error');
+      }
+    } catch (err) {
+      if (err.message !== 'Unauthorized') showToast(err.message, 'error');
     }
   }
 
   function renderKanban(apps) {
-    const cols = {
-      Drafted: document.getElementById('col-Drafted'),
-      Applied: document.getElementById('col-Applied'),
-      Interviewing: document.getElementById('col-Interviewing'),
-      Offer: document.getElementById('col-Offer')
-    };
+    const statuses = Object.keys(columnIds());
+    const counts = Object.fromEntries(statuses.map(s => [s, 0]));
 
-    const counts = { Drafted: 0, Applied: 0, Interviewing: 0, Offer: 0 };
-
-    Object.values(cols).forEach(col => { if (col) col.innerHTML = ''; });
+    statuses.forEach(s => {
+      const col = $(`col-${s}`);
+      if (col) col.innerHTML = '';
+    });
 
     apps.forEach(app => {
-      const status = app.status || 'Drafted';
-      if (counts[status] !== undefined) counts[status]++;
+      // Anything not shown as a column (Rejected, Withdrawn) still needs a
+      // home, so it lands in Drafted rather than vanishing.
+      const status = statuses.includes(app.status) ? app.status : 'Drafted';
+      counts[status]++;
 
-      const col = cols[status] || cols['Drafted'];
+      const col = $(`col-${status}`);
       if (!col) return;
 
       const card = document.createElement('div');
       card.className = 'kanban-card';
+      card.draggable = true;
+      card.dataset.appId = app.id;
+
+      const fit = typeof app.fitScore === 'number' ? `${app.fitScore}%` : 'not scored';
+      const created = app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '';
+
       card.innerHTML = `
-        <h4>${escapeHtml(app.jobTitle || 'Role')}</h4>
-        <div class="company">${escapeHtml(app.company || 'Company')}</div>
-        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
-          <span>Fit: ${app.fitScore || 90}%</span>
-          <span>${new Date(app.createdAt || Date.now()).toLocaleDateString()}</span>
+        <div class="kanban-card-head">
+          <h4>${escapeHtml(app.jobTitle || 'Role')}</h4>
+          <button class="kanban-delete" aria-label="Delete application" title="Delete">&times;</button>
         </div>
-      `;
+        <div class="company">${escapeHtml(app.company || 'Company')}</div>
+        <div class="kanban-meta">
+          <span>Fit: ${escapeHtml(fit)}</span>
+          <span>${escapeHtml(created)}</span>
+        </div>
+        <select class="kanban-status" aria-label="Change status">
+          ${state.statuses.map(s =>
+            `<option value="${escapeAttr(s)}"${s === app.status ? ' selected' : ''}>${escapeHtml(s)}</option>`
+          ).join('')}
+        </select>`;
+
+      card.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', app.id);
+        card.classList.add('dragging');
+      });
+      card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+      card.querySelector('.kanban-delete').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteApplication(app.id, app.jobTitle || 'this role');
+      });
+
+      card.querySelector('.kanban-status').addEventListener('change', (e) => {
+        updateApplicationStatus(app.id, e.target.value);
+      });
 
       col.appendChild(card);
     });
 
-    Object.entries(counts).forEach(([status, count]) => {
-      const pill = document.getElementById(`count-${status}`);
-      if (pill) pill.textContent = count;
+    statuses.forEach(status => {
+      const pill = $(`count-${status}`);
+      if (pill) pill.textContent = counts[status];
     });
   }
 
   // ==========================================
-  // 9. Utilities
+  // Utilities
   // ==========================================
   function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.textContent = message;
     toastContainer.appendChild(toast);
 
+    // Warnings and errors deserve longer than a success ping.
+    const ttl = type === 'error' || type === 'warning' ? 7000 : 3500;
     setTimeout(() => {
       toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 200);
-    }, 3500);
+      setTimeout(() => toast.remove(), 250);
+    }, ttl);
   }
 
   function escapeHtml(str) {
-    if (!str) return '';
+    if (str === null || str === undefined) return '';
     return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -1139,6 +1356,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/'/g, '&#039;');
   }
 
-  // Launch App
+  const escapeAttr = escapeHtml;
+
   init();
 });

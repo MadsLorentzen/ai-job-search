@@ -58,7 +58,9 @@ export function extractTextFromDocx(buffer) {
           let pMatch;
           while ((pMatch = paragraphRegex.exec(xmlData)) !== null) {
             const pXml = pMatch[0];
-            const tMatches = pXml.match(/<w:t[\s\S]*?>([\s\S]*?)<\/w:t>/g) || [];
+            // Match <w:t> and <w:t xml:space="preserve"> only. The looser
+            // <w:t[\s\S]*?> also matched <w:tab/> and swallowed the text after it.
+            const tMatches = pXml.match(/<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>/g) || [];
             const line = tMatches.map(t => t.replace(/<[^>]+>/g, '')).join('');
             if (line.trim()) {
               fullText += line.trim() + '\n';
@@ -111,6 +113,8 @@ export function extractTextFromPdf(buffer) {
       continue;
     }
 
+    const linesBeforeStream = textLines.length;
+
     // Extract text blocks inside BT ... ET (Begin Text ... End Text)
     const btRegex = /BT\s*([\s\S]*?)\s*ET/g;
     let btMatch;
@@ -145,8 +149,10 @@ export function extractTextFromPdf(buffer) {
       }
     }
 
-    // If no BT/ET blocks, parse line-by-line Tj operators
-    if (textLines.length === 0) {
+    // If this stream yielded no BT/ET blocks, parse its Tj operators directly.
+    // This check used to test the global accumulator rather than this stream's
+    // own output, so it silently stopped applying after the first stream.
+    if (textLines.length === linesBeforeStream) {
       const tjRegex = /\(((?:\\\(|\\\)|[^)])*)\)\s*Tj/g;
       let match;
       let lineBuf = '';
