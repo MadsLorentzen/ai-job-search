@@ -25,7 +25,11 @@ if (apiKey && apiKey.trim() !== '' && !apiKey.includes('your_anthropic_api_key')
   }
 }
 
-const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-latest';
+let configuredModel = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-latest';
+if (configuredModel.includes('claude-3-7-sonnet-20250219')) {
+  configuredModel = 'claude-3-5-sonnet-latest';
+}
+const DEFAULT_MODEL = configuredModel;
 
 export const claudeService = {
   isConfigured() {
