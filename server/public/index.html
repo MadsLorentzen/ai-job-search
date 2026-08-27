@@ -55,10 +55,22 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
           <span>Tracker</span>
         </button>
+        <button class="nav-tab hidden" data-tab="coach" role="tab" id="navtab-coach" aria-controls="tab-coach" aria-selected="false" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Coach Hub</span>
+        </button>
+        <button class="nav-tab hidden" data-tab="admin" role="tab" id="navtab-admin" aria-controls="tab-admin" aria-selected="false" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+          <span>Admin Console</span>
+        </button>
       </nav>
 
       <!-- Status Indicator & Auth -->
       <div class="header-right">
+        <div id="userPill" class="status-pill hidden" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);">
+          <span id="userNameText" style="font-weight: 600; color: #93c5fd;">Candidate</span>
+          <span id="userRoleBadge" class="badge-role" style="font-size: 10px; background: #2563eb; color: #fff; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Candidate</span>
+        </div>
         <div id="aiStatusBadge" class="status-pill connected">
           <span class="status-dot"></span>
           <span id="aiStatusText">Claude Engine Ready</span>
@@ -404,6 +416,30 @@
             </div>
           </div>
 
+          <!-- Profile Completeness & ATS Readiness Card -->
+          <div class="card" id="profileScoreCard" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(59, 130, 246, 0.2);">
+            <div class="card-body" style="padding: 16px 20px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <div style="flex: 1; min-width: 200px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Profile Completeness</span>
+                    <span id="completenessScoreVal" style="font-size: 13px; font-weight: 700; color: #3b82f6;">0%</span>
+                  </div>
+                  <div style="background: rgba(255, 255, 255, 0.1); border-radius: 999px; height: 8px; overflow: hidden;">
+                    <div id="completenessProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); transition: width 0.4s ease;"></div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                  <div style="text-align: right;">
+                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">ATS Readiness</div>
+                    <div id="atsScoreVal" style="font-size: 18px; font-weight: 700; color: #10b981;">0 / 100</div>
+                  </div>
+                </div>
+              </div>
+              <div id="completenessSuggestions" style="margin-top: 10px; font-size: 12px; color: var(--text-secondary);"></div>
+            </div>
+          </div>
+
           <!-- Structured Profile Form -->
           <div class="card">
               <div class="card-header">
@@ -560,6 +596,190 @@
         </details>
       </section>
 
+      <!-- ======================================================== -->
+      <!-- TAB 6: COACH & RECRUITER COLLABORATION HUB               -->
+      <!-- ======================================================== -->
+      <section id="tab-coach" class="tab-pane" role="tabpanel" aria-labelledby="navtab-coach" tabindex="0">
+        <div class="tracker-header">
+          <div>
+            <h2>Candidate Portfolio & Coaching Hub</h2>
+            <p class="subtle-text">Review assigned candidates, audit application documents, and assign action items</p>
+          </div>
+          <div class="tracker-controls">
+            <button id="btnRefreshCoach" class="btn btn-sm btn-ghost">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>Refresh Candidates</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pane-split" style="margin-top: 16px;">
+          <!-- Left: Assigned Candidate List -->
+          <div class="pane-column left-pane" style="flex: 1.2;">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Assigned Candidates</h3>
+              </div>
+              <div class="card-body" style="padding: 0;">
+                <div id="coachCandidateList" class="candidate-list">
+                  <div style="padding: 24px; text-align: center; color: var(--text-muted);">Loading assigned candidates...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Candidate Detail, Shared Notes & Tasks -->
+          <div class="pane-column right-pane" style="flex: 1.8;">
+            <div class="card" id="coachCandidateDetailCard">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title" id="selectedCandidateName">Select a Candidate</h3>
+                  <p class="card-subtitle" id="selectedCandidateEmail">View application pipeline, add notes and tasks</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="coachDetailEmpty" style="padding: 32px; text-align: center; color: var(--text-muted);">
+                  Click on a candidate on the left to review their profile and collaborate.
+                </div>
+                <div id="coachDetailContent" class="hidden">
+                  <!-- Task Assignment Form -->
+                  <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
+                    <h4 style="font-size: 14px; margin-bottom: 10px;">Assign Action Item / Task</h4>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                      <input type="text" id="coachTaskTitle" class="input-text" placeholder="Task title e.g. Quantify revenue impact on Bullet 2" style="flex: 2;">
+                      <input type="date" id="coachTaskDueDate" class="input-text" style="flex: 1;">
+                      <button id="btnAssignCoachTask" class="btn btn-primary btn-sm">Assign</button>
+                    </div>
+                  </div>
+
+                  <!-- Tasks List -->
+                  <h4 style="font-size: 14px; margin-bottom: 8px;">Action Items & Tasks</h4>
+                  <div id="coachTasksList" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;"></div>
+
+                  <!-- Collaboration Notes & Feedback Thread -->
+                  <h4 style="font-size: 14px; margin-bottom: 8px;">Feedback & Review Notes</h4>
+                  <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <input type="text" id="coachNoteInput" class="input-text" placeholder="Write feedback note for candidate or team..." style="flex: 1;">
+                    <select id="coachNoteVisibility" class="input-select" style="width: 120px;">
+                      <option value="shared">Shared</option>
+                      <option value="internal">Internal</option>
+                    </select>
+                    <button id="btnAddCoachNote" class="btn btn-secondary btn-sm">Post</button>
+                  </div>
+                  <div id="coachNotesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 7: PLATFORM ADMINISTRATION CONSOLE                   -->
+      <!-- ======================================================== -->
+      <section id="tab-admin" class="tab-pane" role="tabpanel" aria-labelledby="navtab-admin" tabindex="0">
+        <div class="tracker-header">
+          <div>
+            <h2>Platform Administration & Governance</h2>
+            <p class="subtle-text">System metrics, organization management, audit trails, and portal diagnostics</p>
+          </div>
+          <button id="btnRefreshAdmin" class="btn btn-sm btn-ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>Refresh Diagnostics</span>
+          </button>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0;">
+          <div class="card" style="padding: 16px;">
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Organizations</div>
+            <div id="adminStatOrgs" style="font-size: 24px; font-weight: 700; color: #3b82f6; margin-top: 4px;">-</div>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Total Users</div>
+            <div id="adminStatUsers" style="font-size: 24px; font-weight: 700; color: #10b981; margin-top: 4px;">-</div>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Candidate Profiles</div>
+            <div id="adminStatCandidates" style="font-size: 24px; font-weight: 700; color: #8b5cf6; margin-top: 4px;">-</div>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Applications</div>
+            <div id="adminStatApps" style="font-size: 24px; font-weight: 700; color: #f59e0b; margin-top: 4px;">-</div>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Documents Generated</div>
+            <div id="adminStatDocs" style="font-size: 24px; font-weight: 700; color: #06b6d4; margin-top: 4px;">-</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-header">
+            <h3 class="card-title">Organizations & Workspaces</h3>
+          </div>
+          <div class="card-body" style="padding: 0; overflow-x: auto;">
+            <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted);">
+                  <th style="padding: 12px 16px;">Name</th>
+                  <th style="padding: 12px 16px;">Type</th>
+                  <th style="padding: 12px 16px;">Members</th>
+                  <th style="padding: 12px 16px;">Candidates</th>
+                  <th style="padding: 12px 16px;">Created At</th>
+                </tr>
+              </thead>
+              <tbody id="adminOrgsTableBody">
+                <tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading organizations...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-header">
+            <h3 class="card-title">User Accounts & Roles</h3>
+          </div>
+          <div class="card-body" style="padding: 0; overflow-x: auto;">
+            <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted);">
+                  <th style="padding: 12px 16px;">Full Name</th>
+                  <th style="padding: 12px 16px;">Email</th>
+                  <th style="padding: 12px 16px;">Organization</th>
+                  <th style="padding: 12px 16px;">Role</th>
+                  <th style="padding: 12px 16px;">Status</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersTableBody">
+                <tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Security & Audit Log Trail</h3>
+          </div>
+          <div class="card-body" style="padding: 0; overflow-x: auto;">
+            <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted);">
+                  <th style="padding: 10px 16px;">Timestamp</th>
+                  <th style="padding: 10px 16px;">Action</th>
+                  <th style="padding: 10px 16px;">Actor</th>
+                  <th style="padding: 10px 16px;">Entity</th>
+                  <th style="padding: 10px 16px;">IP</th>
+                </tr>
+              </thead>
+              <tbody id="adminAuditTableBody">
+                <tr><td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted);">Loading audit logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
 
     <!-- Tracker edit sheet: avoids disruptive browser prompts and supplies a
@@ -665,27 +885,83 @@
       </div>
     </div>
 
-    <!-- Protected Login Modal Overlay -->
+    <!-- Protected Login & SaaS Auth Modal Overlay -->
     <div id="loginOverlay" class="login-overlay hidden">
-      <div class="login-modal">
+      <div class="login-modal" style="max-width: 420px;">
         <div class="login-header">
           <div class="brand-logo" style="width: 44px; height: 44px; margin: 0 auto 12px;">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
           </div>
-          <h2 style="font-size: 18px; font-weight: 700; text-align: center;">Protected Workspace</h2>
-          <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 4px;">Enter your Access Key / Password to unlock</p>
+          <h2 style="font-size: 18px; font-weight: 700; text-align: center;">OppertuneX Platform</h2>
+          <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 4px;">Two-Sided Career Acceleration & Recruitment Platform</p>
         </div>
-        <form id="loginForm" class="login-body" style="margin-top: 20px;">
+
+        <div style="display: flex; border-bottom: 1px solid var(--border-subtle); margin-top: 16px;">
+          <button id="authTabUnlock" type="button" class="auth-toggle-btn active" style="flex: 1; background: none; border: none; padding: 8px; color: var(--text-primary); border-bottom: 2px solid #3b82f6; cursor: pointer; font-size: 13px; font-weight: 600;">Workspace</button>
+          <button id="authTabLogin" type="button" class="auth-toggle-btn" style="flex: 1; background: none; border: none; padding: 8px; color: var(--text-muted); cursor: pointer; font-size: 13px; font-weight: 600;">Sign In</button>
+          <button id="authTabRegister" type="button" class="auth-toggle-btn" style="flex: 1; background: none; border: none; padding: 8px; color: var(--text-muted); cursor: pointer; font-size: 13px; font-weight: 600;">Register</button>
+        </div>
+
+        <!-- Form 1: Password Unlock -->
+        <form id="loginForm" class="login-body" style="margin-top: 16px;">
           <div class="form-group">
             <label>Access Password</label>
-            <input type="password" id="loginPasswordInput" class="input-text" placeholder="Enter password..." autocomplete="current-password" autofocus required>
+            <input type="password" id="loginPasswordInput" class="input-text" placeholder="Enter workspace password..." autocomplete="current-password" autofocus required>
           </div>
           <div id="loginError" class="login-error hidden" style="font-size: 12px; color: var(--accent-danger); margin-bottom: 12px;"></div>
           <button type="submit" id="btnLoginSubmit" class="btn btn-primary" style="width: 100%; padding: 11px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
             <span>Unlock Workspace</span>
+          </button>
+        </form>
+
+        <!-- Form 2: Email & Password Sign In -->
+        <form id="userLoginForm" class="login-body hidden" style="margin-top: 16px;">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="userLoginEmail" class="input-text" placeholder="you@company.com" required>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="userLoginPassword" class="input-text" placeholder="Your password..." required>
+          </div>
+          <div id="userLoginError" class="login-error hidden" style="font-size: 12px; color: var(--accent-danger); margin-bottom: 12px;"></div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 11px;">
+            <span>Sign In</span>
+          </button>
+        </form>
+
+        <!-- Form 3: Register New Account -->
+        <form id="registerForm" class="login-body hidden" style="margin-top: 16px;">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="regFullName" class="input-text" placeholder="Jane Doe" required>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="regEmail" class="input-text" placeholder="jane@example.com" required>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="regPassword" class="input-text" placeholder="At least 8 characters..." required>
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select id="regRole" class="input-select" style="width: 100%;">
+              <option value="candidate">Candidate / Job Seeker</option>
+              <option value="coach">Career Coach / Recruiter</option>
+              <option value="platform_admin">Administrator</option>
+            </select>
+          </div>
+          <div class="form-group" id="regOrgGroup">
+            <label>Organization / Agency Name (Optional)</label>
+            <input type="text" id="regOrgName" class="input-text" placeholder="e.g. Acme Recruitment">
+          </div>
+          <div id="registerError" class="login-error hidden" style="font-size: 12px; color: var(--accent-danger); margin-bottom: 12px;"></div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 11px;">
+            <span>Create Account</span>
           </button>
         </form>
       </div>

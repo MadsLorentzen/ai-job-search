@@ -3,8 +3,7 @@ import {
   verifyPassword, verifyToken, issueToken, isAuthConfigured,
   checkLoginRate, clearLoginRate, extractToken
 } from '../middleware/auth.js';
-import { validateBody } from '../middleware/validate.js';
-import { loginBody } from '../validation/schemas.js';
+import { registerUser, authenticateUser, resolveUserFromToken, revokeSession } from '../services/authService.js';
 import { loggerFor } from '../config/logger.js';
 
 const router = express.Router();
@@ -14,18 +13,39 @@ function clientIp(req) {
   return req.ip || req.socket?.remoteAddress || 'unknown';
 }
 
-router.post('/login', validateBody(loginBody), async (req, res, next) => {
+/**
+ * Register a new user and organization.
+ */
+router.post('/register', async (req, res, next) => {
+  try {
+    const { email, password, fullName, organizationName, role } = req.body;
+    const result = await registerUser({
+      email,
+      password,
+      fullName,
+      organizationName,
+      role: role || 'candidate',
+      req
+    });
+
+    const authResult = await authenticateUser({ email, password, req });
+    return res.status(201).json({
+      success: true,
+      ...result,
+      ...authResult
+    });
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Login endpoint supporting both multi-user (email + password) and workspace unlock (password only).
+ */
+router.post('/login', async (req, res, next) => {
   try {
     const ip = clientIp(req);
-
-    // Saying this reveals no secret, and it is the only way an operator can
-    // tell a misconfigured server from a wrong password.
-    if (!isAuthConfigured()) {
-      return res.status(503).json({
-        success: false,
-        error: 'No password configured on the server. Run `npm run set-password` in server/ and restart.'
-      });
-    }
+    const { email, password } = req.body;
 
     const rate = checkLoginRate(ip);
     if (!rate.allowed) {
@@ -36,19 +56,87 @@ router.post('/login', validateBody(loginBody), async (req, res, next) => {
       });
     }
 
-    if (await verifyPassword(req.body.password)) {
+    if (email) {
+      const result = await authenticateUser({ email, password, req });
+      if (!result) {
+        return res.status(401).json({ success: false, error: 'Invalid email or password.' });
+      }
+      clearLoginRate(ip);
+      return res.json({ success: true, ...result });
+    }
+
+    // Workspace password fallback
+    if (!isAuthConfigured()) {
+      return res.status(503).json({
+        success: false,
+        error: 'No password configured on the server. Run `npm run set-password` in server/ and restart.'
+      });
+    }
+
+    if (await verifyPassword(password)) {
       clearLoginRate(ip);
       const { token, expiresAt } = issueToken();
       log.info('login succeeded');
-      return res.json({ success: true, token, expiresAt });
+      return res.json({
+        success: true,
+        token,
+        expiresAt,
+        user: {
+          id: '00000000-0000-0000-0000-000000000002',
+          email: 'admin@oppertunex.local',
+          fullName: 'Default Admin',
+          organizationId: '00000000-0000-0000-0000-000000000001',
+          role: 'platform_admin'
+        }
+      });
     }
 
-    // Deliberately generic and without a hint.
     log.warn({ ip }, 'login failed');
     return res.status(401).json({ success: false, error: 'Incorrect password.' });
   } catch (err) {
     next(err);
   }
+});
+
+/**
+ * Get current authenticated user context
+ */
+router.get('/me', (req, res) => {
+  const token = extractToken(req);
+  if (!token) return res.status(401).json({ success: false, error: 'Unauthenticated' });
+
+  const resolved = resolveUserFromToken(token);
+  if (!resolved) {
+    if (verifyToken(token)) {
+      return res.json({
+        success: true,
+        user: {
+          id: '00000000-0000-0000-0000-000000000002',
+          email: 'admin@oppertunex.local',
+          fullName: 'Default Admin'
+        },
+        organizationId: '00000000-0000-0000-0000-000000000001',
+        organizationName: 'Default Workspace',
+        role: 'platform_admin'
+      });
+    }
+    return res.status(401).json({ success: false, error: 'Invalid or expired session' });
+  }
+
+  return res.json({
+    success: true,
+    user: resolved.user,
+    organizationId: resolved.organizationId,
+    organizationName: resolved.organizationName,
+    role: resolved.role,
+    permissions: resolved.permissions
+  });
+});
+
+router.post('/logout', (req, res) => {
+  const token = extractToken(req);
+  revokeSession(token);
+  return res.json({ success: true, message: 'Logged out successfully' });
 });
 
 router.get('/verify', (req, res) => {

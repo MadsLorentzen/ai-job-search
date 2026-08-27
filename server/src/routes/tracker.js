@@ -7,15 +7,14 @@ const router = express.Router();
 
 router.get('/', validateQuery(trackerQuery), (req, res, next) => {
   try {
-    const applications = storageService.getApplications(req.query);
+    const context = { organizationId: req.organizationId, candidateId: req.user?.id, role: req.role };
+    const applications = storageService.getApplications(req.query, context);
     const now = new Date().toISOString();
 
     res.json({
       success: true,
       statuses: APPLICATION_STATUSES,
       closedStatuses: CLOSED_STATUSES,
-      // Surfaced so the client can flag what needs chasing without
-      // recomputing the rule in two places.
       dueFollowUps: applications
         .filter(a => a.followUpAt && a.followUpAt <= now && !CLOSED_STATUSES.includes(a.status))
         .map(a => a.id),
@@ -28,9 +27,8 @@ router.get('/', validateQuery(trackerQuery), (req, res, next) => {
 
 router.post('/', validateBody(applicationBody), (req, res, next) => {
   try {
-    // Zod strips unknown keys, so server-owned columns cannot arrive from a
-    // client at all: they are absent from the schema, not merely ignored.
-    res.json({ success: true, application: storageService.saveApplication(req.body) });
+    const context = { organizationId: req.organizationId, candidateId: req.user?.id, role: req.role, req };
+    res.json({ success: true, application: storageService.saveApplication(req.body, context) });
   } catch (err) {
     next(err);
   }
@@ -39,10 +37,11 @@ router.post('/', validateBody(applicationBody), (req, res, next) => {
 router.patch('/:id', validateBody(applicationBody.partial().omit({ id: true })), (req, res, next) => {
   try {
     const { id } = req.params;
-    if (!storageService.getApplication(id)) {
+    const context = { organizationId: req.organizationId, candidateId: req.user?.id, role: req.role, req };
+    if (!storageService.getApplication(id, context)) {
       return res.status(404).json({ success: false, error: 'Application not found.' });
     }
-    res.json({ success: true, application: storageService.saveApplication({ id, ...req.body }) });
+    res.json({ success: true, application: storageService.saveApplication({ id, ...req.body }, context) });
   } catch (err) {
     next(err);
   }
@@ -52,8 +51,9 @@ router.patch('/:id/status', validateBody(statusBody), (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+    const context = { organizationId: req.organizationId, candidateId: req.user?.id, role: req.role, req };
 
-    const existing = storageService.getApplication(id);
+    const existing = storageService.getApplication(id, context);
     if (!existing) {
       return res.status(404).json({ success: false, error: 'Application not found.' });
     }
@@ -63,7 +63,7 @@ router.patch('/:id/status', validateBody(statusBody), (req, res, next) => {
       update.appliedAt = new Date().toISOString();
     }
 
-    res.json({ success: true, application: storageService.saveApplication(update) });
+    res.json({ success: true, application: storageService.saveApplication(update, context) });
   } catch (err) {
     next(err);
   }
@@ -71,7 +71,8 @@ router.patch('/:id/status', validateBody(statusBody), (req, res, next) => {
 
 router.delete('/:id', (req, res, next) => {
   try {
-    const result = storageService.deleteApplication(req.params.id);
+    const context = { organizationId: req.organizationId, candidateId: req.user?.id, role: req.role, req };
+    const result = storageService.deleteApplication(req.params.id, context);
     if (!result.deleted) {
       return res.status(404).json({ success: false, error: 'Application not found.' });
     }

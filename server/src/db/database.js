@@ -90,6 +90,220 @@ const MIGRATIONS = [
         CREATE INDEX idx_doc_versions_app ON document_versions(application_id, doc_type);
       `);
     }
+  },
+  {
+    version: 2,
+    up: (conn) => {
+      conn.exec(`
+        -- Multi-tenant core tables
+        CREATE TABLE IF NOT EXISTS organizations (
+          id         TEXT PRIMARY KEY,
+          name       TEXT NOT NULL,
+          slug       TEXT UNIQUE NOT NULL,
+          type       TEXT NOT NULL DEFAULT 'personal',
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          deleted_at TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS users (
+          id                TEXT PRIMARY KEY,
+          email             TEXT UNIQUE NOT NULL,
+          password_hash     TEXT NOT NULL,
+          full_name         TEXT NOT NULL DEFAULT '',
+          avatar_url        TEXT,
+          email_verified_at TEXT,
+          mfa_secret        TEXT,
+          mfa_enabled       INTEGER NOT NULL DEFAULT 0,
+          status            TEXT NOT NULL DEFAULT 'active',
+          created_at        TEXT NOT NULL,
+          updated_at        TEXT NOT NULL,
+          deleted_at        TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS memberships (
+          id              TEXT PRIMARY KEY,
+          organization_id TEXT NOT NULL,
+          user_id         TEXT NOT NULL,
+          role            TEXT NOT NULL DEFAULT 'candidate',
+          permissions     TEXT NOT NULL DEFAULT '[]',
+          created_at      TEXT NOT NULL,
+          updated_at      TEXT NOT NULL,
+          FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS user_sessions (
+          id          TEXT PRIMARY KEY,
+          user_id     TEXT NOT NULL,
+          token_hash  TEXT UNIQUE NOT NULL,
+          ip_address  TEXT,
+          user_agent  TEXT,
+          expires_at  TEXT NOT NULL,
+          created_at  TEXT NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS candidate_profiles (
+          id                 TEXT PRIMARY KEY,
+          organization_id    TEXT NOT NULL,
+          user_id            TEXT NOT NULL,
+          data               TEXT NOT NULL DEFAULT '{}',
+          completeness_score INTEGER NOT NULL DEFAULT 0,
+          ats_score          INTEGER NOT NULL DEFAULT 0,
+          created_at         TEXT NOT NULL,
+          updated_at         TEXT NOT NULL,
+          FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS candidate_coach_assignments (
+          id              TEXT PRIMARY KEY,
+          organization_id TEXT NOT NULL,
+          candidate_id    TEXT NOT NULL,
+          coach_user_id   TEXT NOT NULL,
+          status          TEXT NOT NULL DEFAULT 'active',
+          created_at      TEXT NOT NULL,
+          FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+          FOREIGN KEY (candidate_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (coach_user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS collaboration_notes (
+          id              TEXT PRIMARY KEY,
+          organization_id TEXT NOT NULL,
+          candidate_id    TEXT NOT NULL,
+          application_id  TEXT,
+          author_id       TEXT NOT NULL,
+          note            TEXT NOT NULL,
+          visibility      TEXT NOT NULL DEFAULT 'shared',
+          created_at      TEXT NOT NULL,
+          updated_at      TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS collaboration_tasks (
+          id              TEXT PRIMARY KEY,
+          organization_id TEXT NOT NULL,
+          candidate_id    TEXT NOT NULL,
+          assigner_id     TEXT NOT NULL,
+          title           TEXT NOT NULL,
+          description     TEXT NOT NULL DEFAULT '',
+          status          TEXT NOT NULL DEFAULT 'pending',
+          due_date        TEXT,
+          created_at      TEXT NOT NULL,
+          updated_at      TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS saved_searches (
+          id              TEXT PRIMARY KEY,
+          organization_id TEXT NOT NULL,
+          user_id         TEXT NOT NULL,
+          name            TEXT NOT NULL,
+          query           TEXT NOT NULL DEFAULT '',
+          location        TEXT NOT NULL DEFAULT '',
+          portals         TEXT NOT NULL DEFAULT '[]',
+          filters         TEXT NOT NULL DEFAULT '{}',
+          alert_frequency TEXT NOT NULL DEFAULT 'none',
+          created_at      TEXT NOT NULL,
+          updated_at      TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS documents (
+          id                 TEXT PRIMARY KEY,
+          organization_id    TEXT NOT NULL,
+          candidate_id       TEXT NOT NULL,
+          application_id     TEXT,
+          doc_type           TEXT NOT NULL,
+          status             TEXT NOT NULL DEFAULT 'draft',
+          title              TEXT NOT NULL DEFAULT '',
+          content_latex      TEXT NOT NULL DEFAULT '',
+          compiled_pdf_path  TEXT,
+          version_number     INTEGER NOT NULL DEFAULT 1,
+          created_by         TEXT,
+          created_at         TEXT NOT NULL,
+          updated_at         TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS audit_logs (
+          id              TEXT PRIMARY KEY,
+          organization_id TEXT,
+          actor_user_id   TEXT,
+          actor_role      TEXT,
+          action          TEXT NOT NULL,
+          entity_type     TEXT NOT NULL,
+          entity_id       TEXT,
+          diff            TEXT NOT NULL DEFAULT '{}',
+          ip_address      TEXT,
+          user_agent      TEXT,
+          impersonator_id TEXT,
+          created_at      TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS subscriptions (
+          id              TEXT PRIMARY KEY,
+          organization_id TEXT NOT NULL,
+          plan            TEXT NOT NULL DEFAULT 'free',
+          seat_count      INTEGER NOT NULL DEFAULT 1,
+          ai_tokens_used  INTEGER NOT NULL DEFAULT 0,
+          status          TEXT NOT NULL DEFAULT 'active',
+          created_at      TEXT NOT NULL,
+          updated_at      TEXT NOT NULL
+        );
+
+        ALTER TABLE applications ADD COLUMN organization_id TEXT;
+        ALTER TABLE applications ADD COLUMN candidate_id TEXT;
+        ALTER TABLE applications ADD COLUMN deleted_at TEXT;
+
+        ALTER TABLE seen_jobs ADD COLUMN organization_id TEXT;
+        ALTER TABLE seen_jobs ADD COLUMN user_id TEXT;
+
+        CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+        CREATE INDEX IF NOT EXISTS idx_memberships_org_user ON memberships(organization_id, user_id);
+        CREATE INDEX IF NOT EXISTS idx_candidate_profiles_org_user ON candidate_profiles(organization_id, user_id);
+        CREATE INDEX IF NOT EXISTS idx_applications_org_candidate ON applications(organization_id, candidate_id);
+        CREATE INDEX IF NOT EXISTS idx_documents_org_candidate ON documents(organization_id, candidate_id);
+        CREATE INDEX IF NOT EXISTS idx_audit_logs_org ON audit_logs(organization_id);
+      `);
+
+      const defaultOrgId = '00000000-0000-0000-0000-000000000001';
+      const defaultUserId = '00000000-0000-0000-0000-000000000002';
+      const now = new Date().toISOString();
+
+      conn.prepare(`
+        INSERT OR IGNORE INTO organizations (id, name, slug, type, created_at, updated_at)
+        VALUES (?, 'Default Workspace', 'default', 'personal', ?, ?)
+      `).run(defaultOrgId, now, now);
+
+      conn.prepare(`
+        INSERT OR IGNORE INTO users (id, email, password_hash, full_name, status, created_at, updated_at)
+        VALUES (?, 'admin@oppertunex.local', 'legacy', 'Default Admin', 'active', ?, ?)
+      `).run(defaultUserId, now, now);
+
+      conn.prepare(`
+        INSERT OR IGNORE INTO memberships (id, organization_id, user_id, role, created_at, updated_at)
+        VALUES ('00000000-0000-0000-0000-000000000003', ?, ?, 'platform_admin', ?, ?)
+      `).run(defaultOrgId, defaultUserId, now, now);
+
+      try {
+        const legacyProf = conn.prepare('SELECT data FROM profile WHERE id = 1').get();
+        if (legacyProf && legacyProf.data) {
+          conn.prepare(`
+            INSERT OR IGNORE INTO candidate_profiles (id, organization_id, user_id, data, created_at, updated_at)
+            VALUES ('00000000-0000-0000-0000-000000000004', ?, ?, ?, ?, ?)
+          `).run(defaultOrgId, defaultUserId, legacyProf.data, now, now);
+        }
+      } catch (_) {}
+
+      conn.prepare(`
+        UPDATE applications SET organization_id = ?, candidate_id = ?
+        WHERE organization_id IS NULL OR organization_id = ''
+      `).run(defaultOrgId, defaultUserId);
+
+      conn.prepare(`
+        UPDATE seen_jobs SET organization_id = ?, user_id = ?
+        WHERE organization_id IS NULL OR organization_id = ''
+      `).run(defaultOrgId, defaultUserId);
+    }
   }
 ];
 

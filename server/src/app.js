@@ -13,6 +13,8 @@ import evaluateRoutes from './routes/evaluate.js';
 import applyRoutes from './routes/apply.js';
 import interviewRoutes from './routes/interview.js';
 import trackerRoutes from './routes/tracker.js';
+import coachRoutes from './routes/coach.js';
+import adminRoutes from './routes/admin.js';
 import { claudeService } from './services/claudeService.js';
 import { authMiddleware, isAuthConfigured } from './middleware/auth.js';
 import { logger } from './config/logger.js';
@@ -83,6 +85,8 @@ app.use('/api/evaluate', evaluateRoutes);
 app.use('/api/apply', applyRoutes);
 app.use('/api/interview', interviewRoutes);
 app.use('/api/tracker', trackerRoutes);
+app.use('/api/coach', coachRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Unmatched API routes must answer JSON. Without this they fell through to the
 // SPA catch-all and returned the HTML shell with a 200, so every client-side

@@ -59,6 +59,47 @@ function hideLoginModal() {
 onUnauthorized.handler = () => showLoginModal('Session expired. Please unlock again.');
 
 function setupAuth() {
+  const tabUnlock = $('authTabUnlock');
+  const tabLogin = $('authTabLogin');
+  const tabRegister = $('authTabRegister');
+  const formUnlock = $('loginForm');
+  const formLogin = $('userLoginForm');
+  const formRegister = $('registerForm');
+
+  const setAuthTab = (activeTab) => {
+    [tabUnlock, tabLogin, tabRegister].forEach(t => {
+      if (!t) return;
+      t.style.borderBottom = 'none';
+      t.style.color = 'var(--text-muted)';
+    });
+    if (activeTab) {
+      activeTab.style.borderBottom = '2px solid #3b82f6';
+      activeTab.style.color = 'var(--text-primary)';
+    }
+  };
+
+  tabUnlock?.addEventListener('click', () => {
+    setAuthTab(tabUnlock);
+    formUnlock?.classList.remove('hidden');
+    formLogin?.classList.add('hidden');
+    formRegister?.classList.add('hidden');
+  });
+
+  tabLogin?.addEventListener('click', () => {
+    setAuthTab(tabLogin);
+    formUnlock?.classList.add('hidden');
+    formLogin?.classList.remove('hidden');
+    formRegister?.classList.add('hidden');
+  });
+
+  tabRegister?.addEventListener('click', () => {
+    setAuthTab(tabRegister);
+    formUnlock?.classList.add('hidden');
+    formLogin?.classList.add('hidden');
+    formRegister?.classList.remove('hidden');
+  });
+
+  // Workspace Password Unlock Form
   $('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const password = $('loginPasswordInput').value;
@@ -95,9 +136,72 @@ function setupAuth() {
     }
   });
 
+  // Multi-tenant Sign In Form
+  $('userLoginForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = $('userLoginEmail').value;
+    const password = $('userLoginPassword').value;
+    const errEl = $('userLoginError');
+    errEl.classList.add('hidden');
+
+    try {
+      const data = await api.public('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (data.success && data.token) {
+        auth.set(data.token, data.expiresAt);
+        hideLoginModal();
+        showToast(`Signed in as ${data.user?.fullName || data.user?.email || 'User'}.`, 'success');
+        await afterLogin();
+      } else {
+        errEl.textContent = data.error || 'Invalid email or password.';
+        errEl.classList.remove('hidden');
+      }
+    } catch (err) {
+      errEl.textContent = err.message || 'Login failed.';
+      errEl.classList.remove('hidden');
+    }
+  });
+
+  // Account Registration Form
+  $('registerForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fullName = $('regFullName').value;
+    const email = $('regEmail').value;
+    const password = $('regPassword').value;
+    const role = $('regRole').value;
+    const organizationName = $('regOrgName').value;
+    const errEl = $('registerError');
+    errEl.classList.add('hidden');
+
+    try {
+      const data = await api.public('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, password, role, organizationName })
+      });
+
+      if (data.success && data.token) {
+        auth.set(data.token, data.expiresAt);
+        hideLoginModal();
+        showToast('Account created successfully!', 'success');
+        await afterLogin();
+      } else {
+        errEl.textContent = data.error || 'Registration failed.';
+        errEl.classList.remove('hidden');
+      }
+    } catch (err) {
+      errEl.textContent = err.message || 'Registration failed.';
+      errEl.classList.remove('hidden');
+    }
+  });
+
   $('btnLogout').addEventListener('click', () => {
     auth.clear();
-    showLoginModal('Workspace locked.');
+    showLoginModal('Logged out.');
   });
 }
 
@@ -114,6 +218,8 @@ async function init() {
   setupSearchTab();
   setupApplyTab();
   setupInterviewTab();
+  setupCoachTab();
+  setupAdminTab();
 
   tracker = new Tracker({
     onChange: (app) => {
@@ -152,6 +258,32 @@ async function init() {
 }
 
 async function afterLogin() {
+  try {
+    const meData = await api.get('/api/auth/me');
+    if (meData.success && meData.user) {
+      const user = meData.user;
+      const role = meData.role || 'candidate';
+      $('userPill')?.classList.remove('hidden');
+      if ($('userNameText')) $('userNameText').textContent = user.fullName || user.email;
+      if ($('userRoleBadge')) $('userRoleBadge').textContent = role.replace('_', ' ');
+
+      // Reveal coach and admin tabs based on role
+      const coachTabBtn = $('navtab-coach');
+      const adminTabBtn = $('navtab-admin');
+      if (['coach', 'recruiter', 'team_manager', 'support_admin', 'platform_admin'].includes(role)) {
+        coachTabBtn?.classList.remove('hidden');
+      } else {
+        coachTabBtn?.classList.add('hidden');
+      }
+
+      if (['support_admin', 'platform_admin'].includes(role)) {
+        adminTabBtn?.classList.remove('hidden');
+      } else {
+        adminTabBtn?.classList.add('hidden');
+      }
+    }
+  } catch (_) {}
+
   await loadProfile();
   await tracker.load();
 
@@ -260,6 +392,21 @@ function populateProfileForm(p) {
     .map(l => (typeof l === 'string' ? l : `${l.language || ''} (${l.level || ''})`.replace(' ()', '')))
     .filter(Boolean)
     .join(', '));
+
+  // Render Profile Completeness & ATS Score
+  if (p.completeness) {
+    const { score, atsScore, missing } = p.completeness;
+    if ($('completenessScoreVal')) $('completenessScoreVal').textContent = `${score}%`;
+    if ($('completenessProgressBar')) $('completenessProgressBar').style.width = `${score}%`;
+    if ($('atsScoreVal')) $('atsScoreVal').textContent = `${atsScore} / 100`;
+    if ($('completenessSuggestions')) {
+      if (missing && missing.length > 0) {
+        $('completenessSuggestions').innerHTML = `<strong>To reach 100%:</strong> Add ${escapeHtml(missing.slice(0, 3).join(', '))}`;
+      } else {
+        $('completenessSuggestions').innerHTML = `<span style="color: #10b981;">✓ Profile is 100% complete and ATS-optimized!</span>`;
+      }
+    }
+  }
 }
 
 function collectProfileFromForm() {
@@ -284,6 +431,197 @@ function collectProfileFromForm() {
     },
     onboardingComplete: true
   };
+}
+
+function setupCoachTab() {
+  let selectedCandidateId = null;
+
+  async function loadCoachCandidates() {
+    const listEl = $('coachCandidateList');
+    if (!listEl) return;
+    try {
+      const data = await api.get('/api/coach/candidates');
+      if (!data.success || !data.candidates) return;
+      if (data.candidates.length === 0) {
+        listEl.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted);">No candidates assigned yet.</div>';
+        return;
+      }
+      listEl.innerHTML = data.candidates.map(c => `
+        <div class="candidate-item ${c.id === selectedCandidateId ? 'active' : ''}" data-id="${escapeHtml(c.id)}" style="padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); cursor: pointer; transition: background 0.15s ease;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color: var(--text-primary); font-size: 14px;">${escapeHtml(c.full_name || 'Candidate')}</strong>
+            <span style="font-size: 11px; color: #10b981; font-weight: 600;">ATS: ${c.ats_score || 0}%</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${escapeHtml(c.email)}</div>
+          <div style="display: flex; gap: 8px; margin-top: 6px; font-size: 11px; color: var(--text-secondary);">
+            <span>${c.applications_count || 0} Apps</span>
+            <span>•</span>
+            <span>${c.interviews_count || 0} Interviews</span>
+            <span>•</span>
+            <span>${c.pending_tasks_count || 0} Tasks</span>
+          </div>
+        </div>
+      `).join('');
+
+      listEl.querySelectorAll('.candidate-item').forEach(item => {
+        item.addEventListener('click', () => {
+          selectedCandidateId = item.getAttribute('data-id');
+          loadCandidateDetail(selectedCandidateId);
+          loadCoachCandidates();
+        });
+      });
+    } catch (_) {}
+  }
+
+  async function loadCandidateDetail(candidateId) {
+    $('coachDetailEmpty')?.classList.add('hidden');
+    $('coachDetailContent')?.classList.remove('hidden');
+
+    try {
+      const data = await api.get(`/api/coach/candidates/${candidateId}`);
+      if (!data.success || !data.candidate) return;
+      const c = data.candidate;
+      if ($('selectedCandidateName')) $('selectedCandidateName').textContent = c.profile?.identity?.name || 'Candidate Profile';
+      if ($('selectedCandidateEmail')) $('selectedCandidateEmail').textContent = c.profile?.identity?.email || '';
+
+      const tasksEl = $('coachTasksList');
+      if (tasksEl) {
+        if (!c.tasks || c.tasks.length === 0) {
+          tasksEl.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">No tasks assigned yet.</div>';
+        } else {
+          tasksEl.innerHTML = c.tasks.map(t => `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); padding: 10px 12px; border-radius: var(--radius-sm);">
+              <div>
+                <div style="font-weight: 600; font-size: 13px;">${escapeHtml(t.title)}</div>
+                ${t.due_date ? `<div style="font-size: 11px; color: var(--text-muted);">Due: ${escapeHtml(t.due_date)}</div>` : ''}
+              </div>
+              <span class="status-pill ${t.status === 'completed' ? 'connected' : 'warning'}" style="font-size: 11px;">${escapeHtml(t.status)}</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      const notesEl = $('coachNotesList');
+      if (notesEl) {
+        if (!c.notes || c.notes.length === 0) {
+          notesEl.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">No notes posted yet.</div>';
+        } else {
+          notesEl.innerHTML = c.notes.map(n => `
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); padding: 10px 12px; border-radius: var(--radius-sm);">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">
+                <span>${escapeHtml(n.author_name || 'Coach')} (${escapeHtml(n.visibility)})</span>
+                <span>${formatDate(n.created_at)}</span>
+              </div>
+              <div style="font-size: 13px; color: var(--text-primary);">${escapeHtml(n.note)}</div>
+            </div>
+          `).join('');
+        }
+      }
+    } catch (_) {}
+  }
+
+  $('btnRefreshCoach')?.addEventListener('click', loadCoachCandidates);
+  $('navtab-coach')?.addEventListener('click', loadCoachCandidates);
+
+  $('btnAssignCoachTask')?.addEventListener('click', async () => {
+    if (!selectedCandidateId) return;
+    const title = $('coachTaskTitle')?.value?.trim();
+    const dueDate = $('coachTaskDueDate')?.value;
+    if (!title) return;
+
+    try {
+      await api.post('/api/coach/tasks', { candidateId: selectedCandidateId, title, dueDate });
+      showToast('Task assigned.', 'success');
+      $('coachTaskTitle').value = '';
+      $('coachTaskDueDate').value = '';
+      loadCandidateDetail(selectedCandidateId);
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  });
+
+  $('btnAddCoachNote')?.addEventListener('click', async () => {
+    if (!selectedCandidateId) return;
+    const note = $('coachNoteInput')?.value?.trim();
+    const visibility = $('coachNoteVisibility')?.value || 'shared';
+    if (!note) return;
+
+    try {
+      await api.post('/api/coach/notes', { candidateId: selectedCandidateId, note, visibility });
+      showToast('Note posted.', 'success');
+      $('coachNoteInput').value = '';
+      loadCandidateDetail(selectedCandidateId);
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  });
+}
+
+function setupAdminTab() {
+  async function loadAdminDiagnostics() {
+    try {
+      const overview = await api.get('/api/admin/overview');
+      if (overview.success && overview.metrics) {
+        const m = overview.metrics;
+        if ($('adminStatOrgs')) $('adminStatOrgs').textContent = m.totalOrganizations;
+        if ($('adminStatUsers')) $('adminStatUsers').textContent = m.totalUsers;
+        if ($('adminStatCandidates')) $('adminStatCandidates').textContent = m.totalCandidates;
+        if ($('adminStatApps')) $('adminStatApps').textContent = m.totalApplications;
+        if ($('adminStatDocs')) $('adminStatDocs').textContent = m.totalDocumentsGenerated;
+      }
+
+      const orgsData = await api.get('/api/admin/organizations');
+      if (orgsData.success && orgsData.organizations) {
+        const tbody = $('adminOrgsTableBody');
+        if (tbody) {
+          tbody.innerHTML = orgsData.organizations.map(o => `
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 12px 16px; font-weight: 600;">${escapeHtml(o.name)}</td>
+              <td style="padding: 12px 16px; text-transform: uppercase; font-size: 11px;">${escapeHtml(o.type)}</td>
+              <td style="padding: 12px 16px;">${o.members_count || 0}</td>
+              <td style="padding: 12px 16px;">${o.candidates_count || 0}</td>
+              <td style="padding: 12px 16px; color: var(--text-muted); font-size: 12px;">${formatDate(o.created_at)}</td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      const usersData = await api.get('/api/admin/users');
+      if (usersData.success && usersData.users) {
+        const tbody = $('adminUsersTableBody');
+        if (tbody) {
+          tbody.innerHTML = usersData.users.map(u => `
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 12px 16px; font-weight: 600;">${escapeHtml(u.full_name || '—')}</td>
+              <td style="padding: 12px 16px;">${escapeHtml(u.email)}</td>
+              <td style="padding: 12px 16px; color: var(--text-muted);">${escapeHtml(u.organization_name || 'Personal')}</td>
+              <td style="padding: 12px 16px;"><span class="badge-role" style="font-size: 10px; background: rgba(59,130,246,0.2); color: #93c5fd; padding: 2px 6px; border-radius: 4px;">${escapeHtml((u.role || 'candidate').replace('_', ' '))}</span></td>
+              <td style="padding: 12px 16px;"><span class="status-pill connected" style="font-size: 11px;">${escapeHtml(u.status)}</span></td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      const auditData = await api.get('/api/admin/audit-logs');
+      if (auditData.success && auditData.logs) {
+        const tbody = $('adminAuditTableBody');
+        if (tbody) {
+          tbody.innerHTML = auditData.logs.map(l => `
+            <tr style="border-bottom: 1px solid var(--border-subtle);">
+              <td style="padding: 10px 16px; color: var(--text-muted);">${formatDate(l.created_at)}</td>
+              <td style="padding: 10px 16px; font-weight: 600; color: #93c5fd;">${escapeHtml(l.action)}</td>
+              <td style="padding: 10px 16px;">${escapeHtml(l.actor_email || l.actor_user_id || 'system')}</td>
+              <td style="padding: 10px 16px; color: var(--text-secondary);">${escapeHtml(l.entity_type || '—')}: ${escapeHtml(l.entity_id || '—')}</td>
+              <td style="padding: 10px 16px; color: var(--text-muted); font-family: monospace;">${escapeHtml(l.ip_address || '—')}</td>
+            </tr>
+          `).join('');
+        }
+      }
+    } catch (_) {}
+  }
+
+  $('btnRefreshAdmin')?.addEventListener('click', loadAdminDiagnostics);
+  $('navtab-admin')?.addEventListener('click', loadAdminDiagnostics);
 }
 
 function setupProfileTab() {

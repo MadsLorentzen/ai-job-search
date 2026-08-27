@@ -4,6 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import { loadEnv, cleanSecret, ENV_PATHS, DATA_DIR, ensureDir } from '../config/env.js';
 import { loggerFor } from '../config/logger.js';
+import { getDb } from '../db/database.js';
 
 loadEnv();
 
@@ -92,7 +93,7 @@ export async function hashPassword(password, salt = crypto.randomBytes(16)) {
   return `scrypt$${N}$${r}$${p}$${salt.toString('hex')}$${derived.toString('hex')}`;
 }
 
-async function verifyAgainstHash(password, stored) {
+export async function verifyAgainstHash(password, stored) {
   const parts = stored.split('$');
   if (parts.length !== 6 || parts[0] !== 'scrypt') return false;
 
@@ -220,17 +221,96 @@ export function extractToken(req) {
   return String(bearer || req.headers['x-access-token'] || '').trim();
 }
 
+export function resolveUserFromToken(token) {
+  if (!token || !verifyToken(token)) return null;
+
+  try {
+    const db = getDb();
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    const session = db.prepare(`
+      SELECT s.id as session_id, s.expires_at, u.id as user_id, u.email, u.full_name, u.status,
+             m.organization_id, m.role, m.permissions, o.name as organization_name, o.slug as organization_slug
+      FROM user_sessions s
+      JOIN users u ON u.id = s.user_id
+      LEFT JOIN memberships m ON m.user_id = u.id
+      LEFT JOIN organizations o ON o.id = m.organization_id
+      WHERE s.token_hash = ? AND u.deleted_at IS NULL
+    `).get(tokenHash);
+
+    if (!session || session.status === 'suspended') return null;
+
+    return {
+      user: {
+        id: session.user_id,
+        email: session.email,
+        fullName: session.full_name
+      },
+      organizationId: session.organization_id,
+      organizationName: session.organization_name,
+      organizationSlug: session.organization_slug,
+      role: session.role || 'candidate',
+      permissions: (() => {
+        try { return JSON.parse(session.permissions || '[]'); } catch (_) { return []; }
+      })(),
+      sessionId: session.session_id
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Tokens are accepted from headers only. The query-string branch is gone on
- * purpose: it put credentials into browser history, access logs and Referer.
+ * Multi-tenant Auth Middleware
+ * Validates session token, resolves user & organization context, and attaches to req.
  */
 export function authMiddleware(req, res, next) {
   if (req.path === '/health' || req.path.startsWith('/auth/')) return next();
 
-  if (verifyToken(extractToken(req))) return next();
+  const token = extractToken(req);
+  if (!verifyToken(token)) {
+    return res.status(401).json({
+      success: false,
+      error: 'Unauthorized. Please unlock the workspace or log in.'
+    });
+  }
 
-  return res.status(401).json({
-    success: false,
-    error: 'Unauthorized. Please unlock the workspace.'
-  });
+  const resolved = resolveUserFromToken(token);
+  if (resolved) {
+    req.user = resolved.user;
+    req.organizationId = resolved.organizationId;
+    req.organizationName = resolved.organizationName;
+    req.role = resolved.role;
+    req.permissions = resolved.permissions;
+    req.sessionId = resolved.sessionId;
+  } else {
+    // Default fallback for single-tenant tokens
+    req.user = { id: '00000000-0000-0000-0000-000000000002', email: 'admin@oppertunex.local', fullName: 'Default Admin' };
+    req.organizationId = '00000000-0000-0000-0000-000000000001';
+    req.organizationName = 'Default Workspace';
+    req.role = 'platform_admin';
+    req.permissions = ['*'];
+  }
+  return next();
+}
+
+/**
+ * Role-Based Access Control (RBAC) Guard
+ */
+export function requireRole(allowedRoles = []) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    const role = req.role || 'candidate';
+    if (role === 'platform_admin') return next();
+
+    if (allowedRoles.length && !allowedRoles.includes(role)) {
+      return res.status(403).json({
+        success: false,
+        error: `Forbidden: role '${role}' does not have permission to access this resource`
+      });
+    }
+    next();
+  };
 }
