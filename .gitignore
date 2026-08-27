@@ -33,6 +33,14 @@ linkedin_Profile.pdf
 # fetching service; the .env holding it must never be committed.
 .env
 .env.*
+!.env.example
+!server/.env.example
+
+# Server build artifacts and personal data
+server/data/builds/
+server/data/*.json
+!server/data/.gitkeep
+
 
 # Personal photos and signatures
 *.jpg
