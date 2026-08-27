@@ -31,6 +31,31 @@ if (configuredModel.includes('claude-3-7-sonnet-20250219')) {
 }
 const DEFAULT_MODEL = configuredModel;
 
+function extractJson(text) {
+  if (!text) return null;
+  const clean = text.replace(/\u001b\[[0-9;]*[a-zA-Z]/g, '').trim();
+  try {
+    return JSON.parse(clean);
+  } catch (e) {}
+
+  const codeBlockMatch = clean.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (codeBlockMatch) {
+    try {
+      return JSON.parse(codeBlockMatch[1]);
+    } catch (e) {}
+  }
+
+  const firstBrace = clean.indexOf('{');
+  const lastBrace = clean.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    try {
+      return JSON.parse(clean.slice(firstBrace, lastBrace + 1));
+    } catch (e) {}
+  }
+
+  return null;
+}
+
 export const claudeService = {
   getProviderName() {
     const provider = (process.env.AI_PROVIDER || '').toLowerCase();
@@ -440,15 +465,13 @@ Return ONLY valid JSON:
 
     const responseText = await this.executePrompt(systemPrompt, rawText);
     if (responseText) {
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        try {
-          return JSON.parse(jsonMatch[0]);
-        } catch (e) {}
+      const parsed = extractJson(responseText);
+      if (parsed && parsed.identity && parsed.identity.name && !parsed.identity.name.includes('...')) {
+        return parsed;
       }
     }
 
-    return this.mockParsedResume(rawText);
+    return this.parseRealResumeText(rawText);
   },
 
   // Mock / Fallback generators
@@ -624,49 +647,95 @@ ${(profile.education || []).map(edu => `
   },
 
   mockParsedResume(rawText) {
+    return this.parseRealResumeText(rawText);
+  },
+
+  parseRealResumeText(rawText = '') {
+    const lines = (rawText || '').split(/[\r\n]+/).map(l => l.trim()).filter(Boolean);
+    
+    // 1. Extract Email
+    const emailMatch = rawText.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+    const email = emailMatch ? emailMatch[1] : '';
+
+    // 2. Extract Phone
+    const phoneMatch = rawText.match(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/);
+    const phone = phoneMatch ? phoneMatch[0].trim() : '';
+
+    // 3. Extract LinkedIn
+    const linkedinMatch = rawText.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([a-zA-Z0-9_-]+)/i);
+    const linkedin = linkedinMatch ? (linkedinMatch[0].startsWith('http') ? linkedinMatch[0] : `https://${linkedinMatch[0]}`) : '';
+
+    // 4. Extract GitHub
+    const githubMatch = rawText.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)/i);
+    const github = githubMatch ? (githubMatch[0].startsWith('http') ? githubMatch[0] : `https://${githubMatch[0]}`) : '';
+
+    // 5. Extract Candidate Name (First prominent non-contact line)
+    let candidateName = '';
+    for (const line of lines.slice(0, 8)) {
+      if (line.includes('@') || line.includes('http') || line.includes('github') || line.includes('linkedin') || /^\+?\d/.test(line)) {
+        continue;
+      }
+      const cleanLine = line.replace(/[^a-zA-Z\s.-]/g, '').trim();
+      if (cleanLine.length >= 3 && cleanLine.length <= 40 && cleanLine.split(/\s+/).length <= 4 && !cleanLine.toLowerCase().includes('resume') && !cleanLine.toLowerCase().includes('curriculum')) {
+        candidateName = cleanLine;
+        break;
+      }
+    }
+    if (!candidateName && lines.length > 0) {
+      candidateName = lines[0].slice(0, 30);
+    }
+
+    // 6. Extract Skills
+    const commonTech = [
+      'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Ruby', 'PHP', 'Swift', 'Kotlin',
+      'React', 'Next.js', 'Vue', 'Angular', 'Node.js', 'Express', 'FastAPI', 'Django', 'Flask', 'Spring Boot',
+      'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch', 'DynamoDB', 'SQLite', 'GraphQL', 'REST API',
+      'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'Terraform', 'CI/CD', 'Git', 'Linux', 'Microservices',
+      'Machine Learning', 'Deep Learning', 'PyTorch', 'TensorFlow', 'LLM', 'AI', 'NLP', 'Computer Vision'
+    ];
+
+    const foundSkills = [];
+    for (const tech of commonTech) {
+      const regex = new RegExp(`\\b${tech.replace(/[.+*?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+      if (regex.test(rawText)) {
+        foundSkills.push(tech);
+      }
+    }
+
+    const primarySkills = foundSkills.slice(0, 6);
+    const secondarySkills = foundSkills.slice(6, 12);
+
+    // 7. Title & Summary
+    let title = 'Software Engineer';
+    for (const line of lines.slice(0, 10)) {
+      if (/(engineer|developer|architect|manager|specialist|lead|scientist|consultant|analyst)/i.test(line) && !line.includes('@')) {
+        title = line.slice(0, 50);
+        break;
+      }
+    }
+
+    const summary = lines.slice(0, 6).join(' ').slice(0, 350);
+
     return {
       identity: {
-        name: 'Alex Johnson',
-        title: 'Full Stack Engineer',
-        email: 'alex.johnson@example.com',
-        phone: '+1 (555) 432-8765',
-        location: 'New York, NY / Remote',
-        linkedin: 'linkedin.com/in/alexjohnson',
-        github: 'github.com/alexjohnson',
-        summary: 'Software engineer experienced in modern full-stack development, API architecture, and cloud deployment.',
-        languages: [{ language: 'English', level: 'Native' }]
+        name: candidateName || 'Candidate',
+        title,
+        email,
+        phone,
+        location: 'Remote',
+        linkedin,
+        github,
+        summary,
+        languages: [{ language: 'English', level: 'Professional' }]
       },
-      education: [
-        { degree: 'B.S. Computer Science', institution: 'State University', period: '2016 - 2020', highlights: 'Dean’s List' }
-      ],
-      experience: [
-        {
-          title: 'Full Stack Developer',
-          company: 'CloudWave Technologies',
-          location: 'New York, NY',
-          period: '2020 - Present',
-          bullets: [
-            'Built responsive web applications with React, TypeScript, and Node.js serving 50k+ active users.',
-            'Optimized REST and GraphQL APIs, reducing average response times by 35%.'
-          ]
-        }
-      ],
       skills: {
-        primary: ['TypeScript', 'JavaScript', 'Node.js', 'React', 'PostgreSQL'],
-        secondary: ['Docker', 'AWS', 'GraphQL', 'Tailwind CSS', 'Git'],
-        domain: ['Web Applications', 'API Development', 'State Management'],
-        tools: ['VS Code', 'Git', 'Postman', 'Docker']
+        primary: primarySkills.length > 0 ? primarySkills : ['TypeScript', 'Node.js', 'Python', 'React'],
+        secondary: secondarySkills.length > 0 ? secondarySkills : ['Docker', 'AWS', 'PostgreSQL', 'Git'],
+        domain: ['Distributed Systems', 'Cloud Architecture', 'Web Applications'],
+        tools: ['VS Code', 'Git', 'Docker']
       },
-      starStories: [
-        {
-          id: 'story-1',
-          title: 'GraphQL API Optimization',
-          situation: 'Legacy REST endpoints were over-fetching data on mobile clients.',
-          task: 'Migrate key screens to targeted GraphQL queries.',
-          action: 'Designed GraphQL schema, implemented DataLoader to prevent N+1 queries, and cached responses.',
-          result: 'Reduced mobile payload sizes by 65% and cut page load times in half.'
-        }
-      ]
+      experience: [],
+      education: []
     };
   }
 };
