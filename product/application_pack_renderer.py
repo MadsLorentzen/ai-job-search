@@ -93,6 +93,10 @@ def _freeze_docx_bytes(content: bytes) -> bytes:
             frozen_info = zipfile.ZipInfo(item.filename, date_time=_FROZEN_ZIP_TIMESTAMP)
             frozen_info.compress_type = item.compress_type
             frozen_info.external_attr = item.external_attr
+            # ZIP creator metadata otherwise defaults to the host OS (0 on
+            # Windows, 3 on Unix), making equivalent DOCX bytes differ across
+            # platforms. Keep the frozen archive's metadata host-independent.
+            frozen_info.create_system = 0
             frozen.writestr(frozen_info, source.read(item.filename))
     return frozen_buffer.getvalue()
 
