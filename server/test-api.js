@@ -10,7 +10,7 @@ async function runTests() {
   const loginRes = await fetch('http://localhost:3000/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: 'jobsearch_access_2026' })
+    body: JSON.stringify({ password: 'oppertuneX!@#$999' })
   });
   const loginData = await loginRes.json();
   const token = loginData.token;

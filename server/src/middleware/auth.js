@@ -15,7 +15,7 @@ const envPaths = [
 ];
 
 // Default fallback master password
-export const DEFAULT_FALLBACK_PASSWORD = 'jobsearch_access_2026';
+export const DEFAULT_FALLBACK_PASSWORD = 'oppertuneX!@#$999';
 
 function cleanSecret(val) {
   if (!val) return '';
