@@ -1,195 +1,243 @@
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import { ROOT_DIR, DATA_DIR, ensureDir } from '../config/env.js';
-
-const PROFILE_FILE = path.join(DATA_DIR, 'profile.json');
-const APPLICATIONS_FILE = path.join(DATA_DIR, 'applications.json');
-
-ensureDir(DATA_DIR);
+import { getDb, transaction } from '../db/database.js';
+import { ROOT_DIR } from '../config/env.js';
 
 export const APPLICATION_STATUSES = Object.freeze([
   'Drafted', 'Applied', 'Interviewing', 'Offer', 'Rejected', 'Withdrawn'
 ]);
 
-/**
- * Fields a client may set on an application record.
- *
- * Explicitly excludes cvPdfPath / coverPdfPath: those are filesystem paths and
- * are only ever written by the server. Accepting them from the request body
- * previously let a caller point a record at any file on disk and then stream
- * it back through the download route.
- */
-const CLIENT_WRITABLE_FIELDS = Object.freeze([
-  'id', 'jobTitle', 'company', 'location', 'jobUrl', 'status', 'fitScore',
-  'cvLatex', 'coverLetterLatex', 'auditsPassed', 'revisionsApplied',
-  'reviewScore', 'notes', 'appliedAt', 'source'
-]);
+/** Statuses that represent a finished application, shown in a collapsed lane. */
+export const CLOSED_STATUSES = Object.freeze(['Rejected', 'Withdrawn']);
 
-const SERVER_ONLY_FIELDS = Object.freeze(['cvPdfPath', 'coverPdfPath', 'createdAt', 'updatedAt']);
+export const SEEN_STATES = Object.freeze(['seen', 'applied', 'dismissed']);
 
 const DEFAULT_PROFILE = {
   identity: {
-    name: '',
-    title: '',
-    email: '',
-    phone: '',
-    location: '',
-    linkedin: '',
-    github: '',
-    portfolio: '',
-    summary: '',
-    status: 'Actively Looking',
-    languages: []
+    name: '', title: '', email: '', phone: '', location: '',
+    linkedin: '', github: '', portfolio: '', summary: '',
+    status: 'Actively Looking', languages: []
   },
   education: [],
   experience: [],
   skills: { primary: [], secondary: [], domain: [], tools: [] },
   starStories: [],
   targetQueries: [],
-  salary: { minimum: '', target: '', currency: '' }
+  salary: { minimum: '', target: '', currency: '' },
+  onboardingComplete: false
 };
 
-/** Deep copy so callers cannot mutate the shared default in place. */
-function cloneDefaultProfile() {
-  return structuredClone(DEFAULT_PROFILE);
-}
-
-/**
- * Write via temp file + rename so a crash mid-write cannot leave truncated
- * JSON behind. rename is atomic within a filesystem.
- */
-function writeJsonAtomic(filePath, value) {
-  ensureDir(path.dirname(filePath));
-  const tmp = `${filePath}.${crypto.randomBytes(6).toString('hex')}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(value, null, 2), 'utf-8');
-  fs.renameSync(tmp, filePath);
-}
-
-function readJson(filePath, fallback) {
-  if (!fs.existsSync(filePath)) return { ok: true, value: fallback, missing: true };
+function parseJson(value, fallback) {
+  if (!value) return fallback;
   try {
-    return { ok: true, value: JSON.parse(fs.readFileSync(filePath, 'utf-8')) };
-  } catch (err) {
-    // Distinguish "not there yet" from "there but unreadable". The second case
-    // must not be silently overwritten with an empty list.
-    return { ok: false, error: err };
+    return JSON.parse(value);
+  } catch {
+    return fallback;
   }
 }
 
-/**
- * Serialize every mutation through one promise chain.
- *
- * Each save used to read the whole file, edit in memory and write it back with
- * no coordination, so two overlapping requests would interleave and the later
- * write would erase the earlier one.
- */
-let writeChain = Promise.resolve();
-function serialize(fn) {
-  const result = writeChain.then(fn, fn);
-  writeChain = result.then(() => undefined, () => undefined);
-  return result;
+/** Map a database row onto the shape the API and client speak. */
+function rowToApplication(row) {
+  return {
+    id: row.id,
+    jobTitle: row.job_title,
+    company: row.company,
+    location: row.location,
+    jobUrl: row.job_url,
+    status: row.status,
+    fitScore: row.fit_score,
+    reviewScore: row.review_score,
+    cvLatex: row.cv_latex,
+    coverLetterLatex: row.cover_letter_latex,
+    auditsPassed: parseJson(row.audits_passed, []),
+    revisionsApplied: parseJson(row.revisions_applied, []),
+    notes: row.notes,
+    followUpAt: row.follow_up_at,
+    source: row.source,
+    appliedAt: row.applied_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
 }
 
+/** Columns a caller may set, and the API field each maps from. */
+const APPLICATION_COLUMNS = {
+  jobTitle: 'job_title',
+  company: 'company',
+  location: 'location',
+  jobUrl: 'job_url',
+  status: 'status',
+  fitScore: 'fit_score',
+  reviewScore: 'review_score',
+  cvLatex: 'cv_latex',
+  coverLetterLatex: 'cover_letter_latex',
+  auditsPassed: 'audits_passed',
+  revisionsApplied: 'revisions_applied',
+  notes: 'notes',
+  followUpAt: 'follow_up_at',
+  source: 'source',
+  appliedAt: 'applied_at'
+};
+
+const JSON_FIELDS = new Set(['auditsPassed', 'revisionsApplied']);
+
 export const storageService = {
+  // ---- Profile ---------------------------------------------------------
+
   getProfile() {
-    const { ok, value, missing, error } = readJson(PROFILE_FILE, null);
-    if (!ok) {
-      console.error('Profile file is unreadable, serving defaults:', error.message);
-      return cloneDefaultProfile();
-    }
-    if (missing) {
-      const fresh = cloneDefaultProfile();
-      writeJsonAtomic(PROFILE_FILE, fresh);
-      return fresh;
-    }
-    return value;
+    const row = getDb().prepare('SELECT data FROM profile WHERE id = 1').get();
+    if (!row) return structuredClone(DEFAULT_PROFILE);
+    return { ...structuredClone(DEFAULT_PROFILE), ...parseJson(row.data, {}) };
   },
 
   saveProfile(profileData) {
-    return serialize(async () => {
-      if (!profileData || typeof profileData !== 'object' || Array.isArray(profileData)) {
-        const err = new Error('Profile must be an object.');
-        err.statusCode = 400;
-        throw err;
-      }
-      writeJsonAtomic(PROFILE_FILE, profileData);
+    const now = new Date().toISOString();
+    return transaction((conn) => {
+      conn.prepare(`
+        INSERT INTO profile (id, data, updated_at) VALUES (1, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
+      `).run(JSON.stringify(profileData), now);
       return profileData;
     });
   },
 
-  getApplications() {
-    const { ok, value, missing, error } = readJson(APPLICATIONS_FILE, []);
-    if (!ok) {
-      console.error('Applications file is unreadable:', error.message);
-      const err = new Error('Application store is corrupt. Not overwriting it; inspect server/data/applications.json.');
-      err.statusCode = 500;
-      throw err;
+  // ---- Applications ----------------------------------------------------
+
+  /** @param {{ status?: string, search?: string, followUpBefore?: string }} [filters] */
+  getApplications({ status, search, followUpBefore } = {}) {
+    const where = [];
+    const params = [];
+
+    if (status) {
+      where.push('status = ?');
+      params.push(status);
     }
-    if (missing) return [];
-    return Array.isArray(value) ? value : [];
+    if (search) {
+      where.push('(job_title LIKE ? OR company LIKE ? OR notes LIKE ?)');
+      const like = `%${search}%`;
+      params.push(like, like, like);
+    }
+    if (followUpBefore) {
+      where.push('follow_up_at IS NOT NULL AND follow_up_at <= ?');
+      params.push(followUpBefore);
+    }
+
+    const sql = `SELECT * FROM applications
+                 ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+                 ORDER BY created_at DESC`;
+    return getDb().prepare(sql).all(...params).map(rowToApplication);
   },
 
-  /** Strip anything a client is not allowed to set. */
-  sanitizeApplicationInput(input) {
-    if (!input || typeof input !== 'object' || Array.isArray(input)) {
-      const err = new Error('Application must be an object.');
-      err.statusCode = 400;
-      throw err;
-    }
-    const clean = {};
-    for (const field of CLIENT_WRITABLE_FIELDS) {
-      if (input[field] !== undefined) clean[field] = input[field];
-    }
-    if (clean.status !== undefined && !APPLICATION_STATUSES.includes(clean.status)) {
-      const err = new Error(`Unknown status "${clean.status}". Expected one of: ${APPLICATION_STATUSES.join(', ')}.`);
-      err.statusCode = 400;
-      throw err;
-    }
-    if (!clean.id || typeof clean.id !== 'string') {
-      const err = new Error('Application id is required.');
-      err.statusCode = 400;
-      throw err;
-    }
-    return clean;
+  getApplication(id) {
+    const row = getDb().prepare('SELECT * FROM applications WHERE id = ?').get(id);
+    return row ? rowToApplication(row) : null;
   },
 
   /**
-   * @param {object} application     client-supplied fields (already sanitized)
-   * @param {object} serverFields    server-owned fields such as PDF paths
+   * Insert or update. Only the fields present in `fields` are written, so a
+   * partial update cannot blank out columns it did not mention.
+   *
+   * Filesystem paths are deliberately absent from APPLICATION_COLUMNS: they
+   * are derived from the application id at read time, never stored from input.
    */
-  saveApplication(application, serverFields = {}) {
-    return serialize(async () => {
-      const apps = this.getApplications();
-      const now = new Date().toISOString();
+  saveApplication(fields) {
+    const now = new Date().toISOString();
 
-      const trusted = {};
-      for (const field of SERVER_ONLY_FIELDS) {
-        if (serverFields[field] !== undefined) trusted[field] = serverFields[field];
+    return transaction((conn) => {
+      const exists = conn.prepare('SELECT 1 FROM applications WHERE id = ?').get(fields.id);
+
+      const assignments = [];
+      const params = [];
+      for (const [apiField, column] of Object.entries(APPLICATION_COLUMNS)) {
+        if (fields[apiField] === undefined) continue;
+        assignments.push(`${column} = ?`);
+        const value = fields[apiField];
+        params.push(JSON_FIELDS.has(apiField) ? JSON.stringify(value ?? []) : value);
       }
 
-      const index = apps.findIndex(a => a.id === application.id);
-      let record;
-      if (index >= 0) {
-        record = { ...apps[index], ...application, ...trusted, updatedAt: now };
-        apps[index] = record;
+      if (exists) {
+        assignments.push('updated_at = ?');
+        params.push(now, fields.id);
+        conn.prepare(`UPDATE applications SET ${assignments.join(', ')} WHERE id = ?`).run(...params);
       } else {
-        record = { ...application, ...trusted, createdAt: now, updatedAt: now };
-        apps.unshift(record);
+        conn.prepare(`
+          INSERT INTO applications (id, created_at, updated_at) VALUES (?, ?, ?)
+        `).run(fields.id, now, now);
+
+        if (assignments.length) {
+          assignments.push('updated_at = ?');
+          params.push(now, fields.id);
+          conn.prepare(`UPDATE applications SET ${assignments.join(', ')} WHERE id = ?`).run(...params);
+        }
       }
 
-      writeJsonAtomic(APPLICATIONS_FILE, apps);
-      return record;
+      const row = conn.prepare('SELECT * FROM applications WHERE id = ?').get(fields.id);
+      return rowToApplication(row);
     });
   },
 
   deleteApplication(id) {
-    return serialize(async () => {
-      const apps = this.getApplications();
-      const remaining = apps.filter(a => a.id !== id);
-      writeJsonAtomic(APPLICATIONS_FILE, remaining);
-      return { success: true, deleted: apps.length - remaining.length };
+    return transaction((conn) => {
+      const info = conn.prepare('DELETE FROM applications WHERE id = ?').run(id);
+      return { success: true, deleted: Number(info.changes) };
     });
+  },
+
+  // ---- Document versions ----------------------------------------------
+
+  addDocumentVersion(applicationId, docType, latex) {
+    return transaction((conn) => {
+      conn.prepare(`
+        INSERT INTO document_versions (application_id, doc_type, latex, created_at)
+        VALUES (?, ?, ?, ?)
+      `).run(applicationId, docType, latex, new Date().toISOString());
+    });
+  },
+
+  getDocumentVersions(applicationId, docType) {
+    return getDb().prepare(`
+      SELECT id, doc_type AS docType, latex, created_at AS createdAt
+      FROM document_versions
+      WHERE application_id = ? AND doc_type = ?
+      ORDER BY id DESC
+    `).all(applicationId, docType);
+  },
+
+  // ---- Seen jobs -------------------------------------------------------
+
+  /** Record that these postings were returned by a search. */
+  markJobsSeen(jobs) {
+    if (!jobs.length) return;
+    const now = new Date().toISOString();
+
+    transaction((conn) => {
+      const stmt = conn.prepare(`
+        INSERT INTO seen_jobs (id, portal, title, company, url, state, first_seen, last_seen)
+        VALUES (?, ?, ?, ?, ?, 'seen', ?, ?)
+        ON CONFLICT(id) DO UPDATE SET last_seen = excluded.last_seen
+      `);
+      for (const job of jobs) {
+        if (!job?.id) continue;
+        stmt.run(job.id, job.portal || '', job.title || '', job.company || '', job.url || '', now, now);
+      }
+    });
+  },
+
+  setJobState(id, state) {
+    const now = new Date().toISOString();
+    return transaction((conn) => {
+      const info = conn.prepare('UPDATE seen_jobs SET state = ?, last_seen = ? WHERE id = ?')
+        .run(state, now, id);
+      return { updated: Number(info.changes) };
+    });
+  },
+
+  /** Map of job id to state, for the ids supplied. */
+  getJobStates(ids) {
+    if (!ids.length) return {};
+    const placeholders = ids.map(() => '?').join(',');
+    const rows = getDb()
+      .prepare(`SELECT id, state, first_seen FROM seen_jobs WHERE id IN (${placeholders})`)
+      .all(...ids);
+    return Object.fromEntries(rows.map(r => [r.id, { state: r.state, firstSeen: r.first_seen }]));
   },
 
   getRootDir() {

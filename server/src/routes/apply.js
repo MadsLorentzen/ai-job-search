@@ -1,112 +1,148 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { claudeService } from '../services/claudeService.js';
 import { latexService, resolveBuildDir, assertAppId, assertDocType, ValidationError } from '../services/latexService.js';
 import { storageService } from '../services/storageService.js';
+import { validateBody } from '../middleware/validate.js';
+import { generateBody, compileBody } from '../validation/schemas.js';
+import { loggerFor } from '../config/logger.js';
 
 const router = express.Router();
+const log = loggerFor('apply');
 
 /**
  * Rebuild a document path from validated inputs.
- *
- * Deliberately does NOT read a stored path out of the application record: a
- * client could previously write an arbitrary cvPdfPath through the tracker
- * endpoint and have this route stream any file on disk back to them.
+ * Never reads a stored path out of the application record: a client could
+ * otherwise write an arbitrary path and have it streamed back.
  */
 function documentPath(appId, type) {
-  const buildDir = resolveBuildDir(type, appId);
-  return path.join(buildDir, type === 'cv' ? 'main.pdf' : 'cover.pdf');
+  return path.join(resolveBuildDir(type, appId), type === 'cv' ? 'main.pdf' : 'cover.pdf');
 }
 
-router.post('/generate', async (req, res, next) => {
+/**
+ * Run the full generation pipeline, reporting each stage through `onStage`.
+ * Shared by the plain JSON route and the streaming one so the two cannot
+ * drift.
+ */
+async function runGeneration({ job, fitEvaluation, onStage }) {
+  const profile = storageService.getProfile();
+  const appId = uuidv4();
+
+  onStage({ stage: 'drafter', status: 'active' });
+  const pipelineResult = await claudeService.draftAndReviewApplication(profile, job, fitEvaluation);
+  onStage({ stage: 'drafter', status: 'done' });
+  onStage({ stage: 'reviewer', status: pipelineResult.source === 'ai' ? 'done' : 'skipped' });
+
+  onStage({ stage: 'latex', status: 'active' });
+  const cvCompilation = await latexService.compileDocument('cv', pipelineResult.cvLatex, appId);
+  const coverCompilation = await latexService.compileDocument('cover', pipelineResult.coverLetterLatex, appId);
+  onStage({ stage: 'latex', status: cvCompilation.renderer === 'latex' ? 'done' : 'skipped' });
+  onStage({ stage: 'ats', status: cvCompilation.atsVerification?.verified ? 'done' : 'skipped' });
+
+  const application = storageService.saveApplication({
+    id: appId,
+    jobTitle: job.title,
+    company: job.company || '',
+    location: job.location || '',
+    jobUrl: job.url || '',
+    status: 'Drafted',
+    // No invented default: absent means "not evaluated", not "90% match".
+    fitScore: typeof fitEvaluation?.overallScore === 'number' ? fitEvaluation.overallScore : null,
+    reviewScore: typeof pipelineResult.reviewScore === 'number' ? pipelineResult.reviewScore : null,
+    cvLatex: pipelineResult.cvLatex,
+    coverLetterLatex: pipelineResult.coverLetterLatex,
+    auditsPassed: pipelineResult.auditsPassed || [],
+    revisionsApplied: pipelineResult.revisionsApplied || [],
+    source: pipelineResult.source
+  });
+
+  storageService.addDocumentVersion(appId, 'cv', pipelineResult.cvLatex);
+  storageService.addDocumentVersion(appId, 'cover', pipelineResult.coverLetterLatex);
+
+  if (job.id) storageService.setJobState(job.id, 'applied');
+
+  return {
+    application,
+    source: pipelineResult.source,
+    warning: pipelineResult.warning,
+    cvPdfBase64: cvCompilation.pdfBuffer.toString('base64'),
+    coverPdfBase64: coverCompilation.pdfBuffer.toString('base64'),
+    cvRenderer: cvCompilation.renderer,
+    coverRenderer: coverCompilation.renderer,
+    cvAtsVerification: cvCompilation.atsVerification,
+    coverAtsVerification: coverCompilation.atsVerification,
+    reviewScore: pipelineResult.reviewScore ?? null,
+    auditsPassed: pipelineResult.auditsPassed || []
+  };
+}
+
+router.post('/generate', validateBody(generateBody), async (req, res, next) => {
   try {
-    const { job, fitEvaluation } = req.body || {};
-
-    if (!job || !job.title || !job.description) {
-      return res.status(400).json({
-        success: false,
-        error: 'Target job details (title and description) are required.'
-      });
-    }
-
-    const profile = storageService.getProfile();
-    const appId = uuidv4();
-
-    const pipelineResult = await claudeService.draftAndReviewApplication(profile, job, fitEvaluation);
-
-    const cvCompilation = await latexService.compileDocument('cv', pipelineResult.cvLatex, appId);
-    const coverCompilation = await latexService.compileDocument('cover', pipelineResult.coverLetterLatex, appId);
-
-    const clientFields = storageService.sanitizeApplicationInput({
-      id: appId,
-      jobTitle: job.title,
-      company: job.company || 'Company',
-      location: job.location || '',
-      jobUrl: job.url || '',
-      status: 'Drafted',
-      // No invented default. Absent means "not evaluated", not "90% match".
-      fitScore: fitEvaluation?.overallScore ?? null,
-      cvLatex: pipelineResult.cvLatex,
-      coverLetterLatex: pipelineResult.coverLetterLatex,
-      auditsPassed: pipelineResult.auditsPassed || [],
-      revisionsApplied: pipelineResult.revisionsApplied || [],
-      reviewScore: pipelineResult.reviewScore ?? null,
-      source: pipelineResult.source
+    const result = await runGeneration({
+      job: req.body.job,
+      fitEvaluation: req.body.fitEvaluation,
+      onStage: () => {}
     });
-
-    const applicationRecord = await storageService.saveApplication(clientFields, {
-      cvPdfPath: cvCompilation.pdfPath,
-      coverPdfPath: coverCompilation.pdfPath
-    });
-
-    res.json({
-      success: true,
-      application: applicationRecord,
-      // `source` tells the client whether a real model produced this or
-      // whether it is scaffolding from the offline fallback.
-      source: pipelineResult.source,
-      warning: pipelineResult.warning,
-      cvPdfBase64: cvCompilation.pdfBuffer.toString('base64'),
-      coverPdfBase64: coverCompilation.pdfBuffer.toString('base64'),
-      cvRenderer: cvCompilation.renderer,
-      coverRenderer: coverCompilation.renderer,
-      cvAtsVerification: cvCompilation.atsVerification,
-      coverAtsVerification: coverCompilation.atsVerification,
-      reviewScore: pipelineResult.reviewScore ?? null,
-      auditsPassed: pipelineResult.auditsPassed || []
-    });
+    res.json({ success: true, ...result });
   } catch (err) {
     next(err);
   }
 });
 
-router.post('/compile', async (req, res, next) => {
+/**
+ * Same pipeline, streamed.
+ *
+ * Generation regularly runs past a minute and the client previously learned
+ * nothing until it finished. The server already knew each stage boundary; it
+ * just never reported one.
+ */
+router.post('/generate/stream', validateBody(generateBody), async (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no'
+  });
+
+  const send = (event, data) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  const heartbeat = setInterval(() => res.write(': keep-alive\n\n'), 15000);
+
   try {
-    const { type = 'cv', latexContent, appId } = req.body || {};
+    const result = await runGeneration({
+      job: req.body.job,
+      fitEvaluation: req.body.fitEvaluation,
+      onStage: (stage) => send('stage', stage)
+    });
+    send('complete', { success: true, ...result });
+  } catch (err) {
+    log.error({ err: err.message }, 'streamed generation failed');
+    send('error', { success: false, error: err.message || 'Generation failed.' });
+  } finally {
+    clearInterval(heartbeat);
+    res.end();
+  }
+});
 
-    if (!latexContent || typeof latexContent !== 'string') {
-      return res.status(400).json({ success: false, error: 'LaTeX content is required.' });
-    }
-
-    assertDocType(type);
+router.post('/compile', validateBody(compileBody), async (req, res, next) => {
+  try {
+    const { type, latexContent, appId } = req.body;
     // A recompile targets an existing application; a missing id gets a fresh
     // one rather than being taken on trust from the caller.
-    const id = appId === undefined || appId === null || appId === '' ? uuidv4() : assertAppId(appId);
+    const id = appId || uuidv4();
 
     const compilation = await latexService.compileDocument(type, latexContent, id);
 
-    const apps = storageService.getApplications();
-    const existing = apps.find(a => a.id === id);
-    if (existing) {
-      const clientFields = storageService.sanitizeApplicationInput({
+    if (storageService.getApplication(id)) {
+      storageService.saveApplication({
         id,
         ...(type === 'cv' ? { cvLatex: latexContent } : { coverLetterLatex: latexContent })
       });
-      await storageService.saveApplication(clientFields, {
-        ...(type === 'cv' ? { cvPdfPath: compilation.pdfPath } : { coverPdfPath: compilation.pdfPath })
-      });
+      storageService.addDocumentVersion(id, type, latexContent);
     }
 
     res.json({
@@ -124,13 +160,22 @@ router.post('/compile', async (req, res, next) => {
   }
 });
 
+router.get('/versions/:appId/:type', (req, res, next) => {
+  try {
+    const appId = assertAppId(req.params.appId);
+    const type = assertDocType(req.params.type);
+    res.json({ success: true, versions: storageService.getDocumentVersions(appId, type) });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/preview/:appId/:type', (req, res, next) => {
   try {
     const appId = assertAppId(req.params.appId);
     const type = assertDocType(req.params.type);
 
-    const apps = storageService.getApplications();
-    if (!apps.some(a => a.id === appId)) {
+    if (!storageService.getApplication(appId)) {
       return res.status(404).json({ success: false, error: 'Application not found.' });
     }
 
@@ -163,8 +208,7 @@ router.get('/download/:appId/:kind', (req, res, next) => {
       throw new ValidationError(`Unknown download kind. Expected one of: ${Object.keys(DOWNLOAD_KINDS).join(', ')}.`);
     }
 
-    const apps = storageService.getApplications();
-    const app = apps.find(a => a.id === appId);
+    const app = storageService.getApplication(appId);
     if (!app) {
       return res.status(404).json({ success: false, error: 'Application not found.' });
     }

@@ -1,23 +1,26 @@
 import app from './app.js';
 import { claudeService } from './services/claudeService.js';
-import { isAuthConfigured } from './middleware/auth.js';
+import { isAuthConfigured, isUsingPlaintextPassword } from './middleware/auth.js';
+import { logger } from './config/logger.js';
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, '0.0.0.0', () => {
-
   const authOk = isAuthConfigured();
-  console.log('====================================================');
-  console.log('AI Job Search');
-  console.log(`Local:    http://localhost:${PORT}`);
-  console.log(`Auth:     ${authOk ? 'password protection active' : 'NOT CONFIGURED - all logins refused'}`);
-  console.log(`AI:       ${claudeService.isConfigured() ? claudeService.getProviderName() : 'no provider configured'}`);
+
+  logger.info({
+    url: `http://localhost:${PORT}`,
+    auth: authOk ? 'configured' : 'NOT CONFIGURED',
+    ai: claudeService.isConfigured() ? claudeService.getProviderName() : 'no provider'
+  }, 'AI Job Search is running');
+
   if (!authOk) {
-    console.warn('');
-    console.warn('  Set APP_PASSWORD in server/.env and restart. There is no default password.');
+    logger.warn('No password is set, so every login is refused. Run `npm run set-password` in server/ and restart.');
+  } else if (isUsingPlaintextPassword()) {
+    logger.warn('APP_PASSWORD is stored in plaintext. Run `npm run set-password` to replace it with a scrypt hash.');
   }
+
   if (!claudeService.isConfigured()) {
-    console.warn('  No AI provider reachable. Evaluation and drafting will report themselves unavailable.');
+    logger.warn('No AI provider reachable. Evaluation and drafting will report themselves unavailable.');
   }
-  console.log('====================================================');
 });

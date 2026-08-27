@@ -14,6 +14,7 @@
   <div id="app" class="app-container">
     
     <!-- Top Navigation Bar -->
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
     <header class="app-header">
       <div class="header-left">
         <div class="brand">
@@ -32,24 +33,24 @@
       </div>
 
       <!-- Main Navigation Tabs -->
-      <nav class="nav-tabs">
-        <button class="nav-tab active" data-tab="apply">
+      <nav class="nav-tabs" role="tablist" aria-label="Main sections">
+        <button class="nav-tab active" data-tab="apply" role="tab" id="navtab-apply" aria-controls="tab-apply" aria-selected="true" tabindex="0">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           <span>1-Click Apply</span>
         </button>
-        <button class="nav-tab" data-tab="search">
+        <button class="nav-tab" data-tab="search" role="tab" id="navtab-search" aria-controls="tab-search" aria-selected="false" tabindex="-1">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <span>Job Board</span>
         </button>
-        <button class="nav-tab" data-tab="profile">
+        <button class="nav-tab" data-tab="profile" role="tab" id="navtab-profile" aria-controls="tab-profile" aria-selected="false" tabindex="-1">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <span>Candidate Profile</span>
         </button>
-        <button class="nav-tab" data-tab="interview">
+        <button class="nav-tab" data-tab="interview" role="tab" id="navtab-interview" aria-controls="tab-interview" aria-selected="false" tabindex="-1">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
           <span>Interview Prep</span>
         </button>
-        <button class="nav-tab" data-tab="tracker">
+        <button class="nav-tab" data-tab="tracker" role="tab" id="navtab-tracker" aria-controls="tab-tracker" aria-selected="false" tabindex="-1">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
           <span>Tracker</span>
         </button>
@@ -69,12 +70,12 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="app-main">
+    <main class="app-main" id="mainContent">
 
       <!-- ======================================================== -->
       <!-- TAB 1: 1-CLICK APPLY & TAILORED GENERATION PIPELINE      -->
       <!-- ======================================================== -->
-      <section id="tab-apply" class="tab-pane active">
+      <section id="tab-apply" class="tab-pane active" role="tabpanel" aria-labelledby="navtab-apply" tabindex="0">
         <div class="pane-split">
           
           <!-- Left Column: Job Input & Fit Evaluation -->
@@ -295,7 +296,7 @@
       <!-- ======================================================== -->
       <!-- TAB 2: LIVE JOB SEARCH & SCRAPER BOARD                   -->
       <!-- ======================================================== -->
-      <section id="tab-search" class="tab-pane">
+      <section id="tab-search" class="tab-pane" role="tabpanel" aria-labelledby="navtab-search" tabindex="0">
         <div class="search-header-bar">
           <div class="search-form">
             <div class="form-group flex-2">
@@ -336,6 +337,10 @@
             </div>
             <div class="per-page-selector">
               <label style="font-size: 12px; color: var(--text-muted); margin-right: 6px;">Per Page:</label>
+              <label class="toggle-inline">
+                <input type="checkbox" id="hideSeenToggle">
+                <span>Hide applied &amp; dismissed</span>
+              </label>
               <select id="pageSizeSelect" class="input-select" style="width: auto; padding: 5px 10px; font-size: 12px;">
                 <option value="9">9 jobs</option>
                 <option value="12" selected>12 jobs</option>
@@ -369,7 +374,7 @@
       <!-- ======================================================== -->
       <!-- TAB 3: CANDIDATE PROFILE & RESUME IMPORTER               -->
       <!-- ======================================================== -->
-      <section id="tab-profile" class="tab-pane">
+      <section id="tab-profile" class="tab-pane" role="tabpanel" aria-labelledby="navtab-profile" tabindex="0">
         <div class="profile-layout">
           
           <!-- Resume Uploader Card -->
@@ -463,7 +468,7 @@
       <!-- ======================================================== -->
       <!-- TAB 4: INTERVIEW PREPARATION & STAR FLASHCARDS           -->
       <!-- ======================================================== -->
-      <section id="tab-interview" class="tab-pane">
+      <section id="tab-interview" class="tab-pane" role="tabpanel" aria-labelledby="navtab-interview" tabindex="0">
         <div class="interview-layout">
           <div class="card">
             <div class="card-header">
@@ -488,11 +493,19 @@
       <!-- ======================================================== -->
       <!-- TAB 5: APPLICATION TRACKER & KANBAN                      -->
       <!-- ======================================================== -->
-      <section id="tab-tracker" class="tab-pane">
+      <section id="tab-tracker" class="tab-pane" role="tabpanel" aria-labelledby="navtab-tracker" tabindex="0">
         <div class="tracker-header">
           <div>
             <h2>Application Pipeline</h2>
             <p class="subtle-text">Track your applications, interviews, and offers</p>
+          </div>
+          <div class="tracker-controls">
+            <label class="visually-hidden" for="trackerSearch">Filter applications</label>
+            <input id="trackerSearch" class="input-field" type="search"
+                   placeholder="Filter by role, company or notes..." autocomplete="off">
+            <button id="btnShowDueFollowUps" class="btn btn-sm btn-ghost" aria-pressed="false">
+              Due follow-ups <span class="count-pill" id="countDueFollowUps">0</span>
+            </button>
           </div>
         </div>
 
@@ -529,9 +542,95 @@
             <div class="column-cards" id="col-Offer"></div>
           </div>
         </div>
+
+        <!-- Rejected and Withdrawn exist in the status vocabulary but had no
+             home on the board, so they silently fell back into Drafted. -->
+        <details class="closed-lane" id="closedLane">
+          <summary>
+            Closed applications <span class="count-pill" id="count-Closed">0</span>
+          </summary>
+          <div class="column-cards closed-cards" id="col-Closed"></div>
+        </details>
       </section>
 
     </main>
+
+
+    <!-- First-run wizard. The app previously dropped a new user onto a blank
+         profile form with no indication of what to do first. -->
+    <div id="onboardingOverlay" class="login-overlay hidden" role="dialog"
+         aria-modal="true" aria-labelledby="onboardingTitle">
+      <div class="login-modal onboarding-modal">
+        <div class="onboarding-progress" aria-hidden="true">
+          <span class="ob-step active" data-step="1"></span>
+          <span class="ob-step" data-step="2"></span>
+          <span class="ob-step" data-step="3"></span>
+        </div>
+
+        <h2 id="onboardingTitle" class="onboarding-title">Let&#39;s set up your profile</h2>
+        <p id="onboardingSubtitle" class="onboarding-sub">Step 1 of 3 &middot; Upload your CV</p>
+
+        <!-- Step 1: supply a CV -->
+        <div class="ob-panel" id="obStep1">
+          <p class="onboarding-help">
+            Everything the app writes is grounded in this profile, so start by
+            importing your CV. Nothing is saved until you confirm it.
+          </p>
+          <div id="obDropzone" class="dropzone" tabindex="0" role="button"
+               aria-label="Choose a CV file to upload">
+            <p><strong>Drop your CV here</strong> or click to choose a file</p>
+            <p class="subtle-text">PDF, DOCX, TXT or Markdown</p>
+          </div>
+          <input type="file" id="obFileInput" class="hidden" accept=".pdf,.docx,.doc,.txt,.md">
+          <p class="onboarding-or">or</p>
+          <label class="visually-hidden" for="obRawText">Paste your CV text</label>
+          <textarea id="obRawText" class="input-field" rows="5"
+                    placeholder="Paste your CV text here instead..."></textarea>
+          <div class="ob-actions">
+            <button id="obSkip" class="btn btn-ghost">Skip for now</button>
+            <button id="obParse" class="btn btn-primary">Continue</button>
+          </div>
+        </div>
+
+        <!-- Step 2: confirm what was parsed -->
+        <div class="ob-panel hidden" id="obStep2">
+          <p class="onboarding-help" id="obParseNote"></p>
+          <div class="ob-fields">
+            <label>Full name<input id="obName" class="input-field" type="text"></label>
+            <label>Professional title<input id="obTitle" class="input-field" type="text"></label>
+            <label>Email<input id="obEmail" class="input-field" type="email"></label>
+            <label>Phone<input id="obPhone" class="input-field" type="tel"></label>
+            <label>Location<input id="obLocation" class="input-field" type="text"></label>
+            <label>Key skills<input id="obSkills" class="input-field" type="text"
+                                   placeholder="Comma separated"></label>
+          </div>
+          <div class="ob-actions">
+            <button id="obBack2" class="btn btn-ghost">Back</button>
+            <button id="obConfirm" class="btn btn-primary">Looks right, continue</button>
+          </div>
+        </div>
+
+        <!-- Step 3: what to search for -->
+        <div class="ob-panel hidden" id="obStep3">
+          <p class="onboarding-help">
+            What are you looking for? This seeds your job board search.
+          </p>
+          <div class="ob-fields">
+            <label>Role or keywords<input id="obQuery" class="input-field" type="text"
+                                          placeholder="e.g. Senior Backend Engineer"></label>
+            <label>Location<input id="obLocationPref" class="input-field" type="text"
+                                  placeholder="e.g. Remote, or København"></label>
+            <label>Job board
+              <select id="obPortal" class="input-select"></select>
+            </label>
+          </div>
+          <div class="ob-actions">
+            <button id="obBack3" class="btn btn-ghost">Back</button>
+            <button id="obFinish" class="btn btn-primary">Finish setup</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Protected Login Modal Overlay -->
     <div id="loginOverlay" class="login-overlay hidden">
@@ -564,6 +663,6 @@
 
   </div>
 
-  <script src="/js/app.js"></script>
+  <script type="module" src="/js/app.js"></script>
 </body>
 </html>

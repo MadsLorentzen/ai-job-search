@@ -78,13 +78,17 @@ jobs:
   server-tests:
     # The web app under server/ had no CI coverage at all, which is how a
     # hardcoded auth bypass, a path traversal and an arbitrary file read
-    # shipped. These tests pin each of those fixes.
+    # shipped. These pin each of those fixes.
+    #
+    # Node 22.5+ is required: storage uses the built-in node:sqlite, which
+    # avoids a native module (and the install lifecycle scripts that
+    # security-guards forbids).
     name: Server tests (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        node-version: ["20", "22"]
+        node-version: ["22", "24"]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
@@ -94,7 +98,14 @@ jobs:
           cache-dependency-path: server/package-lock.json
       - run: npm ci
         working-directory: server
-      - run: npm test
+      - name: Typecheck
+        run: npm run typecheck
+        working-directory: server
+      - name: Unit and API tests
+        run: npm test
+        working-directory: server
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
         working-directory: server
       - name: Assert no hardcoded credential crept back in
         run: |
@@ -102,6 +113,39 @@ jobs:
             echo "::error::A hardcoded fallback credential is present in server/"
             exit 1
           fi
+      - name: Assert secrets are not logged in the clear
+        run: |
+          if grep -rnE 'console\.(log|warn|error)[[:space:]]*\(' server/src --include='*.js'; then
+            echo "::error::Use the structured logger (config/logger.js), which redacts secrets"
+            exit 1
+          fi
+
+  server-e2e:
+    # Browser coverage for the flows the API suite cannot reach: several fixed
+    # defects were purely client-side (a dead pagination button, leaked blob
+    # URLs, an inert Kanban board).
+    name: Server browser tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+        working-directory: server
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: server
+      - run: npm run test:e2e
+        working-directory: server
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: server/playwright-report/
+          retention-days: 7
 
   dependency-review:
     name: Dependency review

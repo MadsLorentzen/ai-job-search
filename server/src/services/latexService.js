@@ -5,13 +5,27 @@ import { promisify } from 'util';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import { ROOT_DIR, BUILDS_DIR, ensureDir } from '../config/env.js';
+import { loggerFor } from '../config/logger.js';
+import { ValidationError } from '../errors.js';
+
+const log = loggerFor('latex');
 
 const execFileAsync = promisify(execFile);
 
 ensureDir(BUILDS_DIR);
 
 export const DOC_TYPES = Object.freeze(['cv', 'cover']);
-const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+/**
+ * Canonical application-id shape, shared with the validation layer.
+ *
+ * Deliberately hex-and-dashes rather than strict RFC 4122: the property that
+ * matters here is that an id can never contribute a path separator or a shell
+ * metacharacter, not which UUID version produced it. Keeping one definition
+ * stops the request schema and the path guard from disagreeing about what is
+ * acceptable.
+ */
+export const APP_ID_PATTERN = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+const UUID_RE = APP_ID_PATTERN;
 
 /** A Unicode-capable face, so non-Latin-1 names do not kill the render. */
 const UNICODE_FONT = path.join(ROOT_DIR, 'cover_letters/OpenFonts/fonts/lato/Lato-Reg.ttf');
@@ -21,13 +35,7 @@ const A4 = Object.freeze({ width: 595.28, height: 841.89 });
 const MAX_BUILD_AGE_MS = 24 * 60 * 60 * 1000;
 const MAX_BUILD_DIRS = 200;
 
-export class ValidationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'ValidationError';
-    this.statusCode = 400;
-  }
-}
+export { ValidationError } from '../errors.js';
 
 export function assertDocType(type) {
   if (!DOC_TYPES.includes(type)) {
@@ -121,7 +129,7 @@ export const latexService = {
         };
       }
     } catch (compileErr) {
-      console.warn(`${compiler} compilation failed or binary not found:`, compileErr.message);
+      log.warn({ compiler, err: compileErr.message }, 'compilation failed or binary not found');
     }
 
     const fallback = await this.generateFallbackPdf(type, latexContent);
@@ -200,7 +208,7 @@ export const latexService = {
           : regular;
         return { regular, bold, unicode: true };
       } catch (err) {
-        console.warn('Unicode font embedding failed, falling back to Helvetica:', err.message);
+        log.warn({ err: err.message }, 'unicode font embedding failed, falling back to Helvetica');
       }
     }
     return {
@@ -243,7 +251,7 @@ export const latexService = {
       try {
         page.drawText(sanitize(text), { x, y, size, font, color });
       } catch (err) {
-        console.warn('Skipped an unrenderable line in the preview PDF:', err.message);
+        log.warn({ err: err.message }, 'skipped an unrenderable line in the preview PDF');
       }
       y -= lead;
     };
@@ -353,7 +361,7 @@ export const latexService = {
         }
       });
     } catch (err) {
-      console.warn('Build directory prune skipped:', err.message);
+      log.warn({ err: err.message }, 'build directory prune skipped');
     }
   },
 

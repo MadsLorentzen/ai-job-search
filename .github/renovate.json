@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "timezone": "Europe/Copenhagen",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 3,
+  "packageRules": [
+    {
+      "description": "Group non-major server updates into one PR so review stays cheap.",
+      "matchFileNames": ["server/package.json"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "server dependencies"
+    },
+    {
+      "description": "Security fixes bypass the schedule.",
+      "matchDatasources": ["npm"],
+      "vulnerabilityAlerts": { "enabled": true },
+      "schedule": ["at any time"]
+    },
+    {
+      "description": "Pin GitHub Actions to commit SHAs, matching the existing workflow convention.",
+      "matchManagers": ["github-actions"],
+      "pinDigests": true
+    }
+  ],
+  "vulnerabilityAlerts": { "labels": ["security"] }
+}
