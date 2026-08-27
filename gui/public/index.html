@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#0d0b09">
   <meta name="color-scheme" content="dark">
   <title>Job Search Desk</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&family=Fraunces:ital,opsz,wght@0,9..144,360;0,9..144,520;0,9..144,700;1,9..144,360&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+  <!-- Fonts are bundled locally (vendor/fonts) like marked/purify: the desk
+       promises "localhost only" and should not phone font CDNs. -->
+  <link rel="stylesheet" href="/vendor/fonts.css">
   <link rel="stylesheet" href="/desk.css">
 </head>
 <body>
@@ -132,22 +132,8 @@
       </div>
     </header>
 
-    <section id="log" class="log" aria-live="polite">
-      <div class="empty" id="empty">
-        <p class="kicker">Ready when you are</p>
-        <h2>Start wherever you are.</h2>
-        <p>First day in this repo? Run <strong>Setup</strong>. Profile already filled? <strong>Scrape</strong> for roles, then talk the same way you would in the terminal.</p>
-        <div class="empty-actions">
-          <button type="button" data-action="setup">Start with setup</button>
-          <button type="button" data-action="scrape" class="ghost">I am already set up</button>
-        </div>
-        <div class="suggestions" aria-label="Suggested starts">
-          <button type="button" data-prompt="Which of these roles should I prioritize this week?">Prioritize this week</button>
-          <button type="button" data-action="rank">Rank what we have</button>
-          <button type="button" data-action="interview">Prep for an interview</button>
-        </div>
-      </div>
-    </section>
+    <!-- The empty state is inserted by desk.js (emptyMarkup) so its copy has one home. -->
+    <section id="log" class="log" aria-live="polite"></section>
 
     <button type="button" id="jump" class="jump" hidden>Latest</button>
 

@@ -367,6 +367,9 @@ export function spawnSubscriptionLogin({ cwd, email } = {}) {
   const args = ["auth", "login", "--claudeai"];
   if (email) args.push("--email", email);
   const child = spawnClaude(args, { cwd });
+  // If the spawn fails, stdin errors asynchronously; without a listener that
+  // EPIPE is an uncaught exception in the desk process.
+  child.stdin?.on("error", () => {});
   child.stdin?.write("\n");
   return child;
 }

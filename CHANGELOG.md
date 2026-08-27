@@ -15,6 +15,20 @@ per-file diff commands.
 
 ### Changed
 
+- Job Search Desk 1.2.4: security and robustness hardening for the local desk
+  server. It now rejects cross-origin POSTs and matches its host exactly,
+  closing a path where any web page could POST to `127.0.0.1` and drive Claude
+  Code with permissions skipped (the old check only matched a host prefix, so
+  DNS-rebinding names like `127.0.0.1.evil.com` passed). A malformed request
+  body answers 400 instead of crashing the server on an unhandled parse error.
+  "New chat" during a busy turn no longer resurrects the session it just
+  cleared, a cancelled-then-retried login no longer orphans the installer, and
+  a stray `stdin`/`taskkill` can no longer crash the process. A page refresh
+  replays the conversation, tool chips show the tool name, a server-reported
+  error no longer flashes a false "lost the server" status, first-run downloads
+  survive a dropped connection, `--cli` works for install paths with spaces,
+  picking a new folder restarts the server on it, and the UI fonts are bundled
+  locally so the localhost-only desk makes no font-CDN request.
 - Job Search Desk 1.2.3: prompts reach Claude Code intact on Windows. The desk
   resolves the npm `claude.cmd` shim to its real `claude.exe` and spawns it
   without `cmd.exe`, so prompts with `&`, quotes, or pasted multi-line postings

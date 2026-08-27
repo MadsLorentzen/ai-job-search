@@ -54,6 +54,12 @@ async function openDesk(root) {
   writeWorkspace(root);
   process.env.JOB_SEARCH_ROOT = root;
   process.env.JOB_SEARCH_GUI_NO_BROWSER = "1";
+  if (desk && desk.workspace !== root) {
+    // The user picked a different folder: a kept-alive server would keep
+    // writing scrapes and CVs into the old one while the UI claims the new.
+    desk.stop();
+    desk = null;
+  }
   if (!desk) {
     desk = await startDesk({ root, openBrowser: false });
   }
