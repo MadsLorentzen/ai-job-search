@@ -17,16 +17,40 @@ export const scraperService = {
     ];
   },
 
-  async searchJobs({ query = '', location = 'Remote', portal = 'freehire-search', limit = 100, remote = 'all' }) {
-    const cappedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 5), 100);
-    console.log(`Executing search: portal=${portal}, query="${query}", location="${location}", limit=${cappedLimit}`);
+  async searchJobs({ query = '', location = 'Remote', portal = 'freehire-search', limit = 200, remote = 'all' }) {
+    console.log(`Executing search: portal=${portal}, query="${query}", location="${location}", limit=${limit}`);
 
+    // 1. Direct HTTP API for FreeHire (fastest, cleanest, no buffer truncations)
+    if (portal === 'freehire-search') {
+      try {
+        const freehireResults = await this.fetchFreehireDirect({ query, location, limit });
+        if (freehireResults && freehireResults.length > 0) {
+          console.log(`FreeHire direct API returned ${freehireResults.length} jobs.`);
+          return freehireResults;
+        }
+      } catch (httpErr) {
+        console.warn('Freehire direct fetch returned error, falling back to CLI:', httpErr.message);
+      }
+    }
+
+    // 2. Direct HTTP Guest Scraper for LinkedIn (bypasses CLI formatting issues)
+    if (portal === 'linkedin-search') {
+      try {
+        const directLinkedin = await this.fetchLinkedinDirect({ query, location, limit });
+        if (directLinkedin && directLinkedin.length > 0) {
+          console.log(`LinkedIn guest scraper returned ${directLinkedin.length} jobs.`);
+          return directLinkedin;
+        }
+      } catch (liErr) {
+        console.warn('LinkedIn direct fetch returned error, falling back to CLI:', liErr.message);
+      }
+    }
+
+    // 3. Bun Skill CLI Execution (for Danish portals and CLI fallback)
     const skillCliPath = path.join(ROOT_DIR, '.agents/skills', portal, 'cli/src/cli.ts');
-    
-    // Check if Bun is available and skill file exists
     if (fs.existsSync(skillCliPath)) {
       try {
-        const results = await this.runBunCli(portal, skillCliPath, { query, location, limit: cappedLimit, remote });
+        const results = await this.runBunCli(portal, skillCliPath, { query, location, limit, remote });
         if (results && results.length > 0) {
           return results;
         }
@@ -35,27 +59,7 @@ export const scraperService = {
       }
     }
 
-    // Direct HTTP API Fallbacks
-    if (portal === 'freehire-search') {
-      try {
-        return await this.fetchFreehireDirect({ query, location, limit: cappedLimit });
-      } catch (httpErr) {
-        console.warn('Freehire direct fetch fallback failed:', httpErr.message);
-      }
-    }
-
-    if (portal === 'linkedin-search') {
-      try {
-        const directLinkedin = await this.fetchLinkedinDirect({ query, location, limit: cappedLimit });
-        if (directLinkedin && directLinkedin.length > 0) {
-          return directLinkedin;
-        }
-      } catch (liErr) {
-        console.warn('LinkedIn direct fetch fallback failed:', liErr.message);
-      }
-    }
-
-    // Fallback Mock/Sample curated results if scrapers are offline/rate-limited
+    // 4. Fallback Curated sample results if everything is offline/unreachable
     return this.getSampleJobs(query, location, portal);
   },
 
@@ -92,8 +96,7 @@ export const scraperService = {
 
       const proc = spawn('bun', args, {
         cwd: ROOT_DIR,
-        shell: true,
-        timeout: 30000
+        timeout: 45000
       });
 
       let stdout = '';
@@ -108,10 +111,12 @@ export const scraperService = {
         }
 
         try {
-          // Attempt to parse JSON from stdout
-          const jsonMatch = stdout.match(/\[[\s\S]*\]/) || stdout.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
+          // Attempt to extract json array
+          const startIdx = stdout.indexOf('[');
+          const endIdx = stdout.lastIndexOf(']');
+          if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+            const jsonSubstring = stdout.substring(startIdx, endIdx + 1);
+            const parsed = JSON.parse(jsonSubstring);
             const jobsList = Array.isArray(parsed) ? parsed : (parsed.jobs || parsed.results || [parsed]);
             const normalized = jobsList.map((job, idx) => this.normalizeJob(job, portal, idx));
             return resolve(normalized);
@@ -123,22 +128,29 @@ export const scraperService = {
         }
       });
 
-      proc.on('error', err => {
-        reject(err);
-      });
+      proc.on('error', err => reject(err));
     });
   },
 
-  async fetchFreehireDirect({ query, location, limit = 25 }) {
+  async fetchFreehireDirect({ query, location, limit = 200 }) {
     const baseUrl = process.env.FREEHIRE_API_URL || 'https://freehire.me';
-    let url = `${baseUrl}/api/v1/jobs?limit=${limit}`;
-    if (query) url += `&q=${encodeURIComponent(query)}`;
+    // Fetch up to 200 results from FreeHire aggregator
+    let url = `${baseUrl}/api/v1/jobs?limit=${Math.min(limit, 200)}`;
+    if (query && query.trim()) {
+      url += `&q=${encodeURIComponent(query.trim())}`;
+    }
     if (location && location.toLowerCase() !== 'remote' && location.toLowerCase() !== 'all') {
-      url += `&country=${encodeURIComponent(location)}`;
+      url += `&country=${encodeURIComponent(location.trim())}`;
     }
 
+    console.log(`Direct Fetching FreeHire API: ${url}`);
+
     const response = await fetch(url, {
-      headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0 (compatible; AIJobSearch/1.3)' }
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (compatible; AIJobSearch/1.3)'
+      },
+      signal: AbortSignal.timeout(20000)
     });
 
     if (!response.ok) {
@@ -146,17 +158,17 @@ export const scraperService = {
     }
 
     const data = await response.json();
-    const jobs = data.jobs || data.data || data || [];
+    const jobs = data.jobs || data.data || data.results || (Array.isArray(data) ? data : []);
     return jobs.map((j, idx) => this.normalizeJob(j, 'freehire-search', idx));
   },
 
-  async fetchLinkedinDirect({ query, location, limit = 25 }) {
+  async fetchLinkedinDirect({ query, location, limit = 100 }) {
     const searchLoc = (!location || location.toLowerCase() === 'remote') ? 'United States' : location;
     const isRemote = !location || location.toLowerCase() === 'remote';
     
     let url = `https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=${encodeURIComponent(query || 'Software')}&location=${encodeURIComponent(searchLoc)}&start=0`;
     if (isRemote) {
-      url += `&f_WT=2`; // LinkedIn remote filter
+      url += `&f_WT=2`; // Remote workplace filter
     }
 
     console.log(`Fetching LinkedIn Guest API: ${url}`);
@@ -168,11 +180,11 @@ export const scraperService = {
         'Accept-Language': 'en-US,en;q=0.9',
         'X-Requested-With': 'XMLHttpRequest'
       },
-      signal: AbortSignal.timeout(15000)
+      signal: AbortSignal.timeout(20000)
     });
 
     if (!response.ok) {
-      throw new Error(`LinkedIn guest returned ${response.status}`);
+      throw new Error(`LinkedIn guest returned HTTP ${response.status}`);
     }
 
     const html = await response.text();
@@ -197,7 +209,7 @@ export const scraperService = {
           url: jobUrl,
           portal: 'linkedin-search',
           postedDate: 'Recently on LinkedIn',
-          description: `Position: ${title} at ${company}. Located in ${jobLocation || 'Remote'}.\n\nApply and see full specifications at: ${jobUrl}`,
+          description: `Position: ${title} at ${company}.\nLocation: ${jobLocation || 'Remote'}.\n\nApply directly at: ${jobUrl}`,
           skills: ['LinkedIn Opening', query || 'Engineering', 'Active Hiring'],
           seniority: title.toLowerCase().includes('senior') ? 'Senior Level' : title.toLowerCase().includes('lead') ? 'Lead' : 'Mid-Level',
           employmentType: 'Full-time',

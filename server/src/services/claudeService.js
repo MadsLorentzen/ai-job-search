@@ -7,7 +7,12 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+// Load .env from server/.env or root/.env
+const serverEnv = path.resolve(__dirname, '../../.env');
+const rootEnv = path.resolve(__dirname, '../../../../.env');
+if (fs.existsSync(serverEnv)) dotenv.config({ path: serverEnv });
+if (fs.existsSync(rootEnv)) dotenv.config({ path: rootEnv });
 
 const apiKey = process.env.ANTHROPIC_API_KEY;
 let anthropicClient = null;
@@ -20,7 +25,7 @@ if (apiKey && apiKey.trim() !== '' && !apiKey.includes('your_anthropic_api_key')
   }
 }
 
-const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-3-7-sonnet-20250219';
+const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-latest';
 
 export const claudeService = {
   isConfigured() {
@@ -28,8 +33,7 @@ export const claudeService = {
   },
 
   hasClaudeCliAuth() {
-    // Check if Claude Code session exists in user home directory (~/.claude)
-    const home = process.env.HOME || process.env.USERPROFILE || '';
+    const home = process.env.HOME || process.env.USERPROFILE || '/root';
     const claudeDir = path.join(home, '.claude');
     const claudeJson = path.join(home, '.claude.json');
     return fs.existsSync(claudeDir) || fs.existsSync(claudeJson);
@@ -51,14 +55,14 @@ export const claudeService = {
       }
     }
 
-    // 2. CLI Bridge: Uses Claude Pro subscription session from `claude login`
+    // 2. CLI Bridge: Uses Claude Pro subscription session via stdin (avoids shell escaping syntax errors)
     try {
       const cliResult = await this.runClaudeCli(systemPrompt, userPrompt);
       if (cliResult && cliResult.trim()) {
         return cliResult;
       }
     } catch (cliErr) {
-      console.warn('Claude CLI bridge execution failed or not installed:', cliErr.message);
+      console.warn('Claude CLI bridge execution failed or returned error:', cliErr.message);
     }
 
     return null;
@@ -67,12 +71,12 @@ export const claudeService = {
   runClaudeCli(systemPrompt, userPrompt) {
     return new Promise((resolve, reject) => {
       const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
-      console.log('Invoking Claude Code CLI Bridge (using active Pro subscription)...');
+      console.log('Invoking Claude Code CLI Bridge via STDIN pipe (using Pro subscription)...');
 
-      // claude -p / --print runs in headless prompt mode using ~/.claude credentials
-      const proc = spawn('claude', ['-p', fullPrompt], {
-        shell: true,
-        timeout: 45000
+      // Spawn claude CLI without shell interpolation, feed prompt via stdin
+      const proc = spawn('claude', ['-p', '--dangerously-skip-permissions'], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 60000
       });
 
       let stdout = '';
@@ -82,13 +86,25 @@ export const claudeService = {
       proc.stderr.on('data', d => { stderr += d.toString(); });
 
       proc.on('close', code => {
-        if (code === 0 && stdout) {
+        if (code === 0 && stdout && stdout.trim()) {
+          return resolve(stdout);
+        }
+        // If stdout contains valid content even with code != 0, return it
+        if (stdout && (stdout.includes('{') || stdout.length > 50)) {
           return resolve(stdout);
         }
         reject(new Error(`Claude CLI exited with code ${code}: ${stderr || stdout}`));
       });
 
       proc.on('error', err => reject(err));
+
+      // Feed full prompt safely into STDIN
+      try {
+        proc.stdin.write(fullPrompt);
+        proc.stdin.end();
+      } catch (pipeErr) {
+        reject(pipeErr);
+      }
     });
   },
 
@@ -98,48 +114,35 @@ export const claudeService = {
 Evaluate the job posting against the candidate's profile with extreme objectivity and rigor.
 
 Framework Rules:
-1. Eligibility Gate: Check work rights / citizenship.
-   - If requiring citizenship/security clearance candidate lacks: FAIL
-   - If sponsorship/international explicitly welcome: PASS
-   - If silent: PROCEED (Unverified)
-2. Language Gate: Check required languages against profile languages table.
-   - Missing required working language: FAIL
-   - Declared language at lower level: FLAG
-   - Matches or exceeds: PASS
-3. Five Scoring Dimensions (0-100):
-   - Technical Skills Match
-   - Experience & Functional Match
-   - Seniority & Scope Match
-   - Growth & Trajectory Match
-   - Domain & Culture Alignment
+1. Eligibility Gate: Check work authorization, location, degree requirements (PASS/FAIL).
+2. Language Gate: Check working language matches candidate proficiency (PASS/FAIL).
+3. 5-Factor Dimensions (0-100 each):
+   - technicalMatch (weight 35%): Direct skill/stack overlap
+   - experienceMatch (weight 25%): Relevant domain/functional responsibilities
+   - seniorityMatch (weight 15%): Title/scope appropriateness (penalize overqualified/underqualified)
+   - growthMatch (weight 15%): Learning potential & career advancement
+   - domainMatch (weight 10%): Industry sector & business model alignment
+4. Anti-AI / Anti-fluff tone: Honest critique, realistic scoring, concrete gaps identified.
 
-You MUST return ONLY valid JSON matching this exact structure:
+Return ONLY valid JSON matching this schema:
 {
   "overallScore": 88,
-  "verdict": "Strong Match" | "Solid Match" | "Stretch Role" | "Fundamental Mismatch",
-  "eligibilityGate": { "status": "PASS" | "FLAG" | "FAIL" | "UNVERIFIED", "note": "..." },
-  "languageGate": { "status": "PASS" | "FLAG" | "FAIL", "note": "..." },
+  "verdict": "Strong Match" | "Solid Match" | "Moderate Match" | "Reach Position" | "Poor Fit",
+  "eligibilityGate": { "status": "PASS" | "FAIL", "note": "..." },
+  "languageGate": { "status": "PASS" | "FAIL", "note": "..." },
   "dimensions": {
-    "technicalMatch": { "score": 90, "analysis": "..." },
+    "technicalMatch": { "score": 92, "analysis": "..." },
     "experienceMatch": { "score": 85, "analysis": "..." },
-    "seniorityMatch": { "score": 88, "analysis": "..." },
-    "growthMatch": { "score": 82, "analysis": "..." },
-    "domainMatch": { "score": 86, "analysis": "..." }
+    "seniorityMatch": { "score": 90, "analysis": "..." },
+    "growthMatch": { "score": 80, "analysis": "..." },
+    "domainMatch": { "score": 85, "analysis": "..." }
   },
   "strengths": ["...", "..."],
   "gaps": ["...", "..."],
   "recommendedStrategy": "..."
 }`;
 
-    const userPrompt = `Candidate Profile:
-${JSON.stringify(profile, null, 2)}
-
-Target Job Posting:
-Company: ${job.company}
-Title: ${job.title}
-Location: ${job.location}
-Description:
-${job.description}`;
+    const userPrompt = `Candidate Profile:\n${JSON.stringify(profile, null, 2)}\n\nJob Posting:\nCompany: ${job.company}\nTitle: ${job.title}\nLocation: ${job.location}\nDescription:\n${job.description}`;
 
     const responseText = await this.executePrompt(systemPrompt, userPrompt);
     if (responseText) {
@@ -148,7 +151,7 @@ ${job.description}`;
         try {
           return JSON.parse(jsonMatch[0]);
         } catch (e) {
-          console.warn('JSON parse error from Claude response:', e);
+          console.warn('Failed to parse AI evaluation response:', e.message);
         }
       }
     }
@@ -156,35 +159,29 @@ ${job.description}`;
     return this.mockJobEvaluation(profile, job);
   },
 
-  async draftAndReviewApplication(profile, job, fitEvaluation) {
-    console.log('Running Drafter Agent for:', job.company, job.title);
-    const drafterSystemPrompt = `You are an elite LaTeX Resume and Cover Letter Drafter Agent.
-Follow the writing style guidelines strictly from 03-writing-style.md:
-- NO em-dashes (--) under any circumstance. Use commas, periods, or clean sentence restructuring.
-- NO cliches or filler phrases ("passionate about", "thrilled to apply", "hit the ground running", "great fit", "synergies").
-- NO generic buzzwords without concrete metrics/facts.
-- Cover letter MUST be forward-looking: Focus on the problems you can solve for the employer, methods/tools you will bring, and expected outcomes. One page max.
-- The CV MUST use moderncv banking style (lualatex compatible).
-- The Cover Letter MUST use cover.cls syntax (xelatex compatible).
+  async runDrafterReviewerLoop(profile, job, fitEvaluation) {
+    console.log(`Starting Drafter -> Reviewer LaTeX Generation Loop for ${job.company} - ${job.title}`);
 
-Return a JSON object with:
+    // Step 1: Drafter Agent
+    const drafterSystemPrompt = `You are an expert Resume & Cover Letter Drafter following canonical guidelines in 02-cv-tailoring.md, 03-writing-style.md, and 06-cover-letter.md.
+
+Generate tailored LaTeX for:
+1. ModernCV (banking style, clean typography, tailored bullet points showcasing measurable impact).
+2. Task-Solving Cover Letter (strictly follow cover.cls style, address company challenges, NO clichés like "thrilled" or "passionate", ZERO em-dashes).
+
+CRITICAL STYLE RULES:
+- ZERO em-dashes (--) or en-dashes as parenthetical breaks. Use commas or full stops.
+- Avoid generic AI fluff ("seamlessly", "spearheaded", "synergy", "deeply passionate").
+- Ground all achievements in candidate experience.
+
+Return ONLY valid JSON:
 {
   "cvLatex": "\\documentclass[11pt,a4paper,sans]{moderncv}\\n...",
   "coverLetterLatex": "\\documentclass[]{cover}\\n...",
   "drafterNotes": ["..."]
 }`;
 
-    const drafterUserPrompt = `Candidate Profile:
-${JSON.stringify(profile, null, 2)}
-
-Target Job:
-Company: ${job.company}
-Role: ${job.title}
-Job Description:
-${job.description}
-
-Fit Evaluation:
-${JSON.stringify(fitEvaluation, null, 2)}`;
+    const drafterUserPrompt = `Candidate Profile:\n${JSON.stringify(profile, null, 2)}\n\nTarget Job:\nCompany: ${job.company}\nTitle: ${job.title}\nLocation: ${job.location}\nDescription:\n${job.description}\n\nFit Evaluation:\n${JSON.stringify(fitEvaluation, null, 2)}`;
 
     let drafterOutput = null;
     const draftText = await this.executePrompt(drafterSystemPrompt, drafterUserPrompt);
@@ -202,15 +199,13 @@ ${JSON.stringify(fitEvaluation, null, 2)}`;
     }
 
     // Step 2: Reviewer Agent
-    console.log('Running Reviewer Agent audit against 03-writing-style.md');
-    const reviewerSystemPrompt = `You are a strict, skeptical Senior Hiring Manager and LaTeX Reviewer Agent.
+    const reviewerSystemPrompt = `You are a strict Senior Hiring Manager and LaTeX Reviewer Agent.
 Audit the drafted LaTeX CV and Cover Letter against 03-writing-style.md:
-1. Em-Dash Audit: Search for and eliminate any em-dashes (--) or en-dashes used as parentheticals.
+1. Em-Dash Audit: Eliminate any em-dashes (--) or en-dashes used as parentheticals.
 2. Cliché & Fluff Audit: Eradicate "thrilled", "passionate", "deeply excited", "synergies".
-3. Factual Accuracy: Ensure every metric or claim is grounded in the candidate profile.
-4. ATS Scan: Ensure LaTeX syntax has no font clashing, escapes special characters (&, %, _, #), and maintains clean moderncv/cover.cls commands.
+3. ATS Scan: Escape special characters (&, %, _, #) and maintain valid moderncv/cover.cls syntax.
 
-Output refined, publication-grade LaTeX files in JSON format:
+Output refined LaTeX in JSON format:
 {
   "cvLatex": "\\documentclass[11pt,a4paper,sans]{moderncv}\\n...",
   "coverLetterLatex": "\\documentclass[]{cover}\\n...",
@@ -287,12 +282,12 @@ Return ONLY valid JSON:
       "rationale": "..."
     }
   ],
-  "strategicTalkingPoints": ["...", "...", "..."]
+  "strategicTalkingPoints": ["...", "..."]
 }`;
 
-    const userPrompt = `Profile:\n${JSON.stringify(profile, null, 2)}\n\nJob:\nCompany: ${job.company}\nTitle: ${job.title}\nDescription:\n${job.description}`;
-    const responseText = await this.executePrompt(systemPrompt, userPrompt);
+    const userPrompt = `Candidate Profile:\n${JSON.stringify(profile, null, 2)}\n\nJob Posting:\nCompany: ${job.company}\nRole: ${job.title}\nDescription:\n${job.description}`;
 
+    const responseText = await this.executePrompt(systemPrompt, userPrompt);
     if (responseText) {
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -410,9 +405,9 @@ Return ONLY valid JSON:
 ${profile.identity?.summary || 'Experienced software engineer specializing in scalable systems, distributed architectures, and modern cloud technologies.'}
 
 \\section{Technical Skills}
-\\cvitem{Languages \& Frameworks}{${(profile.skills?.primary || ['TypeScript', 'Node.js', 'Python', 'React', 'Go']).join(', ')}}
-\\cvitem{Infrastructure \& Databases}{${(profile.skills?.secondary || ['PostgreSQL', 'Docker', 'Kubernetes', 'AWS', 'Redis']).join(', ')}}
-\\cvitem{Domains \& Practices}{${(profile.skills?.domain || ['Distributed Systems', 'Microservices', 'CI/CD', 'API Design']).join(', ')}}
+\\cvitem{Languages \\& Frameworks}{${(profile.skills?.primary || ['TypeScript', 'Node.js', 'Python', 'React', 'Go']).join(', ')}}
+\\cvitem{Infrastructure \\& Databases}{${(profile.skills?.secondary || ['PostgreSQL', 'Docker', 'Kubernetes', 'AWS', 'Redis']).join(', ')}}
+\\cvitem{Domains \\& Practices}{${(profile.skills?.domain || ['Distributed Systems', 'Microservices', 'CI/CD', 'API Design']).join(', ')}}
 
 \\section{Professional Experience}
 ${(profile.experience || []).map(exp => `
