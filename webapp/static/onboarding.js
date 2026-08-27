@@ -1,5 +1,6 @@
 window.Onboarding = (function () {
   let state = null; // {walkthroughId, definition, status, popoverEl, backdropEl, spotlightEl}
+  let previouslyFocusedEl = null;
 
   async function apiCall(url, options) {
     const response = await fetch(url, options);
@@ -24,8 +25,33 @@ window.Onboarding = (function () {
 
   function _open(walkthroughId, definition, status) {
     state = {walkthroughId, definition, status};
+    previouslyFocusedEl = document.activeElement;
     _buildDom();
     _renderStep();
+    state.popoverEl.focus();
+    document.addEventListener("keydown", _handleKeydown);
+  }
+
+  function _handleKeydown(event) {
+    if (!state) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      _closeViaInterrupt();
+      return;
+    }
+    if (event.key === "Tab") {
+      const focusable = [...state.popoverEl.querySelectorAll("button")];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
   }
 
   function _buildDom() {
@@ -179,10 +205,15 @@ window.Onboarding = (function () {
 
   function _close() {
     if (!state) return;
+    document.removeEventListener("keydown", _handleKeydown);
     state.backdropEl.remove();
     state.spotlightEl.remove();
     state.popoverEl.remove();
     state = null;
+    if (previouslyFocusedEl && document.body.contains(previouslyFocusedEl)) {
+      previouslyFocusedEl.focus();
+    }
+    previouslyFocusedEl = null;
   }
 
   return {start};

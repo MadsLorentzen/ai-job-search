@@ -123,3 +123,38 @@ def test_replaying_a_completed_walkthrough_reopens_it(live_server, page):
     page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
     page.wait_for_selector(".onboarding-popover")
     assert page.locator(".onboarding-popover-title").inner_text() == "Dashboard"
+
+
+def test_escape_key_closes_overlay_and_restores_focus(live_server, page):
+    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.locator('[data-onboarding-target="add-job-button"]').focus()
+    page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
+    page.wait_for_selector(".onboarding-popover")
+    page.keyboard.press("Escape")
+    page.wait_for_selector(".onboarding-popover", state="detached")
+    assert page.evaluate(
+        "document.activeElement.getAttribute('data-onboarding-target')"
+    ) == "add-job-button"
+
+
+def test_focus_moves_into_popover_on_open(live_server, page):
+    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
+    page.wait_for_selector(".onboarding-popover")
+    assert page.evaluate(
+        "document.activeElement.classList.contains('onboarding-popover')"
+    ) is True
+
+
+def test_tab_cycles_within_popover_without_escaping_to_page(live_server, page):
+    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
+    page.wait_for_selector(".onboarding-popover")
+    focusable_count = page.evaluate(
+        "document.querySelectorAll('.onboarding-popover button').length"
+    )
+    for _ in range(focusable_count + 2):
+        page.keyboard.press("Tab")
+    assert page.evaluate(
+        "document.activeElement.closest('.onboarding-popover') !== null"
+    ) is True
