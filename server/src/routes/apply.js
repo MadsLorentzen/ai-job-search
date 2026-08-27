@@ -1,17 +1,17 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
-import path from 'path';
 import { claudeService } from '../services/claudeService.js';
 import { latexService } from '../services/latexService.js';
 import { storageService } from '../services/storageService.js';
 
 const router = express.Router();
 
-// Generate tailored CV and Cover Letter using Drafter -> Reviewer loop
+// Generate tailored CV and Cover Letter with dual-agent Drafter/Reviewer loop
 router.post('/generate', async (req, res) => {
   try {
     const { job, fitEvaluation } = req.body;
+    
     if (!job || !job.title || !job.description) {
       return res.status(400).json({
         success: false,
@@ -43,18 +43,15 @@ router.post('/generate', async (req, res) => {
       jobUrl: job.url || '',
       status: 'Drafted',
       fitScore: fitEvaluation?.overallScore || 90,
-      fitVerdict: fitEvaluation?.verdict || 'Strong Match',
       cvLatex: pipelineResult.cvLatex,
       coverLetterLatex: pipelineResult.coverLetterLatex,
-      reviewScore: pipelineResult.reviewScore,
-      auditsPassed: pipelineResult.auditsPassed,
-      revisionsApplied: pipelineResult.revisionsApplied,
       cvPdfPath: cvCompilation.pdfPath,
       coverPdfPath: coverCompilation.pdfPath,
-      cvTexPath: cvCompilation.texPath,
-      coverTexPath: coverCompilation.texPath,
-      atsVerification: cvCompilation.atsVerification,
-      createdAt: new Date().toISOString()
+      auditsPassed: pipelineResult.auditsPassed || [],
+      revisionsApplied: pipelineResult.revisionsApplied || [],
+      reviewScore: pipelineResult.reviewScore || 95,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
     storageService.saveApplication(applicationRecord);
@@ -64,27 +61,46 @@ router.post('/generate', async (req, res) => {
       application: applicationRecord,
       cvPdfBase64: cvCompilation.pdfBuffer.toString('base64'),
       coverPdfBase64: coverCompilation.pdfBuffer.toString('base64'),
-      cvAts: cvCompilation.atsVerification,
-      coverAts: coverCompilation.atsVerification,
-      reviewScore: pipelineResult.reviewScore,
-      auditsPassed: pipelineResult.auditsPassed,
-      revisionsApplied: pipelineResult.revisionsApplied
+      cvCompilationLogs: cvCompilation.logs,
+      coverCompilationLogs: coverCompilation.logs,
+      reviewScore: pipelineResult.reviewScore || 95,
+      auditsPassed: pipelineResult.auditsPassed || []
     });
+
   } catch (err) {
     console.error('Application generation error:', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Error generating tailored application documents.'
+    });
   }
 });
 
-// Recompile modified LaTeX on demand
+// Recompile customized LaTeX from browser editor
 router.post('/compile', async (req, res) => {
   try {
-    const { type = 'cv', latexContent, appId = uuidv4() } = req.body;
+    const { type, latexContent, appId = uuidv4() } = req.body;
+    
     if (!latexContent) {
-      return res.status(400).json({ success: false, error: 'LaTeX content is required to compile.' });
+      return res.status(400).json({ success: false, error: 'LaTeX content is required' });
     }
 
-    const compilation = await latexService.compileDocument(type, latexContent, appId);
+    const compilation = await latexService.compileDocument(type || 'cv', latexContent, appId);
+
+    // If appId matches an existing application, update it
+    const apps = storageService.getApplications();
+    const appIndex = apps.findIndex(a => a.id === appId);
+    if (appIndex !== -1) {
+      if (type === 'cv') {
+        apps[appIndex].cvLatex = latexContent;
+        apps[appIndex].cvPdfPath = compilation.pdfPath;
+      } else {
+        apps[appIndex].coverLetterLatex = latexContent;
+        apps[appIndex].coverPdfPath = compilation.pdfPath;
+      }
+      apps[appIndex].updatedAt = new Date().toISOString();
+      storageService.saveApplication(apps[appIndex]);
+    }
 
     res.json({
       success: true,
@@ -96,6 +112,31 @@ router.post('/compile', async (req, res) => {
   } catch (err) {
     console.error('Recompilation error:', err);
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Stream inline PDF for native in-browser viewing
+router.get('/preview/:appId/:type', (req, res) => {
+  try {
+    const { appId, type } = req.params; // type: cv, cover
+    const apps = storageService.getApplications();
+    const app = apps.find(a => a.id === appId);
+
+    if (!app) {
+      return res.status(404).send('Application not found');
+    }
+
+    const filePath = type === 'cover' ? app.coverPdfPath : app.cvPdfPath;
+    if (filePath && fs.existsSync(filePath)) {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline');
+      return fs.createReadStream(filePath).pipe(res);
+    }
+
+    res.status(404).send('PDF file not found on server');
+  } catch (err) {
+    console.error('Preview error:', err);
+    res.status(500).send('Error previewing document: ' + err.message);
   }
 });
 

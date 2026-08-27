@@ -575,7 +575,8 @@ body {
 
 /* Document Viewer & LaTeX Preview Column */
 .full-height-card {
-  min-height: 700px;
+  min-height: 820px;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -627,6 +628,8 @@ body {
   background: var(--bg-input);
   position: relative;
   overflow: hidden;
+  min-height: 750px;
+  height: 100%;
 }
 
 .empty-state {
@@ -660,6 +663,7 @@ body {
 .pdf-container {
   width: 100%;
   height: 100%;
+  min-height: 750px;
   flex: 1;
   display: flex;
 }
@@ -667,14 +671,17 @@ body {
 .pdf-frame {
   width: 100%;
   height: 100%;
+  min-height: 750px;
   border: none;
-  background: #fff;
+  background: #ffffff;
+  display: block;
 }
 
 .latex-container {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 750px;
   width: 100%;
 }
 

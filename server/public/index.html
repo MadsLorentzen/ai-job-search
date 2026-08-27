@@ -105,6 +105,11 @@
                 </div>
 
                 <div class="form-group">
+                  <label>Job Posting URL / Application Link</label>
+                  <input type="text" id="targetUrl" class="input-text" placeholder="e.g. https://jobs.lever.co/company/job-id or LinkedIn URL">
+                </div>
+
+                <div class="form-group">
                   <label>Job Description / Requirements</label>
                   <textarea id="targetDescription" class="input-textarea" rows="7" placeholder="Paste the complete job posting text, responsibilities, and qualifications..."></textarea>
                 </div>
@@ -227,6 +232,14 @@
 
                 <!-- Document Actions -->
                 <div class="doc-actions">
+                  <button id="btnOpenApplyLink" class="btn btn-sm btn-accent hidden" title="Open official job application link in new tab">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    <span>Apply on Site ↗</span>
+                  </button>
+                  <button id="btnMarkApplied" class="btn btn-sm btn-secondary hidden" title="Mark this application as Applied in Tracker">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Mark Applied</span>
+                  </button>
                   <button id="btnToggleLatex" class="btn btn-sm btn-ghost">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
                     <span>View LaTeX Source</span>

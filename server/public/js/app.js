@@ -239,21 +239,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function populateProfileForm(p) {
+    if (!p) return;
     const ident = p.identity || {};
-    document.getElementById('profName').value = ident.name || '';
-    document.getElementById('profTitle').value = ident.title || '';
-    document.getElementById('profEmail').value = ident.email || '';
-    document.getElementById('profPhone').value = ident.phone || '';
-    document.getElementById('profLocation').value = ident.location || '';
-    document.getElementById('profLinkedin').value = ident.linkedin || '';
-    document.getElementById('profSummary').value = ident.summary || '';
+    
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val || '';
+    };
+
+    setVal('profName', ident.name);
+    setVal('profTitle', ident.title);
+    setVal('profEmail', ident.email);
+    setVal('profPhone', ident.phone);
+    setVal('profLocation', ident.location);
+    setVal('profLinkedin', ident.linkedin);
+    setVal('profSummary', ident.summary);
 
     const skills = p.skills || {};
-    document.getElementById('profPrimarySkills').value = (skills.primary || []).join(', ');
-    document.getElementById('profSecondarySkills').value = (skills.secondary || []).join(', ');
+    const primarySkills = Array.isArray(skills.primary) ? skills.primary.join(', ') : (skills.primary || '');
+    const secondarySkills = Array.isArray(skills.secondary) ? skills.secondary.join(', ') : (skills.secondary || '');
+    setVal('profPrimarySkills', primarySkills);
+    setVal('profSecondarySkills', secondarySkills);
 
-    const langs = (ident.languages || []).map(l => `${l.language} (${l.level})`).join(', ');
-    document.getElementById('profLanguages').value = langs;
+    const langs = (ident.languages || [])
+      .map(l => (typeof l === 'string' ? l : `${l.language || l.name || ''} (${l.level || 'Fluent'})`))
+      .filter(Boolean)
+      .join(', ');
+    setVal('profLanguages', langs);
   }
 
   function setupProfileTab() {
@@ -565,10 +577,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadJobIntoApplyTab(job) {
     state.currentJob = job;
-    document.getElementById('targetCompany').value = job.company;
-    document.getElementById('targetRole').value = job.title;
-    document.getElementById('targetLocation').value = job.location;
-    document.getElementById('targetDescription').value = job.description;
+    document.getElementById('targetCompany').value = job.company || '';
+    document.getElementById('targetRole').value = job.title || '';
+    document.getElementById('targetLocation').value = job.location || '';
+    document.getElementById('targetUrl').value = job.url || '';
+    document.getElementById('targetDescription').value = job.description || '';
 
     switchTab('apply');
     showToast(`Loaded ${job.title} at ${job.company}`, 'success');
@@ -588,6 +601,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnToggleLatex = document.getElementById('btnToggleLatex');
     const btnRecompile = document.getElementById('btnRecompile');
     const btnDownload = document.getElementById('btnDownloadPdf');
+    const btnOpenApply = document.getElementById('btnOpenApplyLink');
+    const btnMarkApplied = document.getElementById('btnMarkApplied');
 
     btnEvaluate.addEventListener('click', evaluateCurrentJob);
     btnGenerate.addEventListener('click', generateApplication);
@@ -604,6 +619,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Recompile modified LaTeX
     btnRecompile.addEventListener('click', recompileCurrentLatex);
+
+    // Apply on Company Portal in new tab
+    if (btnOpenApply) {
+      btnOpenApply.addEventListener('click', () => {
+        const url = document.getElementById('targetUrl')?.value || state.currentApplication?.jobUrl || state.currentJob?.url;
+        if (url && url.startsWith('http')) {
+          window.open(url, '_blank', 'noopener,noreferrer');
+        } else {
+          const comp = encodeURIComponent(document.getElementById('targetCompany').value || '');
+          const role = encodeURIComponent(document.getElementById('targetRole').value || '');
+          window.open(`https://www.google.com/search?q=${comp}+${role}+careers+apply`, '_blank');
+        }
+      });
+    }
+
+    // Mark as Applied in Tracker
+    if (btnMarkApplied) {
+      btnMarkApplied.addEventListener('click', async () => {
+        if (!state.currentApplication?.id) {
+          showToast('Generate application first', 'error');
+          return;
+        }
+        try {
+          const res = await authFetch(`/api/tracker/${state.currentApplication.id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Applied' })
+          });
+          const data = await res.json();
+          if (data.success) {
+            state.currentApplication.status = 'Applied';
+            btnMarkApplied.disabled = true;
+            btnMarkApplied.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Applied ✓</span>`;
+            showToast('Application marked as Applied! Logged in Tracker.', 'success');
+            await loadTrackerApplications();
+          }
+        } catch (err) {
+          showToast('Failed to update tracker', 'error');
+        }
+      });
+    }
 
     // Download PDF
     btnDownload.addEventListener('click', () => {
@@ -622,6 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
       company: document.getElementById('targetCompany').value || 'Target Company',
       title: document.getElementById('targetRole').value || 'Software Engineer',
       location: document.getElementById('targetLocation').value || 'Remote',
+      url: document.getElementById('targetUrl')?.value || '',
       description: document.getElementById('targetDescription').value
     };
   }
@@ -793,12 +850,25 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDocumentPreview();
   }
 
+  function base64ToBlob(base64Data, contentType = 'application/pdf') {
+    const cleanBase64 = (base64Data || '').replace(/\s/g, '');
+    const byteCharacters = atob(cleanBase64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: contentType });
+  }
+
   function updateDocumentPreview() {
     const emptyState = document.getElementById('docEmptyState');
     const pdfContainer = document.getElementById('pdfContainer');
     const latexContainer = document.getElementById('latexEditorContainer');
     const btnToggleLatex = document.getElementById('btnToggleLatex');
     const btnRecompile = document.getElementById('btnRecompile');
+    const btnOpenApply = document.getElementById('btnOpenApplyLink');
+    const btnMarkApplied = document.getElementById('btnMarkApplied');
     const reviewerFooter = document.getElementById('reviewerFooter');
     const pdfFrame = document.getElementById('pdfViewerFrame');
     const latexTextarea = document.getElementById('latexSourceTextarea');
@@ -808,11 +878,24 @@ document.addEventListener('DOMContentLoaded', () => {
       pdfContainer.classList.add('hidden');
       latexContainer.classList.add('hidden');
       reviewerFooter.classList.add('hidden');
+      if (btnOpenApply) btnOpenApply.classList.add('hidden');
+      if (btnMarkApplied) btnMarkApplied.classList.add('hidden');
       return;
     }
 
     emptyState.classList.add('hidden');
     reviewerFooter.classList.remove('hidden');
+    if (btnOpenApply) btnOpenApply.classList.remove('hidden');
+    if (btnMarkApplied) {
+      btnMarkApplied.classList.remove('hidden');
+      if (state.currentApplication.status === 'Applied') {
+        btnMarkApplied.disabled = true;
+        btnMarkApplied.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Applied ✓</span>`;
+      } else {
+        btnMarkApplied.disabled = false;
+        btnMarkApplied.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Mark Applied</span>`;
+      }
+    }
 
     const currentPdf = state.activeDocType === 'cv' ? state.cvPdfBase64 : state.coverPdfBase64;
     const currentLatex = state.activeDocType === 'cv' ? state.cvLatex : state.coverLatex;
@@ -831,7 +914,15 @@ document.addEventListener('DOMContentLoaded', () => {
       btnToggleLatex.innerHTML = `<span>View LaTeX Source</span>`;
 
       if (currentPdf) {
-        pdfFrame.src = `data:application/pdf;base64,${currentPdf}#toolbar=0&navpanes=0`;
+        try {
+          const blob = base64ToBlob(currentPdf, 'application/pdf');
+          const blobUrl = URL.createObjectURL(blob);
+          pdfFrame.src = blobUrl;
+        } catch (err) {
+          if (state.currentApplication?.id) {
+            pdfFrame.src = `/api/apply/preview/${state.currentApplication.id}/${state.activeDocType}?token=${encodeURIComponent(state.authToken)}`;
+          }
+        }
       }
     }
   }

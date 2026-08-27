@@ -23,6 +23,36 @@ router.post('/', (req, res) => {
   }
 });
 
+// Update status of an application (e.g. Drafted -> Applied -> Interviewing -> Offer)
+router.patch('/:id/status', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({ success: false, error: 'Status is required.' });
+    }
+
+    const apps = storageService.getApplications();
+    const app = apps.find(a => a.id === id);
+
+    if (!app) {
+      return res.status(404).json({ success: false, error: 'Application not found.' });
+    }
+
+    app.status = status;
+    if (status === 'Applied' && !app.appliedAt) {
+      app.appliedAt = new Date().toISOString();
+    }
+    app.updatedAt = new Date().toISOString();
+
+    storageService.saveApplication(app);
+    res.json({ success: true, application: app });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Delete an application
 router.delete('/:id', (req, res) => {
   try {
