@@ -87,6 +87,12 @@ cover_letters/cover_*.*
 cover_letters/Cover_*.*
 !cover_letters/cover_example.tex
 
+# Per-client workspaces (tools/tenancy.py) for multi-client use. Everything
+# under clients/ is another person's personal data - CVs, contact details,
+# employment history, application archives - held on their behalf. It must
+# never be committed, so the whole tree is ignored rather than its parts.
+clients/
+
 # documents/ subfolder contents are personal — only README and folder structure are tracked
 documents/cv/**
 documents/linkedin/**
@@ -131,3 +137,12 @@ company_research/*.json
 
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/
+
+# PyInstaller build output
+build/
+dist/
+*.spec
+packaging/output/
+
+# Per-application cost ledger - business data, references client names
+costs/
