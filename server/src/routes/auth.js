@@ -1,46 +1,67 @@
 import express from 'express';
-import { getAuthorizedPasswords, DEFAULT_FALLBACK_PASSWORD } from '../middleware/auth.js';
+import {
+  verifyPassword,
+  verifyToken,
+  issueToken,
+  isAuthConfigured,
+  checkLoginRate,
+  clearLoginRate
+} from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Login endpoint
+function clientIp(req) {
+  return req.ip || req.socket?.remoteAddress || 'unknown';
+}
+
 router.post('/login', (req, res) => {
-  const { password } = req.body;
-  if (!password) {
-    return res.status(400).json({ success: false, error: 'Password or Access Key is required.' });
-  }
+  const ip = clientIp(req);
 
-  const cleanInput = String(password).trim().replace(/^["']|["']$/g, '');
-  const validPasswords = getAuthorizedPasswords();
-
-  console.log(`[Auth] Login attempt. Cleaned input length: ${cleanInput.length}. Configured passwords count: ${validPasswords.length}`);
-
-  if (validPasswords.includes(cleanInput)) {
-    console.log(`[Auth] ✅ Login SUCCESS!`);
-    return res.json({
-      success: true,
-      token: cleanInput,
-      message: 'Authentication successful!'
+  // Without a configured password the app cannot be unlocked at all. Saying so
+  // is safe (it reveals no secret) and it is the only way an operator can tell
+  // this apart from a wrong password.
+  if (!isAuthConfigured()) {
+    return res.status(503).json({
+      success: false,
+      error: 'No password configured on the server. Set APP_PASSWORD in server/.env and restart.'
     });
   }
 
-  console.warn(`[Auth] ❌ Login FAILED. Attempted password does not match.`);
-  return res.status(401).json({
-    success: false,
-    error: `Incorrect Password. (Tip: emergency fallback password is: ${DEFAULT_FALLBACK_PASSWORD})`
-  });
-});
-
-// Verify existing token endpoint
-router.get('/verify', (req, res) => {
-  const token = req.headers['authorization']?.replace('Bearer ', '') || req.headers['x-access-token'];
-  const cleanInput = String(token || '').trim().replace(/^["']|["']$/g, '');
-  const validPasswords = getAuthorizedPasswords();
-
-  if (cleanInput && validPasswords.includes(cleanInput)) {
-    return res.json({ success: true, valid: true });
+  const rate = checkLoginRate(ip);
+  if (!rate.allowed) {
+    res.setHeader('Retry-After', String(rate.retryAfterSec));
+    return res.status(429).json({
+      success: false,
+      error: `Too many attempts. Try again in ${Math.ceil(rate.retryAfterSec / 60)} minutes.`
+    });
   }
 
+  const { password } = req.body || {};
+  if (!password) {
+    return res.status(400).json({ success: false, error: 'Password is required.' });
+  }
+
+  if (verifyPassword(password)) {
+    clearLoginRate(ip);
+    const { token, expiresAt } = issueToken();
+    console.log('[Auth] Login succeeded.');
+    return res.json({ success: true, token, expiresAt });
+  }
+
+  // Deliberately generic, and deliberately without a hint. The previous
+  // revision printed a working password in this response body.
+  console.warn(`[Auth] Login failed from ${ip}.`);
+  return res.status(401).json({ success: false, error: 'Incorrect password.' });
+});
+
+router.get('/verify', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const bearer = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const token = (bearer || req.headers['x-access-token'] || '').trim();
+
+  if (verifyToken(token)) {
+    return res.json({ success: true, valid: true });
+  }
   return res.status(401).json({ success: false, valid: false });
 });
 

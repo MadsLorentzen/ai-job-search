@@ -3,22 +3,19 @@ import { scraperService } from '../services/scraperService.js';
 
 const router = express.Router();
 
-// Get list of supported portals
-router.get('/portals', (req, res) => {
+router.get('/portals', (req, res, next) => {
   try {
-    const portals = scraperService.getAvailablePortals();
-    res.json({ success: true, portals });
+    res.json({ success: true, portals: scraperService.getAvailablePortals() });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 });
 
-// Search job openings across portals (Fetches ALL matching results without limits)
-router.get('/search', async (req, res) => {
+router.get('/search', async (req, res, next) => {
   try {
     const { query = '', location = 'Remote', portal = 'freehire-search', remote = 'all' } = req.query;
-    
-    const jobs = await scraperService.searchJobs({
+
+    const result = await scraperService.searchJobs({
       query: String(query).trim(),
       location: String(location).trim(),
       portal: String(portal),
@@ -27,15 +24,19 @@ router.get('/search', async (req, res) => {
 
     res.json({
       success: true,
-      count: jobs.length,
+      count: result.jobs.length,
       portal,
       query,
       location,
-      jobs
+      // Explicit provenance so the UI can distinguish live results from
+      // anything else, rather than rendering them identically.
+      source: result.source,
+      isSample: result.isSample,
+      warning: result.warning,
+      jobs: result.jobs
     });
   } catch (err) {
-    console.error('Job search API error:', err);
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 });
 

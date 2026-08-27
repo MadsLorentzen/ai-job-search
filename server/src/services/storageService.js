@@ -1,183 +1,195 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import crypto from 'crypto';
+import { ROOT_DIR, DATA_DIR, ensureDir } from '../config/env.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const DATA_DIR = path.resolve(__dirname, '../../data');
 const PROFILE_FILE = path.join(DATA_DIR, 'profile.json');
 const APPLICATIONS_FILE = path.join(DATA_DIR, 'applications.json');
-const ROOT_DIR = path.resolve(__dirname, '../../../');
 
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+ensureDir(DATA_DIR);
 
-// Default candidate profile structure
+export const APPLICATION_STATUSES = Object.freeze([
+  'Drafted', 'Applied', 'Interviewing', 'Offer', 'Rejected', 'Withdrawn'
+]);
+
+/**
+ * Fields a client may set on an application record.
+ *
+ * Explicitly excludes cvPdfPath / coverPdfPath: those are filesystem paths and
+ * are only ever written by the server. Accepting them from the request body
+ * previously let a caller point a record at any file on disk and then stream
+ * it back through the download route.
+ */
+const CLIENT_WRITABLE_FIELDS = Object.freeze([
+  'id', 'jobTitle', 'company', 'location', 'jobUrl', 'status', 'fitScore',
+  'cvLatex', 'coverLetterLatex', 'auditsPassed', 'revisionsApplied',
+  'reviewScore', 'notes', 'appliedAt', 'source'
+]);
+
+const SERVER_ONLY_FIELDS = Object.freeze(['cvPdfPath', 'coverPdfPath', 'createdAt', 'updatedAt']);
+
 const DEFAULT_PROFILE = {
   identity: {
-    name: 'Jane Doe',
-    title: 'Senior Software Engineer / AI Specialist',
-    email: 'jane.doe@example.com',
-    phone: '+1 (555) 123-4567',
-    location: 'San Francisco, CA / Remote',
-    linkedin: 'linkedin.com/in/janedoe',
-    github: 'github.com/janedoe',
-    portfolio: 'janedoe.dev',
-    summary: 'Full-stack software engineer with 6+ years of experience building resilient distributed systems, agentic workflows, and cloud-native applications.',
+    name: '',
+    title: '',
+    email: '',
+    phone: '',
+    location: '',
+    linkedin: '',
+    github: '',
+    portfolio: '',
+    summary: '',
     status: 'Actively Looking',
-    languages: [
-      { language: 'English', level: 'Native / Fluent' },
-      { language: 'German', level: 'B2 / Professional Working' }
-    ]
+    languages: []
   },
-  education: [
-    {
-      degree: 'M.S. in Computer Science',
-      institution: 'Stanford University',
-      period: '2018 - 2020',
-      thesis: 'Scalable Distributed Architectures for Latency-Critical Systems',
-      highlights: 'Specialization in Distributed Systems & Machine Learning.'
-    },
-    {
-      degree: 'B.S. in Software Engineering',
-      institution: 'University of California, Berkeley',
-      period: '2014 - 2018',
-      thesis: '',
-      highlights: 'Graduated Magna Cum Laude.'
-    }
-  ],
-  experience: [
-    {
-      title: 'Senior Software Engineer',
-      company: 'TechFlow Systems',
-      location: 'San Francisco, CA (Hybrid)',
-      period: '2021 - Present',
-      bullets: [
-        'Architected high-throughput microservices processing over 120M events/day using Node.js, Go, and Redis with sub-30ms latency.',
-        'Led a team of 5 engineers migrating monolithic backend to containerized Kubernetes infrastructure, reducing cloud operational expenditure by 28%.',
-        'Implemented automated CI/CD deployment pipelines with comprehensive unit and integration testing suites, cutting release cycle time by 45%.'
-      ]
-    },
-    {
-      title: 'Software Engineer',
-      company: 'DataPulse Corp',
-      location: 'San Jose, CA',
-      period: '2019 - 2021',
-      bullets: [
-        'Developed customer-facing dashboard components with React, TypeScript, and Tailwind CSS, increasing enterprise user engagement by 35%.',
-        'Integrated multi-tier caching and query optimization in PostgreSQL database, reducing query latency by 60%.'
-      ]
-    }
-  ],
-  skills: {
-    primary: ['TypeScript', 'JavaScript', 'Node.js', 'Python', 'React', 'Go', 'PostgreSQL', 'Docker', 'Kubernetes', 'AWS'],
-    secondary: ['Redis', 'GraphQL', 'Terraform', 'Next.js', 'FastAPI', 'Tailwind CSS', 'Git', 'Linux', 'CI/CD'],
-    domain: ['Distributed Systems', 'Cloud Architecture', 'API Design', 'Agentic AI Workflows', 'Performance Optimization'],
-    tools: ['VS Code', 'Git', 'Postman', 'Docker', 'Jest', 'Webpack', 'Vite', 'Datadog']
-  },
-  starStories: [
-    {
-      id: 'story-1',
-      title: 'Monolith to Microservices Cloud Migration',
-      situation: 'TechFlow core application suffered high latency and deployment bottlenecks due to tightly coupled legacy architecture.',
-      task: 'Lead the architecture migration to microservices while maintaining 99.99% uptime with zero customer disruption.',
-      action: 'Designed domain-driven microservices in Go and Node.js, introduced Kafka for asynchronous messaging, and implemented canary deployments via Kubernetes.',
-      result: 'Reduced p99 latency from 450ms to 28ms, improved release velocity from bi-weekly to daily deployments, and cut AWS spend by 28%.'
-    },
-    {
-      id: 'story-2',
-      title: 'Critical Database Bottleneck Resolution',
-      situation: 'Black Friday surge caused DB query spikes and connection pool exhaustion on the main order processing service.',
-      task: 'Diagnose and resolve the database latency issue under active production traffic.',
-      action: 'Profiled query logs, created composite indexes on high-frequency tables, and implemented a multi-level Redis caching strategy.',
-      result: 'Slashed peak DB CPU load by 70% and successfully handled 4x normal transaction volume without single error.'
-    }
-  ],
-  targetQueries: [
-    { query: 'Senior Software Engineer', location: 'Remote', portal: 'linkedin-search' },
-    { query: 'Full Stack Engineer', location: 'San Francisco, CA', portal: 'freehire-search' },
-    { query: 'Backend Developer', location: 'Remote', portal: 'freehire-search' }
-  ],
-  salary: {
-    minimum: '$150,000 / year',
-    target: '$180,000 / year',
-    currency: 'USD'
-  }
+  education: [],
+  experience: [],
+  skills: { primary: [], secondary: [], domain: [], tools: [] },
+  starStories: [],
+  targetQueries: [],
+  salary: { minimum: '', target: '', currency: '' }
 };
 
-// Storage Service Methods
+/** Deep copy so callers cannot mutate the shared default in place. */
+function cloneDefaultProfile() {
+  return structuredClone(DEFAULT_PROFILE);
+}
+
+/**
+ * Write via temp file + rename so a crash mid-write cannot leave truncated
+ * JSON behind. rename is atomic within a filesystem.
+ */
+function writeJsonAtomic(filePath, value) {
+  ensureDir(path.dirname(filePath));
+  const tmp = `${filePath}.${crypto.randomBytes(6).toString('hex')}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(value, null, 2), 'utf-8');
+  fs.renameSync(tmp, filePath);
+}
+
+function readJson(filePath, fallback) {
+  if (!fs.existsSync(filePath)) return { ok: true, value: fallback, missing: true };
+  try {
+    return { ok: true, value: JSON.parse(fs.readFileSync(filePath, 'utf-8')) };
+  } catch (err) {
+    // Distinguish "not there yet" from "there but unreadable". The second case
+    // must not be silently overwritten with an empty list.
+    return { ok: false, error: err };
+  }
+}
+
+/**
+ * Serialize every mutation through one promise chain.
+ *
+ * Each save used to read the whole file, edit in memory and write it back with
+ * no coordination, so two overlapping requests would interleave and the later
+ * write would erase the earlier one.
+ */
+let writeChain = Promise.resolve();
+function serialize(fn) {
+  const result = writeChain.then(fn, fn);
+  writeChain = result.then(() => undefined, () => undefined);
+  return result;
+}
+
 export const storageService = {
   getProfile() {
-    try {
-      if (!fs.existsSync(PROFILE_FILE)) {
-        fs.writeFileSync(PROFILE_FILE, JSON.stringify(DEFAULT_PROFILE, null, 2), 'utf-8');
-        return DEFAULT_PROFILE;
-      }
-      const data = fs.readFileSync(PROFILE_FILE, 'utf-8');
-      return JSON.parse(data);
-    } catch (err) {
-      console.error('Error reading profile:', err);
-      return DEFAULT_PROFILE;
+    const { ok, value, missing, error } = readJson(PROFILE_FILE, null);
+    if (!ok) {
+      console.error('Profile file is unreadable, serving defaults:', error.message);
+      return cloneDefaultProfile();
     }
+    if (missing) {
+      const fresh = cloneDefaultProfile();
+      writeJsonAtomic(PROFILE_FILE, fresh);
+      return fresh;
+    }
+    return value;
   },
 
   saveProfile(profileData) {
-    try {
-      fs.writeFileSync(PROFILE_FILE, JSON.stringify(profileData, null, 2), 'utf-8');
+    return serialize(async () => {
+      if (!profileData || typeof profileData !== 'object' || Array.isArray(profileData)) {
+        const err = new Error('Profile must be an object.');
+        err.statusCode = 400;
+        throw err;
+      }
+      writeJsonAtomic(PROFILE_FILE, profileData);
       return profileData;
-    } catch (err) {
-      console.error('Error saving profile:', err);
-      throw err;
-    }
+    });
   },
 
   getApplications() {
-    try {
-      if (!fs.existsSync(APPLICATIONS_FILE)) {
-        fs.writeFileSync(APPLICATIONS_FILE, JSON.stringify([], null, 2), 'utf-8');
-        return [];
-      }
-      const data = fs.readFileSync(APPLICATIONS_FILE, 'utf-8');
-      return JSON.parse(data);
-    } catch (err) {
-      console.error('Error reading applications:', err);
-      return [];
-    }
-  },
-
-  saveApplication(application) {
-    try {
-      const apps = this.getApplications();
-      const existingIdx = apps.findIndex(a => a.id === application.id);
-      if (existingIdx >= 0) {
-        apps[existingIdx] = { ...apps[existingIdx], ...application, updatedAt: new Date().toISOString() };
-      } else {
-        apps.unshift({
-          ...application,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
-      }
-      fs.writeFileSync(APPLICATIONS_FILE, JSON.stringify(apps, null, 2), 'utf-8');
-      return application;
-    } catch (err) {
-      console.error('Error saving application:', err);
+    const { ok, value, missing, error } = readJson(APPLICATIONS_FILE, []);
+    if (!ok) {
+      console.error('Applications file is unreadable:', error.message);
+      const err = new Error('Application store is corrupt. Not overwriting it; inspect server/data/applications.json.');
+      err.statusCode = 500;
       throw err;
     }
+    if (missing) return [];
+    return Array.isArray(value) ? value : [];
+  },
+
+  /** Strip anything a client is not allowed to set. */
+  sanitizeApplicationInput(input) {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) {
+      const err = new Error('Application must be an object.');
+      err.statusCode = 400;
+      throw err;
+    }
+    const clean = {};
+    for (const field of CLIENT_WRITABLE_FIELDS) {
+      if (input[field] !== undefined) clean[field] = input[field];
+    }
+    if (clean.status !== undefined && !APPLICATION_STATUSES.includes(clean.status)) {
+      const err = new Error(`Unknown status "${clean.status}". Expected one of: ${APPLICATION_STATUSES.join(', ')}.`);
+      err.statusCode = 400;
+      throw err;
+    }
+    if (!clean.id || typeof clean.id !== 'string') {
+      const err = new Error('Application id is required.');
+      err.statusCode = 400;
+      throw err;
+    }
+    return clean;
+  },
+
+  /**
+   * @param {object} application     client-supplied fields (already sanitized)
+   * @param {object} serverFields    server-owned fields such as PDF paths
+   */
+  saveApplication(application, serverFields = {}) {
+    return serialize(async () => {
+      const apps = this.getApplications();
+      const now = new Date().toISOString();
+
+      const trusted = {};
+      for (const field of SERVER_ONLY_FIELDS) {
+        if (serverFields[field] !== undefined) trusted[field] = serverFields[field];
+      }
+
+      const index = apps.findIndex(a => a.id === application.id);
+      let record;
+      if (index >= 0) {
+        record = { ...apps[index], ...application, ...trusted, updatedAt: now };
+        apps[index] = record;
+      } else {
+        record = { ...application, ...trusted, createdAt: now, updatedAt: now };
+        apps.unshift(record);
+      }
+
+      writeJsonAtomic(APPLICATIONS_FILE, apps);
+      return record;
+    });
   },
 
   deleteApplication(id) {
-    try {
-      let apps = this.getApplications();
-      apps = apps.filter(a => a.id !== id);
-      fs.writeFileSync(APPLICATIONS_FILE, JSON.stringify(apps, null, 2), 'utf-8');
-      return { success: true };
-    } catch (err) {
-      console.error('Error deleting application:', err);
-      throw err;
-    }
+    return serialize(async () => {
+      const apps = this.getApplications();
+      const remaining = apps.filter(a => a.id !== id);
+      writeJsonAtomic(APPLICATIONS_FILE, remaining);
+      return { success: true, deleted: apps.length - remaining.length };
+    });
   },
 
   getRootDir() {

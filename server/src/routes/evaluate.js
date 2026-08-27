@@ -4,31 +4,30 @@ import { storageService } from '../services/storageService.js';
 
 const router = express.Router();
 
-// Score and evaluate a target job posting against candidate profile
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
   try {
-    const { job } = req.body;
+    const { job } = req.body || {};
     if (!job || !job.title || !job.description) {
       return res.status(400).json({
         success: false,
-        error: 'Job details (title, company, description) are required for fit evaluation.'
+        error: 'Job title and description are required for a fit evaluation.'
       });
     }
 
     const profile = storageService.getProfile();
-    console.log(`Evaluating job fit for: ${job.company} - ${job.title}`);
-
     const evaluation = await claudeService.evaluateJobFit(profile, job);
 
     res.json({
       success: true,
       jobTitle: job.title,
       company: job.company,
+      // Surfaced so the client can tell a real evaluation from an
+      // "AI unavailable" placeholder instead of rendering both the same.
+      source: evaluation.source,
       evaluation
     });
   } catch (err) {
-    console.error('Evaluation API error:', err);
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 });
 

@@ -5,75 +5,84 @@ import { claudeService } from '../services/claudeService.js';
 import { extractTextFromBuffer } from '../utils/pdfExtractor.js';
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
 
-// Get candidate profile
-router.get('/', (req, res) => {
+const ALLOWED_UPLOAD_TYPES = new Set([
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+  'text/plain',
+  'text/markdown'
+]);
+const ALLOWED_EXTENSIONS = /\.(pdf|docx|doc|txt|md)$/i;
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 15 * 1024 * 1024, files: 1 },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_UPLOAD_TYPES.has(file.mimetype) || ALLOWED_EXTENSIONS.test(file.originalname || '')) {
+      return cb(null, true);
+    }
+    const err = new Error('Unsupported file type. Upload a PDF, DOCX, TXT or Markdown file.');
+    err.statusCode = 400;
+    cb(err);
+  }
+});
+
+router.get('/', (req, res, next) => {
   try {
-    const profile = storageService.getProfile();
+    res.json({ success: true, profile: storageService.getProfile() });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/', async (req, res, next) => {
+  try {
+    const profile = await storageService.saveProfile(req.body);
     res.json({ success: true, profile });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 });
 
-// Update candidate profile
-router.post('/', (req, res) => {
+router.post('/upload-cv', upload.single('cvFile'), async (req, res, next) => {
   try {
-    const updated = storageService.saveProfile(req.body);
-    res.json({ success: true, profile: updated });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// Upload and auto-parse CV file or raw text
-router.post('/upload-cv', upload.single('cvFile'), async (req, res) => {
-  try {
-    let rawText = req.body.rawText || '';
+    let rawText = req.body?.rawText || '';
 
     if (req.file) {
-      console.log(`Extracting text from uploaded file: ${req.file.originalname} (${req.file.mimetype}, ${req.file.size} bytes)...`);
       rawText = extractTextFromBuffer(req.file.buffer, req.file.mimetype, req.file.originalname);
-      console.log(`Extracted ${rawText.length} characters of text.`);
     }
 
     if (!rawText || rawText.trim().length < 30) {
       return res.status(400).json({
         success: false,
-        error: 'Unable to extract text from the uploaded file. Please paste your resume text directly.'
+        error: 'Could not extract readable text from that file. If it is a scanned PDF, paste the text directly instead.'
       });
     }
 
-    console.log('Parsing candidate resume with AI engine...');
     const parsed = await claudeService.parseResumeText(rawText);
-    
-    // Save new profile
+
     const existing = storageService.getProfile();
     const updatedProfile = {
       ...existing,
       ...parsed,
-      identity: {
-        ...existing.identity,
-        ...(parsed.identity || {})
-      },
-      skills: {
-        ...existing.skills,
-        ...(parsed.skills || {})
-      }
+      identity: { ...existing.identity, ...(parsed.identity || {}) },
+      skills: { ...existing.skills, ...(parsed.skills || {}) }
     };
+    delete updatedProfile.source;
 
-    storageService.saveProfile(updatedProfile);
-    console.log(`Profile successfully updated for candidate: ${updatedProfile.identity?.name || 'Candidate'}`);
+    await storageService.saveProfile(updatedProfile);
 
     res.json({
       success: true,
       profile: updatedProfile,
-      message: 'Resume successfully parsed and profile updated!'
+      source: parsed.source,
+      message: parsed.source === 'local-parser'
+        ? 'Parsed with the built-in extractor (no AI provider reachable). Check the fields and fill in any gaps.'
+        : 'Resume parsed and profile updated.'
     });
   } catch (err) {
-    console.error('Error parsing uploaded CV:', err);
-    res.status(500).json({ success: false, error: err.message });
+    next(err);
   }
 });
 

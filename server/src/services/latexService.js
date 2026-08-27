@@ -1,24 +1,80 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { storageService } from './storageService.js';
+import fontkit from '@pdf-lib/fontkit';
+import { ROOT_DIR, BUILDS_DIR, ensureDir } from '../config/env.js';
 
-const execAsync = promisify(exec);
-const ROOT_DIR = storageService.getRootDir();
-const BUILDS_DIR = path.resolve(ROOT_DIR, 'server/data/builds');
+const execFileAsync = promisify(execFile);
 
-if (!fs.existsSync(BUILDS_DIR)) {
-  fs.mkdirSync(BUILDS_DIR, { recursive: true });
+ensureDir(BUILDS_DIR);
+
+export const DOC_TYPES = Object.freeze(['cv', 'cover']);
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+/** A Unicode-capable face, so non-Latin-1 names do not kill the render. */
+const UNICODE_FONT = path.join(ROOT_DIR, 'cover_letters/OpenFonts/fonts/lato/Lato-Reg.ttf');
+const UNICODE_FONT_BOLD = path.join(ROOT_DIR, 'cover_letters/OpenFonts/fonts/lato/Lato-Bol.ttf');
+
+const A4 = Object.freeze({ width: 595.28, height: 841.89 });
+const MAX_BUILD_AGE_MS = 24 * 60 * 60 * 1000;
+const MAX_BUILD_DIRS = 200;
+
+export class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ValidationError';
+    this.statusCode = 400;
+  }
+}
+
+export function assertDocType(type) {
+  if (!DOC_TYPES.includes(type)) {
+    throw new ValidationError(`Unknown document type "${type}". Expected one of: ${DOC_TYPES.join(', ')}.`);
+  }
+  return type;
+}
+
+export function assertAppId(id) {
+  if (typeof id !== 'string' || !UUID_RE.test(id)) {
+    throw new ValidationError('Invalid application id. Expected a UUID.');
+  }
+  return id;
+}
+
+/**
+ * Resolve a build directory, refusing anything that escapes BUILDS_DIR.
+ *
+ * Both inputs used to flow unchecked from the request body into path.join,
+ * which let a caller write arbitrary content to an arbitrary path. The id and
+ * type are validated first, and the containment check is kept as a second
+ * barrier so a future change to the validators cannot silently reopen this.
+ */
+export function resolveBuildDir(type, id) {
+  assertDocType(type);
+  assertAppId(id);
+
+  const dir = path.resolve(BUILDS_DIR, `${type}_${id}`);
+  const root = path.resolve(BUILDS_DIR);
+  if (dir !== root && !dir.startsWith(root + path.sep)) {
+    throw new ValidationError('Resolved build path escapes the build directory.');
+  }
+  return dir;
 }
 
 export const latexService = {
-  async compileDocument(type, latexContent, id = Date.now().toString()) {
-    const buildDir = path.join(BUILDS_DIR, `${type}_${id}`);
-    if (!fs.existsSync(buildDir)) {
-      fs.mkdirSync(buildDir, { recursive: true });
-    }
+  /**
+   * Compile a document, falling back to a plain rendered PDF when no TeX
+   * engine is installed. The return shape is identical either way except for
+   * `atsVerification`, which reports honestly which path produced it.
+   */
+  async compileDocument(type, latexContent, id) {
+    assertDocType(type);
+    assertAppId(id);
+
+    const buildDir = resolveBuildDir(type, id);
+    ensureDir(buildDir);
 
     const filename = type === 'cv' ? 'main.tex' : 'cover.tex';
     const pdfFilename = type === 'cv' ? 'main.pdf' : 'cover.pdf';
@@ -27,11 +83,9 @@ export const latexService = {
 
     fs.writeFileSync(texPath, latexContent, 'utf-8');
 
-    // Copy template assets if needed
     if (type === 'cover') {
       const coverClsSrc = path.join(ROOT_DIR, 'cover_letters/cover.cls');
       const openFontsSrc = path.join(ROOT_DIR, 'cover_letters/OpenFonts');
-      
       if (fs.existsSync(coverClsSrc)) {
         fs.copyFileSync(coverClsSrc, path.join(buildDir, 'cover.cls'));
       }
@@ -41,22 +95,28 @@ export const latexService = {
     }
 
     const compiler = type === 'cv' ? 'lualatex' : 'xelatex';
-    const cmd = `${compiler} -interaction=nonstopmode -halt-on-error ${filename}`;
-
-    console.log(`Compiling LaTeX [${compiler}] in ${buildDir}...`);
 
     try {
-      const { stdout, stderr } = await execAsync(cmd, { cwd: buildDir, timeout: 20000 });
+      // execFile, not exec: arguments never reach a shell, so a crafted path
+      // cannot break out into shell metacharacters.
+      const { stdout } = await execFileAsync(
+        compiler,
+        ['-interaction=nonstopmode', '-halt-on-error', filename],
+        { cwd: buildDir, timeout: 20000, maxBuffer: 10 * 1024 * 1024 }
+      );
+
       if (fs.existsSync(pdfPath)) {
         const pdfBuffer = fs.readFileSync(pdfPath);
-        const atsResult = await this.verifyPdfAts(pdfPath);
+        const atsVerification = await this.verifyPdfAts(pdfPath);
+        this.pruneOldBuilds();
         return {
           success: true,
           pdfBuffer,
           texPath,
           pdfPath,
           compilerUsed: compiler,
-          atsVerification: atsResult,
+          renderer: 'latex',
+          atsVerification,
           logs: stdout
         };
       }
@@ -64,131 +124,172 @@ export const latexService = {
       console.warn(`${compiler} compilation failed or binary not found:`, compileErr.message);
     }
 
-    // Fallback: Generate a clean formatted PDF using pdf-lib
-    console.log(`Generating fallback PDF for preview...`);
-    const fallbackBuffer = await this.generateFallbackPdf(type, latexContent);
-    fs.writeFileSync(pdfPath, fallbackBuffer);
+    const fallback = await this.generateFallbackPdf(type, latexContent);
+    fs.writeFileSync(pdfPath, fallback.buffer);
+    this.pruneOldBuilds();
 
     return {
       success: true,
-      pdfBuffer: fallbackBuffer,
+      pdfBuffer: fallback.buffer,
       texPath,
       pdfPath,
-      compilerUsed: 'pdf-lib (LaTeX TeX engine not found or fallback)',
+      compilerUsed: 'pdf-lib',
+      renderer: 'fallback',
+      truncated: fallback.truncated,
       atsVerification: {
-        pass: true,
-        extractedCharacters: 1250,
-        readingOrderOk: true,
-        engine: 'pdf-lib ATS text stream'
+        // Honest: nothing verified this document's text layer. The previous
+        // revision returned pass:true with a hardcoded character count here.
+        verified: false,
+        reason: `No TeX engine available (${compiler} not found). This is a preview render, not a publication-quality PDF.`,
+        engine: 'none'
       },
-      note: 'PDF rendered for instant browser preview. Raw publication LaTeX (.tex) is ready for LuaLaTeX/XeLaTeX compilation.'
+      note: fallback.truncated
+        ? `Preview render only, and content was truncated at ${fallback.pages} page(s). Compile the .tex with ${compiler} for the real document.`
+        : `Preview render only. Compile the .tex with ${compiler} for the real document.`,
+      logs: ''
     };
   },
 
+  /**
+   * Run the repo's PDF text-layer checker and report what it actually said.
+   * A failure is reported as a failure; it used to return pass:true from its
+   * own catch block, which made the check incapable of ever failing.
+   */
   async verifyPdfAts(pdfPath) {
     const verifyScript = path.join(ROOT_DIR, 'tools/verify_pdf.py');
-    if (fs.existsSync(verifyScript)) {
+    if (!fs.existsSync(verifyScript)) {
+      return { verified: false, reason: 'tools/verify_pdf.py not found.', engine: 'none' };
+    }
+
+    for (const python of ['python3', 'python']) {
       try {
-        const { stdout } = await execAsync(`python "${verifyScript}" "${pdfPath}"`, { timeout: 10000 });
-        return { pass: true, details: stdout.trim(), engine: 'verify_pdf.py / pypdf' };
+        const { stdout } = await execFileAsync(
+          python,
+          [verifyScript, pdfPath, '--min-chars', '100'],
+          { timeout: 15000, maxBuffer: 4 * 1024 * 1024 }
+        );
+        return {
+          verified: true,
+          pass: true,
+          details: stdout.trim(),
+          engine: `${python} tools/verify_pdf.py`
+        };
       } catch (err) {
-        return { pass: true, warning: 'verify_pdf warning', details: err.message, engine: 'fallback' };
+        if (err.code === 'ENOENT') continue; // try the next interpreter
+        return {
+          verified: true,
+          pass: false,
+          details: (err.stdout || err.stderr || err.message || '').trim(),
+          engine: `${python} tools/verify_pdf.py`
+        };
       }
     }
-    return { pass: true, engine: 'native check' };
+
+    return { verified: false, reason: 'No Python interpreter available.', engine: 'none' };
   },
 
+  async embedFonts(pdfDoc) {
+    // Prefer the repo's own Lato, which covers Latin Extended. StandardFonts
+    // are WinAnsi-only and throw outright on characters such as "ł".
+    if (fs.existsSync(UNICODE_FONT)) {
+      try {
+        pdfDoc.registerFontkit(fontkit);
+        const regular = await pdfDoc.embedFont(fs.readFileSync(UNICODE_FONT), { subset: true });
+        const bold = fs.existsSync(UNICODE_FONT_BOLD)
+          ? await pdfDoc.embedFont(fs.readFileSync(UNICODE_FONT_BOLD), { subset: true })
+          : regular;
+        return { regular, bold, unicode: true };
+      } catch (err) {
+        console.warn('Unicode font embedding failed, falling back to Helvetica:', err.message);
+      }
+    }
+    return {
+      regular: await pdfDoc.embedFont(StandardFonts.Helvetica),
+      bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
+      unicode: false
+    };
+  },
+
+  /**
+   * Render a readable preview PDF from the LaTeX source.
+   * Paginates rather than silently dropping everything past page one.
+   */
   async generateFallbackPdf(type, latexContent) {
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595.28, 841.89]); // A4
-    const { width, height } = page.getSize();
-    
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontMono = await pdfDoc.embedFont(StandardFonts.Courier);
+    const { regular, bold, unicode } = await this.embedFonts(pdfDoc);
 
-    // Extract clean text from LaTeX
-    const cleanLines = this.extractCleanTextFromLatex(latexContent);
-
-    let y = height - 40;
     const margin = 40;
-    const contentWidth = width - margin * 2;
+    const bottom = 50;
+    let page = pdfDoc.addPage([A4.width, A4.height]);
+    let y = A4.height - margin;
+    let pages = 1;
 
-    // Header Title
-    page.drawText(type === 'cv' ? 'CURRICULUM VITAE' : 'COVER LETTER', {
-      x: margin,
-      y: y,
-      size: 18,
-      font: fontBold,
-      color: rgb(0.1, 0.25, 0.5)
+    const sanitize = (text) => {
+      if (unicode) return text;
+      // Helvetica cannot encode outside WinAnsi. Rather than throwing away the
+      // whole request, drop the unrepresentable glyphs and keep the document.
+      // eslint-disable-next-line no-control-regex
+      return text.replace(/[^\x00-\xFF]/g, '?');
+    };
+
+    const newPage = () => {
+      page = pdfDoc.addPage([A4.width, A4.height]);
+      y = A4.height - margin;
+      pages += 1;
+    };
+
+    const draw = (text, { size = 9.5, font = regular, color = rgb(0.2, 0.25, 0.3), x = margin, lead = 13 } = {}) => {
+      if (y < bottom) newPage();
+      try {
+        page.drawText(sanitize(text), { x, y, size, font, color });
+      } catch (err) {
+        console.warn('Skipped an unrenderable line in the preview PDF:', err.message);
+      }
+      y -= lead;
+    };
+
+    draw(type === 'cv' ? 'CURRICULUM VITAE' : 'COVER LETTER', {
+      size: 18, font: bold, color: rgb(0.1, 0.25, 0.5), lead: 25
     });
-    y -= 25;
-
-    // Subtle divider
     page.drawLine({
-      start: { x: margin, y: y },
-      end: { x: width - margin, y: y },
+      start: { x: margin, y: y + 8 },
+      end: { x: A4.width - margin, y: y + 8 },
       thickness: 1,
       color: rgb(0.8, 0.85, 0.9)
     });
-    y -= 20;
+    y -= 12;
 
-    for (const line of cleanLines) {
-      if (y < 50) break; // Keep within 1 page for preview
-      
+    for (const line of this.extractCleanTextFromLatex(latexContent)) {
       const trimmed = line.trim();
-      if (!trimmed) {
-        y -= 8;
-        continue;
-      }
+      if (!trimmed) { y -= 8; continue; }
 
-      if (trimmed.startsWith('##') || trimmed.toUpperCase() === trimmed && trimmed.length < 30) {
-        // Section Header
+      const isHeading = trimmed.startsWith('##') || (trimmed.toUpperCase() === trimmed && trimmed.length < 30);
+
+      if (isHeading) {
         y -= 6;
-        page.drawText(trimmed.replace(/^#+\s*/, ''), {
-          x: margin,
-          y: y,
-          size: 12,
-          font: fontBold,
-          color: rgb(0.12, 0.2, 0.35)
-        });
-        y -= 16;
+        draw(trimmed.replace(/^#+\s*/, ''), { size: 12, font: bold, color: rgb(0.12, 0.2, 0.35), lead: 16 });
       } else if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
-        // Bullet Point
-        const bulletText = trimmed.replace(/^[•\-]\s*/, '');
-        const wrapped = this.wrapText(bulletText, 75);
-        for (let i = 0; i < wrapped.length; i++) {
-          page.drawText(i === 0 ? '• ' + wrapped[i] : '  ' + wrapped[i], {
-            x: margin + 10,
-            y: y,
-            size: 9.5,
-            font: fontRegular,
-            color: rgb(0.2, 0.25, 0.3)
-          });
-          y -= 13;
-        }
+        const wrapped = this.wrapText(trimmed.replace(/^[•\-]\s*/, ''), 75);
+        wrapped.forEach((w, i) => draw(i === 0 ? `• ${w}` : `  ${w}`, { x: margin + 10 }));
       } else {
-        // Normal paragraph text
-        const wrapped = this.wrapText(trimmed, 80);
-        for (const wLine of wrapped) {
-          page.drawText(wLine, {
-            x: margin,
-            y: y,
-            size: 9.5,
-            font: fontRegular,
-            color: rgb(0.2, 0.25, 0.3)
-          });
-          y -= 13;
-        }
+        this.wrapText(trimmed, 80).forEach(w => draw(w));
         y -= 4;
       }
     }
 
-    return await pdfDoc.save();
+    const bytes = await pdfDoc.save();
+    return {
+      // pdf-lib returns a Uint8Array. Uint8Array#toString ignores its argument,
+      // so calling .toString('base64') on it downstream produced a string of
+      // comma-joined byte values instead of base64.
+      buffer: Buffer.from(bytes),
+      pages,
+      truncated: false
+    };
   },
 
   extractCleanTextFromLatex(latex) {
-    return latex
+    return String(latex || '')
       .replace(/\\documentclass[\s\S]*?\\begin\{document\}/, '')
       .replace(/\\end\{document\}/, '')
       .replace(/\\makecvtitle/, '')
@@ -213,12 +314,12 @@ export const latexService = {
       .replace(/\\%/g, '%')
       .replace(/\\_/g, '_')
       .replace(/\\#/g, '#')
-      .replace(/[\{\}]/g, '')
+      .replace(/[{}]/g, '')
       .split('\n');
   },
 
   wrapText(text, maxChars) {
-    const words = text.split(' ');
+    const words = String(text).split(' ');
     const lines = [];
     let currentLine = '';
 
@@ -234,12 +335,31 @@ export const latexService = {
     return lines;
   },
 
-  copyFolderRecursive(source, target) {
-    if (!fs.existsSync(target)) {
-      fs.mkdirSync(target, { recursive: true });
+  /** Keep the build directory from growing without bound. */
+  pruneOldBuilds() {
+    try {
+      const entries = fs.readdirSync(BUILDS_DIR, { withFileTypes: true })
+        .filter(e => e.isDirectory())
+        .map(e => {
+          const full = path.join(BUILDS_DIR, e.name);
+          return { full, mtime: fs.statSync(full).mtimeMs };
+        })
+        .sort((a, b) => b.mtime - a.mtime);
+
+      const now = Date.now();
+      entries.forEach((entry, index) => {
+        if (index >= MAX_BUILD_DIRS || now - entry.mtime > MAX_BUILD_AGE_MS) {
+          fs.rmSync(entry.full, { recursive: true, force: true });
+        }
+      });
+    } catch (err) {
+      console.warn('Build directory prune skipped:', err.message);
     }
-    const files = fs.readdirSync(source);
-    for (const file of files) {
+  },
+
+  copyFolderRecursive(source, target) {
+    ensureDir(target);
+    for (const file of fs.readdirSync(source)) {
       const curSource = path.join(source, file);
       const curTarget = path.join(target, file);
       if (fs.lstatSync(curSource).isDirectory()) {

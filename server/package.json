@@ -6,15 +6,20 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@pdf-lib/fontkit": "^1.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "multer": "^1.4.5-lts.1",
     "pdf-lib": "^1.17.1",
     "uuid": "^11.1.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

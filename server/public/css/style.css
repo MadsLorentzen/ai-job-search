@@ -1167,3 +1167,229 @@ body {
   }
 }
 
+
+/* ==========================================================================
+   Result provenance, pipeline state, and tracker interactivity
+   ========================================================================== */
+
+/* Status pill: warn when no AI provider is configured, rather than
+   claiming an engine is active. */
+.status-pill.warning {
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
+  border-color: rgba(217, 119, 6, 0.35);
+}
+
+/* Score badge for "not evaluated". Absent data must not look like a result. */
+.score-badge.score-unknown {
+  background: rgba(100, 116, 139, 0.12);
+  color: #64748b;
+}
+
+.gate-pill.unknown {
+  background: rgba(100, 116, 139, 0.12);
+  color: #64748b;
+}
+
+.dim-analysis {
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+.muted {
+  color: var(--text-muted, #94a3b8);
+  font-style: italic;
+}
+
+/* Audit badges reflect what was actually verified. */
+.audit-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 4px;
+  margin: 0 6px 6px 0;
+  border: 1px solid transparent;
+}
+
+.audit-badge.audit-ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.audit-badge.audit-warn {
+  background: rgba(217, 119, 6, 0.12);
+  color: #b45309;
+  border-color: rgba(217, 119, 6, 0.3);
+}
+
+/* Pipeline steps encode real outcomes, not elapsed time. */
+.pipeline-step.done .step-icon {
+  background: #10b981;
+  color: #fff;
+}
+
+.pipeline-step.skipped {
+  opacity: 0.55;
+}
+
+.pipeline-step.skipped .step-icon {
+  background: #cbd5e1;
+  color: #475569;
+}
+
+.pipeline-step.failed .step-icon {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Dropzone feedback for drag and drop. */
+.dropzone.dragover,
+#cvDropzone.dragover {
+  border-color: var(--accent, #2563eb);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+/* Job card actions */
+.job-card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border, #e2e8f0);
+  color: var(--text-secondary, #475569);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent, #2563eb);
+  color: var(--accent, #2563eb);
+}
+
+/* Kanban: drag to move, select to change status, button to delete. */
+.kanban-card {
+  cursor: grab;
+}
+
+.kanban-card.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.kanban-col.drag-over,
+[id^="col-"].drag-over {
+  background: rgba(37, 99, 235, 0.07);
+  outline: 2px dashed rgba(37, 99, 235, 0.4);
+  outline-offset: -4px;
+}
+
+.kanban-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.kanban-delete {
+  background: none;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+.kanban-delete:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.kanban-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted, #94a3b8);
+  margin: 6px 0;
+}
+
+.kanban-status {
+  width: 100%;
+  font-size: 11px;
+  padding: 3px 6px;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 4px;
+  background: var(--bg-secondary, #f8fafc);
+  color: var(--text-secondary, #475569);
+}
+
+/* Interview prep sections */
+.interview-section {
+  margin-bottom: 28px;
+}
+
+.section-heading {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.company-context {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary, #475569);
+  padding: 12px 14px;
+  background: var(--bg-secondary, #f8fafc);
+  border-radius: 6px;
+}
+
+.star-competency {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent, #2563eb);
+  margin-bottom: 8px;
+}
+
+.talking-points {
+  padding-left: 20px;
+  line-height: 1.7;
+  font-size: 13px;
+  color: var(--text-secondary, #475569);
+}
+
+/* Toasts carry severity. */
+.toast.warning {
+  border-left: 3px solid #d97706;
+}
+
+/* ==========================================================================
+   Accessibility
+   ========================================================================== */
+
+:where(button, a, select, input, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent, #2563eb);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
