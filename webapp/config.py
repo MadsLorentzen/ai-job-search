@@ -15,8 +15,11 @@ class Settings:
     extensions_dir: Path = field(default_factory=lambda: Path("extensions"))
     documents_root: Path = field(default_factory=lambda: Path("documents"))
     account_id: str | None = None
+    handoff_fixtures_dir: Path | None = None
 
     def __post_init__(self) -> None:
         self.db_path = Path(self.db_path)
         self.extensions_dir = Path(self.extensions_dir)
         self.documents_root = Path(self.documents_root)
+        if self.handoff_fixtures_dir is not None:
+            self.handoff_fixtures_dir = Path(self.handoff_fixtures_dir)

@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "JobSearch Application Handoff",
+  "version": "0.1.0",
+  "description": "Autofill and document handoff for confirmed JobSearch application packs.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [],
+  "background": {
+    "service_worker": "background/index.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "JobSearch Handoff"
+  },
+  "content_scripts": []
+}
