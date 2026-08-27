@@ -294,6 +294,7 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+.profile-actions { display: flex; align-items: center; gap: 8px; }
 
 .flex-1 { flex: 1; }
 .flex-2 { flex: 2; }
@@ -1729,4 +1730,184 @@ textarea.latex-input:focus {
 
 .latex-editor:focus-within {
   border-color: var(--accent, #2563eb);
+}
+
+/* ==========================================================================
+   OppertuneX mobile experience and tracker surface
+   The tracker intentionally uses a light, orange-led workspace so pipeline
+   work remains readable and easy to scan independently of the app shell.
+   ========================================================================== */
+#tab-tracker {
+  --tracker-ink: #1f2937;
+  --tracker-muted: #6b7280;
+  --tracker-line: #fed7aa;
+  --tracker-panel: #fff7ed;
+  --tracker-orange: #ea580c;
+  --tracker-orange-dark: #c2410c;
+  --tracker-orange-soft: #ffedd5;
+  --tracker-white: #ffffff;
+  background: #ffffff;
+  color: var(--tracker-ink);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  min-height: calc(100vh - 112px);
+}
+
+#tab-tracker .tracker-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--tracker-line);
+}
+
+#tab-tracker .tracker-header h2 { color: var(--tracker-ink); font-size: 22px; }
+#tab-tracker .subtle-text { color: var(--tracker-muted); }
+#tab-tracker .input-field,
+#tab-tracker .kanban-status {
+  background: var(--tracker-white);
+  border: 1px solid #fdba74;
+  border-radius: 8px;
+  color: var(--tracker-ink);
+}
+#tab-tracker .input-field { min-height: 40px; padding: 8px 12px; }
+#tab-tracker .input-field:focus,
+#tab-tracker .kanban-status:focus { border-color: var(--tracker-orange); box-shadow: 0 0 0 3px rgba(249, 115, 22, .18); }
+#tab-tracker .btn-ghost,
+#tab-tracker .btn-icon { border-color: #fdba74; color: var(--tracker-orange-dark); background: #fff; }
+#tab-tracker .btn-ghost:hover,
+#tab-tracker .btn-icon:hover,
+#tab-tracker #btnShowDueFollowUps.active { background: var(--tracker-orange-soft); border-color: var(--tracker-orange); color: var(--tracker-orange-dark); }
+#tab-tracker .count-pill { background: var(--tracker-orange-soft); color: var(--tracker-orange-dark); }
+#tab-tracker .kanban-board { gap: 14px; }
+#tab-tracker .kanban-column { background: var(--tracker-panel); border-color: var(--tracker-line); box-shadow: none; }
+#tab-tracker .column-header { color: var(--tracker-ink); border-bottom-color: var(--tracker-line); }
+#tab-tracker .kanban-card { background: var(--tracker-white); border-color: #fed7aa; box-shadow: 0 2px 8px rgba(154, 52, 18, .08); }
+#tab-tracker .kanban-card h4 { color: var(--tracker-ink); }
+#tab-tracker .kanban-card .company { color: var(--tracker-orange-dark); }
+#tab-tracker .kanban-meta,
+#tab-tracker .kanban-notes { color: var(--tracker-muted); }
+#tab-tracker .follow-up { background: #f3f4f6; color: #4b5563; }
+#tab-tracker .follow-up.is-due { background: var(--tracker-orange-soft); color: var(--tracker-orange-dark); }
+#tab-tracker .kanban-delete { color: #9ca3af; }
+#tab-tracker .kanban-delete:hover { color: #dc2626; }
+#tab-tracker .closed-lane { background: var(--tracker-panel); border-color: var(--tracker-line); }
+#tab-tracker .closed-lane summary { color: var(--tracker-ink); }
+#tab-tracker [id^="col-"].drag-over { background: #ffedd5; outline-color: var(--tracker-orange); }
+.tracker-swipe-hint { display: none; }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .55);
+  backdrop-filter: blur(5px);
+}
+.tracker-edit-sheet {
+  width: min(100%, 480px);
+  padding: 22px;
+  border: 1px solid #fed7aa;
+  border-radius: 16px;
+  background: #fff;
+  color: #1f2937;
+  box-shadow: 0 20px 48px rgba(67, 20, 7, .25);
+}
+.sheet-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.sheet-header h2 { font-size: 18px; }
+.tracker-edit-sheet > label { display: block; margin: 14px 0 6px; color: #374151; font-size: 13px; font-weight: 700; }
+.tracker-edit-sheet .input-textarea, .tracker-edit-sheet .input-text { background: #fff; color: #1f2937; border-color: #fdba74; }
+.sheet-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+.form-error { margin-top: 8px; color: #b91c1c; font-size: 13px; }
+.sheet-handle { display: none; }
+
+@media (max-width: 1024px) and (min-width: 761px) {
+  .app-header { padding: 0 14px; gap: 12px; }
+  .brand-badge, .status-pill { display: none; }
+  .nav-tabs { overflow-x: auto; max-width: min(100%, 620px); scrollbar-width: none; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab { flex: 0 0 auto; padding: 7px 10px; }
+}
+
+@media (max-width: 760px) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+  .app-header {
+    height: auto;
+    min-height: 58px;
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .header-left { min-width: 0; }
+  .brand-logo { width: 32px; height: 32px; }
+  .brand-title { font-size: 14px; }
+  .brand-badge, .status-pill, .header-right .btn span { display: none; }
+  .header-right { margin-left: auto; }
+  .header-right .btn { min-width: 36px; min-height: 36px; padding: 8px; }
+  .nav-tabs {
+    order: 3;
+    width: calc(100% + 24px);
+    margin: 0 -12px -8px;
+    padding: 6px 12px;
+    border: 0;
+    border-top: 1px solid var(--border-subtle);
+    border-radius: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab { flex: 0 0 auto; min-height: 40px; padding: 8px 11px; scroll-snap-align: start; }
+  .nav-tab span { font-size: 12px; white-space: nowrap; }
+  .app-main { padding: 14px 12px 24px; }
+  .card-header, .card-body, .card-footer { padding-left: 14px; padding-right: 14px; }
+  .form-row, .form-grid, .actions-row, .search-form, .reviewer-footer { flex-direction: column; }
+  .form-grid { grid-template-columns: 1fr; }
+  .actions-row .btn, .search-form .btn { width: 100%; min-height: 44px; }
+  .gates-row, .eval-grid { grid-template-columns: 1fr; flex-direction: column; }
+  .gates-row { display: flex; }
+  .full-height-card { min-height: 580px; }
+  .doc-preview-body, .pdf-container, .pdf-frame, .latex-container { min-height: min(520px, 65dvh); }
+  .card-header { align-items: flex-start; gap: 12px; flex-direction: column; }
+  .profile-actions { width: 100%; }
+  .profile-actions .btn { flex: 1; min-height: 40px; }
+  .doc-actions { width: 100%; overflow-x: auto; padding-bottom: 2px; }
+  .doc-actions .btn { flex: 0 0 auto; min-height: 38px; }
+  .doc-switcher { width: 100%; }
+  .doc-tab { flex: 1; justify-content: center; padding: 8px; }
+  .doc-tab .badge { display: none; }
+  .jobs-grid { grid-template-columns: 1fr; }
+  .job-card-footer, .results-header, .pagination-bar { gap: 10px; flex-wrap: wrap; }
+  .job-card-footer .btn { flex: 1; min-height: 42px; }
+  .star-grid { grid-template-columns: 1fr 1fr; }
+  .toast-container { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); }
+  .toast { width: 100%; }
+  .login-overlay { align-items: flex-end; padding: 12px; }
+  .login-modal { max-width: none; padding: 24px 18px; border-radius: 16px 16px 10px 10px; max-height: calc(100dvh - 24px); overflow-y: auto; }
+
+  #tab-tracker { margin: -14px -12px -24px; border-radius: 0; padding: 18px 12px 28px; min-height: calc(100dvh - 112px); }
+  #tab-tracker .tracker-header { align-items: stretch; flex-direction: column; gap: 14px; }
+  #tab-tracker .tracker-controls { width: 100%; margin-left: 0; flex-wrap: wrap; }
+  #tab-tracker .tracker-controls .input-field { width: 100%; max-width: none; flex: 1 0 100%; }
+  #tab-tracker #btnShowDueFollowUps { width: 100%; min-height: 42px; }
+  #tab-tracker .kanban-board { display: flex; overflow-x: auto; margin-left: -12px; margin-right: -12px; padding: 0 12px 12px; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; }
+  #tab-tracker .kanban-column { flex: 0 0 min(84vw, 330px); min-height: 360px; scroll-snap-align: start; }
+  #tab-tracker .closed-cards { grid-template-columns: 1fr; }
+  #tab-tracker .tracker-swipe-hint { display: block; margin: -2px 0 14px; color: var(--tracker-muted); font-size: 12px; text-align: center; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .tracker-edit-sheet { width: 100%; max-height: min(88dvh, 680px); overflow-y: auto; border-radius: 20px 20px 0 0; padding: 12px 18px calc(18px + env(safe-area-inset-bottom)); }
+  .sheet-handle { display: block; width: 38px; height: 4px; border-radius: 999px; margin: 0 auto 14px; background: #fdba74; }
+  .sheet-actions { flex-direction: column-reverse; }
+  .sheet-actions .btn { min-height: 44px; width: 100%; }
+}
+
+@media (max-width: 380px) {
+  .nav-tab span { display: none; }
+  .nav-tab { min-width: 42px; justify-content: center; }
+  .star-grid { grid-template-columns: 1fr; }
 }

@@ -39,6 +39,23 @@ router.get('/', (req, res, next) => {
   }
 });
 
+/** Download a portable, user-owned copy of the profile and tracker data. */
+router.get('/export', (req, res, next) => {
+  try {
+    const exportedAt = new Date().toISOString();
+    const payload = {
+      schemaVersion: 1,
+      exportedAt,
+      profile: storageService.getProfile(),
+      applications: storageService.getApplications()
+    };
+    res.setHeader('Content-Disposition', `attachment; filename="oppertunex-backup-${exportedAt.slice(0, 10)}.json"`);
+    res.type('application/json').send(JSON.stringify(payload, null, 2));
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/', validateBody(profileBody), (req, res, next) => {
   try {
     res.json({ success: true, profile: storageService.saveProfile(req.body) });

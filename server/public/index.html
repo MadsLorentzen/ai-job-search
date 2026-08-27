@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Job Search | Autonomous Application Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f97316">
+  <title>OppertuneX | Autonomous Application Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,7 +27,7 @@
             </svg>
           </div>
           <div class="brand-text">
-            <span class="brand-title">AI Job Search</span>
+            <span class="brand-title">OppertuneX</span>
             <span class="brand-badge">Engine v1.3.4</span>
           </div>
         </div>
@@ -233,9 +234,9 @@
 
                 <!-- Document Actions -->
                 <div class="doc-actions">
-                  <button id="btnOpenApplyLink" class="btn btn-sm btn-accent hidden" title="Open official job application link in new tab">
+                  <button id="btnOpenApplyLink" class="btn btn-sm btn-accent hidden" title="Open the verified job application link in a new tab">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                    <span>Apply on Site ↗</span>
+                    <span>Open application ↗</span>
                   </button>
                   <button id="btnMarkApplied" class="btn btn-sm btn-secondary hidden" title="Mark this application as Applied in Tracker">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -405,13 +406,18 @@
 
           <!-- Structured Profile Form -->
           <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">Candidate Profile & Background</h3>
-              <button id="btnSaveProfile" class="btn btn-primary btn-sm">
+              <div class="card-header">
+                <h3 class="card-title">Candidate Profile & Background</h3>
+              <div class="profile-actions">
+                <button id="btnExportData" type="button" class="btn btn-ghost btn-sm" title="Download a backup of your profile and applications">
+                  <span>Export backup</span>
+                </button>
+                <button id="btnSaveProfile" class="btn btn-primary btn-sm">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                 <span>Save Profile</span>
-              </button>
-            </div>
+                </button>
+              </div>
+              </div>
             <div class="card-body">
               <div class="form-grid">
                 <div class="form-group">
@@ -542,6 +548,7 @@
             <div class="column-cards" id="col-Offer"></div>
           </div>
         </div>
+        <p class="tracker-swipe-hint" aria-hidden="true">Swipe sideways to view each stage</p>
 
         <!-- Rejected and Withdrawn exist in the status vocabulary but had no
              home on the board, so they silently fell back into Drafted. -->
@@ -554,6 +561,32 @@
       </section>
 
     </main>
+
+    <!-- Tracker edit sheet: avoids disruptive browser prompts and supplies a
+         real mobile date picker with inline validation. -->
+    <div id="trackerEditOverlay" class="modal-overlay hidden" role="dialog" aria-modal="true"
+         aria-labelledby="trackerEditTitle">
+      <form id="trackerEditForm" class="tracker-edit-sheet">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-header">
+          <div>
+            <h2 id="trackerEditTitle">Update application</h2>
+            <p id="trackerEditSubtitle" class="subtle-text"></p>
+          </div>
+          <button type="button" id="btnCloseTrackerEdit" class="btn-icon" aria-label="Close editor">&times;</button>
+        </div>
+        <label for="trackerNotes">Notes</label>
+        <textarea id="trackerNotes" class="input-textarea" rows="5" maxlength="20000"
+                  placeholder="Add interview notes, reminders, or next steps..."></textarea>
+        <label for="trackerFollowUp">Follow up on</label>
+        <input id="trackerFollowUp" class="input-text" type="date">
+        <p id="trackerEditError" class="form-error hidden" role="alert"></p>
+        <div class="sheet-actions">
+          <button type="button" id="btnClearFollowUp" class="btn btn-ghost">Clear date</button>
+          <button type="submit" id="btnSaveTrackerEdit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+    </div>
 
 
     <!-- First-run wizard. The app previously dropped a new user onto a blank

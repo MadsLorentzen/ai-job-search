@@ -201,6 +201,33 @@ test.describe('tracker', () => {
   });
 });
 
+test.describe('mobile layout', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true });
+
+  test('keeps the tracker controls and stages reachable on a phone', async ({ page }) => {
+    await unlock(page);
+    await skipOnboarding(page);
+    await page.locator('.nav-tab[data-tab="tracker"]').click();
+
+    await expect(page.locator('#trackerSearch')).toBeVisible();
+    await expect(page.locator('#btnShowDueFollowUps')).toBeVisible();
+    await expect(page.locator('#kanbanBoard')).toHaveCSS('overflow-x', 'auto');
+    await expect(page.locator('.tracker-swipe-hint')).toBeVisible();
+  });
+
+  test('opens the in-app editor instead of browser prompts', async ({ page }) => {
+    await unlock(page);
+    await skipOnboarding(page);
+    await page.locator('.nav-tab[data-tab="tracker"]').click();
+
+    const edit = page.locator('.kanban-edit').first();
+    test.skip(await edit.count() === 0, 'requires an application created by the tracker flow');
+    await edit.click();
+    await expect(page.locator('#trackerEditOverlay')).toBeVisible();
+    await expect(page.locator('#trackerFollowUp')).toHaveAttribute('type', 'date');
+  });
+});
+
 test.describe('honest reporting', () => {
   test('audit badges say what was actually verified', async ({ page }) => {
     await unlock(page);
