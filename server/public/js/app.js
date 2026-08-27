@@ -3,9 +3,42 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+  function getCachedToken() {
+    try {
+      const raw = localStorage.getItem('jobsearch_auth_session');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.expiresAt && parsed.expiresAt > Date.now()) {
+          return parsed.token;
+        } else {
+          localStorage.removeItem('jobsearch_auth_session');
+          localStorage.removeItem('jobsearch_auth_token');
+          return '';
+        }
+      }
+    } catch (e) {}
+    return localStorage.getItem('jobsearch_auth_token') || '';
+  }
+
+  function setCachedToken(token) {
+    const sessionData = {
+      token,
+      expiresAt: Date.now() + SESSION_DURATION_MS
+    };
+    localStorage.setItem('jobsearch_auth_session', JSON.stringify(sessionData));
+    localStorage.setItem('jobsearch_auth_token', token);
+  }
+
+  function clearCachedToken() {
+    localStorage.removeItem('jobsearch_auth_session');
+    localStorage.removeItem('jobsearch_auth_token');
+  }
+
   // Global State
   const state = {
-    authToken: localStorage.getItem('jobsearch_auth_token') || '',
+    authToken: getCachedToken(),
     profile: null,
     currentJob: null,
     currentFitEvaluation: null,
@@ -45,7 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const res = await fetch(url, options);
     if (res.status === 401) {
-      // Unauthorized -> trigger login modal
+      clearCachedToken();
+      state.authToken = '';
       showLoginModal('Session expired or password required.');
       throw new Error('Unauthorized');
     }
@@ -73,10 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.success && data.token) {
           state.authToken = data.token;
-          localStorage.setItem('jobsearch_auth_token', data.token);
+          setCachedToken(data.token);
           loginOverlay.classList.add('hidden');
           loginPasswordInput.value = '';
-          showToast('Workspace unlocked successfully!', 'success');
+          showToast('Workspace unlocked! (7-day session active)', 'success');
           await postLoginInit();
         } else {
           loginError.textContent = data.error || 'Incorrect Password.';
@@ -93,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnLogout.addEventListener('click', () => {
       state.authToken = '';
-      localStorage.removeItem('jobsearch_auth_token');
+      clearCachedToken();
       showLoginModal('Workspace locked.');
     });
   }
