@@ -424,8 +424,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (paginationBar) paginationBar.classList.add('hidden');
 
     try {
-      // Fetch batch of up to 100 jobs at once
-      const url = `/api/scrape/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&portal=${encodeURIComponent(portal)}&limit=100`;
+      // Fetch all available matching jobs across pages
+      const url = `/api/scrape/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&portal=${encodeURIComponent(portal)}`;
       const res = await authFetch(url);
       const data = await res.json();
 

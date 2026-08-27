@@ -13,16 +13,15 @@ router.get('/portals', (req, res) => {
   }
 });
 
-// Search job openings across portals
+// Search job openings across portals (Fetches ALL matching results without limits)
 router.get('/search', async (req, res) => {
   try {
-    const { query = '', location = 'Remote', portal = 'freehire-search', limit = 10, remote = 'all' } = req.query;
+    const { query = '', location = 'Remote', portal = 'freehire-search', remote = 'all' } = req.query;
     
     const jobs = await scraperService.searchJobs({
       query: String(query).trim(),
       location: String(location).trim(),
       portal: String(portal),
-      limit: parseInt(limit, 10) || 10,
       remote: String(remote)
     });
 
