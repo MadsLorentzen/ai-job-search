@@ -20,6 +20,7 @@ from webapp.api.workspaces import router as workspaces_router
 from webapp.api.views import router as views_router
 from webapp.config import Settings
 from webapp.persistence.db import init_db
+from product.onboarding_walkthroughs import register_default_walkthroughs
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -27,6 +28,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        register_default_walkthroughs()
         init_db(settings.db_path)
         yield
 
