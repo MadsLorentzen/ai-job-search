@@ -17,7 +17,9 @@ const BASE = `http://127.0.0.1:${PORT}`;
 process.env.APP_PASSWORD = TEST_PASSWORD;
 process.env.PORT = String(PORT);
 process.env.SESSION_SECRET = 'test-session-secret';
-// Keep the suite offline and deterministic.
+// Keep the suite offline and deterministic, even on a machine with the
+// Claude CLI installed and logged in.
+process.env.AI_PROVIDER = 'none';
 delete process.env.ANTHROPIC_API_KEY;
 delete process.env.OPENAI_API_KEY;
 delete process.env.KIMI_API_KEY;
@@ -178,17 +180,38 @@ describe('honest output', () => {
     assert.notEqual(ats.extractedCharacters, 1250, 'the hardcoded character count must be gone');
   });
 
-  test('H3: portals with no CLI behind them are not advertised', async () => {
+  test('H3: only portals whose CLI is present are advertised', async () => {
     const { json } = await api('/api/scrape/portals');
     const ids = json.portals.map(p => p.id);
-    assert.ok(!ids.includes('jobindex-search'));
-    assert.ok(!ids.includes('jobnet-search'));
+
+    // Every advertised portal must be backed by a real CLI (or be one of the
+    // two the server fetches directly over HTTP).
+    const direct = ['freehire-search', 'linkedin-search'];
+    for (const id of ids) {
+      if (direct.includes(id)) continue;
+      assert.ok(
+        fs.existsSync(path.join(process.cwd(), '../.agents/skills', id, 'cli/src/cli.ts')),
+        `${id} is advertised but has no CLI`
+      );
+    }
   });
 
-  test('H3: an unavailable portal is a 400, not fabricated sample jobs', async () => {
-    const { res, json } = await api('/api/scrape/search?portal=jobindex-search');
+  test('H3: an unknown portal is a 400, not fabricated sample jobs', async () => {
+    const { res, json } = await api('/api/scrape/search?portal=not-a-real-portal');
     assert.equal(res.status, 400);
     assert.match(json.error, /unavailable portal/i);
+  });
+
+  test('H3: an unreachable portal returns nothing rather than invented postings', async () => {
+    // bun is not installed in CI, so the Danish CLI portals cannot run. The old
+    // code answered that with three hardcoded jobs at example.com URLs.
+    const { res, json } = await api('/api/scrape/search?portal=jobdanmark-search&query=test');
+    assert.equal(res.status, 200);
+    assert.equal(json.isSample, false);
+    for (const job of json.jobs) {
+      assert.doesNotMatch(job.url || '', /example\.com/);
+      assert.notEqual(job.company, 'Vortex Cloud Solutions');
+    }
   });
 
   test('H2: with no provider configured, evaluation reports itself unavailable', async () => {

@@ -12,14 +12,16 @@ const LINKEDIN_MAX_PAGES = 5;
 /**
  * Portals the app knows how to describe.
  *
- * `getAvailablePortals()` filters this to the ones that can actually run, so
- * the UI cannot offer a portal that silently falls back to sample data. Two
- * entries (jobindex, jobnet) were previously advertised with no CLI behind
- * them at all: every search against them returned invented postings.
+ * `getAvailablePortals()` filters this to the ones whose CLI is actually
+ * present, so the UI cannot offer a portal that cannot run. Previously an
+ * unreachable portal (a missing CLI, or bun not installed) fell through to a
+ * hardcoded sample list and returned invented postings under success: true.
  */
 const KNOWN_PORTALS = [
   { id: 'freehire-search', name: 'FreeHire (Global Tech & Remote)', defaultLocation: 'Remote', global: true, direct: true },
   { id: 'linkedin-search', name: 'LinkedIn (Global Public Postings)', defaultLocation: 'Remote', global: true, direct: true },
+  { id: 'jobindex-search', name: 'Jobindex (Denmark)', defaultLocation: 'København', global: false },
+  { id: 'jobnet-search', name: 'Jobnet / STAR (Danish Public Employment)', defaultLocation: 'Danmark', global: false },
   { id: 'jobbank-search', name: 'Akademikernes Jobbank (Academic/Graduate)', defaultLocation: 'Danmark', global: false },
   { id: 'jobdanmark-search', name: 'Jobdanmark (Regional Denmark)', defaultLocation: 'Sjælland', global: false }
 ];

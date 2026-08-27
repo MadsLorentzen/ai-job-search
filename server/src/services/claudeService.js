@@ -74,7 +74,17 @@ function describeJob(job) {
 }
 
 export const claudeService = {
+  /**
+   * AI_PROVIDER=none disables every provider, including the CLI bridge.
+   * Useful for running the app deliberately offline, and it makes tests
+   * deterministic on a machine that happens to have the Claude CLI installed.
+   */
+  isDisabled() {
+    return (process.env.AI_PROVIDER || '').toLowerCase() === 'none';
+  },
+
   getProviderName() {
+    if (this.isDisabled()) return 'Disabled (AI_PROVIDER=none)';
     const provider = (process.env.AI_PROVIDER || '').toLowerCase();
     if (provider === 'kimi' || process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY) return 'Kimi (Moonshot AI)';
     if (provider === 'qwen' || process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY) return 'Qwen (Alibaba AI)';
@@ -85,6 +95,7 @@ export const claudeService = {
   },
 
   isConfigured() {
+    if (this.isDisabled()) return false;
     const provider = (process.env.AI_PROVIDER || '').toLowerCase();
     if (provider === 'kimi' || process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY) return true;
     if (provider === 'qwen' || process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY) return true;
@@ -101,6 +112,7 @@ export const claudeService = {
    * on PATH and caches the answer.
    */
   hasClaudeCliAuth() {
+    if (this.isDisabled()) return false;
     if (this._cliAvailable !== undefined) return this._cliAvailable;
 
     const home = process.env.HOME || process.env.USERPROFILE || '';
@@ -160,6 +172,7 @@ export const claudeService = {
   },
 
   async executePrompt(systemPrompt, userPrompt) {
+    if (this.isDisabled()) return null;
     const provider = (process.env.AI_PROVIDER || '').toLowerCase();
 
     const kimiKey = process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY;
