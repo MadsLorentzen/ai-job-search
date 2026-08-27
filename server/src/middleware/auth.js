@@ -20,9 +20,9 @@ export const DEFAULT_FALLBACK_PASSWORD = 'oppertuneX!@#$999';
 function cleanSecret(val) {
   if (!val) return '';
   let str = String(val).trim();
-  // Strip inline comments if unquoted (e.g. APP_PASSWORD=secret # my comment)
+  // Strip inline comments only if preceded by whitespace and unquoted (e.g. APP_PASSWORD=secret   # my comment)
   if (!str.startsWith('"') && !str.startsWith("'")) {
-    str = str.split('#')[0].trim();
+    str = str.replace(/\s+#.*$/, '').trim();
   }
   // Strip surrounding quotes
   return str.replace(/^["']|["']$/g, '').trim();

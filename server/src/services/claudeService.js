@@ -176,7 +176,8 @@ export const claudeService = {
       const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
       console.log('Invoking Claude Code CLI Bridge via STDIN pipe (using Pro subscription)...');
 
-      const proc = spawn('claude', ['-p', '--dangerously-skip-permissions'], {
+      // Run claude -p via stdin (compatible with root / non-root)
+      const proc = spawn('claude', ['-p'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         timeout: 60000
       });
@@ -257,6 +258,10 @@ Return ONLY valid JSON matching this schema:
     }
 
     return this.mockJobEvaluation(profile, job);
+  },
+
+  async draftAndReviewApplication(profile, job, fitEvaluation) {
+    return this.runDrafterReviewerLoop(profile, job, fitEvaluation);
   },
 
   async runDrafterReviewerLoop(profile, job, fitEvaluation) {
