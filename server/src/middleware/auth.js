@@ -6,40 +6,58 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Check both server/.env and root/.env
-const serverEnvPath = path.resolve(__dirname, '../../.env');
-const rootEnvPath = path.resolve(__dirname, '../../../../.env');
+// Possible .env paths (server/.env and repo root .env)
+const envPaths = [
+  path.resolve(__dirname, '../../.env'),       // server/.env
+  path.resolve(__dirname, '../../../.env'),    // job-search/.env
+  path.resolve(process.cwd(), '.env'),         // cwd .env
+  path.resolve(process.cwd(), 'server/.env')   // cwd/server/.env
+];
 
-if (fs.existsSync(serverEnvPath)) {
-  dotenv.config({ path: serverEnvPath });
-}
-if (fs.existsSync(rootEnvPath)) {
-  dotenv.config({ path: rootEnvPath });
-}
-
-// Default fallback password if none set
-const DEFAULT_PASSWORD = 'jobsearch_access_2026';
+// Default fallback master password
+export const DEFAULT_FALLBACK_PASSWORD = 'jobsearch_access_2026';
 
 function cleanSecret(val) {
   if (!val) return '';
-  return String(val).trim().replace(/^["']|["']$/g, '');
+  let str = String(val).trim();
+  // Strip inline comments if unquoted (e.g. APP_PASSWORD=secret # my comment)
+  if (!str.startsWith('"') && !str.startsWith("'")) {
+    str = str.split('#')[0].trim();
+  }
+  // Strip surrounding quotes
+  return str.replace(/^["']|["']$/g, '').trim();
+}
+
+function parseEnvFileManually(filePath) {
+  const map = {};
+  if (!fs.existsSync(filePath)) return map;
+  try {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const lines = content.split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const match = trimmed.match(/^([A-Za-z0-9_]+)\s*=\s*(.*)$/);
+      if (match) {
+        const key = match[1];
+        const val = cleanSecret(match[2]);
+        map[key] = val;
+      }
+    }
+  } catch (err) {
+    console.warn(`Error reading ${filePath}:`, err.message);
+  }
+  return map;
 }
 
 export function getAuthorizedPasswords() {
-  // Re-read .env dynamically in case it changed at runtime
-  if (fs.existsSync(serverEnvPath)) {
-    dotenv.config({ path: serverEnvPath, override: true });
-  }
-
-  const envPass = cleanSecret(process.env.APP_PASSWORD || process.env.AUTH_PASSWORD || process.env.ACCESS_KEY);
-  const envUsers = process.env.AUTH_USERS;
-
   const passwords = new Set();
 
-  if (envPass) {
-    passwords.add(envPass);
-  }
+  // 1. Check process.env (loaded by PM2 or dotenv)
+  const envPass = cleanSecret(process.env.APP_PASSWORD || process.env.AUTH_PASSWORD || process.env.ACCESS_KEY);
+  if (envPass) passwords.add(envPass);
 
+  const envUsers = process.env.AUTH_USERS;
   if (envUsers && envUsers.trim()) {
     envUsers.split(',').forEach(entry => {
       const parts = entry.split(':');
@@ -51,15 +69,27 @@ export function getAuthorizedPasswords() {
     });
   }
 
-  if (passwords.size === 0) {
-    passwords.add(DEFAULT_PASSWORD);
+  // 2. Directly read from .env files on disk (bypasses any PM2 caching)
+  for (const envPath of envPaths) {
+    const parsed = parseEnvFileManually(envPath);
+    if (parsed.APP_PASSWORD) passwords.add(parsed.APP_PASSWORD);
+    if (parsed.AUTH_PASSWORD) passwords.add(parsed.AUTH_PASSWORD);
+    if (parsed.ACCESS_KEY) passwords.add(parsed.ACCESS_KEY);
+    if (parsed.AUTH_USERS) {
+      parsed.AUTH_USERS.split(',').forEach(entry => {
+        const parts = entry.split(':');
+        passwords.add(cleanSecret(parts.length >= 2 ? parts[1] : entry));
+      });
+    }
   }
 
-  return Array.from(passwords);
+  // 3. Always include default password as emergency fallback
+  passwords.add(DEFAULT_FALLBACK_PASSWORD);
+
+  return Array.from(passwords).filter(Boolean);
 }
 
 export function authMiddleware(req, res, next) {
-  // Allow health check and login endpoint without auth
   if (req.path === '/health' || req.path === '/auth/login' || req.path === '/auth/verify') {
     return next();
   }
