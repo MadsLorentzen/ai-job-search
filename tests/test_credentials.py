@@ -34,6 +34,8 @@ class StoreTests(CredentialFixture):
 
     def test_written_private_from_the_start(self):
         # chmod-after-write leaves a window where the key is world-readable.
+        if sys.platform == "win32":
+            self.skipTest("POSIX file modes are not enforced on Windows (DPAPI is used)")
         credentials.store_key(VALID_KEY, self.store)
         mode = stat.S_IMODE(self.store.stat().st_mode)
         self.assertEqual(0o600, mode, oct(mode))
