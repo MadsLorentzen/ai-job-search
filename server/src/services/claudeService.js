@@ -431,39 +431,45 @@ Return ONLY valid JSON:
   },
 
   async parseResumeText(rawText) {
-    const systemPrompt = `You are a resume parsing specialist. Parse the provided raw resume text into structured JSON matching the candidate profile schema.
+    const systemPrompt = `You are a precision resume parsing specialist.
+Extract the candidate's actual identity, contact details, work history, and technical skills from the provided resume text into valid JSON.
 
-Return ONLY valid JSON:
+CRITICAL INSTRUCTIONS:
+1. Name: Extract the candidate's real full name from the top of the resume. Never invent or use placeholder names.
+2. Title: Extract their current or target professional job title.
+3. Contact Details: Extract real email, phone, location, LinkedIn URL, and GitHub URL if present.
+4. Summary: 2-3 sentence executive summary of candidate background.
+5. Skills: Extract actual programming languages, frameworks, databases, cloud tools, and domain specialties.
+
+Return ONLY valid JSON matching this schema:
 {
   "identity": {
-    "name": "...",
-    "title": "...",
-    "email": "...",
-    "phone": "...",
-    "location": "...",
+    "name": "Candidate Full Name",
+    "title": "Professional Title",
+    "email": "candidate@example.com",
+    "phone": "+1 ...",
+    "location": "City, Country or Remote",
     "linkedin": "...",
     "github": "...",
     "summary": "...",
-    "languages": [{ "language": "...", "level": "..." }]
+    "languages": [{ "language": "English", "level": "Professional" }]
   },
-  "education": [
-    { "degree": "...", "institution": "...", "period": "...", "highlights": "..." }
-  ],
+  "skills": {
+    "primary": ["...", "..."],
+    "secondary": ["...", "..."],
+    "domain": ["...", "..."],
+    "tools": ["...", "..."]
+  },
   "experience": [
     { "title": "...", "company": "...", "location": "...", "period": "...", "bullets": ["...", "..."] }
   ],
-  "skills": {
-    "primary": ["..."],
-    "secondary": ["..."],
-    "domain": ["..."],
-    "tools": ["..."]
-  },
-  "starStories": [
-    { "id": "story-1", "title": "...", "situation": "...", "task": "...", "action": "...", "result": "..." }
+  "education": [
+    { "degree": "...", "institution": "...", "period": "...", "highlights": "..." }
   ]
 }`;
 
-    const responseText = await this.executePrompt(systemPrompt, rawText);
+    const userPrompt = `Candidate Resume Text:\n${rawText}`;
+    const responseText = await this.executePrompt(systemPrompt, userPrompt);
     if (responseText) {
       const parsed = extractJson(responseText);
       if (parsed && parsed.identity && parsed.identity.name && !parsed.identity.name.includes('...')) {
