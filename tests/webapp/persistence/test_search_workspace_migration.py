@@ -81,6 +81,7 @@ def test_new_database_has_one_deterministic_default_search_workspace(tmp_path):
         "003_accounts_ownership",
         "004_application_documents",
         "005_handoff_sessions",
+        "006_onboarding_walkthroughs",
     }
     assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
 
@@ -104,6 +105,7 @@ def test_profile_manager_and_account_migrations_are_idempotent(tmp_path):
         "003_accounts_ownership",
         "004_application_documents",
         "005_handoff_sessions",
+        "006_onboarding_walkthroughs",
     }
     assert upgraded.execute("PRAGMA foreign_key_check").fetchall() == []
 

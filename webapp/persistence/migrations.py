@@ -21,6 +21,7 @@ PROFILE_MANAGER_MIGRATION_ID = "002_evidence_profile_manager"
 ACCOUNTS_OWNERSHIP_MIGRATION_ID = "003_accounts_ownership"
 APPLICATION_DOCUMENTS_MIGRATION_ID = "004_application_documents"
 HANDOFF_SESSIONS_MIGRATION_ID = "005_handoff_sessions"
+ONBOARDING_WALKTHROUGHS_MIGRATION_ID = "006_onboarding_walkthroughs"
 
 
 def _now() -> str:
@@ -47,6 +48,7 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
         (ACCOUNTS_OWNERSHIP_MIGRATION_ID, _migrate_accounts_ownership, False),
         (APPLICATION_DOCUMENTS_MIGRATION_ID, _migrate_application_documents, False),
         (HANDOFF_SESSIONS_MIGRATION_ID, _migrate_handoff_sessions, False),
+        (ONBOARDING_WALKTHROUGHS_MIGRATION_ID, _migrate_onboarding_walkthroughs, False),
     )
     for migration_id, operation, disable_foreign_keys in migrations:
         if conn.execute(
@@ -262,6 +264,37 @@ def _migrate_handoff_sessions(conn: sqlite3.Connection) -> None:
             workflow_event_id TEXT REFERENCES workflow_events(id),
             created_at TEXT NOT NULL
         );
+        """,
+    )
+
+
+def _migrate_onboarding_walkthroughs(conn: sqlite3.Connection) -> None:
+    _execute_statements(
+        conn,
+        """
+        CREATE TABLE onboarding_progress (
+            account_id TEXT NOT NULL REFERENCES accounts(id),
+            walkthrough_id TEXT NOT NULL,
+            walkthrough_version INTEGER NOT NULL CHECK (walkthrough_version >= 1),
+            status TEXT NOT NULL CHECK (
+                status IN ('not_started', 'in_progress', 'completed', 'skipped')
+            ),
+            current_step_index INTEGER NOT NULL CHECK (current_step_index >= 0),
+            dismissal_reason TEXT CHECK (
+                dismissal_reason IS NULL
+                OR dismissal_reason IN ('skip', 'dont_show_again', 'close')
+            ),
+            started_at TEXT,
+            last_interacted_at TEXT NOT NULL,
+            completed_at TEXT,
+            times_completed INTEGER NOT NULL DEFAULT 0 CHECK (times_completed >= 0),
+            times_started INTEGER NOT NULL DEFAULT 0 CHECK (times_started >= 0),
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (account_id, walkthrough_id)
+        );
+
+        CREATE INDEX idx_onboarding_progress_account_status
+            ON onboarding_progress(account_id, status);
         """,
     )
 
