@@ -14,10 +14,15 @@ import trackerRoutes from './routes/tracker.js';
 import { claudeService } from './services/claudeService.js';
 import { authMiddleware } from './middleware/auth.js';
 
+import fs from 'fs';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+const serverEnv = path.resolve(__dirname, '../.env');
+const rootEnv = path.resolve(__dirname, '../../../.env');
+if (fs.existsSync(serverEnv)) dotenv.config({ path: serverEnv });
+if (fs.existsSync(rootEnv)) dotenv.config({ path: rootEnv });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
