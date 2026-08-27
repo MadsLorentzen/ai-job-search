@@ -3,7 +3,7 @@ export const SAFE_CATALOG_FIELD_TYPES = [
 ] as const;
 
 const LABEL_PATTERNS: Record<(typeof SAFE_CATALOG_FIELD_TYPES)[number], RegExp> = {
-  name: /\b(full\s*name|your\s*name)\b/i,
+  name: /\b(full\s*name|your\s*name|first\s*name)\b/i,
   email: /\bemail\b/i,
   phone: /\b(phone|mobile)\b/i,
   linkedin: /\blinkedin\b/i,
@@ -45,6 +45,20 @@ function matchSafeCatalogField(labelText: string): string | null {
 // normally.
 const EMPLOYER_CONTEXT_QUALIFIER = /\b(employer|company|institution|university|school|organization)\b/i;
 
+// Guards the widened `name` pattern (first/last/middle name) the same way
+// EMPLOYER_CONTEXT_QUALIFIER guards `location`: a "First Name" label is the
+// candidate's own identity and safe to autofill, but "Reference First Name",
+// "Recruiter Name", "Manager Name", or "Emergency Contact Name" wear the
+// same safe-catalog label while naming a third party — autofilling the
+// candidate's own name into those would misrepresent who the field is
+// asking about.
+const THIRD_PARTY_NAME_QUALIFIER =
+  /\b(reference|referee|recruiter|hiring\s*manager|manager|supervisor|contact|emergency|third[\s-]*party)\b/i;
+
+function isThirdPartyNameField(labelText: string): boolean {
+  return THIRD_PARTY_NAME_QUALIFIER.test(labelText);
+}
+
 // Narrow, phrase-level exclusion (distinct from the qualifier above): only
 // fires when "work" or "office" sits immediately in front of "location"
 // (tolerating whitespace/hyphen between them and any surrounding
@@ -70,6 +84,14 @@ function isWorkOrOfficeLocationField(labelText: string): boolean {
 // never escalates to "autofill".
 export function matchSafeCatalogFieldForAdapter(labelText: string): string | null {
   const safeType = matchSafeCatalogField(labelText);
+  if (safeType === "name" && isThirdPartyNameField(labelText)) {
+    // Refuse to trust the safe-catalog match: this looks like a
+    // third-party-scoped name field (reference, recruiter, manager,
+    // emergency contact) wearing a safe-catalog "name" label. Treat as
+    // unmatched so it falls through to the generic `ask` default instead
+    // of escalating to `autofill` with the candidate's own name.
+    return null;
+  }
   if (safeType && isAmbiguousEmployerContextField(labelText)) {
     // Refuse to trust the safe-catalog match: this looks like an
     // employer/institution-scoped field wearing a safe-catalog label

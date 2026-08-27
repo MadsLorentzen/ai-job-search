@@ -33,6 +33,54 @@ describe("safe catalog", () => {
   it("returns null for an employment field even though it sounds similar", () => {
     expect(matchSafeCatalogFieldForAdapter("Current employer")).toBeNull();
   });
+
+  it("matches 'First Name' to the name field type", () => {
+    expect(matchSafeCatalogFieldForAdapter("First Name")).toBe("name");
+  });
+
+});
+
+describe("matchSafeCatalogFieldForAdapter (third-party name guard)", () => {
+  it("does not match 'Reference Name' (third-party context qualifier present)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Reference Name")).toBeNull();
+  });
+
+  it("does not match 'Reference First Name' (third-party context qualifier present)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Reference First Name")).toBeNull();
+  });
+
+  it("does not match 'Third-party First Name'", () => {
+    expect(matchSafeCatalogFieldForAdapter("Third-party First Name")).toBeNull();
+  });
+
+  it("does not match employer/company-scoped first-name fields", () => {
+    expect(matchSafeCatalogFieldForAdapter("Employer First Name")).toBeNull();
+    expect(matchSafeCatalogFieldForAdapter("Company First Name")).toBeNull();
+  });
+
+  it("does not match 'Recruiter Name' (third-party context qualifier present)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Recruiter Name")).toBeNull();
+  });
+
+  it("does not match 'Hiring Manager Name' (third-party context qualifier present)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Hiring Manager Name")).toBeNull();
+  });
+
+  it("does not match 'Emergency Contact Name' (third-party context qualifier present)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Emergency Contact Name")).toBeNull();
+  });
+
+  it("does not match 'Supervisor Name' (third-party context qualifier present)", () => {
+    expect(matchSafeCatalogFieldForAdapter("Supervisor Name")).toBeNull();
+  });
+
+  it("is case-insensitive for the third-party name guard", () => {
+    expect(matchSafeCatalogFieldForAdapter("REFERENCE NAME")).toBeNull();
+  });
+
+  it("still matches a bare 'Name' label with no third-party qualifier", () => {
+    expect(matchSafeCatalogFieldForAdapter("Your Name")).toBe("name");
+  });
 });
 
 describe("matchSafeCatalogFieldForAdapter (employer-context guard)", () => {

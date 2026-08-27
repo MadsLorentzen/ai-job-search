@@ -2,6 +2,9 @@
 node_modules/
 bun.lock
 
+# Test-only build artifacts (never shipped as part of the extension package)
+extension/dist/
+
 # Python
 __pycache__/
 *.pyc

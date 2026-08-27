@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+import shutil
+import socket
+import subprocess
+import threading
+import time
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
+import uvicorn
 from fastapi.testclient import TestClient
 
 from webapp.app import create_app
@@ -19,6 +26,52 @@ def _live_server_settings(tmp_path):
         db_path=tmp_path / "jobsearch.sqlite3",
         documents_root=tmp_path / "documents",
         handoff_fixtures_dir=_FIXTURES_DIR,
+    )
+
+
+def _free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+@pytest.fixture
+def live_server(tmp_path, monkeypatch):
+    secret = "task20-secret-sentinel-value"
+    monkeypatch.setenv("OPENAI_API_KEY", secret)
+    port = _free_port()
+    settings = Settings(
+        db_path=tmp_path / "jobsearch.sqlite3", host="127.0.0.1", port=port,
+        documents_root=tmp_path / "documents", handoff_fixtures_dir=_FIXTURES_DIR,
+    )
+    app = create_app(settings)
+    server = uvicorn.Server(uvicorn.Config(
+        app, host="127.0.0.1", port=port, log_level="warning", access_log=False,
+    ))
+    thread = threading.Thread(target=server.run, daemon=True)
+    thread.start()
+    deadline = time.monotonic() + 15
+    while time.monotonic() < deadline:
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=0.25):
+                break
+        except OSError:
+            time.sleep(0.05)
+    else:
+        server.should_exit = True
+        thread.join(timeout=5)
+        raise RuntimeError("Uvicorn handoff fixture did not start on 127.0.0.1")
+    yield SimpleNamespace(base_url=f"http://127.0.0.1:{port}", db_path=settings.db_path, secret=secret)
+    server.should_exit = True
+    thread.join(timeout=10)
+    assert not thread.is_alive(), "Uvicorn handoff fixture did not stop cleanly"
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _build_adapter_bundle():
+    npm = shutil.which("npm")
+    subprocess.run(
+        [npm, "run", "build:test-bundle"], cwd="extension", check=True,
     )
 
 
@@ -94,3 +147,96 @@ def test_handoff_session_lifecycle_against_fixture_workspace(tmp_path):
         )
         assert confirmed.status_code == 201
         assert confirmed.json()["session"]["status"] == "user_confirmed_submitted"
+
+
+def test_greenhouse_fixture_autofills_only_safe_catalog_via_real_adapter(page, live_server):
+    page.goto(f"{live_server.base_url}/test-fixtures/handoff/greenhouse_fixture.html")
+    page.add_script_tag(path="extension/dist/adapters-bundle.js")
+
+    result = page.evaluate(
+        """() => {
+            const fields = HandoffAdapters.greenhouseAdapter.scan(document);
+            return fields.map(f => ({
+                label: f.labelText,
+                behavior: HandoffAdapters.greenhouseAdapter.classify(f).behavior,
+                normalizedFieldType:
+                    HandoffAdapters.greenhouseAdapter.classify(f).normalizedFieldType,
+                sourceKind: HandoffAdapters.greenhouseAdapter.classify(f).sourceKind,
+            }));
+        }"""
+    )
+    by_label = {row["label"]: row["behavior"] for row in result}
+    rows_by_label = {row["label"]: row for row in result}
+    assert by_label["First Name"] == "autofill"
+    assert rows_by_label["First Name"]["normalizedFieldType"] == "name"
+    assert rows_by_label["First Name"]["sourceKind"] == "safe_fact"
+    assert by_label["Email"] == "autofill"
+    assert by_label["Most Recent Employer"] == "autofill"
+    assert (
+        rows_by_label["Most Recent Employer"]["normalizedFieldType"]
+        == "employment[0].employer"
+    )
+    assert rows_by_label["Most Recent Employer"]["sourceKind"] == "adapter_rule"
+    assert by_label["Years of Experience"] == "suggest"
+    disability_label = next(k for k in by_label if "Disability" in k)
+    assert by_label[disability_label] == "ask"
+
+
+def test_generic_employer_field_never_becomes_candidate_identity(page, live_server):
+    page.goto(f"{live_server.base_url}/test-fixtures/handoff/generic_fixture.html")
+    page.add_script_tag(path="extension/dist/adapters-bundle.js")
+
+    result = page.evaluate(
+        """() => {
+            const fields = HandoffAdapters.genericAdapter.scan(document);
+            const employer = fields.find(f => f.labelText === 'Employer location');
+            return HandoffAdapters.genericAdapter.classify(employer);
+        }"""
+    )
+    assert result["behavior"] == "ask"
+    assert result["normalizedFieldType"] == "unknown"
+    assert result["sourceKind"] == "none"
+
+
+def test_legal_declaration_checkbox_never_classified_as_actionable(page, live_server):
+    page.goto(f"{live_server.base_url}/test-fixtures/handoff/generic_fixture.html")
+    page.add_script_tag(path="extension/dist/adapters-bundle.js")
+
+    result = page.evaluate(
+        """() => {
+            const fields = HandoffAdapters.genericAdapter.scan(document);
+            const cert = fields.find(f => f.labelText.includes('certify'));
+            return HandoffAdapters.genericAdapter.classify(cert).behavior;
+        }"""
+    )
+    assert result == "never"
+
+    # the checkbox's actual DOM state must be unaffected by classification alone
+    checked = page.locator("#f_cert").is_checked()
+    assert checked is False
+
+
+def test_real_submit_button_never_clicked_by_classification_pass(page, live_server):
+    page.goto(f"{live_server.base_url}/test-fixtures/handoff/generic_fixture.html")
+    page.add_script_tag(path="extension/dist/adapters-bundle.js")
+    page.evaluate(
+        "() => { window.__submitClicks = 0; "
+        "document.getElementById('submit-btn')"
+        ".addEventListener('click', () => { window.__submitClicks += 1; }); }"
+    )
+
+    page.evaluate(
+        """() => {
+            const fields = HandoffAdapters.genericAdapter.scan(document);
+            fields.forEach(f => HandoffAdapters.genericAdapter.classify(f));
+        }"""
+    )
+    clicks = page.evaluate("() => window.__submitClicks")
+    assert clicks == 0
+
+
+def test_no_sensitive_value_or_secret_leakage_in_fixture_page(page, live_server):
+    page.goto(f"{live_server.base_url}/test-fixtures/handoff/generic_fixture.html")
+    content = page.content()
+    assert "OPENAI_API_KEY" not in content
+    assert live_server.secret not in content
