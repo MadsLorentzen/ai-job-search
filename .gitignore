@@ -42,6 +42,14 @@ server/data/*.json
 # Signing key for session tokens, generated on first run. Never commit it:
 # anyone holding it can mint a valid session for the app.
 server/data/.session-secret
+# SQLite database and its write-ahead-log sidecars: personal application data.
+server/data/*.db
+server/data/*.db-wal
+server/data/*.db-shm
+server/data/*.migrated
+# Test and browser-test output.
+server/test-results/
+server/playwright-report/
 !server/data/.gitkeep
 
 

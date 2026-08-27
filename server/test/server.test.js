@@ -121,7 +121,8 @@ describe('path traversal and injection', () => {
     });
 
     assert.equal(res.status, 400);
-    assert.match(json.error, /Invalid application id/i);
+    // Rejected by the request schema now, before it can reach the path layer.
+    assert.match(json.error, /uuid/i);
     assert.equal(fs.existsSync(marker), false, 'nothing should be written outside the build directory');
   });
 
@@ -305,5 +306,191 @@ describe('input validation', () => {
       body: JSON.stringify({ job: { title: 'Engineer' } })
     });
     assert.equal(res.status, 400);
+  });
+});
+
+describe('storage (SQLite)', () => {
+  test('an application survives a read-back with every field intact', async () => {
+    const id = 'aabbccdd-1122-3344-5566-778899aabbcc';
+    await api('/api/tracker', {
+      method: 'POST',
+      body: JSON.stringify({
+        id, jobTitle: 'Platform Engineer', company: 'Northwind',
+        status: 'Applied', fitScore: 74, notes: 'Referred by a colleague.'
+      })
+    });
+
+    const { json } = await api('/api/tracker');
+    const stored = json.applications.find(a => a.id === id);
+    assert.equal(stored.jobTitle, 'Platform Engineer');
+    assert.equal(stored.fitScore, 74);
+    assert.equal(stored.notes, 'Referred by a colleague.');
+    assert.equal(stored.status, 'Applied');
+  });
+
+  test('a partial update does not blank the fields it omits', async () => {
+    const id = 'aabbccdd-1122-3344-5566-778899aabbcc';
+    await api(`/api/tracker/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ notes: 'Updated note.' })
+    });
+
+    const { json } = await api('/api/tracker');
+    const stored = json.applications.find(a => a.id === id);
+    assert.equal(stored.notes, 'Updated note.');
+    assert.equal(stored.jobTitle, 'Platform Engineer', 'omitted field must be preserved');
+    assert.equal(stored.fitScore, 74, 'omitted field must be preserved');
+  });
+
+  test('filtering by search term works', async () => {
+    const { json } = await api('/api/tracker?search=Northwind');
+    assert.ok(json.applications.length >= 1);
+    assert.ok(json.applications.every(a => /northwind/i.test(a.company + a.jobTitle + a.notes)));
+  });
+
+  test('a past follow-up date is reported as due', async () => {
+    const id = 'aabbccdd-1122-3344-5566-778899aabbcc';
+    await api(`/api/tracker/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ followUpAt: '2020-01-01T09:00:00.000Z' })
+    });
+
+    const { json } = await api('/api/tracker');
+    assert.ok(json.dueFollowUps.includes(id));
+  });
+
+  test('document versions accumulate rather than overwrite', async () => {
+    const { json: first } = await api('/api/apply/compile', {
+      method: 'POST',
+      body: JSON.stringify({ type: 'cv', latexContent: '\\section{One}' })
+    });
+    const appId = first.appId;
+
+    await api('/api/tracker', {
+      method: 'POST',
+      body: JSON.stringify({ id: appId, jobTitle: 'Versioned' })
+    });
+
+    for (const body of ['\\section{Two}', '\\section{Three}']) {
+      await api('/api/apply/compile', {
+        method: 'POST',
+        body: JSON.stringify({ type: 'cv', latexContent: body, appId })
+      });
+    }
+
+    const { json } = await api(`/api/apply/versions/${appId}/cv`);
+    assert.ok(json.versions.length >= 2, `expected multiple versions, got ${json.versions.length}`);
+  });
+});
+
+describe('validation', () => {
+  test('unknown keys are stripped rather than persisted', async () => {
+    const id = 'ffffffff-1111-2222-3333-444444444444';
+    await api('/api/tracker', {
+      method: 'POST',
+      body: JSON.stringify({ id, jobTitle: 'X', coverPdfPath: '/etc/shadow', evil: true })
+    });
+
+    const { json } = await api('/api/tracker');
+    const stored = json.applications.find(a => a.id === id);
+    assert.equal(stored.coverPdfPath, undefined);
+    assert.equal(stored.evil, undefined);
+  });
+
+  test('an out-of-range score is rejected', async () => {
+    const { res } = await api('/api/tracker', {
+      method: 'POST',
+      body: JSON.stringify({ id: 'ffffffff-1111-2222-3333-444444444444', fitScore: 500 })
+    });
+    assert.equal(res.status, 400);
+  });
+
+  test('validation errors name the offending field', async () => {
+    const { res, json } = await api('/api/evaluate', {
+      method: 'POST',
+      body: JSON.stringify({ job: { title: 'Engineer', description: 'too short' } })
+    });
+    assert.equal(res.status, 400);
+    assert.ok(Array.isArray(json.details));
+    assert.match(json.details.join(' '), /description/);
+  });
+});
+
+describe('seen-job memory', () => {
+  test('an unknown job id cannot be marked', async () => {
+    const { res } = await api('/api/scrape/jobs/not-a-real-job/state', {
+      method: 'PATCH',
+      body: JSON.stringify({ state: 'dismissed' })
+    });
+    assert.equal(res.status, 404);
+  });
+
+  test('an invalid state is rejected', async () => {
+    const { res } = await api('/api/scrape/jobs/anything/state', {
+      method: 'PATCH',
+      body: JSON.stringify({ state: 'banana' })
+    });
+    assert.equal(res.status, 400);
+  });
+});
+
+describe('streamed generation', () => {
+  test('emits stage events and a completion frame', async () => {
+    const res = await fetch(`${BASE}/api/apply/generate/stream`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        job: {
+          title: 'Streaming Engineer',
+          company: 'Acme',
+          description: 'Backend role requiring Go and Postgres experience across distributed services.'
+        }
+      })
+    });
+
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get('content-type'), /text\/event-stream/);
+
+    const body = await res.text();
+    assert.match(body, /event: stage/);
+    assert.match(body, /"stage":"drafter"/);
+    assert.match(body, /event: complete/);
+  });
+});
+
+describe('portal detail', () => {
+  test('an unknown portal is rejected', async () => {
+    const { res } = await api('/api/scrape/detail?portal=nope&url=https%3A%2F%2Fexample.com%2Fjob');
+    assert.equal(res.status, 400);
+  });
+
+  test('a missing url is rejected', async () => {
+    const { res } = await api('/api/scrape/detail?portal=jobindex-search');
+    assert.equal(res.status, 400);
+  });
+});
+
+describe('password hashing', () => {
+  test('a scrypt hash verifies its own password and rejects others', async () => {
+    const { hashPassword } = await import('../src/middleware/auth.js');
+    const hash = await hashPassword('correct horse battery staple');
+
+    assert.match(hash, /^scrypt\$/);
+    assert.ok(!hash.includes('correct horse'), 'the password must not appear in the hash');
+
+    const original = process.env.APP_PASSWORD_HASH;
+    const originalPlain = process.env.APP_PASSWORD;
+    process.env.APP_PASSWORD_HASH = hash;
+    delete process.env.APP_PASSWORD;
+
+    try {
+      const { verifyPassword } = await import('../src/middleware/auth.js');
+      assert.equal(await verifyPassword('correct horse battery staple'), true);
+      assert.equal(await verifyPassword('wrong password'), false);
+    } finally {
+      if (original === undefined) delete process.env.APP_PASSWORD_HASH;
+      else process.env.APP_PASSWORD_HASH = original;
+      process.env.APP_PASSWORD = originalPlain;
+    }
   });
 });

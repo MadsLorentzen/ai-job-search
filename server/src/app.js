@@ -15,6 +15,7 @@ import interviewRoutes from './routes/interview.js';
 import trackerRoutes from './routes/tracker.js';
 import { claudeService } from './services/claudeService.js';
 import { authMiddleware, isAuthConfigured } from './middleware/auth.js';
+import { logger } from './config/logger.js';
 
 const app = express();
 const publicDir = path.join(SERVER_DIR, 'public');
@@ -81,8 +82,8 @@ app.get('*', (req, res) => {
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const status = err.statusCode || 500;
-  if (status >= 500) console.error('Unhandled server error:', err);
-  else console.warn('Request rejected:', err.message);
+  if (status >= 500) logger.error({ err, path: req.path }, 'unhandled server error');
+  else logger.warn({ err: err.message, path: req.path }, 'request rejected');
 
   res.status(status).json({
     success: false,

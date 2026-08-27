@@ -1,0 +1,26 @@
+{
+  // Type checking for plain JavaScript, with no build step and no rewrite.
+  //
+  // Deliberately lenient: strict mode on 4,000 lines of untyped JS would
+  // demand annotations everywhere and get switched off. These settings catch
+  // the class of bug that actually shipped here - a Uint8Array handed to code
+  // expecting a Buffer, a misspelled property, a call with the wrong arity -
+  // while leaving idiomatic JS alone. Tighten incrementally.
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.js", "public/js/**/*.js", "test/**/*.js", "scripts/**/*.js"],
+  "exclude": ["node_modules", "data"]
+}

@@ -3,6 +3,10 @@ import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
 import { ROOT_DIR } from '../config/env.js';
+import { loggerFor } from '../config/logger.js';
+import { ValidationError } from '../errors.js';
+
+const log = loggerFor('scraper');
 
 const SKILLS_DIR = path.join(ROOT_DIR, '.agents/skills');
 const FREEHIRE_PAGE_SIZE = 50;
@@ -49,9 +53,7 @@ export const scraperService = {
 
   async searchJobs({ query = '', location = 'Remote', portal = 'freehire-search', remote = 'all' }) {
     if (!this.isPortalAvailable(portal)) {
-      const err = new Error(`Unknown or unavailable portal "${portal}".`);
-      err.statusCode = 400;
-      throw err;
+      throw new ValidationError(`Unknown or unavailable portal "${portal}".`);
     }
 
     if (portal === 'freehire-search') {
@@ -59,7 +61,7 @@ export const scraperService = {
         const results = await this.fetchFreehireDirect({ query, location });
         if (results.length) return { jobs: results, isSample: false, source: 'freehire-api' };
       } catch (err) {
-        console.warn('FreeHire direct fetch failed, trying CLI:', err.message);
+        log.warn({ err: err.message }, 'FreeHire direct fetch failed, trying CLI');
       }
     }
 
@@ -68,7 +70,7 @@ export const scraperService = {
         const results = await this.fetchLinkedinDirect({ query, location });
         if (results.length) return { jobs: results, isSample: false, source: 'linkedin-guest' };
       } catch (err) {
-        console.warn('LinkedIn direct fetch failed, trying CLI:', err.message);
+        log.warn({ err: err.message }, 'LinkedIn direct fetch failed, trying CLI');
       }
     }
 
@@ -78,7 +80,7 @@ export const scraperService = {
         const results = await this.runBunCli(portal, skillCliPath, { query, location, remote });
         if (results.length) return { jobs: results, isSample: false, source: `${portal}-cli` };
       } catch (err) {
-        console.warn(`Bun CLI for ${portal} failed:`, err.message);
+        log.warn({ portal, err: err.message }, 'portal CLI failed');
       }
     }
 
@@ -146,7 +148,7 @@ export const scraperService = {
           const list = Array.isArray(parsed) ? parsed : (parsed.jobs || parsed.results || []);
           finish(resolve, this.dedupe(list.map(job => this.normalizeJob(job, portal))));
         } catch (parseErr) {
-          console.warn('Could not parse portal CLI output:', parseErr.message);
+          log.warn({ err: parseErr.message }, 'could not parse portal CLI output');
           finish(resolve, []);
         }
       });
@@ -205,36 +207,25 @@ export const scraperService = {
       });
       if (!response.ok) break;
 
-      const html = await response.text();
-      const cardRegex = /<li[\s\S]*?<h3[^>]*class="[^"]*base-search-card__title[^"]*"[^>]*>([\s\S]*?)<\/h3>[\s\S]*?<h4[^>]*class="[^"]*base-search-card__subtitle[^"]*"[^>]*>([\s\S]*?)<\/h4>[\s\S]*?<span[^>]*class="[^"]*job-search-card__location[^"]*"[^>]*>([\s\S]*?)<\/span>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*class="[^"]*base-card__full-link[^"]*"[\s\S]*?<\/li>/gi;
+      const cards = this.parseLinkedinCards(await response.text());
+      const pageFound = cards.length;
 
-      let match;
-      let pageFound = 0;
-
-      while ((match = cardRegex.exec(html)) !== null) {
-        const title = this.stripHtml(match[1]);
-        const company = this.stripHtml(match[2]);
-        const jobLocation = this.stripHtml(match[3]);
-        const jobUrl = match[4].split('?')[0];
-        pageFound++;
-
-        if (title && company) {
-          allJobs.push({
-            id: stableId('linkedin-search', { url: jobUrl, company, title }),
-            title,
-            company,
-            location: jobLocation || location || '',
-            url: jobUrl,
-            portal: 'linkedin-search',
-            postedDate: '',
-            description: `${title} at ${company}. Location: ${jobLocation || 'not stated'}.\n\nFull description at: ${jobUrl}`,
-            descriptionTruncated: true,
-            skills: [],
-            seniority: '',
-            employmentType: '',
-            salary: ''
-          });
-        }
+      for (const card of cards) {
+        allJobs.push({
+          id: stableId('linkedin-search', card),
+          title: card.title,
+          company: card.company,
+          location: card.location || location || '',
+          url: card.url,
+          portal: 'linkedin-search',
+          postedDate: '',
+          description: `${card.title} at ${card.company}. Location: ${card.location || 'not stated'}.\n\nFull description at: ${card.url}`,
+          descriptionTruncated: true,
+          skills: [],
+          seniority: '',
+          employmentType: '',
+          salary: ''
+        });
       }
 
       if (pageFound === 0) break;
@@ -244,6 +235,45 @@ export const scraperService = {
     }
 
     return this.dedupe(allJobs);
+  },
+
+  /**
+   * Parse job cards out of LinkedIn's guest listing HTML.
+   *
+   * Extracted so the tests exercise the same code the fetcher runs; a test
+   * that re-declares the regex can pass while the real parser is broken.
+   *
+   * Each field is matched within a card independently rather than as one
+   * long ordered chain. The previous single regex required the anchor's
+   * href to appear before its class attribute, so a markup reshuffle that
+   * changed nothing meaningful would silently return zero results.
+   */
+  parseLinkedinCards(html) {
+    const cards = [];
+    const blocks = String(html || '').split(/<li[\s>]/i).slice(1);
+
+    for (const block of blocks) {
+      const pick = (pattern) => block.match(pattern)?.[1];
+
+      const title = pick(/<h3[^>]*class="[^"]*base-search-card__title[^"]*"[^>]*>([\s\S]*?)<\/h3>/i);
+      const company = pick(/<h4[^>]*class="[^"]*base-search-card__subtitle[^"]*"[^>]*>([\s\S]*?)<\/h4>/i);
+      const location = pick(/<span[^>]*class="[^"]*job-search-card__location[^"]*"[^>]*>([\s\S]*?)<\/span>/i);
+
+      // Accept either attribute order on the link.
+      const anchor = block.match(/<a\b[^>]*base-card__full-link[^>]*>/i)?.[0] || '';
+      const url = anchor.match(/href="([^"]+)"/i)?.[1];
+
+      if (!title || !company || !url) continue;
+
+      cards.push({
+        title: this.stripHtml(title),
+        company: this.stripHtml(company),
+        location: this.stripHtml(location || ''),
+        url: url.split('?')[0]
+      });
+    }
+
+    return cards;
   },
 
   stripHtml(html) {
@@ -285,5 +315,129 @@ export const scraperService = {
       employmentType: raw.employment_type || raw.type || '',
       salary: raw.salary || raw.compensation || ''
     };
+  },
+
+  /**
+   * Whether a portal CLI can be run at all. The CLIs are Bun/TypeScript, so
+   * without bun on PATH the detail fetch cannot work and callers should say so
+   * rather than silently returning a stub.
+   */
+  hasBun() {
+    if (this._hasBun !== undefined) return this._hasBun;
+    this._hasBun = (process.env.PATH || '').split(path.delimiter).some(dir => {
+      try {
+        return dir && fs.existsSync(path.join(dir, 'bun'));
+      } catch {
+        return false;
+      }
+    });
+    return this._hasBun;
+  },
+
+  /**
+   * Fetch a posting's full text via the portal skill's own `detail` command.
+   *
+   * Search endpoints return a stub for several portals (LinkedIn's guest
+   * listing carries only a title, company and location), and evaluating a job
+   * from that produces a score with almost nothing behind it. Every portal
+   * skill in this repo ships a `detail <id|url>` command; none of them were
+   * being called.
+   */
+  async fetchJobDetail({ portal, url, id }) {
+    if (!this.isPortalAvailable(portal)) {
+      throw new ValidationError(`Unknown or unavailable portal "${portal}".`);
+    }
+
+    const scriptPath = cliPathFor(portal);
+    if (!fs.existsSync(scriptPath)) {
+      return { ok: false, reason: `No detail command available for ${portal}.` };
+    }
+    if (!this.hasBun()) {
+      return { ok: false, reason: 'bun is not installed, so portal detail pages cannot be fetched. Paste the description manually.' };
+    }
+
+    const target = url || id;
+    if (!target) return { ok: false, reason: 'A job URL or id is required.' };
+
+    try {
+      const raw = await this.runPortalCommand(portal, scriptPath, ['detail', target, '--format', 'json']);
+      const parsed = this.parseDetailOutput(raw);
+      if (!parsed) return { ok: false, reason: 'The portal returned no readable detail for this posting.' };
+      return { ok: true, detail: parsed };
+    } catch (err) {
+      log.warn({ portal, err: err.message }, 'detail fetch failed');
+
+      // A portal CLI that has never had `bun install` run in its directory
+      // fails with a module-resolution error, which is fixable but says
+      // nothing useful on its own.
+      if (/cannot find module|failed to resolve/i.test(err.message)) {
+        return {
+          ok: false,
+          reason: `The ${portal} CLI has no dependencies installed. Run: cd .agents/skills/${portal}/cli && bun install`
+        };
+      }
+      return { ok: false, reason: `Could not fetch the posting: ${err.message.slice(0, 200)}` };
+    }
+  },
+
+  parseDetailOutput(stdout) {
+    const start = stdout.indexOf('{');
+    const end = stdout.lastIndexOf('}');
+    if (start === -1 || end <= start) return null;
+
+    let parsed;
+    try {
+      parsed = JSON.parse(stdout.slice(start, end + 1));
+    } catch {
+      return null;
+    }
+
+    const body = parsed.job || parsed.detail || parsed;
+    const description = body.description || body.body || body.content || body.text || '';
+    if (!description || !String(description).trim()) return null;
+
+    return {
+      title: body.title || '',
+      company: body.company || body.company_name || body.employer || '',
+      location: body.location || body.city || '',
+      url: body.url || body.link || '',
+      description: String(description),
+      postedDate: body.posted_date || body.published || body.date || '',
+      deadline: body.deadline || body.application_deadline || '',
+      employmentType: body.employment_type || body.type || ''
+    };
+  },
+
+  /** Spawn a portal CLI with arbitrary arguments and return raw stdout. */
+  runPortalCommand(portal, scriptPath, commandArgs, timeoutMs = 45000) {
+    return new Promise((resolve, reject) => {
+      const proc = spawn('bun', ['run', scriptPath, ...commandArgs], { cwd: ROOT_DIR });
+
+      let stdout = '';
+      let stderr = '';
+      let settled = false;
+
+      const finish = (fn, arg) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        fn(arg);
+      };
+
+      const timer = setTimeout(() => {
+        proc.kill('SIGKILL');
+        finish(reject, new Error(`${portal} CLI timed out`));
+      }, timeoutMs);
+
+      proc.stdout.on('data', d => { stdout += d.toString(); });
+      proc.stderr.on('data', d => { stderr += d.toString(); });
+      proc.on('error', err => finish(reject, err));
+      proc.on('close', code => {
+        if (code !== 0 && !stdout) {
+          return finish(reject, new Error(stderr.slice(0, 200) || `exited with code ${code}`));
+        }
+        finish(resolve, stdout);
+      });
+    });
   }
 };

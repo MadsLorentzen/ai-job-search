@@ -1,20 +1,30 @@
-import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { promisify } from 'node:util';
 import { loadEnv, cleanSecret, ENV_PATHS, DATA_DIR, ensureDir } from '../config/env.js';
+import { loggerFor } from '../config/logger.js';
 
 loadEnv();
 
-const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const log = loggerFor('auth');
+const scrypt = promisify(crypto.scrypt);
+
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const SECRET_FILE = path.join(DATA_DIR, '.session-secret');
 
+const SCRYPT_PARAMS = { N: 16384, r: 8, p: 1, keylen: 64 };
+
 /**
- * Signing secret for session tokens.
+ * This app is single-user by design.
  *
- * Persisted (0600) so that sessions survive a restart, which is the whole
- * point of the 7-day window. SESSION_SECRET in the environment wins when set,
- * which is what a multi-instance deployment needs.
+ * An earlier revision advertised AUTH_USERS=name:password pairs, but there is
+ * exactly one profile and one application store, so every "user" shared one
+ * CV and one tracker and could edit the other's. Supporting that config while
+ * the data model cannot honour it is worse than not supporting it, so the
+ * multi-user path is gone. See docs in .env.example.
  */
+
 function loadOrCreateSecret() {
   const fromEnv = cleanSecret(process.env.SESSION_SECRET);
   if (fromEnv) return fromEnv;
@@ -26,14 +36,14 @@ function loadOrCreateSecret() {
       if (existing) return existing;
     }
   } catch (err) {
-    console.warn('Could not read session secret, regenerating:', err.message);
+    log.warn({ err: err.message }, 'could not read session secret, regenerating');
   }
 
   const generated = crypto.randomBytes(32).toString('hex');
   try {
     fs.writeFileSync(SECRET_FILE, generated, { encoding: 'utf-8', mode: 0o600 });
   } catch (err) {
-    console.warn('Could not persist session secret; sessions will not survive a restart:', err.message);
+    log.warn({ err: err.message }, 'could not persist session secret; sessions will not survive a restart');
   }
   return generated;
 }
@@ -44,98 +54,106 @@ function parseEnvFileManually(filePath) {
   const map = {};
   if (!fs.existsSync(filePath)) return map;
   try {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    for (const line of content.split(/\r?\n/)) {
+    for (const line of fs.readFileSync(filePath, 'utf-8').split(/\r?\n/)) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;
       const match = trimmed.match(/^([A-Za-z0-9_]+)\s*=\s*(.*)$/);
       if (match) map[match[1]] = cleanSecret(match[2]);
     }
   } catch (err) {
-    console.warn(`Error reading ${filePath}:`, err.message);
+    log.warn({ file: filePath, err: err.message }, 'could not read env file');
   }
   return map;
 }
 
-/**
- * Passwords that may unlock the app.
- *
- * There is deliberately no built-in fallback. A previous revision always
- * appended a hardcoded password here, which meant no configuration could
- * secure the app and every fork of this repo shared one working credential.
- * An empty result now means "refuse all logins", not "use the default".
- */
-export function getAuthorizedPasswords() {
-  const passwords = new Set();
-
-  const add = (val) => {
-    const clean = cleanSecret(val);
-    if (clean) passwords.add(clean);
-  };
-
-  add(process.env.APP_PASSWORD);
-  add(process.env.AUTH_PASSWORD);
-  add(process.env.ACCESS_KEY);
-
-  const addUsers = (raw) => {
-    if (!raw || !String(raw).trim()) return;
-    for (const entry of String(raw).split(',')) {
-      const parts = entry.split(':');
-      add(parts.length >= 2 ? parts.slice(1).join(':') : entry);
-    }
-  };
-
-  addUsers(process.env.AUTH_USERS);
-
+function configValue(...names) {
+  for (const name of names) {
+    const fromEnv = cleanSecret(process.env[name]);
+    if (fromEnv) return fromEnv;
+  }
   for (const envPath of ENV_PATHS) {
     const parsed = parseEnvFileManually(envPath);
-    add(parsed.APP_PASSWORD);
-    add(parsed.AUTH_PASSWORD);
-    add(parsed.ACCESS_KEY);
-    addUsers(parsed.AUTH_USERS);
+    for (const name of names) {
+      if (parsed[name]) return parsed[name];
+    }
   }
-
-  return Array.from(passwords);
+  return '';
 }
 
-export function isAuthConfigured() {
-  return getAuthorizedPasswords().length > 0;
+/**
+ * Format: scrypt$<N>$<r>$<p>$<saltHex>$<hashHex>
+ * Produced by `npm run set-password`.
+ */
+export async function hashPassword(password, salt = crypto.randomBytes(16)) {
+  const { N, r, p, keylen } = SCRYPT_PARAMS;
+  // @ts-expect-error promisify() drops scrypt's options overload; the runtime
+  // signature is (password, salt, keylen, options, callback).
+  const derived = await scrypt(password, salt, keylen, { N, r, p, maxmem: 64 * 1024 * 1024 });
+  return `scrypt$${N}$${r}$${p}$${salt.toString('hex')}$${derived.toString('hex')}`;
 }
 
-/** Constant-time comparison that does not leak length through early return. */
+async function verifyAgainstHash(password, stored) {
+  const parts = stored.split('$');
+  if (parts.length !== 6 || parts[0] !== 'scrypt') return false;
+
+  const [, N, r, p, saltHex, hashHex] = parts;
+  try {
+    const expected = Buffer.from(hashHex, 'hex');
+    // @ts-expect-error see hashPassword: promisify drops the options overload.
+    const derived = await scrypt(password, Buffer.from(saltHex, 'hex'), expected.length, {
+      N: Number(N), r: Number(r), p: Number(p), maxmem: 64 * 1024 * 1024
+    });
+    return derived.length === expected.length && crypto.timingSafeEqual(derived, expected);
+  } catch (err) {
+    log.warn({ err: err.message }, 'could not verify password hash');
+    return false;
+  }
+}
+
 function safeEqual(a, b) {
-  const bufA = Buffer.from(String(a), 'utf-8');
-  const bufB = Buffer.from(String(b), 'utf-8');
-  const hashA = crypto.createHash('sha256').update(bufA).digest();
-  const hashB = crypto.createHash('sha256').update(bufB).digest();
+  const hashA = crypto.createHash('sha256').update(String(a)).digest();
+  const hashB = crypto.createHash('sha256').update(String(b)).digest();
   return crypto.timingSafeEqual(hashA, hashB);
 }
 
-export function verifyPassword(input) {
+export function getPasswordHash() {
+  return configValue('APP_PASSWORD_HASH');
+}
+
+export function getPlaintextPassword() {
+  return configValue('APP_PASSWORD', 'AUTH_PASSWORD', 'ACCESS_KEY');
+}
+
+export function isAuthConfigured() {
+  return Boolean(getPasswordHash() || getPlaintextPassword());
+}
+
+/** True when only the legacy plaintext form is configured. */
+export function isUsingPlaintextPassword() {
+  return !getPasswordHash() && Boolean(getPlaintextPassword());
+}
+
+/**
+ * There is deliberately no built-in fallback password: an empty configuration
+ * means "refuse every login", never "use the default".
+ */
+export async function verifyPassword(input) {
   const candidate = cleanSecret(input);
   if (!candidate) return false;
 
-  // Compare against every configured password without short-circuiting, so
-  // response time does not reveal which entry (if any) matched.
-  let matched = false;
-  for (const password of getAuthorizedPasswords()) {
-    if (safeEqual(candidate, password)) matched = true;
-  }
-  return matched;
+  const hash = getPasswordHash();
+  if (hash) return verifyAgainstHash(candidate, hash);
+
+  // Plaintext remains supported so an existing install keeps working, but the
+  // server warns at startup and points at `npm run set-password`.
+  const plain = getPlaintextPassword();
+  return plain ? safeEqual(candidate, plain) : false;
 }
 
 function sign(payload) {
   return crypto.createHmac('sha256', SESSION_SECRET).update(payload).digest('base64url');
 }
 
-/**
- * Issue an opaque session token.
- *
- * The token is random material plus an expiry, signed with the server secret.
- * It is explicitly NOT the user's password: the previous revision returned the
- * submitted password as the token, so anything that could read it (an XSS, a
- * proxy log, browser history) recovered the account credential itself.
- */
 export function issueToken(ttlMs = SESSION_TTL_MS) {
   const expiresAt = Date.now() + ttlMs;
   const nonce = crypto.randomBytes(18).toString('base64url');
@@ -149,8 +167,7 @@ export function verifyToken(token) {
   if (parts.length !== 3) return false;
 
   const [nonce, expiresAt, signature] = parts;
-  const payload = `${nonce}.${expiresAt}`;
-  const expected = sign(payload);
+  const expected = sign(`${nonce}.${expiresAt}`);
 
   const sigBuf = Buffer.from(signature);
   const expBuf = Buffer.from(expected);
@@ -162,8 +179,9 @@ export function verifyToken(token) {
 }
 
 /**
- * Fixed-window login throttle, keyed by client IP.
- * In-memory by design: this app is single-process and single-user.
+ * Fixed-window login throttle keyed by client IP.
+ * In-memory, which is correct for a single-process app; see README on why
+ * clustering this app would need a shared store.
  */
 const MAX_ATTEMPTS = 10;
 const WINDOW_MS = 15 * 60 * 1000;
@@ -189,7 +207,6 @@ export function clearLoginRate(ip) {
   attempts.delete(ip);
 }
 
-// Bound the map so a burst of spoofed IPs cannot grow it without limit.
 setInterval(() => {
   const now = Date.now();
   for (const [ip, record] of attempts) {
@@ -197,23 +214,20 @@ setInterval(() => {
   }
 }, WINDOW_MS).unref();
 
-/**
- * Gate for every /api route except the explicitly public ones.
- *
- * Tokens are accepted from the Authorization header or X-Access-Token only.
- * The query-string branch is gone on purpose: it put credentials into browser
- * history, access logs and Referer headers.
- */
-export function authMiddleware(req, res, next) {
-  if (req.path === '/health' || req.path.startsWith('/auth/')) {
-    return next();
-  }
-
+export function extractToken(req) {
   const authHeader = req.headers['authorization'];
   const bearer = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  const token = (bearer || req.headers['x-access-token'] || '').trim();
+  return String(bearer || req.headers['x-access-token'] || '').trim();
+}
 
-  if (verifyToken(token)) return next();
+/**
+ * Tokens are accepted from headers only. The query-string branch is gone on
+ * purpose: it put credentials into browser history, access logs and Referer.
+ */
+export function authMiddleware(req, res, next) {
+  if (req.path === '/health' || req.path.startsWith('/auth/')) return next();
+
+  if (verifyToken(extractToken(req))) return next();
 
   return res.status(401).json({
     success: false,

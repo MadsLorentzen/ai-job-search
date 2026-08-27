@@ -1,24 +1,15 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { spawn } from 'child_process';
-import path from 'path';
-import fs from 'fs';
 import { loadEnv } from '../config/env.js';
+import { loggerFor } from '../config/logger.js';
+import {
+  executePrompt as runPrompt,
+  isConfigured as providersConfigured,
+  describeProvider,
+  isDisabled
+} from './providers.js';
 
 loadEnv();
 
-const apiKey = process.env.ANTHROPIC_API_KEY;
-let anthropicClient = null;
-
-if (apiKey && apiKey.trim() !== '' && !apiKey.includes('your_anthropic_api_key')) {
-  try {
-    anthropicClient = new Anthropic({ apiKey: apiKey.trim() });
-  } catch (err) {
-    console.warn('Failed to initialize Anthropic SDK client:', err.message);
-  }
-}
-
-const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5';
-const CLI_TIMEOUT_MS = Number(process.env.CLAUDE_CLI_TIMEOUT_MS || 25000);
+const log = loggerFor('ai-service');
 
 /**
  * Best-effort JSON extraction from a model response.
@@ -74,211 +65,19 @@ function describeJob(job) {
 }
 
 export const claudeService = {
-  /**
-   * AI_PROVIDER=none disables every provider, including the CLI bridge.
-   * Useful for running the app deliberately offline, and it makes tests
-   * deterministic on a machine that happens to have the Claude CLI installed.
-   */
-  isDisabled() {
-    return (process.env.AI_PROVIDER || '').toLowerCase() === 'none';
-  },
+  isDisabled,
 
   getProviderName() {
-    if (this.isDisabled()) return 'Disabled (AI_PROVIDER=none)';
-    const provider = (process.env.AI_PROVIDER || '').toLowerCase();
-    if (provider === 'kimi' || process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY) return 'Kimi (Moonshot AI)';
-    if (provider === 'qwen' || process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY) return 'Qwen (Alibaba AI)';
-    if (provider === 'openai' || process.env.OPENAI_API_KEY) return 'OpenAI / Compatible';
-    if (anthropicClient) return 'Claude (API Key)';
-    if (this.hasClaudeCliAuth()) return 'Claude (CLI bridge)';
-    return 'None configured';
+    return describeProvider();
   },
 
   isConfigured() {
-    if (this.isDisabled()) return false;
-    const provider = (process.env.AI_PROVIDER || '').toLowerCase();
-    if (provider === 'kimi' || process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY) return true;
-    if (provider === 'qwen' || process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY) return true;
-    if (provider === 'openai' || process.env.OPENAI_API_KEY) return true;
-    return !!anthropicClient || this.hasClaudeCliAuth();
+    return providersConfigured();
   },
 
-  /**
-   * Whether the Claude CLI is usable.
-   *
-   * The presence of ~/.claude proves only that the CLI has run at some point,
-   * not that anyone is logged in, so an existence check reported "engine
-   * active" on a machine with no credentials at all. Requires the binary to be
-   * on PATH and caches the answer.
-   */
-  hasClaudeCliAuth() {
-    if (this.isDisabled()) return false;
-    if (this._cliAvailable !== undefined) return this._cliAvailable;
-
-    const home = process.env.HOME || process.env.USERPROFILE || '';
-    const hasConfig = home
-      ? fs.existsSync(path.join(home, '.claude')) || fs.existsSync(path.join(home, '.claude.json'))
-      : false;
-
-    const onPath = (process.env.PATH || '')
-      .split(path.delimiter)
-      .some(dir => {
-        try {
-          return dir && fs.existsSync(path.join(dir, 'claude'));
-        } catch {
-          return false;
-        }
-      });
-
-    this._cliAvailable = hasConfig && onPath;
-    return this._cliAvailable;
-  },
-
-  async callOpenAICompatible({ apiKey: key, baseUrl, model, systemPrompt, userPrompt }) {
-    try {
-      const url = baseUrl.replace(/\/+$/, '') + '/chat/completions';
-      console.log(`[AI] Calling ${model}...`);
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${key}`
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: 0.3,
-          max_tokens: 4000
-        }),
-        signal: AbortSignal.timeout(60000)
-      });
-
-      if (!response.ok) {
-        const errBody = await response.text();
-        console.warn(`[AI] ${model} returned HTTP ${response.status}:`, errBody.slice(0, 500));
-        return null;
-      }
-
-      const data = await response.json();
-      return data.choices?.[0]?.message?.content || null;
-    } catch (err) {
-      console.warn(`[AI] Error communicating with ${model}:`, err.message);
-      return null;
-    }
-  },
-
+  /** Delegates to the provider registry; see services/providers.js. */
   async executePrompt(systemPrompt, userPrompt) {
-    if (this.isDisabled()) return null;
-    const provider = (process.env.AI_PROVIDER || '').toLowerCase();
-
-    const kimiKey = process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY;
-    if (provider === 'kimi' || kimiKey) {
-      const result = await this.callOpenAICompatible({
-        apiKey: (kimiKey || '').trim(),
-        baseUrl: process.env.KIMI_BASE_URL || process.env.MOONSHOT_BASE_URL || 'https://api.moonshot.cn/v1',
-        model: process.env.KIMI_MODEL || process.env.MOONSHOT_MODEL || 'moonshot-v1-32k',
-        systemPrompt,
-        userPrompt
-      });
-      if (result) return result;
-    }
-
-    const qwenKey = process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY;
-    if (provider === 'qwen' || qwenKey) {
-      const result = await this.callOpenAICompatible({
-        apiKey: (qwenKey || '').trim(),
-        baseUrl: process.env.QWEN_BASE_URL || process.env.DASHSCOPE_BASE_URL || 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
-        model: process.env.QWEN_MODEL || process.env.DASHSCOPE_MODEL || 'qwen-plus',
-        systemPrompt,
-        userPrompt
-      });
-      if (result) return result;
-    }
-
-    const openaiKey = process.env.OPENAI_API_KEY;
-    if (provider === 'openai' || openaiKey) {
-      const result = await this.callOpenAICompatible({
-        apiKey: (openaiKey || 'no-key').trim(),
-        baseUrl: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
-        model: process.env.OPENAI_MODEL || 'gpt-4o',
-        systemPrompt,
-        userPrompt
-      });
-      if (result) return result;
-    }
-
-    if (anthropicClient) {
-      try {
-        const response = await anthropicClient.messages.create({
-          model: DEFAULT_MODEL,
-          max_tokens: 4000,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: userPrompt }]
-        });
-        const text = (response.content || [])
-          .filter(block => block.type === 'text')
-          .map(block => block.text)
-          .join('');
-        if (text.trim()) return text;
-        console.warn('Anthropic response contained no text block.');
-      } catch (sdkErr) {
-        console.warn('Anthropic SDK call failed:', sdkErr.message);
-      }
-    }
-
-    if (this.hasClaudeCliAuth()) {
-      try {
-        const cliResult = await this.runClaudeCli(systemPrompt, userPrompt);
-        if (cliResult && cliResult.trim()) return cliResult;
-      } catch (cliErr) {
-        console.warn('Claude CLI bridge failed:', cliErr.message);
-      }
-    }
-
-    return null;
-  },
-
-  runClaudeCli(systemPrompt, userPrompt) {
-    return new Promise((resolve, reject) => {
-      const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
-      const proc = spawn('claude', ['-p'], { stdio: ['pipe', 'pipe', 'pipe'] });
-
-      let stdout = '';
-      let stderr = '';
-      let settled = false;
-
-      const finish = (fn, arg) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        fn(arg);
-      };
-
-      const timer = setTimeout(() => {
-        proc.kill('SIGKILL');
-        finish(reject, new Error(`Claude CLI timed out after ${CLI_TIMEOUT_MS}ms`));
-      }, CLI_TIMEOUT_MS);
-
-      proc.stdout.on('data', d => { stdout += d.toString(); });
-      proc.stderr.on('data', d => { stderr += d.toString(); });
-
-      // Without this handler an EPIPE (the child exited before the prompt was
-      // fully written) surfaces as an unhandled 'error' event, which is fatal
-      // in Node. The surrounding try/catch cannot see it: it is asynchronous.
-      proc.stdin.on('error', err => finish(reject, err));
-      proc.on('error', err => finish(reject, err));
-
-      proc.on('close', code => {
-        if (code === 0 && stdout.trim()) return finish(resolve, stdout);
-        finish(reject, new Error(`Claude CLI exited with code ${code}: ${(stderr || stdout).slice(0, 500)}`));
-      });
-
-      proc.stdin.end(fullPrompt);
-    });
+    return runPrompt(systemPrompt, userPrompt);
   },
 
   async evaluateJobFit(profile, job) {
