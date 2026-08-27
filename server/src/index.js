@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
+import authRoutes from './routes/auth.js';
 import profileRoutes from './routes/profile.js';
 import scrapeRoutes from './routes/scrape.js';
 import evaluateRoutes from './routes/evaluate.js';
@@ -11,6 +12,7 @@ import applyRoutes from './routes/apply.js';
 import interviewRoutes from './routes/interview.js';
 import trackerRoutes from './routes/tracker.js';
 import { claudeService } from './services/claudeService.js';
+import { authMiddleware } from './middleware/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,15 +31,9 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 const publicDir = path.resolve(__dirname, '../public');
 app.use(express.static(publicDir));
 
-// API Routes
-app.use('/api/profile', profileRoutes);
-app.use('/api/scrape', scrapeRoutes);
-app.use('/api/evaluate', evaluateRoutes);
-app.use('/api/apply', applyRoutes);
-app.use('/api/interview', interviewRoutes);
-app.use('/api/tracker', trackerRoutes);
+// Auth & Health routes (unprotected)
+app.use('/api/auth', authRoutes);
 
-// Health & Status endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -46,6 +42,17 @@ app.get('/api/health', (req, res) => {
     frameworkVersion: '1.3.4'
   });
 });
+
+// Protect all remaining /api/* routes with Authentication Middleware
+app.use('/api', authMiddleware);
+
+// Protected API Routes
+app.use('/api/profile', profileRoutes);
+app.use('/api/scrape', scrapeRoutes);
+app.use('/api/evaluate', evaluateRoutes);
+app.use('/api/apply', applyRoutes);
+app.use('/api/interview', interviewRoutes);
+app.use('/api/tracker', trackerRoutes);
 
 // Single Page App Fallback
 app.get('*', (req, res) => {
@@ -66,6 +73,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🎯 AI Job Search Web App is running!`);
   console.log(`📡 Local URL:   http://localhost:${PORT}`);
   console.log(`🌐 Network URL: http://0.0.0.0:${PORT}`);
-  console.log(`🤖 AI Status:   ${claudeService.isConfigured() ? '✅ Claude API Active' : '⚠️ No API Key in .env (Mock Mode Enabled)'}`);
+  console.log(`🔒 Auth Status: ✅ Password Protection Active`);
+  console.log(`🤖 AI Status:   ${claudeService.isConfigured() ? '✅ Claude Engine Active' : '⚠️ Demo Mode (Mock Active)'}`);
   console.log(`====================================================`);
 });

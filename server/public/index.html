@@ -55,12 +55,16 @@
         </button>
       </nav>
 
-      <!-- Status Indicator -->
+      <!-- Status Indicator & Auth -->
       <div class="header-right">
         <div id="aiStatusBadge" class="status-pill connected">
           <span class="status-dot"></span>
           <span id="aiStatusText">Claude Engine Ready</span>
         </div>
+        <button id="btnLogout" class="btn btn-sm btn-ghost" title="Lock workspace">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span>Lock</span>
+        </button>
       </div>
     </header>
 
@@ -492,6 +496,32 @@
       </section>
 
     </main>
+
+    <!-- Protected Login Modal Overlay -->
+    <div id="loginOverlay" class="login-overlay hidden">
+      <div class="login-modal">
+        <div class="login-header">
+          <div class="brand-logo" style="width: 44px; height: 44px; margin: 0 auto 12px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h2 style="font-size: 18px; font-weight: 700; text-align: center;">Protected Workspace</h2>
+          <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 4px;">Enter your Access Key / Password to unlock</p>
+        </div>
+        <form id="loginForm" class="login-body" style="margin-top: 20px;">
+          <div class="form-group">
+            <label>Access Password</label>
+            <input type="password" id="loginPasswordInput" class="input-text" placeholder="Enter password..." autocomplete="current-password" autofocus required>
+          </div>
+          <div id="loginError" class="login-error hidden" style="font-size: 12px; color: var(--accent-danger); margin-bottom: 12px;"></div>
+          <button type="submit" id="btnLoginSubmit" class="btn btn-primary" style="width: 100%; padding: 11px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            <span>Unlock Workspace</span>
+          </button>
+        </form>
+      </div>
+    </div>
 
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>

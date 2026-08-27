@@ -5,6 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Global State
   const state = {
+    authToken: localStorage.getItem('jobsearch_auth_token') || '',
     profile: null,
     currentJob: null,
     currentFitEvaluation: null,
@@ -23,11 +24,94 @@ document.addEventListener('DOMContentLoaded', () => {
   const toastContainer = document.getElementById('toastContainer');
   const aiStatusBadge = document.getElementById('aiStatusBadge');
   const aiStatusText = document.getElementById('aiStatusText');
+  const btnLogout = document.getElementById('btnLogout');
+  const loginOverlay = document.getElementById('loginOverlay');
+  const loginForm = document.getElementById('loginForm');
+  const loginPasswordInput = document.getElementById('loginPasswordInput');
+  const loginError = document.getElementById('loginError');
 
   // ==========================================
-  // 1. Initial Setup & Health Check
+  // 1. Authentication & Network Wrapper
+  // ==========================================
+  async function authFetch(url, options = {}) {
+    options.headers = options.headers || {};
+    if (state.authToken) {
+      if (options.headers instanceof Headers) {
+        options.headers.set('Authorization', `Bearer ${state.authToken}`);
+      } else {
+        options.headers['Authorization'] = `Bearer ${state.authToken}`;
+      }
+    }
+
+    const res = await fetch(url, options);
+    if (res.status === 401) {
+      // Unauthorized -> trigger login modal
+      showLoginModal('Session expired or password required.');
+      throw new Error('Unauthorized');
+    }
+    return res;
+  }
+
+  function setupAuth() {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = loginPasswordInput.value;
+      if (!password) return;
+
+      const submitBtn = document.getElementById('btnLoginSubmit');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="spinner"></span> Verifying...`;
+      loginError.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+
+        if (data.success && data.token) {
+          state.authToken = data.token;
+          localStorage.setItem('jobsearch_auth_token', data.token);
+          loginOverlay.classList.add('hidden');
+          loginPasswordInput.value = '';
+          showToast('Workspace unlocked successfully!', 'success');
+          await postLoginInit();
+        } else {
+          loginError.textContent = data.error || 'Incorrect Password.';
+          loginError.classList.remove('hidden');
+        }
+      } catch (err) {
+        loginError.textContent = 'Connection error. Please try again.';
+        loginError.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span>Unlock Workspace</span>`;
+      }
+    });
+
+    btnLogout.addEventListener('click', () => {
+      state.authToken = '';
+      localStorage.removeItem('jobsearch_auth_token');
+      showLoginModal('Workspace locked.');
+    });
+  }
+
+  function showLoginModal(msg = '') {
+    if (msg) {
+      loginError.textContent = msg;
+      loginError.classList.remove('hidden');
+    }
+    loginOverlay.classList.remove('hidden');
+    loginPasswordInput.focus();
+  }
+
+  // ==========================================
+  // 2. Initial Setup & Health Check
   // ==========================================
   async function init() {
+    setupAuth();
     setupNavigation();
     setupProfileTab();
     setupSearchTab();
@@ -36,6 +120,28 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTrackerTab();
 
     await checkHealth();
+
+    // Verify existing token if present
+    if (state.authToken) {
+      try {
+        const res = await fetch('/api/auth/verify', {
+          headers: { 'Authorization': `Bearer ${state.authToken}` }
+        });
+        if (res.ok) {
+          loginOverlay.classList.add('hidden');
+          await postLoginInit();
+        } else {
+          showLoginModal();
+        }
+      } catch (err) {
+        showLoginModal();
+      }
+    } else {
+      showLoginModal();
+    }
+  }
+
+  async function postLoginInit() {
     await loadProfile();
     await loadTrackerApplications();
     await executeInitialSearch();
@@ -58,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 2. Navigation
+  // 3. Navigation
   // ==========================================
   function setupNavigation() {
     navTabs.forEach(tab => {
@@ -79,11 +185,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 3. Profile Management
+  // 4. Profile Management
   // ==========================================
   async function loadProfile() {
     try {
-      const res = await fetch('/api/profile');
+      const res = await authFetch('/api/profile');
       const data = await res.json();
       if (data.success && data.profile) {
         state.profile = data.profile;
@@ -142,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       try {
-        const res = await fetch('/api/profile', {
+        const res = await authFetch('/api/profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updated)
@@ -175,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnParseCv.innerHTML = `<span class="spinner"></span> Parsing CV...`;
 
       try {
-        const res = await fetch('/api/profile/upload-cv', {
+        const res = await authFetch('/api/profile/upload-cv', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ rawText })
@@ -204,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast(`Uploading and parsing ${file.name}...`);
 
     try {
-      const res = await fetch('/api/profile/upload-cv', {
+      const res = await authFetch('/api/profile/upload-cv', {
         method: 'POST',
         body: formData
       });
@@ -222,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 4. Job Search & Scraper Tab
+  // 5. Job Search & Scraper Tab
   // ==========================================
   function setupSearchTab() {
     const btnSearch = document.getElementById('btnExecuteSearch');
@@ -249,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const url = `/api/scrape/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&portal=${encodeURIComponent(portal)}&limit=12`;
-      const res = await fetch(url);
+      const res = await authFetch(url);
       const data = await res.json();
 
       if (data.success && data.jobs && data.jobs.length > 0) {
@@ -325,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 5. 1-Click Apply & Generator Tab
+  // 6. 1-Click Apply & Generator Tab
   // ==========================================
   function setupApplyTab() {
     const btnEvaluate = document.getElementById('btnEvaluateFit');
@@ -359,7 +465,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       const type = state.activeDocType === 'cv' ? 'cv-pdf' : 'cover-pdf';
-      window.location.href = `/api/apply/download/${state.currentApplication.id}/${type}`;
+      const downloadUrl = `/api/apply/download/${state.currentApplication.id}/${type}?token=${encodeURIComponent(state.authToken)}`;
+      window.location.href = downloadUrl;
     });
   }
 
@@ -384,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnEvaluate.innerHTML = `<span class="spinner"></span> Evaluating...`;
 
     try {
-      const res = await fetch('/api/evaluate', {
+      const res = await authFetch('/api/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ job })
@@ -484,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => animatePipelineStep('step-latex'), 2500);
       setTimeout(() => animatePipelineStep('step-ats'), 3600);
 
-      const res = await fetch('/api/apply/generate', {
+      const res = await authFetch('/api/apply/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -591,7 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnRecompile.innerHTML = `<span class="spinner"></span> Compiling...`;
 
     try {
-      const res = await fetch('/api/apply/compile', {
+      const res = await authFetch('/api/apply/compile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -622,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 6. Interview Prep Tab
+  // 7. Interview Prep Tab
   // ==========================================
   function setupInterviewTab() {
     const btnGen = document.getElementById('btnGenerateInterview');
@@ -639,7 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
     content.innerHTML = `<div class="empty-state"><span class="spinner"></span><p>Building STAR responses and tactical questions for ${escapeHtml(job.company)}...</p></div>`;
 
     try {
-      const res = await fetch('/api/interview/generate', {
+      const res = await authFetch('/api/interview/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ job })
@@ -714,13 +821,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 7. Tracker Tab (Kanban)
+  // 8. Tracker Tab (Kanban)
   // ==========================================
   function setupTrackerTab() {}
 
   async function loadTrackerApplications() {
     try {
-      const res = await fetch('/api/tracker');
+      const res = await authFetch('/api/tracker');
       const data = await res.json();
       if (data.success && data.applications) {
         renderKanban(data.applications);
@@ -770,7 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 8. Utilities
+  // 9. Utilities
   // ==========================================
   function showToast(message, type = 'info') {
     const toast = document.createElement('div');
