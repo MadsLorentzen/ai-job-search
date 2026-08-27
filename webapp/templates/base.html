@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Job Search Workspace{% endblock %}</title>
   <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" href="/static/onboarding.css">
 </head>
 <body>
   {% set active_search = selected_search_workspace or (search_workspaces | selectattr('status', 'equalto', 'active') | first if search_workspaces else none) %}
