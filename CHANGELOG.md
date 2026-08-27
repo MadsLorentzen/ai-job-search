@@ -28,6 +28,19 @@ per-file diff commands.
   resolves confirmed rows to `no_response`, logs dated entries to `notes`, updates archive
   `outcome.md` files, and hands off to calibration when 3+ applications are resolved.
 
+- **Mechanical layout verification for compiled PDFs** - `tools/verify_layout.py` measures
+  what `/apply` Step 5b previously only eyeballed: per-page text extent, bottom whitespace,
+  the largest internal vertical gap, footer collisions, and entry headers or section
+  headings stranded at a page break. It exists for a failure that survives every existing
+  check - a moderncv `\cventry` is an unbreakable `tabular`, so an entry that does not fit
+  jumps to the next page and leaves a hole behind (observed at 273pt, roughly 19 blank
+  lines) while the document still compiles, still reports the correct page count, and still
+  passes `tools/verify_pdf.py`. Geometry comes from Poppler `pdftotext -bbox`, already a
+  dependency; a missing Poppler degrades to a `skipped:` exit rather than a hard failure.
+  Page count is deliberately left to `verify_pdf.py --pages` so that one rule keeps one
+  implementation. Tests use synthetic page geometry, so they need neither Poppler nor a
+  LaTeX toolchain.
+
 ### Fixed
 
 - **`jobnet-search detail` no longer reports an externally hosted ad as not found** (#432) -
