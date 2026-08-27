@@ -1,7 +1,7 @@
 {
   "name": "ai-job-search-server",
   "version": "1.0.0",
-  "description": "Clean, minimal, professional web app for AI Job Search",
+  "description": "Clean, minimal, professional web app for OppertuneX",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
