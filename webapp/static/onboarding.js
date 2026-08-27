@@ -200,6 +200,12 @@ window.Onboarding = (function () {
     });
   }
 
+  document.addEventListener("click", (event) => {
+    const trigger = event.target.closest("[data-onboarding-start]");
+    if (!trigger) return;
+    start(trigger.dataset.onboardingStart);
+  });
+
   document.addEventListener("click", async (event) => {
     if (!state) return;
     const actionEl = event.target.closest("[data-onboarding-action]");

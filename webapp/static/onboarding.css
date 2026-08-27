@@ -17,3 +17,4 @@
 .onboarding-fail-notice{position:fixed;bottom:20px;left:20px;max-width:360px;background:var(--white);border:1px solid var(--line);color:var(--muted);padding:11px 14px;border-radius:10px;box-shadow:var(--shadow);font-size:13px;z-index:1002}
 .onboarding-fail-notice button{margin-left:8px;appearance:none;border:0;background:transparent;color:var(--green);font-weight:700;cursor:pointer;padding:0}
 @media(max-width:640px){.onboarding-popover{left:12px!important;right:12px;max-width:none;width:calc(100vw - 24px)}}
+.hero-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}

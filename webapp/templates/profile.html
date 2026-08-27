@@ -9,7 +9,7 @@
 {% block content %}
 <section class="hero compact"><div><p class="eyebrow">Global candidate evidence</p><h1>My Evidence Profile</h1>
 <p>Maintain the facts the product may cite. Saved changes create a new immutable Evidence Snapshot and make dependent results stale until you rerun them.</p></div>
-{% if not setup_required %}<button class="button secondary" data-action="refresh-profile">Refresh snapshot from included sources</button>{% endif %}</section>
+{% if not setup_required %}<div class="hero-actions"><button class="button secondary" data-action="refresh-profile">Refresh snapshot from included sources</button><button type="button" class="button secondary button-small" data-onboarding-start="candidate_profile_intro">Take the tour</button></div>{% endif %}</section>
 
 {% if setup_required %}
 <section class="panel form-panel profile-setup"><div class="panel-heading"><div><p class="eyebrow">First-time setup</p><h2>Create your Evidence Profile</h2></div></div>
@@ -35,7 +35,7 @@
 {% else %}
 
 <div id="profile-manager" data-revision="{{ profile_manager.revision }}">
-<section class="panel"><div class="panel-heading"><div><p class="eyebrow">Source management</p><h2>Evidence sources</h2><p>The Candidate Profile is the only editable source. Supplemental sources contribute evidence but remain read-only.</p></div></div>
+<section class="panel" data-onboarding-target="profile-sources-panel"><div class="panel-heading"><div><p class="eyebrow">Source management</p><h2>Evidence sources</h2><p>The Candidate Profile is the only editable source. Supplemental sources contribute evidence but remain read-only.</p></div></div>
 <div class="evidence-list">
 {% for source in profile_manager.sources %}
 <article class="evidence-row profile-source" data-source-path="{{ source.source_path }}">
@@ -48,7 +48,7 @@
 {% endfor %}
 </div></section>
 
-<section class="panel"><div class="panel-heading"><div><p class="eyebrow">Canonical Candidate Profile</p><h2>Editable profile entries</h2><p>Add, edit, or remove source entries. Derived claims, corroborations, and conflicts are not edited here.</p></div></div>
+<section class="panel" data-onboarding-target="profile-entries-panel"><div class="panel-heading"><div><p class="eyebrow">Canonical Candidate Profile</p><h2>Editable profile entries</h2><p>Add, edit, or remove source entries. Derived claims, corroborations, and conflicts are not edited here.</p></div></div>
 {% for section, entries in profile_manager.entries | groupby('section') %}
 <section class="profile-entry-section"><h3>{{ section }}</h3>
 {% for entry in entries %}<article class="profile-entry-card" data-entry-id="{{ entry.entry_id }}" data-entry-kind="{{ entry.kind }}">
@@ -63,7 +63,7 @@
 </article>{% endfor %}
 </section>{% else %}<p class="muted">No editable entries were found.</p>{% endfor %}
 
-<details class="profile-add"><summary>Add profile information</summary>
+<details class="profile-add" data-onboarding-target="profile-add-details"><summary>Add profile information</summary>
 {% for kind, definition in profile_manager.entry_definitions.items() %}<form class="profile-entry-add-form form-panel" data-entry-kind="{{ kind }}">
   <h3>Add {{ definition.label }}</h3>
   {% for name in definition.fields %}{{ field_control(name, [] if name == 'details' else ('Skills' if name == 'subsection' else '')) }}{% endfor %}
@@ -78,7 +78,7 @@
 {% for conflict in profile.payload.conflicts %}<article class="derived-conflict"><span class="badge review">Derived · read-only</span><strong>{{ conflict.field | replace('_', ' ') | title }}</strong>
 {% for variant in conflict.get('variants', []) %}<div><p>{{ variant.value }}</p><small>Sources: {% for provenance in variant.provenance %}{{ provenance.file }}{% if not loop.last %}, {% endif %}{% endfor %}</small></div>{% endfor %}</article>{% endfor %}</section>{% endif %}
 
-{% if profile %}<section class="panel"><div class="panel-heading"><div><h2>Generated evidence claims</h2><p>These are immutable outputs of the current snapshot builder, not editable profile records.</p></div></div>
+{% if profile %}<section class="panel" data-onboarding-target="profile-claims-panel"><div class="panel-heading"><div><h2>Generated evidence claims</h2><p>These are immutable outputs of the current snapshot builder, not editable profile records.</p></div></div>
 <div class="evidence-list">{% for entry in claims %}<article class="evidence-row">
   {% if entry.label == "Verified evidence" %}<span class="badge verified">Verified evidence</span>{% elif entry.label == "Missing evidence" %}<span class="badge missing">Missing evidence</span>{% else %}<span class="badge review">NEEDS_REVIEW</span>{% endif %}
   <div><strong>{{ entry.claim.field | replace('_', ' ') | title }}</strong><p>{{ entry.claim.value }}</p>
