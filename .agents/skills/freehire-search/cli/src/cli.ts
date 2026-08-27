@@ -112,9 +112,15 @@ best-effort, no SLA. Override with FREEHIRE_API_URL to use a self-hosted backend
 `
 
 function parseIntFlag(name: string, raw: string | boolean | string[]): number | null {
-  const val = parseInt(raw as string, 10)
+  const rawStr = String(raw)
+  // Reject fractional / non-integer strings (e.g. "0.5", "2.0", "1e3") that parseInt would silently truncate.
+  if (/[.eE]/.test(rawStr)) {
+    process.stderr.write(JSON.stringify({ error: `--${name} must be an integer, got "${rawStr}"`, code: "BAD_ARG" }) + "\n")
+    return null
+  }
+  const val = parseInt(rawStr, 10)
   if (isNaN(val)) {
-    process.stderr.write(JSON.stringify({ error: `--${name} must be a number, got "${raw}"`, code: "BAD_ARG" }) + "\n")
+    process.stderr.write(JSON.stringify({ error: `--${name} must be a number, got "${rawStr}"`, code: "BAD_ARG" }) + "\n")
     return null
   }
   return val

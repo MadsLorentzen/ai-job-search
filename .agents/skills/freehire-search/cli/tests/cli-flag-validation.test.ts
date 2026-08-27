@@ -29,6 +29,35 @@ describe("freehire CLI flag validation", () => {
       const result = await runCLI(["search", "--jobage", "7", "--page", "1", "--limit", "1"]);
       expect(parsedStderr(result.stderr).code).not.toBe("BAD_ARG");
     });
+
+    for (const name of ["jobage", "page", "limit"]) {
+      test(`--${name} fractional value (0.5) exits 1 with BAD_ARG`, async () => {
+        const result = await runCLI(["search", `--${name}`, "0.5"]);
+        expect(result.exitCode).not.toBe(0);
+        const err = parsedStderr(result.stderr);
+        expect(err.code).toBe("BAD_ARG");
+        expect(err.error).toMatch(new RegExp(name));
+        expect(err.error).toMatch(/integer/);
+      });
+
+      test(`--${name} scientific notation (1e3) exits 1 with BAD_ARG`, async () => {
+        const result = await runCLI(["search", `--${name}`, "1e3"]);
+        expect(result.exitCode).not.toBe(0);
+        const err = parsedStderr(result.stderr);
+        expect(err.code).toBe("BAD_ARG");
+        expect(err.error).toMatch(new RegExp(name));
+        expect(err.error).toMatch(/integer/);
+      });
+
+      test(`--${name} decimal integer (2.0) exits 1 with BAD_ARG`, async () => {
+        const result = await runCLI(["search", `--${name}`, "2.0"]);
+        expect(result.exitCode).not.toBe(0);
+        const err = parsedStderr(result.stderr);
+        expect(err.code).toBe("BAD_ARG");
+        expect(err.error).toMatch(new RegExp(name));
+        expect(err.error).toMatch(/integer/);
+      });
+    }
   });
 
   describe("--description-format validation", () => {

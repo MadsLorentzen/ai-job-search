@@ -12,7 +12,7 @@ function parsedStderr(stderr: string): { error?: string; code?: string } {
 }
 
 describe("LinkedIn CLI flag validation", () => {
-  describe("--jobage NaN validation", () => {
+  describe("--jobage validation", () => {
     test("non-numeric string exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "-l", LOCATION, "--jobage", "foo"]);
       expect(result.exitCode).not.toBe(0);
@@ -33,11 +33,31 @@ describe("LinkedIn CLI flag validation", () => {
       expect(err.code).not.toBe("BAD_ARG");
     });
 
-    test("float string truncated to integer, no error", async () => {
-      // parseInt("7.5") = 7, which is valid
-      const result = await runCLI(["search", "-l", LOCATION, "--jobage", "7.5", "--limit", "1"]);
+    test("fractional value (0.5) exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage", "0.5", "--limit", "1"]);
+      expect(result.exitCode).not.toBe(0);
       const err = parsedStderr(result.stderr);
-      expect(err.code).not.toBe("BAD_ARG");
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage/);
+      expect(err.error).toMatch(/integer/);
+    });
+
+    test("decimal integer (2.0) exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage", "2.0", "--limit", "1"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage/);
+      expect(err.error).toMatch(/integer/);
+    });
+
+    test("scientific notation (1e3) exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage", "1e3", "--limit", "1"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage/);
+      expect(err.error).toMatch(/integer/);
     });
 
     test("zero is accepted (falsy int should not be treated as missing)", async () => {
@@ -64,14 +84,16 @@ describe("LinkedIn CLI flag validation", () => {
       expect(err.error).toMatch(/jobage-minutes/);
     });
 
-    test("negative value is parsed as a missing value and exits 1 with BAD_ARG", async () => {
-      // parseFlags in cli.ts treats a next-token starting with "-" as absent
-      // (`next.startsWith("-")` → flag becomes boolean `true`), and there is no
-      // `--flag=value` syntax. So "-5" never reaches --jobage-minutes as a value;
-      // it parses as a stray flag named "5", which the unknown-flag guard now
-      // rejects before the NaN branch can. Either way the invariant holds: a
-      // negative value fails loudly with exit 1 and a JSON error, never a
-      // silent unfiltered search.
+    test("fractional value (0.5) exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "0.5"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage-minutes/);
+      expect(err.error).toMatch(/integer/);
+    });
+
+    test("negative value exits 1 with UNKNOWN_FLAG (parsed as stray flag)", async () => {
       const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "-5"]);
       expect(result.exitCode).not.toBe(0);
       const err = parsedStderr(result.stderr);
@@ -90,7 +112,7 @@ describe("LinkedIn CLI flag validation", () => {
     });
   });
 
-  describe("--page NaN validation", () => {
+  describe("--page validation", () => {
     test("non-numeric string exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "-l", LOCATION, "--page", "abc"]);
       expect(result.exitCode).not.toBe(0);
@@ -98,15 +120,33 @@ describe("LinkedIn CLI flag validation", () => {
       expect(err.code).toBe("BAD_ARG");
       expect(err.error).toMatch(/page/);
     });
+
+    test("fractional value (1.5) exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--page", "1.5"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/page/);
+      expect(err.error).toMatch(/integer/);
+    });
   });
 
-  describe("--limit NaN validation", () => {
+  describe("--limit validation", () => {
     test("non-numeric string exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "-l", LOCATION, "--limit", "xyz"]);
       expect(result.exitCode).not.toBe(0);
       const err = parsedStderr(result.stderr);
       expect(err.code).toBe("BAD_ARG");
       expect(err.error).toMatch(/limit/);
+    });
+
+    test("fractional value (1.5) exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--limit", "1.5"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/limit/);
+      expect(err.error).toMatch(/integer/);
     });
   });
 
