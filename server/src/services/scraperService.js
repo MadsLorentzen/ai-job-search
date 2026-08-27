@@ -17,29 +17,41 @@ export const scraperService = {
     ];
   },
 
-  async searchJobs({ query, location = 'Remote', portal = 'freehire-search', limit = 10, remote = 'all' }) {
-    console.log(`Executing search: portal=${portal}, query="${query}", location="${location}", limit=${limit}`);
+  async searchJobs({ query = '', location = 'Remote', portal = 'freehire-search', limit = 25, remote = 'all' }) {
+    const cappedLimit = Math.min(Math.max(parseInt(limit, 10) || 25, 5), 100);
+    console.log(`Executing search: portal=${portal}, query="${query}", location="${location}", limit=${cappedLimit}`);
 
     const skillCliPath = path.join(ROOT_DIR, '.agents/skills', portal, 'cli/src/cli.ts');
     
     // Check if Bun is available and skill file exists
     if (fs.existsSync(skillCliPath)) {
       try {
-        const results = await this.runBunCli(portal, skillCliPath, { query, location, limit, remote });
+        const results = await this.runBunCli(portal, skillCliPath, { query, location, limit: cappedLimit, remote });
         if (results && results.length > 0) {
           return results;
         }
       } catch (cliErr) {
-        console.warn(`Bun CLI execution for ${portal} failed or returned empty:`, cliErr.message);
+        console.warn(`Bun CLI execution for ${portal} returned:`, cliErr.message);
       }
     }
 
-    // Direct HTTP API Fallback for FreeHire (works even without Bun installed)
+    // Direct HTTP API Fallbacks
     if (portal === 'freehire-search') {
       try {
-        return await this.fetchFreehireDirect({ query, location, limit });
+        return await this.fetchFreehireDirect({ query, location, limit: cappedLimit });
       } catch (httpErr) {
-        console.warn('Freehire HTTP fallback failed:', httpErr.message);
+        console.warn('Freehire direct fetch fallback failed:', httpErr.message);
+      }
+    }
+
+    if (portal === 'linkedin-search') {
+      try {
+        const directLinkedin = await this.fetchLinkedinDirect({ query, location, limit: cappedLimit });
+        if (directLinkedin && directLinkedin.length > 0) {
+          return directLinkedin;
+        }
+      } catch (liErr) {
+        console.warn('LinkedIn direct fetch fallback failed:', liErr.message);
       }
     }
 
@@ -52,10 +64,15 @@ export const scraperService = {
       const args = ['run', scriptPath, 'search'];
 
       if (portal === 'linkedin-search') {
-        args.push('-l', location || 'Remote');
+        const searchLoc = (!location || location.toLowerCase() === 'remote') ? 'United States' : location;
+        args.push('-l', searchLoc);
         if (query) args.push('-q', query);
         if (limit) args.push('-n', String(limit));
-        if (remote && remote !== 'all') args.push('--remote', remote);
+        if (location && location.toLowerCase() === 'remote') {
+          args.push('--remote', 'remote');
+        } else if (remote && remote !== 'all') {
+          args.push('--remote', remote);
+        }
         args.push('--format', 'json');
       } else if (portal === 'freehire-search') {
         if (query) args.push('-q', query);
@@ -76,7 +93,7 @@ export const scraperService = {
       const proc = spawn('bun', args, {
         cwd: ROOT_DIR,
         shell: true,
-        timeout: 25000
+        timeout: 30000
       });
 
       let stdout = '';
@@ -112,13 +129,16 @@ export const scraperService = {
     });
   },
 
-  async fetchFreehireDirect({ query, location, limit = 10 }) {
+  async fetchFreehireDirect({ query, location, limit = 25 }) {
     const baseUrl = process.env.FREEHIRE_API_URL || 'https://freehire.me';
     let url = `${baseUrl}/api/v1/jobs?limit=${limit}`;
     if (query) url += `&q=${encodeURIComponent(query)}`;
+    if (location && location.toLowerCase() !== 'remote' && location.toLowerCase() !== 'all') {
+      url += `&country=${encodeURIComponent(location)}`;
+    }
 
     const response = await fetch(url, {
-      headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0 AI-Job-Search' }
+      headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0 (compatible; AIJobSearch/1.3)' }
     });
 
     if (!response.ok) {
@@ -130,13 +150,77 @@ export const scraperService = {
     return jobs.map((j, idx) => this.normalizeJob(j, 'freehire-search', idx));
   },
 
+  async fetchLinkedinDirect({ query, location, limit = 25 }) {
+    const searchLoc = (!location || location.toLowerCase() === 'remote') ? 'United States' : location;
+    const isRemote = !location || location.toLowerCase() === 'remote';
+    
+    let url = `https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=${encodeURIComponent(query || 'Software')}&location=${encodeURIComponent(searchLoc)}&start=0`;
+    if (isRemote) {
+      url += `&f_WT=2`; // LinkedIn remote filter
+    }
+
+    console.log(`Fetching LinkedIn Guest API: ${url}`);
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      signal: AbortSignal.timeout(15000)
+    });
+
+    if (!response.ok) {
+      throw new Error(`LinkedIn guest returned ${response.status}`);
+    }
+
+    const html = await response.text();
+    const cardRegex = /<li[\s\S]*?<h3[^>]*class="[^"]*base-search-card__title[^"]*"[^>]*>([\s\S]*?)<\/h3>[\s\S]*?<h4[^>]*class="[^"]*base-search-card__subtitle[^"]*"[^>]*>([\s\S]*?)<\/h4>[\s\S]*?<span[^>]*class="[^"]*job-search-card__location[^"]*"[^>]*>([\s\S]*?)<\/span>[\s\S]*?<a[^>]*href="([^"]+)"[^>]*class="[^"]*base-card__full-link[^"]*"[\s\S]*?<\/li>/gi;
+    
+    const results = [];
+    let match;
+    let index = 0;
+
+    while ((match = cardRegex.exec(html)) !== null && results.length < limit) {
+      const title = this.stripHtml(match[1]);
+      const company = this.stripHtml(match[2]);
+      const jobLocation = this.stripHtml(match[3]);
+      const jobUrl = match[4].split('?')[0];
+
+      if (title && company) {
+        results.push({
+          id: `li-${Date.now()}-${index}`,
+          title,
+          company,
+          location: jobLocation || location || 'Remote',
+          url: jobUrl,
+          portal: 'linkedin-search',
+          postedDate: 'Recently on LinkedIn',
+          description: `Position: ${title} at ${company}. Located in ${jobLocation || 'Remote'}.\n\nApply and see full specifications at: ${jobUrl}`,
+          skills: ['LinkedIn Opening', query || 'Engineering', 'Active Hiring'],
+          seniority: title.toLowerCase().includes('senior') ? 'Senior Level' : title.toLowerCase().includes('lead') ? 'Lead' : 'Mid-Level',
+          employmentType: 'Full-time',
+          salary: 'Competitive'
+        });
+        index++;
+      }
+    }
+
+    return results;
+  },
+
+  stripHtml(html) {
+    return (html || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  },
+
   normalizeJob(raw, portal, index) {
     return {
       id: raw.id || raw.slug || `job-${portal}-${Date.now()}-${index}`,
       title: raw.title || raw.job_title || 'Software Engineer',
       company: raw.company || raw.company_name || raw.employer || 'Technology Company',
       location: raw.location || raw.city || raw.region || 'Remote',
-      url: raw.url || raw.link || raw.apply_url || `https://freehire.me/job/${raw.slug || ''}`,
+      url: raw.url || raw.link || raw.apply_url || (raw.slug ? `https://freehire.me/job/${raw.slug}` : 'https://linkedin.com'),
       portal: portal,
       postedDate: raw.posted_date || raw.date || raw.created_at || 'Recent',
       description: raw.description || raw.body || raw.summary || 'Full-stack software engineering position involving distributed systems, cloud applications, and modern frameworks.',

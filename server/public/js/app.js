@@ -121,20 +121,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     await checkHealth();
 
-    // Verify existing token if present
+    // Check cached session
     if (state.authToken) {
+      // Keep modal hidden and initialize app immediately
+      loginOverlay.classList.add('hidden');
+      postLoginInit().catch(err => console.warn('Post login init:', err));
+
+      // Silently verify in background
       try {
         const res = await fetch('/api/auth/verify', {
           headers: { 'Authorization': `Bearer ${state.authToken}` }
         });
-        if (res.ok) {
-          loginOverlay.classList.add('hidden');
-          await postLoginInit();
-        } else {
-          showLoginModal();
+        if (!res.ok) {
+          state.authToken = '';
+          localStorage.removeItem('jobsearch_auth_token');
+          showLoginModal('Session expired. Please unlock again.');
         }
       } catch (err) {
-        showLoginModal();
+        // Network warning - don't lock if offline/slow
       }
     } else {
       showLoginModal();
@@ -336,15 +340,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const query = document.getElementById('searchQuery').value;
       const location = document.getElementById('searchLocation').value;
       const portal = document.getElementById('searchPortal').value;
-      executeSearch(query, location, portal);
+      const limit = document.getElementById('searchLimit')?.value || 25;
+      executeSearch(query, location, portal, limit);
     });
   }
 
   async function executeInitialSearch() {
-    await executeSearch('Software Engineer', 'Remote', 'freehire-search');
+    await executeSearch('Software Engineer', 'Remote', 'freehire-search', 25);
   }
 
-  async function executeSearch(query, location, portal) {
+  async function executeSearch(query, location, portal, limit = 25) {
     const btnSearch = document.getElementById('btnExecuteSearch');
     const resultsGrid = document.getElementById('jobResultsGrid');
     const resultsCount = document.getElementById('resultsCount');
@@ -354,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resultsGrid.innerHTML = `<div class="empty-state"><span class="spinner"></span><p>Searching ${portal}...</p></div>`;
 
     try {
-      const url = `/api/scrape/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&portal=${encodeURIComponent(portal)}&limit=12`;
+      const url = `/api/scrape/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&portal=${encodeURIComponent(portal)}&limit=${limit}`;
       const res = await authFetch(url);
       const data = await res.json();
 
