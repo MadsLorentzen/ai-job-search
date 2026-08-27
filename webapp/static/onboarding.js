@@ -28,8 +28,14 @@ window.Onboarding = (function () {
     previouslyFocusedEl = document.activeElement;
     _buildDom();
     _renderStep();
+    // _renderStep() may have already failed gracefully (missing target),
+    // which tears everything down and sets state back to null -- bail out
+    // rather than touch DOM nodes that no longer exist.
+    if (!state) return;
     state.popoverEl.focus();
     document.addEventListener("keydown", _handleKeydown);
+    window.addEventListener("resize", _handleReflow);
+    window.addEventListener("scroll", _handleReflow, true);
   }
 
   function _handleKeydown(event) {
@@ -147,7 +153,51 @@ window.Onboarding = (function () {
   }
 
   function _failStepGracefully() {
-    // Real implementation added in Ticket 2 Task 4.
+    const walkthroughId = state.walkthroughId;
+    _teardownDom();
+    state = null;
+    apiCall(`/api/onboarding/walkthroughs/${walkthroughId}/interrupt`, {method: "POST"})
+      .catch(() => {});
+    _showFailNotice();
+  }
+
+  function _teardownDom() {
+    document.removeEventListener("keydown", _handleKeydown);
+    window.removeEventListener("resize", _handleReflow);
+    window.removeEventListener("scroll", _handleReflow, true);
+    if (state.backdropEl) state.backdropEl.remove();
+    if (state.spotlightEl) state.spotlightEl.remove();
+    if (state.popoverEl) state.popoverEl.remove();
+  }
+
+  function _showFailNotice() {
+    const notice = document.createElement("div");
+    notice.className = "onboarding-fail-notice";
+    notice.setAttribute("role", "status");
+    notice.innerHTML = 'This walkthrough step is unavailable right now. <button type="button">Dismiss</button>';
+    notice.querySelector("button").addEventListener("click", () => notice.remove());
+    document.body.appendChild(notice);
+    if (previouslyFocusedEl && document.body.contains(previouslyFocusedEl)) {
+      previouslyFocusedEl.focus();
+    }
+    previouslyFocusedEl = null;
+  }
+
+  let reflowScheduled = false;
+  function _handleReflow() {
+    if (!state || reflowScheduled) return;
+    reflowScheduled = true;
+    requestAnimationFrame(() => {
+      reflowScheduled = false;
+      if (!state) return;
+      const step = _currentStep();
+      const target = document.querySelector(step.target);
+      if (!target) {
+        _failStepGracefully();
+        return;
+      }
+      _position(target, step.placement);
+    });
   }
 
   document.addEventListener("click", async (event) => {
@@ -205,15 +255,13 @@ window.Onboarding = (function () {
 
   function _close() {
     if (!state) return;
-    document.removeEventListener("keydown", _handleKeydown);
-    state.backdropEl.remove();
-    state.spotlightEl.remove();
-    state.popoverEl.remove();
+    _teardownDom();
+    const restoreTarget = previouslyFocusedEl;
     state = null;
-    if (previouslyFocusedEl && document.body.contains(previouslyFocusedEl)) {
-      previouslyFocusedEl.focus();
-    }
     previouslyFocusedEl = null;
+    if (restoreTarget && document.body.contains(restoreTarget)) {
+      restoreTarget.focus();
+    }
   }
 
   return {start};

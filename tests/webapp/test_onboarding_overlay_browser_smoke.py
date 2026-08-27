@@ -158,3 +158,58 @@ def test_tab_cycles_within_popover_without_escaping_to_page(live_server, page):
     assert page.evaluate(
         "document.activeElement.closest('.onboarding-popover') !== null"
     ) is True
+
+
+def test_missing_target_fails_gracefully_without_breaking_the_page(live_server, page):
+    register_walkthrough(
+        WalkthroughDefinition(
+            walkthrough_id="overlay_missing_target_walkthrough",
+            version=1,
+            title="Missing target walkthrough",
+            steps=(
+                WalkthroughStep(
+                    step_id="s0", target='[data-onboarding-target="does-not-exist-anywhere"]',
+                    title="Ghost step", body="This target will never be found.",
+                ),
+            ),
+        )
+    )
+    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.evaluate("window.Onboarding.start('overlay_missing_target_walkthrough')")
+    page.wait_for_selector(".onboarding-fail-notice")
+    assert page.locator(".onboarding-popover").count() == 0
+    # the underlying page must remain fully usable
+    page.locator('[data-onboarding-target="add-job-button"]').click()
+    page.wait_for_url("**/new-job")
+
+
+def test_dont_show_again_checkbox_skips_with_that_reason(live_server, page):
+    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
+    page.wait_for_selector(".onboarding-popover")
+    page.locator('[data-onboarding-dont-show-again]').check()
+    page.get_by_role("button", name="Skip").click()
+    page.wait_for_selector(".onboarding-popover", state="detached")
+
+    status = page.evaluate(
+        "fetch('/api/onboarding/walkthroughs/overlay_smoke_walkthrough')"
+        ".then(r => r.json())"
+    )
+    assert status["dismissal_reason"] == "dont_show_again"
+
+
+def test_overlay_repositions_on_viewport_resize(live_server, page):
+    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
+    page.wait_for_selector(".onboarding-popover")
+    before = page.locator(".onboarding-popover").bounding_box()
+    page.set_viewport_size({"width": 480, "height": 760})
+    page.wait_for_function(
+        """() => {
+            const el = document.querySelector('.onboarding-popover');
+            return el && el.getBoundingClientRect().width <= window.innerWidth;
+        }"""
+    )
+    after = page.locator(".onboarding-popover").bounding_box()
+    assert after["width"] <= 480
+    assert before is not None and after is not None

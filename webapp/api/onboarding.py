@@ -65,7 +65,18 @@ def get_walkthrough(
 
 
 @router.get("/walkthroughs/{walkthrough_id}/definition")
-def get_walkthrough_definition(walkthrough_id: str) -> dict:
+def get_walkthrough_definition(
+    walkthrough_id: str,
+    scope: AccountScope = Depends(get_account_scope),
+) -> dict:
+    # Walkthrough definitions are static, non-account-specific data (read
+    # from the in-process registry, never touching the database or any
+    # account's storage), so `scope` itself is unused below. It is still
+    # required: every user-facing route must resolve account scope per
+    # test_account_ownership.py::test_every_user_facing_route_resolves_account_scope,
+    # so an unauthenticated caller can never reach any /api/onboarding
+    # route, this one included.
+    del scope
     try:
         definition = _get_walkthrough_definition(walkthrough_id)
     except KeyError:
