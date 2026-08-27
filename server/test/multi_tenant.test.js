@@ -305,4 +305,59 @@ describe('Multi-Tenant Platform & RBAC Architecture', () => {
     assert.ok(actions.includes('auth.register'));
     assert.ok(actions.includes('profile.update'));
   });
+
+  test('8. Candidate Saved Searches & Alert Rules', async () => {
+    // Create saved search
+    const createRes = await request('/api/searches', {
+      method: 'POST',
+      token: candidateAToken,
+      body: {
+        title: 'Remote Staff Backend Roles',
+        query: 'Senior Backend Engineer Go Distributed',
+        location: 'Remote',
+        portal: 'freehire-search',
+        alertFrequency: 'daily'
+      }
+    });
+
+    assert.equal(createRes.status, 201);
+    assert.equal(createRes.body.success, true);
+    assert.ok(createRes.body.savedSearch.id);
+    const searchId = createRes.body.savedSearch.id;
+
+    // List searches
+    const listRes = await request('/api/searches', {
+      token: candidateAToken
+    });
+
+    assert.equal(listRes.status, 200);
+    assert.ok(listRes.body.searches.some(s => s.id === searchId));
+
+    // Update alert
+    const updateRes = await request(`/api/searches/${searchId}`, {
+      method: 'PATCH',
+      token: candidateAToken,
+      body: { alertFrequency: 'weekly', isActive: false }
+    });
+
+    assert.equal(updateRes.status, 200);
+    assert.equal(updateRes.body.success, true);
+  });
+
+  test('9. Document Center & LaTeX Version Diffing', async () => {
+    // Compare versions
+    const compareRes = await request('/api/documents/compare', {
+      method: 'POST',
+      token: candidateAToken,
+      body: {
+        v1Latex: '\\section{Experience}\n\\cventry{2020}{Engineer}{Acme}{}{}{Built backend}',
+        v2Latex: '\\section{Experience}\n\\cventry{2020}{Senior Engineer}{Acme}{}{}{Built high-scale backend handling 10M requests}'
+      }
+    });
+
+    assert.equal(compareRes.status, 200);
+    assert.equal(compareRes.body.success, true);
+    assert.ok(compareRes.body.totalChanges > 0);
+    assert.ok(Array.isArray(compareRes.body.diff));
+  });
 });
