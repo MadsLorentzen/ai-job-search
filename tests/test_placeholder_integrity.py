@@ -14,7 +14,20 @@ These tests pin (a) that ci.yml checks data-located sentinels, (b) that
 the sentinels exist in the pristine files, and (c) that simulating the
 /setup edit destroys at least one checked sentinel per file - i.e. the
 guard actually fires on the failure it exists to catch.
+
+(b) and (c) read the live cv/main_example.tex and 01-candidate-profile.md,
+which is exactly the file /setup personalizes - so on any fork that has
+actually run /setup, these two assertions fail permanently, for the same
+reason the pristine sentinel is gone in the first place: the fork did its
+job correctly. The placeholder-integrity CI *job* already knows this and
+skips itself on forks (`if: github.repository == 'MadsLorentzen/ai-job-search'`);
+this file mirrors that same condition at the Python level so a personalized
+fork's own `python -m unittest` run (locally or in the fork's general
+python-tests CI job, which has no such skip) doesn't get a permanent
+false-failure. (a) only inspects ci.yml's own text - it holds regardless of
+personalization, so it stays unguarded.
 """
+import os
 import unittest
 from pathlib import Path
 
@@ -26,6 +39,18 @@ PROFILE = REPO / ".claude" / "skills" / "job-application-assistant" / "01-candid
 # The literal sentinel strings (unescaped) that ci.yml's grep patterns match.
 CV_SENTINELS = ["\\name{[First]}{[Last]}", "\\email{[your.email@example.com]}"]
 PROFILE_SENTINEL = "[YOUR_EMAIL]"
+
+# Same condition the placeholder-integrity CI job itself uses
+# (`if: github.repository == 'MadsLorentzen/ai-job-search'`). GITHUB_REPOSITORY
+# is set by GitHub Actions on every run; it's unset for a plain local
+# `python -m unittest`, which is also correctly "not upstream" here - a
+# contributor's own machine has the same personalized-or-not ambiguity a
+# fork's CI does.
+ON_UPSTREAM_TEMPLATE = os.environ.get("GITHUB_REPOSITORY") == "MadsLorentzen/ai-job-search"
+SKIP_REASON = (
+    "pristine-sentinel assertions only hold on the upstream template repo; "
+    "a personalized fork correctly no longer carries them"
+)
 
 
 def personalize_cv(text: str) -> str:
@@ -58,10 +83,12 @@ class TestCvSentinelsAreDataLocated(unittest.TestCase):
             "ci.yml must assert the sentinel inside the \\email{} data line",
         )
 
+    @unittest.skipUnless(ON_UPSTREAM_TEMPLATE, SKIP_REASON)
     def test_pristine_cv_carries_both_sentinels(self):
         for sentinel in CV_SENTINELS:
             self.assertIn(sentinel, self.cv)
 
+    @unittest.skipUnless(ON_UPSTREAM_TEMPLATE, SKIP_REASON)
     def test_setup_edit_destroys_the_sentinels(self):
         personalized = personalize_cv(self.cv)
         self.assertNotEqual(personalized, self.cv, "the simulated /setup edit must change the file")
@@ -84,6 +111,7 @@ class TestProfileSentinelIsDataLocated(unittest.TestCase):
             "a header comment the model may leave untouched",
         )
 
+    @unittest.skipUnless(ON_UPSTREAM_TEMPLATE, SKIP_REASON)
     def test_pristine_profile_carries_the_sentinel(self):
         self.assertIn(PROFILE_SENTINEL, PROFILE.read_text(encoding="utf-8"))
 
