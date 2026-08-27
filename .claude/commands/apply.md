@@ -229,7 +229,20 @@ If either compile fails, fix the error and re-compile until clean.
 
 ### 5b. Inspect layout
 
-Read both PDFs via the Read tool and verify:
+**Measure first, then look.** A visual read catches gross breakage but cannot tell you that a page is 40% empty, and the failure below survives both a clean compile and a correct page count:
+
+```bash
+python tools/verify_layout.py cv/main_<company>_<role>.pdf
+python tools/verify_layout.py cover_letters/cover_<company>_<role>.pdf
+```
+
+The script reports, per page, where the text starts and stops, bottom whitespace as a share of page height, and the largest vertical gap between lines. It exits 1 on: a hole over 100pt (~7 blank lines), a non-final page ending more than 25% early, body text colliding with the page-number footer, a final page more than 35% empty, and an entry header or section heading stranded at a page break. Page count is **not** checked here — that is `verify_pdf.py --pages`'s job, and Step 5d already runs it.
+
+The hole check is the one a visual read misses. A moderncv `\cventry` renders as a `tabular`, so it is an **unbreakable block**: when it does not fit in the space left, the whole entry jumps to the next page and leaves a hole behind, while the document still compiles and still reports the right page count. Fix it by shortening the entry that follows the hole, not by stretching the page.
+
+If Poppler is missing the script exits 2 with `skipped:` — note the degraded mode in the Step 6 report and rely on the visual inspection alone.
+
+Then read both PDFs via the Read tool and verify:
 
 **CV (`cv/main_<company>_<role>.pdf`):**
 - [ ] Exactly 2 pages (not 1, not 3)
