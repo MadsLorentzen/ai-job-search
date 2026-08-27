@@ -12,7 +12,7 @@ app.listen(PORT, '0.0.0.0', () => {
     url: `http://localhost:${PORT}`,
     auth: authOk ? 'configured' : 'NOT CONFIGURED',
     ai: claudeService.isConfigured() ? claudeService.getProviderName() : 'no provider'
-  }, 'AI Job Search is running');
+  }, 'OppertuneX is running');
 
   if (!authOk) {
     logger.warn('No password is set, so every login is refused. Run `npm run set-password` in server/ and restart.');
