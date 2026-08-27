@@ -25,6 +25,10 @@ win:
     - nsis
     - portable
   artifactName: JobSearchDesk-${version}-win-${arch}.${ext}
+# Without its own name the portable exe overwrites the NSIS installer:
+# both targets otherwise resolve to JobSearchDesk-<version>-win-<arch>.exe.
+portable:
+  artifactName: JobSearchDesk-${version}-win-${arch}-portable.${ext}
 nsis:
   oneClick: true
   perMachine: false

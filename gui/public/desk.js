@@ -1,10 +1,12 @@
 const logEl = document.getElementById("log");
 const statusEl = document.getElementById("status");
 const sessionEl = document.getElementById("session-label");
+const workspaceEl = document.getElementById("workspace-label");
 const promptEl = document.getElementById("prompt");
 const sendBtn = document.getElementById("send");
 const stopBtn = document.getElementById("stop");
 const resetBtn = document.getElementById("reset");
+const openCliBtn = document.getElementById("open-cli");
 const form = document.getElementById("compose");
 const sheet = document.getElementById("sheet");
 const sheetForm = document.getElementById("sheet-form");
@@ -108,7 +110,14 @@ function setBusy(next) {
   statusEl.textContent = next ? "Claude is working" : "Ready";
 }
 
+function setWorkspaceLabel(root) {
+  if (!workspaceEl || !root) return;
+  workspaceEl.textContent = root;
+  workspaceEl.title = "Desk and Claude Code both write scrapes, CVs, and applications here";
+}
+
 function setSessionLabel(data = {}) {
+  setWorkspaceLabel(data.workspace);
   if (data.chromeGroup) {
     sessionEl.textContent = data.sessionId
       ? `${data.chromeGroup} · Chrome group`
@@ -129,9 +138,16 @@ function markAction(name) {
   });
 }
 
+function escapeHtml(text) {
+  return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
 function markdown(text) {
-  const raw = window.marked?.parse(text || "", { gfm: true, breaks: true }) || text;
-  return window.DOMPurify ? window.DOMPurify.sanitize(raw) : raw;
+  if (window.marked && window.DOMPurify) {
+    return window.DOMPurify.sanitize(window.marked.parse(text || "", { gfm: true, breaks: true }));
+  }
+  // Never hand unsanitized model output to innerHTML.
+  return escapeHtml(text || "").replace(/\n/g, "<br>");
 }
 
 function formatTime(date = new Date()) {
@@ -225,10 +241,13 @@ async function post(path, body) {
 async function sendPrompt(prompt) {
   const text = prompt.trim();
   if (!text || busy) return;
-  try {
-    lastHealth = await readHealth();
-  } catch {
-    // Keep the last known status if the health endpoint blips.
+  if (!lastHealth?.loggedIn) {
+    // Only pay for a health check while signed out; a check spawns Claude Code.
+    try {
+      lastHealth = await readHealth();
+    } catch {
+      // Keep the last known status if the health endpoint blips.
+    }
   }
   if (needsInstall(lastHealth) || needsLogin(lastHealth) || !lastHealth?.installed) {
     applyHealth(lastHealth || { installed: false });
@@ -240,8 +259,10 @@ async function sendPrompt(prompt) {
   assistant = null;
   setMenu(false);
   setBusy(true);
-  const res = await post("/send", { prompt: text });
-  if (!res.ok) {
+  try {
+    const res = await post("/send", { prompt: text });
+    if (!res.ok) throw new Error();
+  } catch {
     setBusy(false);
     addMessage("error", "The desk could not reach the local server. Is the terminal still running?");
   }
@@ -370,19 +391,36 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+function rememberSession(data) {
+  if (data.chromeGroup) sessionEl.dataset.chromeGroup = data.chromeGroup;
+  if (data.sessionId) sessionEl.dataset.sessionId = data.sessionId;
+  else delete sessionEl.dataset.sessionId;
+  setSessionLabel(data);
+}
+
 const source = new EventSource("/events");
 source.addEventListener("hello", (event) => {
   const data = JSON.parse(event.data);
   setBusy(Boolean(data.busy));
-  if (data.chromeGroup) sessionEl.dataset.chromeGroup = data.chromeGroup;
-  if (data.sessionId) sessionEl.dataset.sessionId = data.sessionId;
-  setSessionLabel(data);
+  rememberSession(data);
 });
+
+if (openCliBtn) {
+  openCliBtn.addEventListener("click", async () => {
+    openCliBtn.disabled = true;
+    try {
+      const res = await fetch("/workspace/cli", { method: "POST" });
+      const data = await res.json();
+      statusEl.textContent = data.error || `Claude Code opened in ${data.root}`;
+    } catch {
+      statusEl.textContent = "Could not open Claude Code in this folder.";
+    } finally {
+      openCliBtn.disabled = false;
+    }
+  });
+}
 source.addEventListener("session", (event) => {
-  const data = JSON.parse(event.data);
-  if (data.chromeGroup) sessionEl.dataset.chromeGroup = data.chromeGroup;
-  if (data.sessionId) sessionEl.dataset.sessionId = data.sessionId;
-  setSessionLabel(data);
+  rememberSession(JSON.parse(event.data));
 });
 source.addEventListener("user", (event) => {
   addMessage("user", JSON.parse(event.data).text);
@@ -416,7 +454,7 @@ source.addEventListener("error", (event) => {
   if (event.data) addMessage("error", JSON.parse(event.data).text);
 });
 source.addEventListener("reset", () => {
-  setBusy(false);
+  // Stay busy until the server's idle event: the old turn may still be closing.
 });
 source.addEventListener("idle", () => {
   window.clearTimeout(renderTimer);
