@@ -308,33 +308,51 @@
                 <option value="jobdanmark-search">Jobdanmark</option>
               </select>
             </div>
-            <div class="form-group" style="min-width: 110px;">
-              <label>Limit</label>
-              <select id="searchLimit" class="input-select">
-                <option value="12">12 Jobs</option>
-                <option value="25" selected>25 Jobs</option>
-                <option value="50">50 Jobs</option>
-                <option value="100">100 Jobs</option>
-              </select>
-            </div>
             <div class="form-group">
               <label>&nbsp;</label>
               <button id="btnExecuteSearch" class="btn btn-primary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <span>Search Jobs</span>
+                <span>Fetch All Jobs</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Search Results Grid -->
+        <!-- Search Results Grid & Pagination -->
         <div class="search-results-container">
           <div class="results-header">
-            <h3 id="resultsCount">Found 3 live job openings</h3>
-            <span class="subtle-text">Click "Analyze & Apply" to evaluate fit and generate tailored documents</span>
+            <div>
+              <h3 id="resultsCount">Found 0 live openings</h3>
+              <span id="paginationInfo" class="subtle-text">Showing 0-0 of 0 jobs</span>
+            </div>
+            <div class="per-page-selector">
+              <label style="font-size: 12px; color: var(--text-muted); margin-right: 6px;">Per Page:</label>
+              <select id="pageSizeSelect" class="input-select" style="width: auto; padding: 5px 10px; font-size: 12px;">
+                <option value="9">9 jobs</option>
+                <option value="12" selected>12 jobs</option>
+                <option value="24">24 jobs</option>
+                <option value="48">48 jobs</option>
+              </select>
+            </div>
           </div>
+
           <div id="jobResultsGrid" class="jobs-grid">
             <!-- Populated by JS -->
+          </div>
+
+          <!-- Bottom Pagination Navigation -->
+          <div id="paginationBar" class="pagination-bar hidden">
+            <button id="btnPrevPage" class="btn btn-sm btn-secondary" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              <span>Previous</span>
+            </button>
+            <div id="pageNumbersContainer" class="page-numbers">
+              <!-- Page number buttons -->
+            </div>
+            <button id="btnNextPage" class="btn btn-sm btn-secondary">
+              <span>Next</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
           </div>
         </div>
       </section>

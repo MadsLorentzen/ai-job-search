@@ -856,6 +856,61 @@ body {
   color: #34d399;
 }
 
+/* Pagination Bar & Controls */
+.per-page-selector {
+  display: flex;
+  align-items: center;
+}
+
+.pagination-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  padding: 16px 0 8px;
+}
+
+.page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-num-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.page-num-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.page-num-btn.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+}
+
+.page-ellipsis {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 0 4px;
+}
+
 /* Candidate Profile Tab */
 .profile-layout {
   display: flex;

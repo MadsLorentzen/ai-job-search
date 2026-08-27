@@ -17,8 +17,8 @@ export const scraperService = {
     ];
   },
 
-  async searchJobs({ query = '', location = 'Remote', portal = 'freehire-search', limit = 25, remote = 'all' }) {
-    const cappedLimit = Math.min(Math.max(parseInt(limit, 10) || 25, 5), 100);
+  async searchJobs({ query = '', location = 'Remote', portal = 'freehire-search', limit = 100, remote = 'all' }) {
+    const cappedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 5), 100);
     console.log(`Executing search: portal=${portal}, query="${query}", location="${location}", limit=${cappedLimit}`);
 
     const skillCliPath = path.join(ROOT_DIR, '.agents/skills', portal, 'cli/src/cli.ts');

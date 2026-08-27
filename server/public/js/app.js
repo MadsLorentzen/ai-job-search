@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 5. Job Search & Scraper Tab
+  // 5. Job Search & Scraper Tab with Pagination
   // ==========================================
   function setupSearchTab() {
     const btnSearch = document.getElementById('btnExecuteSearch');
@@ -374,34 +374,69 @@ document.addEventListener('DOMContentLoaded', () => {
       const query = document.getElementById('searchQuery').value;
       const location = document.getElementById('searchLocation').value;
       const portal = document.getElementById('searchPortal').value;
-      const limit = document.getElementById('searchLimit')?.value || 25;
-      executeSearch(query, location, portal, limit);
+      executeSearch(query, location, portal);
     });
+
+    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    if (pageSizeSelect) {
+      pageSizeSelect.addEventListener('change', (e) => {
+        state.pageSize = parseInt(e.target.value, 10) || 12;
+        state.currentPage = 1;
+        renderCurrentJobPage();
+      });
+    }
+
+    const btnPrev = document.getElementById('btnPrevPage');
+    const btnNext = document.getElementById('btnNextPage');
+    if (btnPrev) {
+      btnPrev.addEventListener('click', () => {
+        if (state.currentPage > 1) {
+          state.currentPage--;
+          renderCurrentJobPage(true);
+        }
+      });
+    }
+    if (btnNext) {
+      btnNext.addEventListener('click', () => {
+        const maxPages = Math.ceil((state.allSearchResults || []).length / state.pageSize);
+        if (state.currentPage < maxPages) {
+          state.currentPage++;
+          renderCurrentJobPage(true);
+        }
+      });
+    }
   }
 
   async function executeInitialSearch() {
-    await executeSearch('Software Engineer', 'Remote', 'freehire-search', 25);
+    await executeSearch('Software Engineer', 'Remote', 'freehire-search');
   }
 
-  async function executeSearch(query, location, portal, limit = 25) {
+  async function executeSearch(query, location, portal) {
     const btnSearch = document.getElementById('btnExecuteSearch');
     const resultsGrid = document.getElementById('jobResultsGrid');
     const resultsCount = document.getElementById('resultsCount');
+    const paginationBar = document.getElementById('paginationBar');
+    const paginationInfo = document.getElementById('paginationInfo');
 
     btnSearch.disabled = true;
-    btnSearch.innerHTML = `<span class="spinner"></span> Searching...`;
-    resultsGrid.innerHTML = `<div class="empty-state"><span class="spinner"></span><p>Searching ${portal}...</p></div>`;
+    btnSearch.innerHTML = `<span class="spinner"></span> Fetching All Jobs...`;
+    resultsGrid.innerHTML = `<div class="empty-state"><span class="spinner"></span><p>Fetching all available jobs from ${portal}...</p></div>`;
+    if (paginationBar) paginationBar.classList.add('hidden');
 
     try {
-      const url = `/api/scrape/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&portal=${encodeURIComponent(portal)}&limit=${limit}`;
+      // Fetch batch of up to 100 jobs at once
+      const url = `/api/scrape/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&portal=${encodeURIComponent(portal)}&limit=100`;
       const res = await authFetch(url);
       const data = await res.json();
 
       if (data.success && data.jobs && data.jobs.length > 0) {
-        resultsCount.textContent = `Found ${data.jobs.length} live job openings`;
-        renderJobCards(data.jobs);
+        state.allSearchResults = data.jobs;
+        state.currentPage = 1;
+        renderCurrentJobPage();
       } else {
+        state.allSearchResults = [];
         resultsCount.textContent = '0 jobs found';
+        if (paginationInfo) paginationInfo.textContent = 'Showing 0 of 0 jobs';
         resultsGrid.innerHTML = `
           <div class="empty-state">
             <h3>No Jobs Found</h3>
@@ -414,7 +449,80 @@ document.addEventListener('DOMContentLoaded', () => {
       resultsGrid.innerHTML = `<div class="empty-state"><p>Error fetching search results.</p></div>`;
     } finally {
       btnSearch.disabled = false;
-      btnSearch.innerHTML = `<span>Search Jobs</span>`;
+      btnSearch.innerHTML = `<span>Fetch All Jobs</span>`;
+    }
+  }
+
+  function renderCurrentJobPage(scrollToTop = false) {
+    const jobs = state.allSearchResults || [];
+    const total = jobs.length;
+    const pageSize = state.pageSize || 12;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    if (state.currentPage > totalPages) state.currentPage = totalPages;
+    if (state.currentPage < 1) state.currentPage = 1;
+
+    const startIndex = (state.currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, total);
+    const pagedJobs = jobs.slice(startIndex, endIndex);
+
+    // Update Header Counts
+    const resultsCount = document.getElementById('resultsCount');
+    const paginationInfo = document.getElementById('paginationInfo');
+    if (resultsCount) resultsCount.textContent = `Found ${total} live job openings`;
+    if (paginationInfo) {
+      paginationInfo.textContent = total > 0 
+        ? `Showing ${startIndex + 1}–${endIndex} of ${total} jobs (Page ${state.currentPage} of ${totalPages})`
+        : `Showing 0 of 0 jobs`;
+    }
+
+    // Render Cards for this page
+    renderJobCards(pagedJobs);
+
+    // Update Pagination Controls
+    const paginationBar = document.getElementById('paginationBar');
+    const btnPrev = document.getElementById('btnPrevPage');
+    const btnNext = document.getElementById('btnNextPage');
+    const numbersContainer = document.getElementById('pageNumbersContainer');
+
+    if (paginationBar) {
+      if (totalPages > 1) {
+        paginationBar.classList.remove('hidden');
+      } else {
+        paginationBar.classList.add('hidden');
+      }
+    }
+
+    if (btnPrev) btnPrev.disabled = state.currentPage <= 1;
+    if (btnNext) btnNext.disabled = state.currentPage >= totalPages;
+
+    if (numbersContainer) {
+      numbersContainer.innerHTML = '';
+      for (let p = 1; p <= totalPages; p++) {
+        // Show all if <= 7 pages, or smart ellipsis
+        if (totalPages <= 7 || p === 1 || p === totalPages || (p >= state.currentPage - 1 && p <= state.currentPage + 1)) {
+          const btn = document.createElement('button');
+          btn.className = `page-num-btn ${p === state.currentPage ? 'active' : ''}`;
+          btn.textContent = p;
+          btn.addEventListener('click', () => {
+            state.currentPage = p;
+            renderCurrentJobPage(true);
+          });
+          numbersContainer.appendChild(btn);
+        } else if (
+          (p === state.currentPage - 2 && state.currentPage > 3) ||
+          (p === state.currentPage + 2 && state.currentPage < totalPages - 2)
+        ) {
+          const span = document.createElement('span');
+          span.className = 'page-ellipsis';
+          span.textContent = '...';
+          numbersContainer.appendChild(span);
+        }
+      }
+    }
+
+    if (scrollToTop) {
+      document.querySelector('.search-results-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 
