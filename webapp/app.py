@@ -32,6 +32,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.templates = Jinja2Templates(directory=str(Path(__file__).with_name("templates")))
     app.mount("/static", StaticFiles(directory=str(Path(__file__).with_name("static"))), name="static")
+    if settings.handoff_fixtures_dir is not None:
+        app.mount(
+            "/test-fixtures/handoff",
+            StaticFiles(directory=str(settings.handoff_fixtures_dir)),
+            name="handoff_fixtures",
+        )
 
     @app.get("/health")
     def health() -> dict[str, str]:
