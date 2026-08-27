@@ -43,6 +43,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     aiConfigured: claudeService.isConfigured(),
+    provider: claudeService.getProviderName(),
     timestamp: new Date().toISOString(),
     frameworkVersion: '1.3.4'
   });

@@ -32,7 +32,21 @@ if (configuredModel.includes('claude-3-7-sonnet-20250219')) {
 const DEFAULT_MODEL = configuredModel;
 
 export const claudeService = {
+  getProviderName() {
+    const provider = (process.env.AI_PROVIDER || '').toLowerCase();
+    if (provider === 'kimi' || process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY) return 'Kimi (Moonshot AI)';
+    if (provider === 'qwen' || process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY) return 'Qwen (Alibaba AI)';
+    if (provider === 'openai' || process.env.OPENAI_API_KEY) return 'OpenAI / Compatible';
+    if (anthropicClient) return 'Claude (API Key)';
+    if (this.hasClaudeCliAuth()) return 'Claude Pro (CLI Session)';
+    return 'Demo Mode (Mock)';
+  },
+
   isConfigured() {
+    const provider = (process.env.AI_PROVIDER || '').toLowerCase();
+    if (provider === 'kimi' || process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY) return true;
+    if (provider === 'qwen' || process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY) return true;
+    if (provider === 'openai' || process.env.OPENAI_API_KEY) return true;
     return !!anthropicClient || this.hasClaudeCliAuth();
   },
 
@@ -43,8 +57,93 @@ export const claudeService = {
     return fs.existsSync(claudeDir) || fs.existsSync(claudeJson);
   },
 
+  async callOpenAICompatible({ apiKey, baseUrl, model, systemPrompt, userPrompt }) {
+    try {
+      const url = baseUrl.replace(/\/+$/, '') + '/chat/completions';
+      console.log(`[AI Engine] Calling ${model} at ${url}...`);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.3,
+          max_tokens: 4000
+        }),
+        signal: AbortSignal.timeout(60000)
+      });
+
+      if (!response.ok) {
+        const errBody = await response.text();
+        console.warn(`[AI Engine] ${model} returned HTTP ${response.status}:`, errBody);
+        return null;
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      return content || null;
+    } catch (err) {
+      console.warn(`[AI Engine] Error communicating with ${model}:`, err.message);
+      return null;
+    }
+  },
+
   async executePrompt(systemPrompt, userPrompt) {
-    // 1. Direct SDK if API key is provided
+    const provider = (process.env.AI_PROVIDER || '').toLowerCase();
+
+    // 1. Kimi (Moonshot AI)
+    const kimiKey = process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY;
+    if (provider === 'kimi' || kimiKey) {
+      const kimiBaseUrl = process.env.KIMI_BASE_URL || process.env.MOONSHOT_BASE_URL || 'https://api.moonshot.cn/v1';
+      const kimiModel = process.env.KIMI_MODEL || process.env.MOONSHOT_MODEL || 'moonshot-v1-32k';
+      const result = await this.callOpenAICompatible({
+        apiKey: (kimiKey || '').trim(),
+        baseUrl: kimiBaseUrl,
+        model: kimiModel,
+        systemPrompt,
+        userPrompt
+      });
+      if (result) return result;
+    }
+
+    // 2. Qwen (Alibaba DashScope / OpenRouter)
+    const qwenKey = process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY;
+    if (provider === 'qwen' || qwenKey) {
+      const qwenBaseUrl = process.env.QWEN_BASE_URL || process.env.DASHSCOPE_BASE_URL || 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';
+      const qwenModel = process.env.QWEN_MODEL || process.env.DASHSCOPE_MODEL || 'qwen-plus';
+      const result = await this.callOpenAICompatible({
+        apiKey: (qwenKey || '').trim(),
+        baseUrl: qwenBaseUrl,
+        model: qwenModel,
+        systemPrompt,
+        userPrompt
+      });
+      if (result) return result;
+    }
+
+    // 3. Generic OpenAI / DeepSeek / OpenRouter / Ollama
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (provider === 'openai' || openaiKey) {
+      const openaiBaseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+      const openaiModel = process.env.OPENAI_MODEL || 'gpt-4o';
+      const result = await this.callOpenAICompatible({
+        apiKey: (openaiKey || 'no-key').trim(),
+        baseUrl: openaiBaseUrl,
+        model: openaiModel,
+        systemPrompt,
+        userPrompt
+      });
+      if (result) return result;
+    }
+
+    // 4. Anthropic Direct SDK
     if (anthropicClient) {
       try {
         const response = await anthropicClient.messages.create({
@@ -59,14 +158,14 @@ export const claudeService = {
       }
     }
 
-    // 2. CLI Bridge: Uses Claude Pro subscription session via stdin (avoids shell escaping syntax errors)
+    // 5. Claude CLI Bridge (Pro subscription)
     try {
       const cliResult = await this.runClaudeCli(systemPrompt, userPrompt);
       if (cliResult && cliResult.trim()) {
         return cliResult;
       }
     } catch (cliErr) {
-      console.warn('Claude CLI bridge execution failed or returned error:', cliErr.message);
+      console.warn('Claude CLI bridge execution returned error:', cliErr.message);
     }
 
     return null;
@@ -77,7 +176,6 @@ export const claudeService = {
       const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
       console.log('Invoking Claude Code CLI Bridge via STDIN pipe (using Pro subscription)...');
 
-      // Spawn claude CLI without shell interpolation, feed prompt via stdin
       const proc = spawn('claude', ['-p', '--dangerously-skip-permissions'], {
         stdio: ['pipe', 'pipe', 'pipe'],
         timeout: 60000
@@ -93,7 +191,6 @@ export const claudeService = {
         if (code === 0 && stdout && stdout.trim()) {
           return resolve(stdout);
         }
-        // If stdout contains valid content even with code != 0, return it
         if (stdout && (stdout.includes('{') || stdout.length > 50)) {
           return resolve(stdout);
         }
@@ -102,7 +199,6 @@ export const claudeService = {
 
       proc.on('error', err => reject(err));
 
-      // Feed full prompt safely into STDIN
       try {
         proc.stdin.write(fullPrompt);
         proc.stdin.end();

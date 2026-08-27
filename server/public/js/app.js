@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       if (data.aiConfigured) {
         aiStatusBadge.className = 'status-pill connected';
-        aiStatusText.textContent = 'Claude Engine Ready';
+        aiStatusText.textContent = data.provider ? `${data.provider} Active` : 'AI Engine Ready';
       } else {
         aiStatusBadge.className = 'status-pill';
         aiStatusText.textContent = 'Demo Mode (Mock Active)';
