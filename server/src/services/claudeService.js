@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { spawn } from 'child_process';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -22,14 +24,75 @@ const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-3-7-sonnet-20250219
 
 export const claudeService = {
   isConfigured() {
-    return !!anthropicClient;
+    return !!anthropicClient || this.hasClaudeCliAuth();
+  },
+
+  hasClaudeCliAuth() {
+    // Check if Claude Code session exists in user home directory (~/.claude)
+    const home = process.env.HOME || process.env.USERPROFILE || '';
+    const claudeDir = path.join(home, '.claude');
+    const claudeJson = path.join(home, '.claude.json');
+    return fs.existsSync(claudeDir) || fs.existsSync(claudeJson);
+  },
+
+  async executePrompt(systemPrompt, userPrompt) {
+    // 1. Direct SDK if API key is provided
+    if (anthropicClient) {
+      try {
+        const response = await anthropicClient.messages.create({
+          model: DEFAULT_MODEL,
+          max_tokens: 4000,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }]
+        });
+        return response.content[0].text;
+      } catch (sdkErr) {
+        console.warn('Anthropic SDK call failed, attempting CLI bridge fallback:', sdkErr.message);
+      }
+    }
+
+    // 2. CLI Bridge: Uses Claude Pro subscription session from `claude login`
+    try {
+      const cliResult = await this.runClaudeCli(systemPrompt, userPrompt);
+      if (cliResult && cliResult.trim()) {
+        return cliResult;
+      }
+    } catch (cliErr) {
+      console.warn('Claude CLI bridge execution failed or not installed:', cliErr.message);
+    }
+
+    return null;
+  },
+
+  runClaudeCli(systemPrompt, userPrompt) {
+    return new Promise((resolve, reject) => {
+      const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
+      console.log('Invoking Claude Code CLI Bridge (using active Pro subscription)...');
+
+      // claude -p / --print runs in headless prompt mode using ~/.claude credentials
+      const proc = spawn('claude', ['-p', fullPrompt], {
+        shell: true,
+        timeout: 45000
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      proc.stdout.on('data', d => { stdout += d.toString(); });
+      proc.stderr.on('data', d => { stderr += d.toString(); });
+
+      proc.on('close', code => {
+        if (code === 0 && stdout) {
+          return resolve(stdout);
+        }
+        reject(new Error(`Claude CLI exited with code ${code}: ${stderr || stdout}`));
+      });
+
+      proc.on('error', err => reject(err));
+    });
   },
 
   async evaluateJobFit(profile, job) {
-    if (!anthropicClient) {
-      return this.mockJobEvaluation(profile, job);
-    }
-
     const systemPrompt = `You are an elite AI Career Advisor and Job Evaluation specialist implementing the canonical 5-Factor Job Evaluation Framework from 04-job-evaluation.md.
 
 Evaluate the job posting against the candidate's profile with extreme objectivity and rigor.
@@ -78,32 +141,22 @@ Location: ${job.location}
 Description:
 ${job.description}`;
 
-    try {
-      const response = await anthropicClient.messages.create({
-        model: DEFAULT_MODEL,
-        max_tokens: 2000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
-      });
-
-      const text = response.content[0].text;
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const responseText = await this.executePrompt(systemPrompt, userPrompt);
+    if (responseText) {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        try {
+          return JSON.parse(jsonMatch[0]);
+        } catch (e) {
+          console.warn('JSON parse error from Claude response:', e);
+        }
       }
-      return this.mockJobEvaluation(profile, job);
-    } catch (err) {
-      console.error('Claude API evaluateJobFit error:', err);
-      return this.mockJobEvaluation(profile, job);
     }
+
+    return this.mockJobEvaluation(profile, job);
   },
 
   async draftAndReviewApplication(profile, job, fitEvaluation) {
-    if (!anthropicClient) {
-      return this.mockDrafterReviewerPipeline(profile, job, fitEvaluation);
-    }
-
-    // Step 1: Drafter Agent
     console.log('Running Drafter Agent for:', job.company, job.title);
     const drafterSystemPrompt = `You are an elite LaTeX Resume and Cover Letter Drafter Agent.
 Follow the writing style guidelines strictly from 03-writing-style.md:
@@ -133,20 +186,15 @@ ${job.description}
 Fit Evaluation:
 ${JSON.stringify(fitEvaluation, null, 2)}`;
 
-    let drafterOutput;
-    try {
-      const draftRes = await anthropicClient.messages.create({
-        model: DEFAULT_MODEL,
-        max_tokens: 4000,
-        system: drafterSystemPrompt,
-        messages: [{ role: 'user', content: drafterUserPrompt }]
-      });
-
-      const draftJson = draftRes.content[0].text.match(/\{[\s\S]*\}/);
-      drafterOutput = draftJson ? JSON.parse(draftJson[0]) : null;
-    } catch (err) {
-      console.error('Drafter Agent error:', err);
-      return this.mockDrafterReviewerPipeline(profile, job, fitEvaluation);
+    let drafterOutput = null;
+    const draftText = await this.executePrompt(drafterSystemPrompt, drafterUserPrompt);
+    if (draftText) {
+      const draftJson = draftText.match(/\{[\s\S]*\}/);
+      if (draftJson) {
+        try {
+          drafterOutput = JSON.parse(draftJson[0]);
+        } catch (e) {}
+      }
     }
 
     if (!drafterOutput || !drafterOutput.cvLatex) {
@@ -179,30 +227,26 @@ Output refined, publication-grade LaTeX files in JSON format:
   ]
 }`;
 
-    try {
-      const reviewRes = await anthropicClient.messages.create({
-        model: DEFAULT_MODEL,
-        max_tokens: 4000,
-        system: reviewerSystemPrompt,
-        messages: [
-          { role: 'user', content: `Original Drafts to audit:\n${JSON.stringify(drafterOutput, null, 2)}\n\nJob Details:\nCompany: ${job.company}\nRole: ${job.title}` }
-        ]
-      });
+    const reviewText = await this.executePrompt(
+      reviewerSystemPrompt,
+      `Original Drafts to audit:\n${JSON.stringify(drafterOutput, null, 2)}\n\nJob Details:\nCompany: ${job.company}\nRole: ${job.title}`
+    );
 
-      const reviewJson = reviewRes.content[0].text.match(/\{[\s\S]*\}/);
+    if (reviewText) {
+      const reviewJson = reviewText.match(/\{[\s\S]*\}/);
       if (reviewJson) {
-        const finalResult = JSON.parse(reviewJson[0]);
-        return {
-          cvLatex: finalResult.cvLatex,
-          coverLetterLatex: finalResult.coverLetterLatex,
-          reviewScore: finalResult.reviewScore || 95,
-          auditsPassed: finalResult.auditsPassed || ['Anti-AI style verified', 'Valid moderncv LaTeX structure'],
-          revisionsApplied: finalResult.revisionsApplied || ['Polished phrasing and formatting'],
-          drafterNotes: drafterOutput.drafterNotes || []
-        };
+        try {
+          const finalResult = JSON.parse(reviewJson[0]);
+          return {
+            cvLatex: finalResult.cvLatex,
+            coverLetterLatex: finalResult.coverLetterLatex,
+            reviewScore: finalResult.reviewScore || 95,
+            auditsPassed: finalResult.auditsPassed || ['Anti-AI style verified', 'Valid moderncv LaTeX structure'],
+            revisionsApplied: finalResult.revisionsApplied || ['Polished phrasing and formatting'],
+            drafterNotes: drafterOutput.drafterNotes || []
+          };
+        } catch (e) {}
       }
-    } catch (revErr) {
-      console.error('Reviewer Agent error:', revErr);
     }
 
     return {
@@ -216,16 +260,12 @@ Output refined, publication-grade LaTeX files in JSON format:
   },
 
   async generateInterviewPrep(profile, job) {
-    if (!anthropicClient) {
-      return this.mockInterviewPrep(profile, job);
-    }
-
     const systemPrompt = `You are an elite Executive Interview Coach following 07-interview-prep.md.
 Generate high-impact, realistic interview preparation tailored precisely to the company and candidate background.
 
 Provide:
 1. 5 Role-Specific Interview Questions with deep STAR method answers (Situation, Task, Action, Result) drawing on the candidate's actual stories.
-2. 4 Strategic Questions for the candidate to ask the interviewer (impressive, non-obvious, probing company engineering culture and architecture).
+2. 4 Strategic Questions for the candidate to ask the interviewer.
 3. 3 Key Strengths / Talking Points to emphasize.
 
 Return ONLY valid JSON:
@@ -250,30 +290,22 @@ Return ONLY valid JSON:
   "strategicTalkingPoints": ["...", "...", "..."]
 }`;
 
-    try {
-      const res = await anthropicClient.messages.create({
-        model: DEFAULT_MODEL,
-        max_tokens: 3000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: `Profile:\n${JSON.stringify(profile, null, 2)}\n\nJob:\nCompany: ${job.company}\nTitle: ${job.title}\nDescription:\n${job.description}` }]
-      });
+    const userPrompt = `Profile:\n${JSON.stringify(profile, null, 2)}\n\nJob:\nCompany: ${job.company}\nTitle: ${job.title}\nDescription:\n${job.description}`;
+    const responseText = await this.executePrompt(systemPrompt, userPrompt);
 
-      const jsonMatch = res.content[0].text.match(/\{[\s\S]*\}/);
+    if (responseText) {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        try {
+          return JSON.parse(jsonMatch[0]);
+        } catch (e) {}
       }
-      return this.mockInterviewPrep(profile, job);
-    } catch (err) {
-      console.error('Claude API generateInterviewPrep error:', err);
-      return this.mockInterviewPrep(profile, job);
     }
+
+    return this.mockInterviewPrep(profile, job);
   },
 
   async parseResumeText(rawText) {
-    if (!anthropicClient) {
-      return this.mockParsedResume(rawText);
-    }
-
     const systemPrompt = `You are a resume parsing specialist. Parse the provided raw resume text into structured JSON matching the candidate profile schema.
 
 Return ONLY valid JSON:
@@ -306,23 +338,17 @@ Return ONLY valid JSON:
   ]
 }`;
 
-    try {
-      const res = await anthropicClient.messages.create({
-        model: DEFAULT_MODEL,
-        max_tokens: 3000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: rawText }]
-      });
-
-      const jsonMatch = res.content[0].text.match(/\{[\s\S]*\}/);
+    const responseText = await this.executePrompt(systemPrompt, rawText);
+    if (responseText) {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        try {
+          return JSON.parse(jsonMatch[0]);
+        } catch (e) {}
       }
-      return this.mockParsedResume(rawText);
-    } catch (err) {
-      console.error('Resume parser API error:', err);
-      return this.mockParsedResume(rawText);
     }
+
+    return this.mockParsedResume(rawText);
   },
 
   // Mock / Fallback generators
