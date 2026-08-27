@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
 
 from product.onboarding import OnboardingTransitionError
+from product.onboarding import get_walkthrough as _get_walkthrough_definition
 from webapp.api.dependencies import get_account_scope, get_conn
 from webapp.services.onboarding import (
     WalkthroughNotFound,
@@ -61,6 +62,27 @@ def get_walkthrough(
         )
     except WalkthroughNotFound as exc:
         raise _translate(exc) from exc
+
+
+@router.get("/walkthroughs/{walkthrough_id}/definition")
+def get_walkthrough_definition(walkthrough_id: str) -> dict:
+    try:
+        definition = _get_walkthrough_definition(walkthrough_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"unknown walkthrough: {walkthrough_id}")
+    return {
+        "walkthrough_id": definition.walkthrough_id,
+        "version": definition.version,
+        "title": definition.title,
+        "steps": [
+            {
+                "step_id": step.step_id, "target": step.target,
+                "title": step.title, "body": step.body,
+                "placement": step.placement,
+            }
+            for step in definition.steps
+        ],
+    }
 
 
 @router.post("/walkthroughs/{walkthrough_id}/begin", status_code=201)

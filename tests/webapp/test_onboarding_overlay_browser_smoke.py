@@ -1,0 +1,125 @@
+"""Playwright acceptance for the Ticket 2 shared onboarding overlay."""
+from __future__ import annotations
+
+import socket
+import threading
+import time
+from types import SimpleNamespace
+
+import pytest
+import uvicorn
+
+from product.onboarding import WalkthroughDefinition, WalkthroughStep, register_walkthrough
+from webapp.app import create_app
+from webapp.config import Settings
+
+
+def _free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+@pytest.fixture(autouse=True)
+def _register_overlay_test_walkthrough():
+    register_walkthrough(
+        WalkthroughDefinition(
+            walkthrough_id="overlay_smoke_walkthrough",
+            version=1,
+            title="Overlay smoke walkthrough",
+            steps=(
+                WalkthroughStep(
+                    step_id="s0", target='[data-onboarding-target="dashboard-link"]',
+                    title="Dashboard", body="This takes you back to your pipeline.",
+                    placement="bottom",
+                ),
+                WalkthroughStep(
+                    step_id="s1", target='[data-onboarding-target="add-job-button"]',
+                    title="Add a job", body="Start a new application from here.",
+                    placement="bottom",
+                ),
+            ),
+        )
+    )
+
+
+@pytest.fixture
+def live_server(tmp_path):
+    port = _free_port()
+    settings = Settings(
+        db_path=tmp_path / "onboarding-overlay.sqlite3", host="127.0.0.1", port=port,
+        documents_root=tmp_path / "documents",
+    )
+    app = create_app(settings)
+    server = uvicorn.Server(uvicorn.Config(
+        app, host="127.0.0.1", port=port, log_level="warning", access_log=False,
+    ))
+    thread = threading.Thread(target=server.run, daemon=True)
+    thread.start()
+    deadline = time.monotonic() + 15
+    while time.monotonic() < deadline:
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=0.25):
+                break
+        except OSError:
+            time.sleep(0.05)
+    else:
+        server.should_exit = True
+        thread.join(timeout=5)
+        raise RuntimeError("Uvicorn onboarding overlay fixture did not start")
+    yield SimpleNamespace(base_url=f"http://127.0.0.1:{port}")
+    server.should_exit = True
+    thread.join(timeout=10)
+
+
+def test_overlay_renders_spotlight_and_popover_on_start(live_server, page):
+    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
+    page.wait_for_selector(".onboarding-popover")
+    assert page.locator(".onboarding-popover-title").inner_text() == "Dashboard"
+    assert page.locator(".onboarding-popover-body").inner_text() == (
+        "This takes you back to your pipeline."
+    )
+    assert page.locator(".onboarding-spotlight").is_visible()
+
+
+def test_overlay_next_advances_to_step_two_and_repositions(live_server, page):
+    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
+    page.wait_for_selector(".onboarding-popover")
+    page.get_by_role("button", name="Next").click()
+    page.wait_for_function(
+        "document.querySelector('.onboarding-popover-title').innerText === 'Add a job'"
+    )
+    # .onboarding-popover-progress is styled text-transform:uppercase, which
+    # is what inner_text() reports (the rendered text, not the DOM source).
+    assert page.locator(".onboarding-popover-progress").inner_text().strip() == "STEP 2 OF 2"
+
+
+def test_overlay_finish_on_last_step_closes_overlay(live_server, page):
+    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
+    page.wait_for_selector(".onboarding-popover")
+    page.get_by_role("button", name="Next").click()
+    page.wait_for_function(
+        "document.querySelector('.onboarding-popover-title').innerText === 'Add a job'"
+    )
+    page.get_by_role("button", name="Finish").click()
+    page.wait_for_selector(".onboarding-popover", state="detached")
+    assert page.locator(".onboarding-backdrop").count() == 0
+
+
+def test_replaying_a_completed_walkthrough_reopens_it(live_server, page):
+    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
+    page.wait_for_selector(".onboarding-popover")
+    page.get_by_role("button", name="Next").click()
+    page.wait_for_function(
+        "document.querySelector('.onboarding-popover-title').innerText === 'Add a job'"
+    )
+    page.get_by_role("button", name="Finish").click()
+    page.wait_for_selector(".onboarding-popover", state="detached")
+
+    page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
+    page.wait_for_selector(".onboarding-popover")
+    assert page.locator(".onboarding-popover-title").inner_text() == "Dashboard"

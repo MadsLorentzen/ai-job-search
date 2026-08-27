@@ -144,3 +144,23 @@ def test_begin_unknown_walkthrough_returns_404(tmp_path):
     with TestClient(app) as client:
         response = client.post("/api/onboarding/walkthroughs/does_not_exist/begin")
         assert response.status_code == 404
+
+
+def test_get_walkthrough_definition_returns_step_content(tmp_path):
+    app = _app(tmp_path)
+    with TestClient(app) as client:
+        response = client.get(
+            "/api/onboarding/walkthroughs/api_test_walkthrough/definition"
+        )
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["title"] == "API test walkthrough"
+        assert [step["step_id"] for step in body["steps"]] == ["s0", "s1"]
+        assert body["steps"][0]["target"] == "[data-onboarding-target=a]"
+
+
+def test_get_walkthrough_definition_unknown_returns_404(tmp_path):
+    app = _app(tmp_path)
+    with TestClient(app) as client:
+        response = client.get("/api/onboarding/walkthroughs/does_not_exist/definition")
+        assert response.status_code == 404
