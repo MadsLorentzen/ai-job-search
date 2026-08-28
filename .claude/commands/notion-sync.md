@@ -1,3 +1,23 @@
+---
+desk:
+  id: notion-sync
+  invocation: /notion-sync
+  title: Notion Sync
+  description: Push ranked jobs and applications to Notion.
+  arguments:
+    - kind: integer
+      name: minScore
+      flag: --min-score
+    - kind: boolean
+      name: all
+      flag: --all
+    - kind: boolean
+      name: rebuild
+      flag: --rebuild
+  requirements:
+    - Notion MCP
+---
+
 # /notion-sync - Push Ranked Jobs and Applications to a Notion Database
 
 You are publishing a **read-only view** of the job search into the user's Notion workspace: one database row per job, with a detailed page per shortlisted match. The repo files stay the system of record - `job_scraper/seen_jobs.json` owns scraped/ranked jobs and `job_search_tracker.csv` owns applications. Notion is a disposable presentation layer on top of them; nothing ever syncs back.

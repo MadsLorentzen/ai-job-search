@@ -61,7 +61,7 @@ bun run src/cli.ts fill https://job-boards.greenhouse.io/acme/jobs/1234567 --hea
   --cover ../../../../cover_letters/cover_acme_ai_engineer.pdf
 ```
 
-With `--headed`, the browser opens, the form fills, and the process waits. Review every field, submit by hand, then press Enter in the terminal to close the browser.
+With `--headed`, the browser opens, the form fills, and a review gate waits. Review every field and submit by hand. In a direct CLI session, press Enter to close the browser (stdin close cancels). When Desk launched Autofill, use Continue or Cancel on the review card instead. There is no Submit control in either adapter.
 
 ## How it decides what to fill
 

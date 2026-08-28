@@ -71,8 +71,14 @@ def check_skill(path: Path) -> None:
 
 
 def check_command(path: Path) -> None:
-    lines = path.read_text(encoding="utf-8").lstrip().splitlines()
-    first = lines[0] if lines else ""
+    text = path.read_text(encoding="utf-8").lstrip()
+    if text.startswith("---"):
+        end = text.find("\n---", 3)
+        if end == -1:
+            errors.append(f"{rel(path)}: unterminated YAML frontmatter")
+            return
+        text = text[end + 4:].lstrip()
+    first = text.splitlines()[0] if text else ""
     if not first.startswith("# /"):
         errors.append(f"{rel(path)}: command file must start with a '# /<name>' title (found: {first[:50]!r})")
 

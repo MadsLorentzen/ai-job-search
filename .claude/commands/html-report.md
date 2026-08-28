@@ -1,3 +1,19 @@
+---
+desk:
+  id: html-report
+  invocation: /html-report
+  title: HTML Report
+  description: Generate an application tracker dashboard.
+  arguments:
+    - kind: path
+      name: path
+      required: false
+      positional: true
+    - kind: boolean
+      name: open
+      flag: --open
+---
+
 # /html-report - Generate Application Tracker Dashboard
 
 Generate a self-contained HTML dashboard from `job_search_tracker.csv` and the application archives under `documents/applications/`. The output is a single `.html` file, no server, no dependencies, that can be opened directly in a browser.

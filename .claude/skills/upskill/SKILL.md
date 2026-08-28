@@ -5,6 +5,16 @@ description: >
   a prioritized learning plan with study resources. Triggers on: /upskill, upskill, skill gaps,
   what should I learn, learning plan
 allowed-tools: Read, Write, Glob, Grep, WebFetch, WebSearch
+desk:
+  id: upskill
+  invocation: /upskill
+  title: Upskill
+  description: Find skill gaps against tracked jobs and build a learning plan.
+  arguments:
+    - kind: url
+      name: url
+      required: false
+
 ---
 
 # Upskill

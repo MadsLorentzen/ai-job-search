@@ -1,7 +1,7 @@
 {
   "name": "job-search-desk",
   "productName": "Job Search Desk",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "type": "module",
   "description": "One-click desk for the AI job search repo. Works on macOS, Windows, and Linux.",
@@ -11,12 +11,33 @@
     "start": "node server.mjs",
     "cli": "node server.mjs --cli",
     "app": "electron .",
-    "test": "node --test tests/*.test.mjs",
-    "dist": "electron-builder --publish never",
-    "dist:dir": "electron-builder --dir --publish never"
+    "test": "npm run test:unit && npm run test:renderer",
+    "test:unit": "node --test tests/*.test.mjs tests/terminal/*.test.mjs tests/electron/handoff.test.mjs",
+    "test:renderer": "node --test tests/renderer/*.test.mjs",
+    "build:renderer": "esbuild public/src/desk.js --bundle --platform=browser --format=iife --outfile=public/dist/desk.js && node -e \"import('node:fs').then(fs=>fs.copyFileSync('node_modules/@xterm/xterm/css/xterm.css','public/vendor/xterm.css'))\"",
+    "rebuild:native": "electron-builder install-app-deps",
+    "test:packaged": "node tests/packaged/validate-package.mjs",
+    "test:e2e": "playwright test --config tests/electron/playwright.config.mjs",
+    "dist": "npm run build:renderer && electron-builder --publish never",
+    "dist:dir": "npm run build:renderer && electron-builder --dir --publish never"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.1",
     "electron": "^36.9.5",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "esbuild": "0.28.2",
+    "happy-dom": "20.11.12"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.248",
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/xterm": "6.0.0",
+    "diff": "9.0.0",
+    "node-pty": "1.1.0",
+    "ws": "8.21.3",
+    "yaml": "2.9.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

@@ -226,7 +226,18 @@ function nodeRunner(env = process.env) {
 }
 
 export function chromeEnabled(env = process.env) {
-  return env.JOB_SEARCH_CLAUDE_CHROME !== "0";
+  return env.JOB_SEARCH_CLAUDE_CHROME === "1";
+}
+
+export function turnStatusText({ chrome = chromeEnabled(), resuming = false } = {}) {
+  if (!chrome) return resuming ? "Continuing with Claude" : "Starting Claude";
+  return resuming
+    ? `Continuing in the ${DESK_SESSION_NAME} Chrome group`
+    : `Opening the ${DESK_SESSION_NAME} Chrome group`;
+}
+
+export function closePrintInput(input) {
+  input?.end();
 }
 
 export function deskSessionPath(root) {
@@ -268,9 +279,17 @@ export function exitErrorText(code, stopRequested) {
   return `Claude exited with code ${code}`;
 }
 
+export function buildInteractiveClaudeArgs({ sessionId, permissionMode, name = DESK_SESSION_NAME } = {}) {
+  if (!sessionId || typeof sessionId !== "string") {
+    throw new Error("session-id-required");
+  }
+  const args = ["--resume", sessionId, "--name", name];
+  if (permissionMode === "autonomous") args.push("--dangerously-skip-permissions");
+  return args;
+}
+
 export function buildClaudeArgs(prompt, { sessionId = null, chrome = chromeEnabled(), name = DESK_SESSION_NAME } = {}) {
-  const args = [];
-  if (chrome) args.push("--chrome");
+  const args = [chrome ? "--chrome" : "--no-chrome"];
   args.push(
     "--dangerously-skip-permissions",
     "--name",
@@ -361,6 +380,19 @@ export function spawnOfficialInstall() {
     );
   }
   return spawn("bash", ["-lc", `curl -fsSL ${CLAUDE_INSTALL_SH} | bash`], { env: process.env });
+}
+
+export function parseClaudeVersion(raw) {
+  const match = String(raw ?? "").match(/(\d+)\.(\d+)\.(\d+)/);
+  if (!match) return null;
+  return { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]), text: match[0] };
+}
+
+export function claudeSupportsDeskRuntime(version) {
+  if (!version) return false;
+  if (version.major !== 2) return version.major > 2;
+  if (version.minor !== 1) return version.minor > 1;
+  return version.patch >= 219;
 }
 
 export function spawnSubscriptionLogin({ cwd, email } = {}) {

@@ -85,3 +85,11 @@ test("a GET with no Origin (curl, CLI) still works", async () => {
   const body = await res.json();
   assert.ok("chromeExtensionUrl" in body);
 });
+
+test("GET /commands lists discovered workflows", async () => {
+  const res = await fetch(`${base}/commands`);
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.ok(body.commands.some((command) => command.id === "setup"));
+  assert.ok(body.commands.some((command) => command.id === "scrape"));
+});

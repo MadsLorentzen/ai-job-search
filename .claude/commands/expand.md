@@ -1,3 +1,11 @@
+---
+desk:
+  id: expand
+  invocation: /expand
+  title: Expand
+  description: Expand the candidate profile from documents and online presence.
+---
+
 # /expand - Competency Expansion from Documents and Online Presence
 
 You are enriching the candidate profile by discovering competencies hidden in documents and public online presence. This command is additive only: it never modifies existing profile content, only extends it.

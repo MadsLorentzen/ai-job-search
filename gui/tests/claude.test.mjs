@@ -2,11 +2,14 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { PassThrough } from "node:stream";
 import { test } from "node:test";
 import {
   buildClaudeArgs,
+  buildInteractiveClaudeArgs,
   chromeEnabled,
   claudeSpawnPlan,
+  closePrintInput,
   clearDeskSession,
   commandLooksInstalled,
   exitErrorText,
@@ -22,6 +25,7 @@ import {
   resolveCommand,
   saveDeskSession,
   shouldRetryWithoutResume,
+  turnStatusText,
   windowsShimTarget,
   withClaudePath,
 } from "../claude.mjs";
@@ -130,7 +134,21 @@ test("resolveCommand prefers claude.cmd over the extensionless npm shim", (t) =>
   assert.equal(found, join(npm, "claude.cmd"));
 });
 
-test("buildClaudeArgs keeps Chrome and one named session", () => {
+test("interactive Claude args resume the session and add bypass only in Autonomous", () => {
+  assert.deepEqual(
+    buildInteractiveClaudeArgs({ sessionId: "sess-1", permissionMode: "safe" }),
+    ["--resume", "sess-1", "--name", "Job Search Desk"],
+  );
+  assert.ok(buildInteractiveClaudeArgs({ sessionId: "sess-1", permissionMode: "autonomous" }).includes("--dangerously-skip-permissions"));
+  assert.throws(() => buildInteractiveClaudeArgs({ permissionMode: "safe" }), /session-id-required/);
+});
+
+test("buildClaudeArgs disables Chrome by default so print mode cannot wait for the extension", () => {
+  const safe = buildClaudeArgs("/scrape");
+  assert.equal(safe[0], "--no-chrome");
+  assert.equal(chromeEnabled({}), false);
+  assert.equal(chromeEnabled({ JOB_SEARCH_CLAUDE_CHROME: "1" }), true);
+
   const first = buildClaudeArgs("/scrape", { chrome: true });
   assert.equal(first[0], "--chrome");
   assert.ok(first.includes("--name"));
@@ -140,7 +158,18 @@ test("buildClaudeArgs keeps Chrome and one named session", () => {
   const again = buildClaudeArgs("/apply", { sessionId: "abc-123", chrome: true });
   assert.deepEqual(again.slice(-2), ["--resume", "abc-123"]);
   assert.equal(chromeEnabled({ JOB_SEARCH_CLAUDE_CHROME: "0" }), false);
-  assert.equal(chromeEnabled({}), true);
+});
+
+test("turnStatusText does not claim Chrome is opening when integration is disabled", () => {
+  assert.equal(turnStatusText({ chrome: false, resuming: false }), "Starting Claude");
+  assert.equal(turnStatusText({ chrome: false, resuming: true }), "Continuing with Claude");
+  assert.match(turnStatusText({ chrome: true, resuming: false }), /Chrome group/);
+});
+
+test("closePrintInput ends the pipe so Claude print mode can start", () => {
+  const input = new PassThrough();
+  closePrintInput(input);
+  assert.equal(input.writableEnded, true);
 });
 
 test("desk session persists the same id", () => {

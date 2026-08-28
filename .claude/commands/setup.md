@@ -1,3 +1,21 @@
+---
+desk:
+  id: setup
+  invocation: /setup
+  title: Setup
+  description: Collect profile information and populate workspace files.
+  primaryOrder: 1
+  arguments:
+    - kind: text
+      name: section
+      flag: --section
+      required: false
+      positional: false
+  examples:
+    - /setup
+    - /setup --section search
+---
+
 # /setup - Profile Onboarding
 
 You are running the onboarding setup for the AI Job Search framework. Your goal is to collect the user's professional information and populate all profile files so the `/apply` workflow works out of the box.
