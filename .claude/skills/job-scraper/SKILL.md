@@ -94,6 +94,16 @@ and URL. For jobs worth a deeper look, fetch full detail with that portal's `det
 command (see its SKILL.md — do not guess flags) to extract **key requirements**,
 **application deadline**, and a brief description snippet.
 
+**Closed-at-source detection:** `linkedin-search detail` also returns `isActive`.
+`false` means the posting page itself renders LinkedIn's "No longer accepting
+applications" banner — the job died between being indexed and being fetched (expired
+LinkedIn URLs redirect to *similar live jobs*, so a search hit can be a ghost). Mark
+such a job, never silently drop it: write its entry to `seen_jobs.json` in Step 4 with
+`"status": "expired"` and leave it out of the Step 5 presentation — an absent entry
+looks identical to a job never seen, and the recorded status is what makes a later
+ghost report self-triaging. `isActive: true` is only the absence of that banner, not
+proof the posting is open; deadlines and dead URLs remain `/rank`'s job.
+
 **From WebSearch results:** Use `WebFetch` on the posting URL and extract the same
 fields manually. If it returns HTTP 403, retry with browser headers via curl per
 `.claude/skills/job-application-assistant/09-web-research.md` before giving up — most

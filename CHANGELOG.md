@@ -15,6 +15,21 @@ per-file diff commands.
 
 ### Added
 
+- **`linkedin-search detail` reports closed postings** (#280, adopted with the original
+  author's commit preserved) - a new `isActive` field: `false` when the posting page
+  renders LinkedIn's own "No longer accepting applications" top-card banner. Detection
+  is scoped to the top card and pinned by fixture tests in both directions, including
+  the false-positive case the review required (recruiter boilerplate quoting the closed
+  phrase in a *description* must not flag a live job - on the unscoped first version it
+  did, and the new tests fail there). Only the two markers real closed pages carry are
+  matched (`closed-job__flavor` and the banner text, verified against live guest
+  pages); three speculative phrases from the first version were dropped as
+  false-positive-only risk. `/scrape` Step 2 now consumes the signal: a closed-at-source
+  job is recorded in `seen_jobs.json` as `"status": "expired"` - marked, never silently
+  dropped, per the `/rank` pattern - which is the fix for the ghost-LinkedIn-jobs class
+  in #331 (an expired LinkedIn URL redirects to a *similar live job*, so a stored hit
+  can die unnoticed between scrape and click). `isActive: true` is documented as
+  absence of the banner, not proof the posting is open.
 - **pypdf ATS text-layer fallback** - `/apply` Step 5d and `tools/verify_pdf.py` extract the CV PDF text layer with **pypdf** first (BSD, `pip install pypdf`) so Windows machines without Poppler still get a mechanical parseability check. Poppler `pdftotext -layout -enc UTF-8` remains the fallback; if both are missing the check still degrades to a visual keyword review. No extra cache or installer. `05-cv-templates.md` `framework_version` 1.4.2 → 1.4.3.
 - **CI now tests the full documented Python range** (#370) - the Python tool tests job
   runs a 3.10-3.14 version matrix instead of pinning 3.12, so both the documented 3.10
