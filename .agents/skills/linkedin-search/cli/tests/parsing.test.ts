@@ -86,6 +86,51 @@ describe("decodeHtmlEntities (via parseJobCards)", () => {
   });
 });
 
+describe("parseJobDetail active-status detection", () => {
+  // Captured from a real closed guest posting (2026-08-09): the banner LinkedIn
+  // actually renders inside the top card. Its class and its visible text are the
+  // only closed markers that occur in the wild.
+  const closedBanner = `
+    <figure class="closed-job closed-job__flavor topcard__flavor-row">
+      <span class="closed-job__icon closed-job__icon--error-pebble lazy-load"></span>
+      <figcaption class="closed-job__flavor--closed">No longer accepting applications</figcaption>
+    </figure>`;
+
+  const page = (topcardExtra: string, description: string) => `
+    <h1 class="topcard__title">Data Engineer</h1>
+    <span class="topcard__flavor topcard__flavor--bullet">Berlin</span>
+    ${topcardExtra}
+    <div class="show-more-less-html__markup">${description}</div>`;
+
+  test("a closed posting's top-card banner yields isActive: false", () => {
+    const job = parseJobDetail(page(closedBanner, "We build things."), "1");
+    expect(job.isActive).toBe(false);
+  });
+
+  test("an open posting yields isActive: true", () => {
+    const job = parseJobDetail(page("", "We are hiring!"), "2");
+    expect(job.isActive).toBe(true);
+  });
+
+  test("recruiter boilerplate in the description does not flag a live posting", () => {
+    // The review's false-positive case: the closed phrase appears in the
+    // *description text* of a job that is very much open.
+    const job = parseJobDetail(
+      page("", "Apply soon - once filled, this posting is no longer accepting applications."),
+      "3",
+    );
+    expect(job.isActive).toBe(true);
+  });
+
+  test("a closed-job class named in the description does not flag a live posting", () => {
+    const job = parseJobDetail(
+      page("", "Our design system documents a closed-job__flavor CSS class."),
+      "4",
+    );
+    expect(job.isActive).toBe(true);
+  });
+});
+
 describe("parseJobDetail dropped fields", () => {
   test("emits no applyUrl field", () => {
     // The extraction regex assumed class-before-href and never matched
