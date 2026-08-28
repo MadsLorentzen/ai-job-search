@@ -6,16 +6,17 @@ directories:
   output: release
   buildResources: build
 files:
-  - claude.mjs
-  - defaults.mjs
-  - electron-main.mjs
-  - preload.cjs
-  - server.mjs
-  - workspace.mjs
-  - package.json
+  - "*.mjs"
+  - terminal/**/*
   - public/**/*
+  - public/dist/**/*
+  - package.json
+  - preload.cjs
 asarUnpack:
   - preload.cjs
+  - node_modules/node-pty/**/*
+  - "**/*.node"
+npmRebuild: true
 extraMetadata:
   main: electron-main.mjs
 win:

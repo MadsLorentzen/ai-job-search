@@ -1,3 +1,17 @@
+---
+desk:
+  id: reset
+  invocation: /reset
+  title: Reset
+  description: Reset profile data, generated documents, or both.
+  arguments:
+    - kind: choice
+      name: scope
+      values: [profile, documents, all]
+      required: false
+      positional: true
+---
+
 # /reset - Reset Candidate Profile Data
 
 You are resetting parts of the job search framework back to a blank state so the user can start fresh with `/setup`.

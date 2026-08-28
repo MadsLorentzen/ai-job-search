@@ -7,6 +7,27 @@ description: >
   employer ATS boards. Deduplicates across runs. Triggers on: job scrape, find
   jobs, search jobs, new jobs, job search, scrape jobs, /scrape
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run .agents/skills/*/cli/src/cli.ts *), WebFetch, WebSearch, Agent, AskUserQuestion
+desk:
+  id: scrape
+  invocation: /scrape
+  title: Find Jobs
+  description: Search enabled job portals and collect new postings.
+  primaryOrder: 2
+  arguments:
+    - kind: choice
+      name: mode
+      values: [focused, broad, health]
+      required: false
+      positional: true
+    - kind: text
+      name: focus
+      required: false
+      positional: true
+  examples:
+    - /scrape
+    - /scrape broad
+    - /scrape health
+
 ---
 
 # Job Scraper

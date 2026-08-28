@@ -7,7 +7,7 @@ Prefills US job application forms from `application_profile.json`. **Never submi
 ```bash
 bun install
 bunx playwright install chromium
-bun run src/cli.ts doctor
+node --experimental-strip-types src/cli.ts doctor
 ```
 
 `doctor` checks Playwright, the browser, and the profile file, and exits non-zero if anything is missing.
@@ -28,10 +28,12 @@ bun run src/cli.ts doctor
 | `--resume, -r` | profile value | Resume PDF to attach |
 | `--cover, -c` | profile value | Cover letter PDF to attach |
 | `--screenshot, -o` | `job_scraper/autofill_<ts>.png` | Screenshot destination |
-| `--headed` | off | Show the browser and pause for review. Recommended. |
+| `--headed` | off | Show the browser and pause at the review gate. Recommended. |
 | `--dry-run` | off | Report without filling |
 | `--timeout` | `30000` | Navigation timeout in ms |
 | `--format` | `json` (`table` for `inspect`) | Output format |
+
+Headed review uses `StdinReviewGate` (Enter continues, stdin close cancels) unless Desk set `JOB_SEARCH_DESK_REVIEW_URL`. Then `DeskReviewGate` posts browser-ready and waits for Continue or Cancel. Neither adapter can submit.
 
 ## Exit codes
 

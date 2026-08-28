@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Local desk for this repo. Claude Code does the work in print mode
- * with --dangerously-skip-permissions. This process only binds 127.0.0.1.
+ * Local desk for this repo. Native Chat uses the session runtime when one is
+ * attached; otherwise Claude print mode remains the fallback. This process
+ * only binds 127.0.0.1.
  */
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
@@ -12,6 +13,7 @@ import {
   buildClaudeArgs,
   chromeEnabled,
   clearDeskSession,
+  closePrintInput,
   commandLooksInstalled,
   exitErrorText,
   extractHttpsUrls,
@@ -26,9 +28,14 @@ import {
   spawnClaude,
   spawnOfficialInstall,
   spawnSubscriptionLogin,
+  turnStatusText,
 } from "./claude.mjs";
 import { CHROME_EXTENSION_URL, CLAUDE_AI_URL, CLAUDE_PRICING_URL, DESK_SESSION_NAME } from "./defaults.mjs";
 import { existingWorkspaceHint, rememberWorkspace, resolveWorkspace, startCli } from "./workspace.mjs";
+import { ARTIFACT_HTML_CSP, createArtifactService } from "./artifacts.mjs";
+import { createAutofillBridge } from "./autofill-bridge.mjs";
+import { attachWebSocketTransport } from "./websocket-transport.mjs";
+import { createCommandRegistry } from "./command-registry.mjs";
 
 const IS_WIN = process.platform === "win32";
 const IS_MAC = process.platform === "darwin";
@@ -46,6 +53,9 @@ const MIME = {
 
 const clients = new Set();
 let workspace = join(HERE, "..");
+let deskArtifacts = null;
+let deskRuntime = null;
+let deskAutofill = null;
 let busy = false;
 let sessionId = null;
 let child = null;
@@ -280,25 +290,17 @@ function runClaude(prompt, { retried = false } = {}) {
   toolNames.clear();
   const gen = ++turnGen;
   const superseded = () => gen <= resetGen;
-  send("status", {
-    text: sessionId
-      ? `Continuing in the ${DESK_SESSION_NAME} Chrome group`
-      : `Opening the ${DESK_SESSION_NAME} Chrome group`,
-  });
+  send("status", { text: turnStatusText({ resuming: Boolean(sessionId) }) });
   if (!retried) {
     send("user", { text: prompt });
     transcript.push({ role: "user", text: prompt });
   }
 
   child = spawnClaude(args, { cwd: workspace, detached: !IS_WIN });
-  // Guard the async stream error too: the try/catch below only covers a
-  // synchronous throw, and an EPIPE on a closed stdin would kill the desk.
+  // Print mode receives its prompt as an argument and waits for a piped stdin
+  // to close. Leaving this stream open makes the Desk appear busy forever.
   child.stdin?.on("error", () => {});
-  try {
-    child.stdin?.write("\n");
-  } catch {
-    // Print mode does not need stdin. This only dismisses a first-run Chrome prompt.
-  }
+  closePrintInput(child.stdin);
 
   let buffer = "";
   child.stdout.on("data", (chunk) => {
@@ -370,6 +372,25 @@ async function readJson(req) {
   }
 }
 
+function bearerToken(req) {
+  const header = req.headers.authorization || "";
+  const match = /^Bearer\s+(.+)$/i.exec(header);
+  return match ? match[1].trim() : "";
+}
+
+function autofillApi() {
+  return deskRuntime || {
+    startAutofillReview: () => deskAutofill?.start(),
+    markAutofillReady: (payload) => deskAutofill?.markReady(payload),
+    decideAutofill: (payload) => deskAutofill?.decide({
+      ...payload,
+      currentGeneration: deskRuntime?.snapshot?.()?.controllerGeneration,
+    }),
+    pollAutofillDecision: (payload) => deskAutofill?.pollDecision(payload),
+    snapshot: () => ({ controllerGeneration: 1 }),
+  };
+}
+
 // The actual bound port (the preferred port may be taken; startDesk scans up).
 let boundPort = PORT;
 
@@ -431,6 +452,153 @@ async function handleRequest(req, res) {
 
     if (req.method === "GET" && url.pathname === "/workspace") {
       json(res, 200, { root: workspace });
+      return;
+    }
+
+    if (req.method === "GET" && url.pathname === "/commands") {
+      const registry = await createCommandRegistry({ workspace });
+      json(res, 200, { commands: registry.list() });
+      return;
+    }
+
+    if (url.pathname === "/artifacts" || url.pathname.startsWith("/artifacts/")) {
+      if (req.headers.origin && !originAllowed(req.headers.origin)) {
+        res.writeHead(403).end("cross-origin requests are not allowed");
+        return;
+      }
+      if (!deskArtifacts) {
+        res.writeHead(404).end("not found");
+        return;
+      }
+      if (url.pathname === "/artifacts" && req.method === "GET") {
+        json(res, 200, { artifacts: deskArtifacts.list() });
+        return;
+      }
+      const match = url.pathname.match(/^\/artifacts\/([A-Za-z0-9._-]+)(?:\/(preview|compare|open|reveal))?$/);
+      if (!match) {
+        res.writeHead(404).end("not found");
+        return;
+      }
+      const [, artifactId, action = "preview"] = match;
+      try {
+        if (action === "preview" && req.method === "GET") {
+          const preview = await deskArtifacts.preview(artifactId);
+          if (preview.kind === "html") {
+            res.writeHead(200, {
+              "Content-Type": "text/html; charset=utf-8",
+              "Content-Security-Policy": ARTIFACT_HTML_CSP,
+              "X-Content-Type-Options": "nosniff",
+            });
+            res.end(preview.text);
+            return;
+          }
+          if (preview.bytes) {
+            res.writeHead(200, {
+              "Content-Type": preview.mime,
+              "X-Content-Type-Options": "nosniff",
+            });
+            res.end(preview.bytes);
+            return;
+          }
+          json(res, 200, preview);
+          return;
+        }
+        if (action === "compare" && req.method === "GET") {
+          json(res, 200, await deskArtifacts.compare(artifactId));
+          return;
+        }
+        if ((action === "open" || action === "reveal") && req.method === "POST") {
+          const body = await readJson(req);
+          if (!body) {
+            json(res, 400, { ok: false, error: "invalid JSON body" });
+            return;
+          }
+          const expected = body.expectedControllerGeneration;
+          const current = deskRuntime?.snapshot?.()?.controllerGeneration;
+          if (current != null && expected !== current) {
+            json(res, 409, { ok: false, error: "stale-controller" });
+            return;
+          }
+          const result = action === "open"
+            ? await deskArtifacts.open(artifactId)
+            : await deskArtifacts.reveal(artifactId);
+          json(res, 200, { ok: true, relativePath: result.relativePath });
+          return;
+        }
+        res.writeHead(404).end("not found");
+      } catch (error) {
+        const unknown = /unknown/i.test(error.message);
+        json(res, unknown ? 404 : 400, { ok: false, error: error.message });
+      }
+      return;
+    }
+
+    if (url.pathname === "/autofill/start" || url.pathname === "/autofill/ready" || url.pathname === "/autofill/decision" || url.pathname === "/autofill/decide") {
+      if (!deskAutofill && !deskRuntime) {
+        json(res, 404, { ok: false, error: "autofill unavailable" });
+        return;
+      }
+      if (url.pathname === "/autofill/start" && req.method === "POST") {
+        const started = autofillApi().startAutofillReview();
+        json(res, 200, {
+          ok: true,
+          reviewId: started.reviewId,
+          token: started.token,
+          endpoint: `http://${HOST}:${boundPort}/autofill`,
+        });
+        return;
+      }
+      if (url.pathname === "/autofill/ready" && req.method === "POST") {
+        const body = await readJson(req);
+        if (!body) {
+          json(res, 400, { ok: false, error: "invalid JSON body" });
+          return;
+        }
+        const token = bearerToken(req) || body.token;
+        const ready = await autofillApi().markAutofillReady({
+          token,
+          url: body.url,
+          screenshot: body.screenshot,
+        });
+        if (!ready?.ok) {
+          json(res, ready?.reason === "unauthorized" ? 401 : 400, { ok: false, error: ready?.reason || "ready-failed" });
+          return;
+        }
+        if (ready.event && !deskRuntime) send("autofill-review", ready.event.payload);
+        json(res, 200, { ok: true, reviewId: ready.event?.payload?.reviewId, state: ready.state });
+        return;
+      }
+      if (url.pathname === "/autofill/decision" && req.method === "GET") {
+        const token = bearerToken(req);
+        const polled = autofillApi().pollAutofillDecision({ token });
+        if (!polled?.ok) {
+          json(res, 401, { ok: false, error: polled?.reason || "unauthorized" });
+          return;
+        }
+        json(res, 200, polled);
+        return;
+      }
+      if (url.pathname === "/autofill/decide" && req.method === "POST") {
+        const body = await readJson(req);
+        if (!body) {
+          json(res, 400, { ok: false, error: "invalid JSON body" });
+          return;
+        }
+        const decided = await autofillApi().decideAutofill({
+          reviewId: body.reviewId,
+          token: body.token || bearerToken(req),
+          decision: body.decision,
+          expectedControllerGeneration: body.expectedControllerGeneration,
+        });
+        if (!decided?.ok) {
+          const status = decided?.reason === "stale-controller" ? 409 : decided?.reason === "unauthorized" ? 401 : 400;
+          json(res, status, { ok: false, error: decided?.reason || "decide-failed" });
+          return;
+        }
+        json(res, 200, decided);
+        return;
+      }
+      res.writeHead(404).end("not found");
       return;
     }
 
@@ -520,7 +688,11 @@ async function handleRequest(req, res) {
       // Everything spawned so far belongs to the old conversation: its late
       // stdout must not re-save the session id it is still printing.
       resetGen = turnGen;
-      stopClaude("New conversation. The Chrome group stays with this desk.");
+      stopClaude(
+        chromeEnabled()
+          ? "New conversation. The Chrome group stays with this desk."
+          : "New conversation. Your job-search files stay in this workspace.",
+      );
       sessionId = null;
       transcript.length = 0;
       turnText = "";
@@ -602,10 +774,25 @@ export async function startDesk(options = {}) {
   sessionId = loadDeskSession(workspace);
   const open = options.openBrowser ?? process.env.JOB_SEARCH_GUI_NO_BROWSER !== "1";
   const server = createDeskServer();
+  let runtime = options.runtime || null;
+  if (!runtime && options.runtimeFactory) {
+    try {
+      runtime = await options.runtimeFactory({ workspace });
+    } catch (error) {
+      if (!options.allowRuntimeFailure) throw error;
+      runtime = null;
+    }
+  }
+  deskRuntime = runtime;
+  deskAutofill = options.autofill || createAutofillBridge();
+  deskArtifacts = options.artifacts || createArtifactService({ workspace });
+  let transport = null;
 
   const stop = (exitProcess = false) => {
     stopClaude("Desk closed");
     stopHelper();
+    runtime?.stop?.();
+    transport?.close?.();
     server.close(() => {
       if (exitProcess) process.exit(0);
     });
@@ -615,19 +802,33 @@ export async function startDesk(options = {}) {
   process.on("SIGINT", () => stop(true));
   process.on("SIGTERM", () => stop(true));
 
-  const preferred = Number(process.env.JOB_SEARCH_GUI_PORT || PORT);
+  const preferred = options.port ?? Number(process.env.JOB_SEARCH_GUI_PORT || PORT);
   let bound = preferred;
-  for (let offset = 0; offset < 10; offset += 1) {
-    bound = preferred + offset;
-    try {
-      await listen(server, HOST, bound);
-      break;
-    } catch (err) {
-      if (err.code !== "EADDRINUSE" || offset === 9) throw err;
+  if (preferred === 0) {
+    await listen(server, HOST, 0);
+    bound = server.address().port;
+  } else {
+    for (let offset = 0; offset < 10; offset += 1) {
+      bound = preferred + offset;
+      try {
+        await listen(server, HOST, bound);
+        break;
+      } catch (err) {
+        if (err.code !== "EADDRINUSE" || offset === 9) throw err;
+      }
     }
   }
 
   boundPort = bound;
+  process.env.JOB_SEARCH_DESK_REVIEW_URL = `http://${HOST}:${bound}/autofill`;
+  if (runtime) {
+    transport = attachWebSocketTransport({
+      server,
+      runtime,
+      hostAllowed,
+      originAllowed,
+    });
+  }
   const href = `http://${HOST}:${bound}/`;
   console.log(`Job search desk: ${href}`);
   console.log(`Workspace: ${workspace}`);
@@ -635,7 +836,18 @@ export async function startDesk(options = {}) {
   console.log("Claude Code runs locally with --dangerously-skip-permissions.");
   console.log("Localhost only. Close this window to stop.");
   if (open) openBrowser(href);
-  return { href, server, workspace, stop, port: bound };
+  return {
+    href,
+    server,
+    workspace,
+    stop,
+    port: bound,
+    runtime,
+    transport,
+    artifacts: deskArtifacts,
+    autofill: deskAutofill,
+    controllers: runtime?.controllers ?? null,
+  };
 }
 
 const launchedDirectly =

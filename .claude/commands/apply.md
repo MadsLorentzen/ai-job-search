@@ -1,3 +1,21 @@
+---
+desk:
+  id: apply
+  invocation: /apply
+  title: Apply
+  description: Draft a targeted CV and cover letter for a posting.
+  primaryOrder: 4
+  arguments:
+    - kind: url
+      name: url
+      required: false
+    - kind: multiline
+      name: posting
+      required: false
+  examples:
+    - /apply https://example.com/jobs/1
+---
+
 # /apply - Drafter-Reviewer Job Application Workflow
 
 You are orchestrating a two-agent job application workflow. The job posting is provided below as `$ARGUMENTS` (either a URL or pasted text).

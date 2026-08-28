@@ -21,7 +21,14 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
-      - run: node --test gui/tests/*.test.mjs
+          cache: npm
+          cache-dependency-path: gui/package-lock.json
+      - run: npm ci
+        working-directory: gui
+      - run: npm run build:renderer
+        working-directory: gui
+      - run: npm test
+        working-directory: gui
 
   build:
     name: Build ${{ matrix.label }}
@@ -32,13 +39,16 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            label: Windows
+            label: Windows x64
             args: --win --x64
           - os: macos-latest
-            label: macOS
-            args: --mac --universal
+            label: macOS arm64
+            args: --mac --arm64
+          - os: macos-13
+            label: macOS x64
+            args: --mac --x64
           - os: ubuntu-latest
-            label: Linux
+            label: Linux x64
             args: --linux --x64
     defaults:
       run:
@@ -51,6 +61,15 @@ jobs:
           cache: npm
           cache-dependency-path: gui/package-lock.json
       - run: npm ci
+      - run: npm run build:renderer
+      - run: npm test
+      - run: npm run rebuild:native
+      - run: npm run dist:dir
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - run: npm run test:packaged
+        env:
+          JOB_SEARCH_REQUIRE_PACKAGED: "1"
       - run: npx electron-builder ${{ matrix.args }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"

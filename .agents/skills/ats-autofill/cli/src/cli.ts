@@ -6,8 +6,10 @@
 // screenshots the result, and hands the browser to you. See SKILL.md.
 
 import { existsSync, readFileSync } from "fs"
-import { resolve as resolvePath, join } from "path"
+import { resolve as resolvePath, join, dirname } from "path"
+import { fileURLToPath } from "url"
 import { detectAts, fillApplication, type FillReport } from "./fill.ts"
+import { createReviewGateFromEnv } from "./review-gate.ts"
 import type { Profile } from "./matcher.ts"
 
 interface Flags {
@@ -39,9 +41,9 @@ function parseFlags(argv: string[]): Flags {
 const HELP = `ats-autofill — prefill a job application form, never submit it
 
 USAGE
-  bun run src/cli.ts fill <job_url> [flags]
-  bun run src/cli.ts inspect <job_url>
-  bun run src/cli.ts doctor
+  node --experimental-strip-types src/cli.ts fill <job_url> [flags]
+  node --experimental-strip-types src/cli.ts inspect <job_url>
+  node --experimental-strip-types src/cli.ts doctor
 
 FILL FLAGS
   --profile, -p <path>   Path to application_profile.json.
@@ -61,9 +63,9 @@ COMMANDS
   doctor    Check that Playwright, a browser, and the profile file are all present.
 
 EXAMPLES
-  bun run src/cli.ts doctor
-  bun run src/cli.ts inspect https://job-boards.greenhouse.io/acme/jobs/1234567
-  bun run src/cli.ts fill https://jobs.lever.co/acme/abc-123 --headed \\
+  node --experimental-strip-types src/cli.ts doctor
+  node --experimental-strip-types src/cli.ts inspect https://job-boards.greenhouse.io/acme/jobs/1234567
+  node --experimental-strip-types src/cli.ts fill https://jobs.lever.co/acme/abc-123 --headed \\
       -r ../../../../cv/main_acme.pdf -c ../../../../cover_letters/cover_acme_ai_engineer.pdf
 
 This tool does not click Submit. Ever. Review the form yourself and submit it.
@@ -77,7 +79,7 @@ function writeError(error: string, code: string): void {
 
 /** Walk up from the CLI directory to the repo root (the dir holding CLAUDE.md). */
 function repoRoot(): string {
-  let dir = import.meta.dir
+  let dir = dirname(fileURLToPath(import.meta.url))
   for (let i = 0; i < 8; i++) {
     if (existsSync(join(dir, "CLAUDE.md"))) return dir
     dir = resolvePath(dir, "..")
@@ -272,6 +274,7 @@ async function main(): Promise<number> {
       dryRun,
       screenshotPath,
       timeoutMs: timeout,
+      reviewGate: flags.headed === true ? createReviewGateFromEnv() : undefined,
     })
     printReport(report, (flags.format as string) || (cmd === "inspect" ? "table" : "json"))
     return 0

@@ -1,3 +1,27 @@
+---
+desk:
+  id: rank
+  invocation: /rank
+  title: Rank
+  description: Score scraped jobs into a ranked shortlist.
+  primaryOrder: 3
+  arguments:
+    - kind: text
+      name: focus
+      required: false
+      positional: true
+    - kind: boolean
+      name: all
+      flag: --all
+    - kind: integer
+      name: top
+      flag: --top
+      min: 1
+  examples:
+    - /rank
+    - /rank healthcare --top 10
+---
+
 # /rank - Triage Scraped Jobs into a Ranked Shortlist
 
 You are batch-scoring the jobs that `/scrape` has collected, so the user can decide where to spend `/apply` effort. `/scrape` finds and dedupes postings; `/apply` evaluates one at a time in depth. `/rank` is the bridge: it scores every new posting against the fit framework and returns a ranked shortlist.

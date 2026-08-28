@@ -1,3 +1,18 @@
+---
+desk:
+  id: gmail-sync
+  invocation: /gmail-sync
+  title: Gmail Sync
+  description: Sync application status from Gmail.
+  arguments:
+    - kind: text
+      name: query
+      required: false
+      positional: true
+  requirements:
+    - Gmail MCP
+---
+
 # /gmail-sync - Sync Application Status from Gmail
 
 You are scanning the user's Gmail for status signals on tracked job applications (interview invites, assessment links, offers, rejections) and, once approved, writing the detected changes into `job_search_tracker.csv` and `documents/applications/<company>_<role>/outcome.md` - the same two places `/outcome` writes to, in the same schema.

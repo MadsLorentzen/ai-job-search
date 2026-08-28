@@ -1,3 +1,18 @@
+---
+desk:
+  id: autofill
+  invocation: /autofill
+  title: Autofill
+  description: Prefill an employer application form for human review.
+  primaryOrder: 5
+  arguments:
+    - kind: url
+      name: url
+      required: true
+  examples:
+    - /autofill https://boards.example.com/jobs/1
+---
+
 # /autofill - Prefill a job application form
 
 Prefills the application form at `$ARGUMENTS` (a job URL) from `application_profile.json`, attaches the tailored documents, and hands the browser over for review.

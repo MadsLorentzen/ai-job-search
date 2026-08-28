@@ -7,6 +7,7 @@
 import { existsSync } from "fs"
 import { resolve as resolvePath } from "path"
 import { matchField, matchOption, type FieldValue, type Profile } from "./matcher.ts"
+import { StdinReviewGate, type ReviewDecision, type ReviewGate } from "./review-gate.ts"
 
 export type AtsKind = "greenhouse" | "lever" | "ashby" | "workday" | "unknown"
 
@@ -24,6 +25,7 @@ export interface FillReport {
   skipped: { label: string; reason: string }[]
   screenshot: string | null
   submitted: false
+  review?: ReviewDecision
 }
 
 /**
@@ -97,6 +99,7 @@ export interface FillOptions {
   dryRun: boolean
   screenshotPath: string | null
   timeoutMs: number
+  reviewGate?: ReviewGate
 }
 
 export async function fillApplication(opts: FillOptions): Promise<FillReport> {
@@ -126,9 +129,17 @@ export async function fillApplication(opts: FillOptions): Promise<FillReport> {
 
   try {
     await page.goto(opts.url, { waitUntil: "domcontentloaded", timeout: opts.timeoutMs })
-    // Application forms are usually below an "Apply" affordance; give client-side
-    // rendering a moment and follow an obvious apply link if the form is absent.
-    await page.waitForTimeout(1500)
+    // Application forms are usually below an "Apply" affordance; wait for
+    // client-side rendering to produce form controls (SPA boards like Ashby can
+    // take >1.5s on a cold load) and follow an obvious apply link if the form
+    // is still absent.
+    await page
+      .waitForFunction(
+        () => document.querySelectorAll("input, textarea, select").length >= 3,
+        undefined,
+        { timeout: 10_000 },
+      )
+      .catch(() => {})
     if ((await page.locator("input, textarea, select").count()) < 3) {
       const applyLink = page
         .locator('a:has-text("Apply"), button:has-text("Apply")')
@@ -185,11 +196,11 @@ export async function fillApplication(opts: FillOptions): Promise<FillReport> {
     }
 
     if (opts.headed) {
-      process.stderr.write(
-        "\nForm filled. The browser is open and Submit has NOT been clicked.\n" +
-          "Review every field, then submit manually. Press Enter here to close the browser.\n",
-      )
-      await new Promise<void>((r) => process.stdin.once("data", () => r()))
+      const gate = opts.reviewGate ?? new StdinReviewGate()
+      report.review = await gate.waitForDecision({
+        url: opts.url,
+        screenshot: report.screenshot,
+      })
     }
   } finally {
     await browser.close().catch(() => {})
