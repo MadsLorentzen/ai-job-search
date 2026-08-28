@@ -111,6 +111,74 @@ CANDIDATE_PROFILE_WALKTHROUGH = WalkthroughDefinition(
 )
 
 
+JOB_WORKFLOW_WALKTHROUGH = WalkthroughDefinition(
+    walkthrough_id="job_workflow_intro",
+    version=1,
+    title="Working a job through JobSearch",
+    steps=(
+        WalkthroughStep(
+            step_id="stepper",
+            target='[data-onboarding-target="workspace-stepper"]',
+            title="This is where the job stands.",
+            body=(
+                "Each stage lights up as you complete it. Nothing here "
+                "implies an application was submitted -- that's tracked "
+                "separately, at the end."
+            ),
+            placement="bottom",
+        ),
+        WalkthroughStep(
+            step_id="job_posting",
+            target='#job-posting',
+            title="Start with exactly what was posted.",
+            body=(
+                "JobSearch preserves the source text as-is. Understanding "
+                "and Job Fit only ever cite this preserved record -- "
+                "never anything invented."
+            ),
+            placement="top",
+        ),
+        WalkthroughStep(
+            step_id="job_fit",
+            target='#job-fit',
+            title="See the evidence behind the verdict.",
+            body=(
+                "Job Fit compares your accepted evidence against what "
+                "the job asks for. If a result looks stale, the panel "
+                "tells you exactly why -- open Technical details to see "
+                "every match and every gap."
+            ),
+            placement="top",
+        ),
+        WalkthroughStep(
+            step_id="application_intelligence",
+            target='#application-intelligence',
+            title="What's confident enough to propose.",
+            body=(
+                "JobSearch only proposes content it can tie back to "
+                "accepted evidence. The recommendation reasoning is "
+                "right here -- and nothing generated here is used until "
+                "you review it below."
+            ),
+            placement="top",
+        ),
+        WalkthroughStep(
+            step_id="readiness",
+            target='.readiness-panel',
+            title="This answers the one question that matters.",
+            body=(
+                "Yes, No, or Not yet -- and why, in plain language. "
+                "Resolve what it names, and the answer updates on its "
+                "own."
+            ),
+            placement="bottom",
+        ),
+    ),
+    trigger="first_visit:job_workflow",
+)
+
+
 def register_default_walkthroughs() -> None:
     register_walkthrough(DASHBOARD_WALKTHROUGH)
     register_walkthrough(CANDIDATE_PROFILE_WALKTHROUGH)
+    register_walkthrough(JOB_WORKFLOW_WALKTHROUGH)

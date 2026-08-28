@@ -64,3 +64,41 @@ def test_creating_the_app_registers_both_default_walkthroughs(tmp_path):
         ids = {row["walkthrough_id"] for row in response.json()}
         assert "dashboard_intro" in ids
         assert "candidate_profile_intro" in ids
+
+
+def test_job_workflow_walkthrough_has_five_steps_targeting_real_workspace_elements():
+    from product.onboarding_walkthroughs import JOB_WORKFLOW_WALKTHROUGH
+
+    assert JOB_WORKFLOW_WALKTHROUGH.walkthrough_id == "job_workflow_intro"
+    assert len(JOB_WORKFLOW_WALKTHROUGH.steps) == 5
+    targets = [step.target for step in JOB_WORKFLOW_WALKTHROUGH.steps]
+    assert targets == [
+        '[data-onboarding-target="workspace-stepper"]',
+        '#job-posting',
+        '#job-fit',
+        '#application-intelligence',
+        '.readiness-panel',
+    ]
+
+
+def test_job_workflow_walkthrough_mentions_evidence_and_review_not_submission():
+    from product.onboarding_walkthroughs import JOB_WORKFLOW_WALKTHROUGH
+
+    bodies = " ".join(step.body for step in JOB_WORKFLOW_WALKTHROUGH.steps)
+    assert "evidence" in bodies.lower()
+    assert "review" in bodies.lower()
+    # Ticket 4 must never claim or imply the walkthrough itself submits
+    # anything -- final submission stays manual per the stream's core
+    # invariants.
+    assert "submit" not in bodies.lower() or "submitted" in bodies.lower()
+
+
+def test_register_default_walkthroughs_also_registers_job_workflow():
+    from product.onboarding import get_walkthrough
+    from product.onboarding_walkthroughs import (
+        JOB_WORKFLOW_WALKTHROUGH,
+        register_default_walkthroughs,
+    )
+
+    register_default_walkthroughs()
+    assert get_walkthrough("job_workflow_intro") is JOB_WORKFLOW_WALKTHROUGH
