@@ -12,9 +12,9 @@
 
 [![CI](https://github.com/MadsLorentzen/ai-job-search/actions/workflows/ci.yml/badge.svg)](https://github.com/MadsLorentzen/ai-job-search/actions/workflows/ci.yml)
 
-An AI-powered job application framework adapted for [OpenAI Codex](https://developers.openai.com/codex/) in VS Code. Fill in your profile, then let Codex evaluate postings, tailor your CV, write cover letters, and prepare interviews through repo-scoped skills.
+An AI-powered job application framework for [Claude Code](https://claude.com/claude-code) and [OpenAI Codex](https://developers.openai.com/codex/). Fill in your profile, then let your coding agent evaluate postings, tailor your CV, write cover letters, and prepare you for interviews.
 
-> This Codex port preserves the upstream workflow specifications for compatibility and is not affiliated with or endorsed by OpenAI, Anthropic, or the upstream maintainer.
+> This is an independent open-source project and is not affiliated with, endorsed by, sponsored by, or maintained by Anthropic or OpenAI. Claude Code and OpenAI Codex are referenced only to describe the toolchains this workflow supports.
 >
 > This project has **no affiliated cryptocurrency, token, or paid sponsorship program**. Anything claiming otherwise is unauthorized and should be treated as a scam. The only ways to support the project are the Ko-fi link below and contributing on GitHub.
 
@@ -39,7 +39,7 @@ Sixty-nine tailored applications, twenty first interviews, and one signed contra
 
 ## What this is
 
-A structured workflow that turns Codex into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Danish market, but the pattern can be adapted to local job boards.
+A structured workflow that turns Claude Code or Codex into a full-stack job application assistant. Both use the same workflow specifications, candidate profile, search tools, and safety rules; thin repo-scoped Codex skills expose the existing commands without duplicating their logic. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Danish market, but the pattern can be adapted to local job boards.
 
 ```
 /setup          /scrape              /apply <url>
@@ -61,7 +61,9 @@ The framework encodes career guidance best practices, including structured evalu
 
 ## Prerequisites
 
-- VS Code with the [OpenAI Codex extension](https://developers.openai.com/codex/ide/). Open `ai-job-search-codex.code-workspace`; Codex loads `AGENTS.md` and the repo-scoped skills automatically.
+- One of the supported coding agents:
+  - [Claude Code](https://claude.com/claude-code) (CLI), which uses the commands under `.claude/commands/`
+  - [OpenAI Codex](https://developers.openai.com/codex/) in VS Code; open `ai-job-search-codex.code-workspace` so Codex loads `AGENTS.md` and discovers the repo-scoped skills under `.agents/skills/`
 - Python 3.10+
 - [Bun](https://bun.sh) (for job search CLI tools)
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/), [MacTeX](https://tug.org/mactex/), [TinyTeX](https://yihui.org/tinytex/), or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`. If using a minimal TeX install such as TinyTeX or BasicTeX, install the extra packages listed in [SETUP.md](SETUP.md#minimal-tex-install-tinytexbasictex).
@@ -110,7 +112,25 @@ done
 
 For `linkedin-search` and `freehire-search` the install is optional: both have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
 
-### 3. Set up your profile
+### 3. Start your coding agent
+
+For Claude Code, start the CLI in the repository:
+
+```bash
+claude
+```
+
+For Codex, open `ai-job-search-codex.code-workspace` in VS Code and start a local Codex chat. See [CODEX.md](CODEX.md) for the short Codex-specific guide.
+
+### 4. Set up your profile
+
+Claude Code:
+
+```text
+/setup
+```
+
+Codex:
 
 ```text
 $setup
@@ -118,7 +138,9 @@ $setup
 
 `/setup` offers three paths: read your `documents/` folder if you have one populated (CV PDF, LinkedIn export, diplomas, reference letters, past applications), import a single CV pasted in chat, or walk through an interview. It auto-detects what you have and asks. Documents-folder mode is idempotent and safe to re-run as you add more material; see `documents/README.md` for the layout.
 
-### 4. Search for jobs
+### 5. Search for jobs
+
+Use `/scrape` in Claude Code or `$scrape` in Codex:
 
 ```text
 $scrape
@@ -126,7 +148,9 @@ $scrape
 
 This searches multiple job portals for positions matching your profile, deduplicates results, and presents them sorted by fit. Pick a match to run `/apply` on it directly — or, when a scrape returns more jobs than you want to eyeball, run `/rank` to batch-score them all against the fit framework and get a ranked shortlist first.
 
-### 5. Apply to a job
+### 6. Apply to a job
+
+Use `/apply` in Claude Code or `$apply` in Codex:
 
 ```text
 $apply https://jobindex.dk/job/1234567
@@ -191,13 +215,18 @@ ai-job-search/
 │   │   ├── job-scraper/               # Job search orchestration
 │   │   └── upskill/                   # /upskill skill gap analysis and learning plan
 │   └── settings.json                  # Claude Code permissions (shared, scoped)
-├── .agents/skills/                    # Job portal CLI tools
+├── .agents/skills/                    # Codex workflow entry points + portable portal CLIs
+│   ├── setup/, scrape/, apply/        # Thin wrappers around canonical .claude workflows
+│   ├── rank/, interview/, outcome/    # Supporting lifecycle workflow wrappers
 │   ├── jobbank-search/                # Akademikernes Jobbank (Denmark)
 │   ├── jobdanmark-search/             # Jobdanmark.dk (Denmark)
 │   ├── jobindex-search/               # Jobindex.dk (Denmark)
 │   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
 │   ├── linkedin-search/               # LinkedIn public job listings (country-agnostic)
 │   └── freehire-search/               # freehire.me tech job aggregator (multi-market, REST API)
+├── AGENTS.md                           # Codex project guidance and capability mapping
+├── CODEX.md                            # Short Codex usage guide
+├── ai-job-search-codex.code-workspace # VS Code workspace with Codex recommendation
 ├── cv/
 │   └── main_example.tex               # moderncv LaTeX template
 ├── cover_letters/
@@ -241,7 +270,7 @@ The `/apply` command runs a **drafter-reviewer workflow** with mandatory PDF com
 3. **Draft** a tailored CV and cover letter in LaTeX
 4. **Spawn a reviewer agent** that researches the company and critiques the drafts
 5. **Revise** based on the reviewer's feedback
-6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. Codex reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
+6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. The coding agent reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
 7. **ATS-check the CV**: extract the PDF's text layer (`pdftotext`, optional dependency) and verify it the way an ATS parser sees it — contact details present as literal text, no garbled glyphs, sane reading order — then score the posting's keyword coverage against the extraction. Keywords the profile genuinely supports get added; genuine gaps stay visible, never stuffed.
 8. **Present** the final output with a verification checklist
 
@@ -252,7 +281,7 @@ All claims in the CV and cover letter are verified against your actual profile. 
 - **PDF verification loop.** Most LaTeX-resume templates produce "looks fine in the .tex" output that breaks in the PDF: job titles orphan to the next page, cover letters spill onto page 2, bullet fonts silently fall back to the body font. The `/apply` command compiles and visually inspects every PDF and applies targeted fixes (`\needspace`, `\enlargethispage`, font-matching wrappers for list items) until the layout is clean. This runs automatically on every application.
 - **ATS verification on the PDF text layer.** An ATS reads the PDF's embedded text, not the rendered page — and LaTeX can silently produce PDFs whose text extracts as garbage (icon glyphs where the email should be, interleaved lines from multi-column layouts). `/apply` extracts the compiled CV's text layer with `pdftotext` and verifies contact details, reading order, and the posting's keyword coverage against what a parser actually sees. Honesty rule enforced: a keyword the profile doesn't support is acknowledged as a gap, never stuffed in.
 - **Relevance-weighted CV cutting.** When a CV overflows 2 pages, the workflow does not cut mechanically from the "oldest" section. It scores each candidate line by (a) relevance to the target posting, (b) uniqueness in the document, and (c) whether the cover letter depends on it, and cuts the lowest-total-score line first. An older-role bullet that hits posting keywords survives ahead of a recent-role bullet that does not.
-- **Drafter-reviewer separation.** The drafter writes; when delegation is available, a second Codex agent with fresh context researches the company and critiques the drafts. The drafter then revises. This catches missed keywords, weak framing, and generic language that a single pass often leaves in.
+- **Drafter-reviewer separation.** The drafter writes; when delegation is available, a second agent with fresh context researches the company and critiques the drafts. The drafter then revises. This catches missed keywords, weak framing, and generic language that a single pass often leaves in.
 - **Token-efficient reviewer dispatch.** The reviewer agent receives drafts inline rather than re-reading them, and the verification checklist runs once at the end of the workflow rather than being duplicated by both agents. Note: the new compile-and-inspect step in Step 5 spends some of those savings on PDF rendering and layout iteration — the workflow trades some end-to-end token cost for a real reduction in broken PDFs reaching the user.
 
 ## Customization
