@@ -178,7 +178,75 @@ JOB_WORKFLOW_WALKTHROUGH = WalkthroughDefinition(
 )
 
 
+DOCUMENT_WORKFLOW_WALKTHROUGH = WalkthroughDefinition(
+    walkthrough_id="document_workflow_intro",
+    version=1,
+    title="Your CV and cover letter",
+    steps=(
+        WalkthroughStep(
+            step_id="overview",
+            target='.gate-four.document-finalization',
+            title="Your CV and cover letter, your call.",
+            body=(
+                "JobSearch prepares Word files you can generate, edit, "
+                "or replace. Nothing here is submitted anywhere until "
+                "you choose to."
+            ),
+            placement="top",
+        ),
+        WalkthroughStep(
+            step_id="generate",
+            target='.document-generate.confirm-pack',
+            title="Generate your documents.",
+            body=(
+                "JobSearch writes a CV and cover letter from your "
+                "reviewed evidence. You can always replace them with "
+                "your own."
+            ),
+            placement="bottom",
+        ),
+        WalkthroughStep(
+            step_id="edit_and_upload",
+            target='.document-kind-grid',
+            title="Edit them if you want, then upload your version.",
+            body=(
+                "Download a generated file, edit it in Word, and upload "
+                "your preferred version here. Uploading never selects a "
+                "file automatically -- that's always your next, "
+                "separate step."
+            ),
+            placement="top",
+        ),
+        WalkthroughStep(
+            step_id="choose",
+            target='.document-select',
+            title="Choose the documents to use.",
+            body=(
+                "Pick the exact CV and the exact cover letter you want "
+                "for this application -- an AI original or one you "
+                "uploaded."
+            ),
+            placement="top",
+        ),
+        WalkthroughStep(
+            step_id="confirm",
+            target='.confirm-documents',
+            title="Confirm your selection.",
+            body=(
+                "Once you confirm, JobSearch keeps those exact CV and "
+                "cover-letter versions with this application. Earlier "
+                "confirmed versions stay exactly as they were and "
+                "remain available later."
+            ),
+            placement="top",
+        ),
+    ),
+    trigger="first_visit:document_workflow",
+)
+
+
 def register_default_walkthroughs() -> None:
     register_walkthrough(DASHBOARD_WALKTHROUGH)
     register_walkthrough(CANDIDATE_PROFILE_WALKTHROUGH)
     register_walkthrough(JOB_WORKFLOW_WALKTHROUGH)
+    register_walkthrough(DOCUMENT_WORKFLOW_WALKTHROUGH)

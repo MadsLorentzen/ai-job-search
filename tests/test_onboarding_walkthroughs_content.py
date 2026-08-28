@@ -102,3 +102,49 @@ def test_register_default_walkthroughs_also_registers_job_workflow():
 
     register_default_walkthroughs()
     assert get_walkthrough("job_workflow_intro") is JOB_WORKFLOW_WALKTHROUGH
+
+
+def test_document_workflow_walkthrough_has_five_steps_targeting_real_elements():
+    from product.onboarding_walkthroughs import DOCUMENT_WORKFLOW_WALKTHROUGH
+
+    assert DOCUMENT_WORKFLOW_WALKTHROUGH.walkthrough_id == "document_workflow_intro"
+    assert len(DOCUMENT_WORKFLOW_WALKTHROUGH.steps) == 5
+    targets = [step.target for step in DOCUMENT_WORKFLOW_WALKTHROUGH.steps]
+    assert targets == [
+        '.gate-four.document-finalization',
+        '.document-generate.confirm-pack',
+        '.document-kind-grid',
+        '.document-select',
+        '.confirm-documents',
+    ]
+
+
+def test_document_workflow_walkthrough_avoids_internal_vocabulary():
+    from product.onboarding_walkthroughs import DOCUMENT_WORKFLOW_WALKTHROUGH
+
+    bodies = " ".join(
+        step.title + " " + step.body for step in DOCUMENT_WORKFLOW_WALKTHROUGH.steps
+    ).lower()
+    forbidden = ["hash", "artifact", "blob", "content_id", "frozen", "pack", "snapshot"]
+    leaked = [word for word in forbidden if word in bodies]
+    assert leaked == [], f"internal vocabulary leaked into walkthrough copy: {leaked}"
+
+
+def test_document_workflow_walkthrough_explains_confirm_without_naming_immutability_jargon():
+    from product.onboarding_walkthroughs import DOCUMENT_WORKFLOW_WALKTHROUGH
+
+    confirm_step = DOCUMENT_WORKFLOW_WALKTHROUGH.steps[-1]
+    assert confirm_step.target == '.confirm-documents'
+    assert "exact" in confirm_step.body.lower()
+    assert "stay" in confirm_step.body.lower() or "remain" in confirm_step.body.lower()
+
+
+def test_register_default_walkthroughs_also_registers_document_workflow():
+    from product.onboarding import get_walkthrough
+    from product.onboarding_walkthroughs import (
+        DOCUMENT_WORKFLOW_WALKTHROUGH,
+        register_default_walkthroughs,
+    )
+
+    register_default_walkthroughs()
+    assert get_walkthrough("document_workflow_intro") is DOCUMENT_WORKFLOW_WALKTHROUGH
