@@ -60,7 +60,9 @@ export function resolveWorkspaceArtifactPath(workspace, candidate) {
   if (/^[a-zA-Z]:/.test(candidate)) fail("absolute drive");
   if (candidate.startsWith("\\\\") || candidate.startsWith("//")) fail("unc");
   if (isAbsolute(candidate)) fail("absolute");
-  const normalized = posix(normalize(candidate));
+  // Treat Windows separators as path segments on every OS so `..\\cv` cannot
+  // pass as a literal filename on Linux CI or in a packaged Linux build.
+  const normalized = posix(normalize(candidate.replace(/\\/g, "/")));
   if (normalized === ".." || normalized.startsWith("../") || normalized.split("/").includes("..")) {
     fail("traversal");
   }

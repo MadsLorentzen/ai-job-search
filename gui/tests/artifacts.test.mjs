@@ -80,6 +80,7 @@ test("preview and compare honor MIME and size bounds", async () => {
 test("resolveWorkspaceArtifactPath rejects absolute, traversal, drive, UNC, and NUL paths", () => {
   const root = workspace();
   assert.throws(() => resolveWorkspaceArtifactPath(root, join(root, "cv", "x.tex")), /absolute|escape/i);
+  assert.throws(() => resolveWorkspaceArtifactPath(root, "../cv/x.tex"), /traversal|escape/i);
   assert.throws(() => resolveWorkspaceArtifactPath(root, "..\\cv\\x.tex"), /traversal|escape/i);
   assert.throws(() => resolveWorkspaceArtifactPath(root, "C:\\\\Windows\\\\x.tex"), /absolute|drive/i);
   assert.throws(() => resolveWorkspaceArtifactPath(root, "\\\\server\\share\\x.tex"), /unc/i);
