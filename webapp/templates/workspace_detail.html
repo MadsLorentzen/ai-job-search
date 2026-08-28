@@ -2,10 +2,11 @@
 {% block title %}{{ workspace.company }} · {{ workspace.title }}{% endblock %}
 {% block content %}
 <section class="workspace-header"><div><a class="back-link" href="/">← Applications</a><p class="eyebrow">{{ workspace.company }}</p><h1>{{ workspace.title }}</h1>
-<p>Workflow status: <strong>{{ workspace.workflow_status or "Active — not drafted or submitted" }}</strong></p></div>
+<p>Workflow status: <strong>{{ workspace.workflow_status or "Active — not drafted or submitted" }}</strong></p>
+<div class="hero-actions"><button type="button" class="button secondary button-small" data-onboarding-start="job_workflow_intro">Take the tour</button></div></div>
 <div class="trust-callout"><strong>Evidence first</strong><span>Generating or reviewing material never means it was submitted.</span></div></section>
 
-<ol class="stepper" aria-label="Product workflow">
+<ol class="stepper" aria-label="Product workflow" data-onboarding-target="workspace-stepper">
 {% for key in ["job", "understanding", "fit", "application_intelligence", "review", "status"] %}{% set stage = stages[key] %}
 <li class="step {{ stage.state }}"><span>{{ loop.index }}</span><div><strong>{{ stage.label }}</strong><small>{{ stage.state_label }}</small></div></li>{% endfor %}
 </ol>
