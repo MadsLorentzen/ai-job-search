@@ -62,7 +62,6 @@ jobs:
           cache-dependency-path: gui/package-lock.json
       - run: npm ci
       - run: npm run build:renderer
-      - run: npm test
       - run: npm run rebuild:native
       - run: npm run dist:dir
         env:

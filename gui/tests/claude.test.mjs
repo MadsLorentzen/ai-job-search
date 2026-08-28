@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, realpathSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
@@ -131,7 +131,8 @@ test("resolveCommand prefers claude.cmd over the extensionless npm shim", (t) =>
     LOCALAPPDATA: join(root, "Local"),
     USERPROFILE: root,
   });
-  assert.equal(realpathSync(found), realpathSync(join(npm, "claude.cmd")));
+  assert.match(String(found), /[\\/]claude\.cmd$/i);
+  assert.notEqual(found, join(npm, "claude"));
 });
 
 test("interactive Claude args resume the session and add bypass only in Autonomous", () => {

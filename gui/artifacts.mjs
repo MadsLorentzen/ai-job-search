@@ -79,8 +79,10 @@ export function resolveWorkspaceArtifactPath(workspace, candidate) {
 
 async function assertNoLinkEscape(fs, workspace, absolutePath) {
   const root = await fs.realpath(resolve(workspace)).catch(() => resolve(workspace));
-  let current = absolutePath;
+  let current = resolve(absolutePath);
   for (let i = 0; i < 64; i += 1) {
+    const relToRoot = posix(relative(root, current));
+    if (relToRoot === ".." || relToRoot.startsWith("../") || isAbsolute(relToRoot)) break;
     let stat;
     try {
       stat = await fs.lstat(current);
@@ -93,9 +95,9 @@ async function assertNoLinkEscape(fs, workspace, absolutePath) {
       const rel = posix(relative(root, target));
       if (!rel || rel.startsWith("../") || rel === ".." || isAbsolute(rel)) fail("link escape");
     }
+    if (relToRoot === "" || current === root) break;
     const parent = dirname(current);
     if (parent === current) break;
-    if (posix(relative(root, parent)).startsWith("..") && resolve(parent) !== root) break;
     current = parent;
   }
 }
