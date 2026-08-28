@@ -102,11 +102,21 @@ def live_server(tmp_path):
     thread.join(timeout=10)
 
 
+def _dismiss_auto_triggered_job_workflow_tour(page) -> None:
+    """Since Bundle B, job_workflow_intro auto-opens on first visit to a
+    workspace page -- dismiss it via Skip so a test's own manual "Take
+    the tour" click opens a single, uncontested popover."""
+    if page.locator(".onboarding-popover").count():
+        page.get_by_role("button", name="Skip").click()
+        page.wait_for_selector(".onboarding-popover", state="detached")
+
+
 def test_job_workflow_tour_walks_all_five_real_targets_in_journey_order(live_server, page):
     page.goto(
         f"{live_server.base_url}/workspaces/{live_server.workspace_id}",
         wait_until="networkidle",
     )
+    _dismiss_auto_triggered_job_workflow_tour(page)
     page.get_by_role("button", name="Take the tour").first.click()
     page.wait_for_selector(".onboarding-popover")
     expected_titles = [
@@ -137,6 +147,7 @@ def test_job_workflow_tour_does_not_mutate_workspace_or_run_any_analysis_stage(l
     workspace_before = get_workspace(conn, live_server.workspace_id)
     conn.close()
 
+    _dismiss_auto_triggered_job_workflow_tour(page)
     page.get_by_role("button", name="Take the tour").first.click()
     page.wait_for_selector(".onboarding-popover")
     for _ in range(4):
@@ -168,6 +179,7 @@ def test_job_workflow_tour_fails_gracefully_on_a_missing_target(live_server, pag
     # Simulate a rerendered/stale page by removing the second step's real
     # target before advancing to it -- proves the mechanism against this
     # ticket's actual content, not a synthetic walkthrough.
+    _dismiss_auto_triggered_job_workflow_tour(page)
     page.get_by_role("button", name="Take the tour").first.click()
     page.wait_for_selector(".onboarding-popover")
     page.evaluate("document.getElementById('job-posting').remove()")

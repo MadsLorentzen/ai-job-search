@@ -73,7 +73,7 @@ def live_server(tmp_path):
 
 
 def test_overlay_renders_spotlight_and_popover_on_start(live_server, page):
-    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.goto(live_server.base_url + "/how-it-works", wait_until="networkidle")
     page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
     page.wait_for_selector(".onboarding-popover")
     assert page.locator(".onboarding-popover-title").inner_text() == "Dashboard"
@@ -84,7 +84,7 @@ def test_overlay_renders_spotlight_and_popover_on_start(live_server, page):
 
 
 def test_overlay_next_advances_to_step_two_and_repositions(live_server, page):
-    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.goto(live_server.base_url + "/how-it-works", wait_until="networkidle")
     page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
     page.wait_for_selector(".onboarding-popover")
     page.get_by_role("button", name="Next").click()
@@ -97,7 +97,7 @@ def test_overlay_next_advances_to_step_two_and_repositions(live_server, page):
 
 
 def test_overlay_finish_on_last_step_closes_overlay(live_server, page):
-    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.goto(live_server.base_url + "/how-it-works", wait_until="networkidle")
     page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
     page.wait_for_selector(".onboarding-popover")
     page.get_by_role("button", name="Next").click()
@@ -110,7 +110,7 @@ def test_overlay_finish_on_last_step_closes_overlay(live_server, page):
 
 
 def test_replaying_a_completed_walkthrough_reopens_it(live_server, page):
-    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.goto(live_server.base_url + "/how-it-works", wait_until="networkidle")
     page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
     page.wait_for_selector(".onboarding-popover")
     page.get_by_role("button", name="Next").click()
@@ -126,7 +126,7 @@ def test_replaying_a_completed_walkthrough_reopens_it(live_server, page):
 
 
 def test_escape_key_closes_overlay_and_restores_focus(live_server, page):
-    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.goto(live_server.base_url + "/how-it-works", wait_until="networkidle")
     page.locator('[data-onboarding-target="add-job-button"]').focus()
     page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
     page.wait_for_selector(".onboarding-popover")
@@ -138,7 +138,7 @@ def test_escape_key_closes_overlay_and_restores_focus(live_server, page):
 
 
 def test_focus_moves_into_popover_on_open(live_server, page):
-    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.goto(live_server.base_url + "/how-it-works", wait_until="networkidle")
     page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
     page.wait_for_selector(".onboarding-popover")
     assert page.evaluate(
@@ -147,7 +147,7 @@ def test_focus_moves_into_popover_on_open(live_server, page):
 
 
 def test_tab_cycles_within_popover_without_escaping_to_page(live_server, page):
-    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.goto(live_server.base_url + "/how-it-works", wait_until="networkidle")
     page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
     page.wait_for_selector(".onboarding-popover")
     focusable_count = page.evaluate(
@@ -174,7 +174,7 @@ def test_missing_target_fails_gracefully_without_breaking_the_page(live_server, 
             ),
         )
     )
-    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.goto(live_server.base_url + "/how-it-works", wait_until="networkidle")
     page.evaluate("window.Onboarding.start('overlay_missing_target_walkthrough')")
     page.wait_for_selector(".onboarding-fail-notice")
     assert page.locator(".onboarding-popover").count() == 0
@@ -184,7 +184,7 @@ def test_missing_target_fails_gracefully_without_breaking_the_page(live_server, 
 
 
 def test_dont_show_again_checkbox_skips_with_that_reason(live_server, page):
-    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.goto(live_server.base_url + "/how-it-works", wait_until="networkidle")
     page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
     page.wait_for_selector(".onboarding-popover")
     page.locator('[data-onboarding-dont-show-again]').check()
@@ -199,7 +199,7 @@ def test_dont_show_again_checkbox_skips_with_that_reason(live_server, page):
 
 
 def test_overlay_repositions_on_viewport_resize(live_server, page):
-    page.goto(live_server.base_url + "/", wait_until="networkidle")
+    page.goto(live_server.base_url + "/how-it-works", wait_until="networkidle")
     page.evaluate("window.Onboarding.start('overlay_smoke_walkthrough')")
     page.wait_for_selector(".onboarding-popover")
     before = page.locator(".onboarding-popover").bounding_box()

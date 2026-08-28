@@ -116,6 +116,12 @@ window.Onboarding = (function () {
       </div>`;
     target.scrollIntoView({block: "center", inline: "nearest"});
     _position(target, step.placement);
+    // innerHTML above destroyed whatever control previously held focus
+    // (e.g. the "Next" button that was just clicked) -- without this,
+    // focus silently falls back to <body> and Tab starts traversing the
+    // underlying page instead of the popover, breaking the focus trap on
+    // every step transition, not just on open.
+    state.popoverEl.focus();
   }
 
   function _escapeHtml(value) {

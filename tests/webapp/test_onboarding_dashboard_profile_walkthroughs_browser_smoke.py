@@ -109,8 +109,20 @@ def live_server_no_profile_yet(tmp_path):
     thread.join(timeout=10)
 
 
+def _dismiss_auto_triggered_dashboard_tour(page) -> None:
+    """Since Bundle B, dashboard_intro auto-opens on first visit to "/" --
+    dismiss it via Skip so a test's own manual "Take the tour" click opens
+    a single, uncontested popover (the button re-triggers the very same
+    walkthrough via the existing replay transition, which is what this
+    file's tests actually mean to exercise)."""
+    if page.locator(".onboarding-popover").count():
+        page.get_by_role("button", name="Skip").click()
+        page.wait_for_selector(".onboarding-popover", state="detached")
+
+
 def test_dashboard_tour_button_walks_all_four_real_targets(live_server, page):
     page.goto(live_server.base_url + "/", wait_until="networkidle")
+    _dismiss_auto_triggered_dashboard_tour(page)
     page.get_by_role("button", name="Take the tour").click()
     page.wait_for_selector(".onboarding-popover")
     expected_titles = [
@@ -133,6 +145,7 @@ def test_dashboard_tour_button_walks_all_four_real_targets(live_server, page):
 
 def test_dashboard_tour_does_not_create_or_modify_any_workspace(live_server, page):
     page.goto(live_server.base_url + "/", wait_until="networkidle")
+    _dismiss_auto_triggered_dashboard_tour(page)
     page.get_by_role("button", name="Take the tour").click()
     page.wait_for_selector(".onboarding-popover")
     for _ in range(3):
