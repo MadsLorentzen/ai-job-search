@@ -107,7 +107,7 @@ def test_job_workflow_tour_walks_all_five_real_targets_in_journey_order(live_ser
         f"{live_server.base_url}/workspaces/{live_server.workspace_id}",
         wait_until="networkidle",
     )
-    page.get_by_role("button", name="Take the tour").click()
+    page.get_by_role("button", name="Take the tour").first.click()
     page.wait_for_selector(".onboarding-popover")
     expected_titles = [
         "This is where the job stands.",
@@ -137,7 +137,7 @@ def test_job_workflow_tour_does_not_mutate_workspace_or_run_any_analysis_stage(l
     workspace_before = get_workspace(conn, live_server.workspace_id)
     conn.close()
 
-    page.get_by_role("button", name="Take the tour").click()
+    page.get_by_role("button", name="Take the tour").first.click()
     page.wait_for_selector(".onboarding-popover")
     for _ in range(4):
         page.get_by_role("button", name="Next").click()
@@ -168,7 +168,7 @@ def test_job_workflow_tour_fails_gracefully_on_a_missing_target(live_server, pag
     # Simulate a rerendered/stale page by removing the second step's real
     # target before advancing to it -- proves the mechanism against this
     # ticket's actual content, not a synthetic walkthrough.
-    page.get_by_role("button", name="Take the tour").click()
+    page.get_by_role("button", name="Take the tour").first.click()
     page.wait_for_selector(".onboarding-popover")
     page.evaluate("document.getElementById('job-posting').remove()")
     page.get_by_role("button", name="Next").click()
