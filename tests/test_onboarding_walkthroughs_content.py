@@ -148,3 +148,35 @@ def test_register_default_walkthroughs_also_registers_document_workflow():
 
     register_default_walkthroughs()
     assert get_walkthrough("document_workflow_intro") is DOCUMENT_WORKFLOW_WALKTHROUGH
+
+
+def test_every_registered_walkthrough_has_a_launch_context():
+    from product.onboarding import WALKTHROUGH_REGISTRY
+    from product.onboarding_walkthroughs import (
+        WALKTHROUGH_LAUNCH_CONTEXTS,
+        register_default_walkthroughs,
+    )
+
+    register_default_walkthroughs()
+    for walkthrough_id in (
+        "dashboard_intro", "candidate_profile_intro",
+        "job_workflow_intro", "document_workflow_intro",
+    ):
+        assert walkthrough_id in WALKTHROUGH_LAUNCH_CONTEXTS
+        assert walkthrough_id in WALKTHROUGH_REGISTRY
+
+
+def test_page_context_walkthroughs_declare_a_fixed_path():
+    from product.onboarding_walkthroughs import WALKTHROUGH_LAUNCH_CONTEXTS
+
+    assert WALKTHROUGH_LAUNCH_CONTEXTS["dashboard_intro"] == {"context": "page", "path": "/"}
+    assert WALKTHROUGH_LAUNCH_CONTEXTS["candidate_profile_intro"] == {
+        "context": "page", "path": "/profile",
+    }
+
+
+def test_workspace_context_walkthroughs_declare_no_fixed_path():
+    from product.onboarding_walkthroughs import WALKTHROUGH_LAUNCH_CONTEXTS
+
+    assert WALKTHROUGH_LAUNCH_CONTEXTS["job_workflow_intro"] == {"context": "workspace"}
+    assert WALKTHROUGH_LAUNCH_CONTEXTS["document_workflow_intro"] == {"context": "workspace"}

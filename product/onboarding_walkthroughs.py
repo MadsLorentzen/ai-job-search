@@ -250,3 +250,11 @@ def register_default_walkthroughs() -> None:
     register_walkthrough(CANDIDATE_PROFILE_WALKTHROUGH)
     register_walkthrough(JOB_WORKFLOW_WALKTHROUGH)
     register_walkthrough(DOCUMENT_WORKFLOW_WALKTHROUGH)
+
+
+WALKTHROUGH_LAUNCH_CONTEXTS: dict[str, dict[str, str]] = {
+    "dashboard_intro": {"context": "page", "path": "/"},
+    "candidate_profile_intro": {"context": "page", "path": "/profile"},
+    "job_workflow_intro": {"context": "workspace"},
+    "document_workflow_intro": {"context": "workspace"},
+}
