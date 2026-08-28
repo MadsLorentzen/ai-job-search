@@ -1221,6 +1221,7 @@ def test_friendly_completion_counts_visible_when_material_incomplete(page, live_
     assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
     assert page.get_by_text("0 of 2 required CV bullets").first.is_visible()
     assert page.get_by_text("No decisions are pending, but the application material is not yet usable.").is_visible()
+    assert page.get_by_text("No decisions need your attention.", exact=True).count() == 0
     assert page.get_by_role("link", name="Review your profile").is_visible()
     assert page.get_by_role("link", name="Review job evidence").is_visible()
     assert page.get_by_role("button", name="Rerun Application Intelligence").is_visible()
