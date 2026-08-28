@@ -108,7 +108,7 @@ _COMPLETION_ISSUE_MESSAGES: dict[str, Any] = {
     ),
     MISSING_CV_BULLET: lambda result: "At least one approved CV bullet is required.",
     INSUFFICIENT_CV_WORDS: lambda result: (
-        f"Your approved CV wording is {result['cv_word_count']} words â€” it needs "
+        f"Your approved CV wording is {result['cv_word_count']} words — it needs "
         f"at least {MIN_CV_WORDS}."
     ),
     INSUFFICIENT_COVER_LETTER_PARAGRAPHS: lambda result: (
@@ -116,7 +116,7 @@ _COMPLETION_ISSUE_MESSAGES: dict[str, Any] = {
         f"{MIN_COVER_LETTER_PARAGRAPHS} required cover-letter paragraphs found."
     ),
     INSUFFICIENT_COVER_LETTER_WORDS: lambda result: (
-        f"Your approved cover letter is {result['cover_letter_word_count']} words â€” "
+        f"Your approved cover letter is {result['cover_letter_word_count']} words — "
         f"it needs at least {MIN_COVER_LETTER_WORDS}."
     ),
 }
@@ -183,6 +183,7 @@ def _friendly_completion_issues(
     return [
         _COMPLETION_ISSUE_MESSAGES[code](review_completion)
         for code in review_completion.get("issues", [])
+        if code in _COMPLETION_ISSUE_MESSAGES
     ]
 
 

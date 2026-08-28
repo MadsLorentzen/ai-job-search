@@ -1219,7 +1219,13 @@ def test_friendly_completion_counts_visible_when_material_incomplete(page, live_
     _resolve_all_pending_reviews(page, "omit_from_positioning")
 
     assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
-    assert page.get_by_text("0 of 2 required CV bullets").is_visible()
+    assert page.get_by_text("0 of 2 required CV bullets").first.is_visible()
+    assert page.get_by_text("No decisions are pending, but the application material is not yet usable.").is_visible()
+    assert page.get_by_role("link", name="Review your profile").is_visible()
+    assert page.get_by_role("link", name="Review job evidence").is_visible()
+    assert page.get_by_role("button", name="Rerun Application Intelligence").is_visible()
+    assert page.get_by_text("insufficient_cv_units", exact=True).count() == 0
+    assert page.get_by_text("—", exact=False).count() > 0
 
 
 def test_how_it_works_page_reachable_from_nav_with_pipeline_and_glossary(
@@ -1324,7 +1330,7 @@ def test_historical_pack_and_incomplete_current_material_never_read_as_contradic
         "Reviewed material must be completion-ready before AI documents can be generated."
     ).is_visible()
     assert page.get_by_text("INCOMPLETE", exact=True).is_visible()
-    assert page.get_by_text("required CV bullets").is_visible()
+    assert page.get_by_text("required CV bullets").first.is_visible()
 
     # 4. The confirm-pack button stays disabled — no automatic replacement.
     assert page.locator("button.confirm-pack").is_disabled()

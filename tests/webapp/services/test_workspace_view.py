@@ -237,7 +237,7 @@ def test_friendly_completion_issues_report_exact_counts(tmp_path, monkeypatch):
     assert any("0 of 2 required CV bullets" in message for message in friendly)
 
 
-def test_unmapped_completion_issue_code_fails_loudly_instead_of_disappearing():
+def test_unmapped_completion_issue_code_is_omitted_from_user_copy():
     from webapp.services.workspace_view import _friendly_completion_issues
 
     review_completion = {
@@ -247,14 +247,7 @@ def test_unmapped_completion_issue_code_fails_loudly_instead_of_disappearing():
         "qualifying_cover_letter_paragraph_count": 0,
         "cover_letter_word_count": 0,
     }
-    try:
-        _friendly_completion_issues(review_completion)
-    except KeyError:
-        pass
-    else:
-        raise AssertionError(
-            "an unmapped issue code was silently dropped instead of raising"
-        )
+    assert _friendly_completion_issues(review_completion) == []
 
 
 def test_historical_pack_with_incomplete_current_material_flag_true_when_both_hold(
