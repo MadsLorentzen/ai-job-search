@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Help · Walkthroughs · Job Search Workspace{% endblock %}
+{% block content %}
+<section class="hero compact"><div><p class="eyebrow">Help</p><h1>Walkthroughs</h1>
+<p>Short guided tours for each part of JobSearch. Replay any of them whenever you want a refresher -- each one runs on the real page it teaches.</p></div></section>
+
+<div class="table-wrap"><table>
+  <thead><tr><th>Walkthrough</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for item in walkthrough_statuses %}<tr>
+    <td><strong>{{ item.title }}</strong><small>{{ item.step_count }} step{{ 's' if item.step_count != 1 else '' }}</small></td>
+    <td>{% if item.status == 'completed' %}<span class="badge complete">Completed</span>
+      {% elif item.status == 'in_progress' %}<span class="badge review">In progress</span>
+      {% elif item.status == 'skipped' %}<span class="badge neutral">Skipped</span>
+      {% else %}<span class="badge neutral">Not started</span>{% endif %}</td>
+    <td><a class="button button-small secondary" href="{{ replay_links[item.walkthrough_id] }}">{% if item.status in ('completed', 'skipped') %}Replay{% elif item.status == 'in_progress' %}Resume{% else %}Start{% endif %}</a></td>
+  </tr>{% endfor %}
+  </tbody>
+</table></div>
+{% if not walkthrough_statuses %}<section class="empty-state"><h2>No walkthroughs available yet</h2></section>{% endif %}
+{% endblock %}

@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Applications · Job Search Workspace{% endblock %}
+{% block onboarding_autotrigger %} data-onboarding-autotrigger="dashboard_intro"{% endblock %}
+{% block onboarding_valid_replay %} data-onboarding-valid-replay="dashboard_intro"{% endblock %}
 {% block content %}
+{% if pending_workspace_replay %}<div class="onboarding-replay-prompt" role="status">
+  {% if workspaces %}Choose a job below to replay this walkthrough.
+  {% else %}This walkthrough becomes available once you have a job to work with. <a href="/new-job">Add a job</a> to get started.{% endif %}
+</div>{% endif %}
 <section class="hero compact" data-onboarding-target="dashboard-hero">
   <div><p class="eyebrow">Application command centre</p><h1>Your job pipeline</h1>
   <p>Evidence, decisions, and real-world status remain separate and traceable.</p></div>
@@ -17,7 +23,7 @@
 {% for item in filters %}<a href="/?filter={{ item }}" class="filter {% if filter == item %}active{% endif %}">{{ item | replace('_', ' ') | title }}</a>{% endfor %}
 </nav>
 {% if workspaces %}
-<div class="table-wrap"><table>
+<div class="table-wrap" data-onboarding-replay-target><table>
   <thead><tr><th>Company / role</th><th>Product stage</th><th>Next action</th><th>Fit</th><th>Recommendation</th><th>Trust state</th><th>Application status</th><th>Updated</th></tr></thead>
   <tbody>{% for ws in workspaces %}<tr>
     <td><a class="row-link" href="/workspaces/{{ ws.id }}">{{ ws.company }}<small>{{ ws.title }}</small></a></td>
@@ -32,4 +38,11 @@
   </tr>{% endfor %}</tbody>
 </table></div>
 {% else %}<section class="empty-state"><h2>No {{ filter }} applications</h2><p>Add your first job posting to get started, or choose another filter above.</p><a class="button" href="/new-job">Add your first job</a></section>{% endif %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.Onboarding && window.Onboarding.appendReplayParamToLinks) {
+      window.Onboarding.appendReplayParamToLinks('[data-onboarding-replay-target] a.row-link');
+    }
+  });
+</script>
 {% endblock %}

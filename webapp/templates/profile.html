@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block title %}My Evidence Profile · Job Search Workspace{% endblock %}
+{% block onboarding_autotrigger %}{% if not setup_required %} data-onboarding-autotrigger="candidate_profile_intro"{% endif %}{% endblock %}
+{% block onboarding_valid_replay %} data-onboarding-valid-replay="candidate_profile_intro"{% endblock %}
 {% macro field_control(name, value='', kind='text') -%}
   <label>{{ name | replace('_', ' ') | title }}
   {% if name == 'details' %}<textarea name="{{ name }}" rows="5">{{ value | join('\n') if value is iterable and value is not string else value }}</textarea>

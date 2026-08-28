@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ workspace.company }} · {{ workspace.title }}{% endblock %}
+{% block onboarding_autotrigger %} data-onboarding-autotrigger="job_workflow_intro"{% endblock %}
+{% block onboarding_valid_replay %} data-onboarding-valid-replay="{{ onboarding_replay_expected or 'job_workflow_intro' }}"{% endblock %}
 {% block content %}
 <section class="workspace-header"><div><a class="back-link" href="/">← Applications</a><p class="eyebrow">{{ workspace.company }}</p><h1>{{ workspace.title }}</h1>
 <p>Workflow status: <strong>{{ workspace.workflow_status or "Active — not drafted or submitted" }}</strong></p>
