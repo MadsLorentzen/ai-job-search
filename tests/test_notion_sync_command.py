@@ -11,6 +11,8 @@ import sys
 import unittest
 from pathlib import Path
 
+from tests.command_text import title_line
+
 try:
     import yaml  # noqa: F401 - only probing availability for the lint integration test
     _HAVE_YAML = True
@@ -25,7 +27,7 @@ GITIGNORE = REPO / ".gitignore"
 class NotionSyncCommandSpec(unittest.TestCase):
     def test_command_file_exists_with_lint_compliant_header(self):
         self.assertTrue(COMMAND.is_file(), "command spec missing")
-        first_line = COMMAND.read_text(encoding="utf-8").splitlines()[0]
+        first_line = title_line(COMMAND.read_text(encoding="utf-8"))
         self.assertTrue(
             first_line.startswith("# /notion-sync"),
             f"header must start with '# /notion-sync' (lint_skills.py enforces it), got: {first_line!r}",
