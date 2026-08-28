@@ -6,6 +6,15 @@ import test from "node:test";
 import { createConversationStore } from "../conversation-store.mjs";
 import { createSessionRuntime } from "../session-runtime.mjs";
 
+async function waitUntil(predicate, timeoutMs = 1000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error("timed out waiting for session-runtime condition");
+}
+
 function createFakeAdapter() {
   const sent = [];
   const waiters = [];
@@ -102,7 +111,7 @@ test("persists an event before notifying subscribers", async () => {
       session_id: "s1",
       event: { type: "content_block_delta", delta: { type: "text_delta", text: "Hi" } },
     });
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await waitUntil(() => order.includes("notify"));
     assert.deepEqual(order.slice(0, 2), ["persist", "notify"]);
     assert.ok(store.eventsAfter(conversation.id, 0).length >= 1);
   });
@@ -118,7 +127,7 @@ test("replays events after a sequence cursor", async () => {
       type: "stream_event",
       event: { type: "content_block_delta", delta: { type: "text_delta", text: "B" } },
     });
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await waitUntil(() => runtime.eventsAfter(0).length >= 2);
     const replay = runtime.eventsAfter(1);
     assert.equal(replay.length, 1);
     assert.equal(replay[0].payload.text, "B");
