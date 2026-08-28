@@ -11,6 +11,8 @@ import sys
 import unittest
 from pathlib import Path
 
+from tests.command_text import title_line
+
 try:
     import yaml  # noqa: F401 - only probing availability for the lint integration test
     _HAVE_YAML = True
@@ -32,7 +34,7 @@ class HtmlReportCommandFileTests(unittest.TestCase):
     def test_command_file_starts_with_correct_header(self):
         """lint_skills.py rejects command files that don't start with '# /<name>'."""
         text = COMMAND_FILE.read_text(encoding="utf-8")
-        first_line = text.lstrip().splitlines()[0]
+        first_line = title_line(text)
         self.assertTrue(
             first_line.startswith("# /html-report"),
             f"Command file must start with '# /html-report', got: {first_line!r}",
