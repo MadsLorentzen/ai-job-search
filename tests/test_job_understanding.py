@@ -588,14 +588,15 @@ class ReviewSeparationTests(Ticket6TestCase):
                 "quote": "Applicants need five years of experience.",
             }
         ]
-        self.assert_invalid(
-            lambda: extract_job_understanding(
-                snapshot(),
-                DeterministicFakeProvider(candidate),
-                "extract-hallucinated-suggestion",
-            ),
-            "does not occur exactly",
+        result = extract_job_understanding(
+            snapshot(),
+            DeterministicFakeProvider(candidate),
+            "extract-hallucinated-suggestion",
         )
+        self.assertEqual(result["suggestions"], [])
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+        self.assertEqual(len(result["warnings"]), 1)
+        self.assertNotIn("Five years", result["warnings"][0])
 
     def test_hallucinated_ambiguous_statement_is_rejected(self):
         candidate = empty_candidate()
@@ -607,14 +608,15 @@ class ReviewSeparationTests(Ticket6TestCase):
                 "quote": "Regular international travel may be required.",
             }
         ]
-        self.assert_invalid(
-            lambda: extract_job_understanding(
-                snapshot(),
-                DeterministicFakeProvider(candidate),
-                "extract-hallucinated-ambiguity",
-            ),
-            "does not occur exactly",
+        result = extract_job_understanding(
+            snapshot(),
+            DeterministicFakeProvider(candidate),
+            "extract-hallucinated-ambiguity",
         )
+        self.assertEqual(result["ambiguous_statements"], [])
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+        self.assertEqual(len(result["warnings"]), 1)
+        self.assertNotIn("international travel", result["warnings"][0])
 
     def test_repeated_review_quote_without_occurrence_is_dropped(self):
         candidate = empty_candidate()
@@ -701,24 +703,56 @@ class UntrustedCandidateTests(Ticket6TestCase):
                     "occurrence",
                 )
 
-    def test_hallucinated_quote_is_rejected(self):
-        candidate = one_item("Five years of experience required.")
-        self.assert_invalid(
-            lambda: extract_job_understanding(
-                snapshot(), DeterministicFakeProvider(candidate), "extract-hallucination"
-            ),
-            "does not occur exactly",
+    def test_one_nonexistent_quote_does_not_destroy_valid_grounded_results(self):
+        candidate = ready_candidate()
+        candidate["items"].append(
+            {
+                "proposal_id": "proposal-ungrounded",
+                "category": "requirements",
+                "kind": "required",
+                "quote": "Five years of experience required.",
+                "certainty": "explicit",
+            }
         )
+        baseline = extract_job_understanding(
+            snapshot(), DeterministicFakeProvider(ready_candidate()), "extract-baseline"
+        )
+        result = extract_job_understanding(
+            snapshot(), DeterministicFakeProvider(candidate), "extract-partial-grounding"
+        )
+        for category in EVIDENCE_CATEGORIES:
+            self.assertEqual(result[category], baseline[category])
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+        self.assertEqual(len(result["warnings"]), 1)
+        self.assertNotIn("Five years", result["warnings"][0])
 
-    def test_invalid_occurrence_is_rejected(self):
+    def test_nonexistent_quote_is_rejected_into_a_controlled_result(self):
+        candidate = one_item("Five years of experience required.")
+        result = extract_job_understanding(
+            snapshot(), DeterministicFakeProvider(candidate), "extract-hallucination"
+        )
+        self.assertEqual(result["requirements"], [])
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+        self.assertEqual(len(result["warnings"]), 1)
+        self.assertNotIn("Five years", result["warnings"][0])
+
+    def test_whitespace_normalized_equivalent_is_not_accepted(self):
+        candidate = one_item("Python  is required.")
+        result = extract_job_understanding(
+            snapshot(), DeterministicFakeProvider(candidate), "extract-no-normalization"
+        )
+        self.assertEqual(result["requirements"], [])
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+
+    def test_invalid_occurrence_is_rejected_without_aborting_result(self):
         candidate = one_item("Repeated phrase.")
         candidate["items"][0]["occurrence"] = 7
-        self.assert_invalid(
-            lambda: extract_job_understanding(
-                snapshot(), DeterministicFakeProvider(candidate), "extract-bad-occurrence"
-            ),
-            "outside exact quote matches",
+        result = extract_job_understanding(
+            snapshot(), DeterministicFakeProvider(candidate), "extract-bad-occurrence"
         )
+        self.assertEqual(result["requirements"], [])
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+        self.assertEqual(len(result["warnings"]), 1)
 
     def test_duplicate_grounded_extraction_is_rejected(self):
         candidate = one_item()

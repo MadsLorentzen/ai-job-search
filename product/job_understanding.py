@@ -391,9 +391,8 @@ def _build_result(
     )
     accepted_ids: set[str] = set()
     for proposal in candidate["items"]:
-        citation = _resolve_quote(request["source"], proposal["quote"], proposal.get("occurrence"))
+        citation = _ground_proposal(request["source"], proposal, rejection_counts)
         if citation is None:
-            _count_rejection(rejection_counts, "ambiguous_quote_occurrence")
             continue
         if proposal["certainty"] != "explicit":
             result["suggestions"].append(
@@ -434,11 +433,8 @@ def _build_result(
 
     for field in ("suggestions", "ambiguous_statements"):
         for proposal in candidate[field]:
-            citation = _resolve_quote(
-                request["source"], proposal["quote"], proposal.get("occurrence")
-            )
+            citation = _ground_proposal(request["source"], proposal, rejection_counts)
             if citation is None:
-                _count_rejection(rejection_counts, "ambiguous_quote_occurrence")
                 continue
             result[field].append(
                 _review_record(proposal, proposal["reason"], citation, request["source"])
@@ -523,13 +519,11 @@ def _select_source(job_snapshot: dict[str, Any], policy: dict[str, Any]) -> dict
 
 def _resolve_quote(
     source: dict[str, Any], quote: str, occurrence: int | None
-) -> dict[str, Any] | None:
+) -> tuple[dict[str, Any] | None, str | None]:
     text = source["text"]
     starts = _exact_occurrence_starts(text, quote)
     if not starts:
-        raise JobUnderstandingValidationError(
-            "$.candidate: proposed quote does not occur exactly in selected source"
-        )
+        return None, "quote_not_exact"
     if occurrence is not None and (
         isinstance(occurrence, bool)
         or not isinstance(occurrence, int)
@@ -540,22 +534,23 @@ def _resolve_quote(
         canonical_occurrence = 0
     else:
         if occurrence is None:
-            return None
+            return None, "ambiguous_quote_occurrence"
         if occurrence >= len(starts):
-            raise JobUnderstandingValidationError(
-                "$.candidate: occurrence is outside exact quote matches"
-            )
+            return None, "invalid_quote_occurrence"
         canonical_occurrence = occurrence
     start = starts[canonical_occurrence]
     end = start + len(quote)
-    return {
-        "source_field": source["field"],
-        "source_content_id": source["content_id"],
-        "start": start,
-        "end": end,
-        "quote": quote,
-        "occurrence": canonical_occurrence,
-    }
+    return (
+        {
+            "source_field": source["field"],
+            "source_content_id": source["content_id"],
+            "start": start,
+            "end": end,
+            "quote": quote,
+            "occurrence": canonical_occurrence,
+        },
+        None,
+    )
 
 
 def _exact_occurrence_starts(text: str, quote: str) -> list[int]:
@@ -594,6 +589,21 @@ def _review_record(
     return record
 
 
+def _ground_proposal(
+    source: dict[str, Any],
+    proposal: dict[str, Any],
+    rejection_counts: dict[str, int],
+) -> dict[str, Any] | None:
+    """Resolve one proposal exactly or record a bounded local rejection."""
+
+    citation, rejection_reason = _resolve_quote(
+        source, proposal["quote"], proposal.get("occurrence")
+    )
+    if rejection_reason is not None:
+        _count_rejection(rejection_counts, rejection_reason)
+    return citation
+
+
 def _count_rejection(counts: dict[str, int], reason: str) -> None:
     counts[reason] = counts.get(reason, 0) + 1
 
@@ -607,6 +617,18 @@ def _aggregated_rejection_warnings(counts: dict[str, int]) -> list[str]:
         warnings.append(
             f"{ambiguous_count} provider proposal(s) were not retained because "
             "the exact quote occurrence was ambiguous."
+        )
+    not_exact_count = counts.get("quote_not_exact", 0)
+    if not_exact_count:
+        warnings.append(
+            f"{not_exact_count} provider proposal(s) were not retained because "
+            "their quoted text did not occur exactly in the selected source."
+        )
+    invalid_occurrence_count = counts.get("invalid_quote_occurrence", 0)
+    if invalid_occurrence_count:
+        warnings.append(
+            f"{invalid_occurrence_count} provider proposal(s) were not retained because "
+            "their occurrence did not identify an exact quote match."
         )
     return warnings
 

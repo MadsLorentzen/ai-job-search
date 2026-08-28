@@ -379,13 +379,16 @@ class OpenAISchemaTranslationTests(unittest.TestCase):
 
     def test_wire_projection_does_not_weaken_local_citation_grounding(self):
         instance, client = provider([response(candidate("fabricated requirement"))])
-        with self.assertRaises(JobUnderstandingValidationError):
-            extract_job_understanding(
-                snapshot(),
-                instance,
-                "projection-grounding",
-                requested_categories=["requirements"],
-            )
+        result = extract_job_understanding(
+            snapshot(),
+            instance,
+            "projection-grounding",
+            requested_categories=["requirements"],
+        )
+        self.assertEqual(result["requirements"], [])
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+        self.assertEqual(len(result["warnings"]), 1)
+        self.assertNotIn("fabricated requirement", result["warnings"][0])
         self.assertEqual(len(client.responses.calls), 1)
 
 
@@ -667,10 +670,13 @@ class OpenAIProviderTests(unittest.TestCase):
 
     def test_ungrounded_quote_is_rejected_locally_without_model_retry(self):
         instance, client = provider([response(candidate("fabricated requirement"))])
-        with self.assertRaises(JobUnderstandingValidationError):
-            extract_job_understanding(
-                snapshot(), instance, "invalid-grounding", requested_categories=["requirements"]
-            )
+        result = extract_job_understanding(
+            snapshot(), instance, "invalid-grounding", requested_categories=["requirements"]
+        )
+        self.assertEqual(result["requirements"], [])
+        self.assertEqual(result["status"], "NEEDS_REVIEW")
+        self.assertEqual(len(result["warnings"]), 1)
+        self.assertNotIn("fabricated requirement", result["warnings"][0])
         self.assertEqual(len(client.responses.calls), 1)
 
     def test_successful_provider_integrates_with_normal_ticket_6_result(self):
