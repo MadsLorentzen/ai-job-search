@@ -18,3 +18,7 @@
 .onboarding-fail-notice button{margin-left:8px;appearance:none;border:0;background:transparent;color:var(--green);font-weight:700;cursor:pointer;padding:0}
 @media(max-width:640px){.onboarding-popover{left:12px!important;right:12px;max-width:none;width:calc(100vw - 24px)}}
 .hero-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.onboarding-why-seeing-this{margin:0 0 12px;font-size:12px;color:var(--muted)}
+.onboarding-why-seeing-this summary{cursor:pointer;font-weight:600;color:var(--ink)}
+.onboarding-why-seeing-this p{margin:6px 0 0}
+.onboarding-replay-prompt{background:var(--amber-soft,#fff1c9);color:#664400;padding:12px 16px;border-radius:10px;margin-bottom:16px}

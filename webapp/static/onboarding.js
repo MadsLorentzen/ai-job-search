@@ -1,6 +1,7 @@
 window.Onboarding = (function () {
   let state = null; // {walkthroughId, definition, status, popoverEl, backdropEl, spotlightEl}
   let previouslyFocusedEl = null;
+  let openedAutomatically = false;
 
   async function apiCall(url, options) {
     const response = await fetch(url, options);
@@ -98,6 +99,13 @@ window.Onboarding = (function () {
       <p class="onboarding-popover-progress">Step ${index + 1} of ${total}</p>
       <h2 class="onboarding-popover-title" id="onboarding-popover-title">${_escapeHtml(step.title)}</h2>
       <p class="onboarding-popover-body" id="onboarding-popover-body">${_escapeHtml(step.body)}</p>
+      ${openedAutomatically ? `
+      <details class="onboarding-why-seeing-this">
+        <summary>Why am I seeing this?</summary>
+        <p>This is a first-use guide for this feature. You can skip it any
+        time. Once you finish or skip it, it won't interrupt you again --
+        you can always replay it later from Help &rarr; Walkthroughs.</p>
+      </details>` : ""}
       <div class="onboarding-popover-controls">
         <div class="onboarding-popover-controls-primary">
           ${index > 0 ? '<button type="button" class="button secondary" data-onboarding-action="back">Back</button>' : ""}
@@ -156,6 +164,7 @@ window.Onboarding = (function () {
     const walkthroughId = state.walkthroughId;
     _teardownDom();
     state = null;
+    openedAutomatically = false;
     apiCall(`/api/onboarding/walkthroughs/${walkthroughId}/interrupt`, {method: "POST"})
       .catch(() => {});
     _showFailNotice();
@@ -265,10 +274,61 @@ window.Onboarding = (function () {
     const restoreTarget = previouslyFocusedEl;
     state = null;
     previouslyFocusedEl = null;
+    openedAutomatically = false;
     if (restoreTarget && document.body.contains(restoreTarget)) {
       restoreTarget.focus();
     }
   }
 
-  return {start};
+  function _consumeReplayParam() {
+    const params = new URLSearchParams(window.location.search);
+    const replayId = params.get("onboarding_replay");
+    if (!replayId) return null;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("onboarding_replay");
+    window.history.replaceState({}, "", url.toString());
+    return replayId;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const replayId = _consumeReplayParam();
+    if (replayId) {
+      const validReplayId = document.body.dataset.onboardingValidReplay;
+      if (replayId === validReplayId) {
+        start(replayId);
+      }
+      // An id present but not valid for this page fails closed silently
+      // -- the parameter is already stripped above, so a reload will not
+      // retry it, and no walkthrough starts on a page it wasn't authored
+      // for.
+      return;
+    }
+
+    const autotriggerId = document.body.dataset.onboardingAutotrigger;
+    if (!autotriggerId) return;
+    apiCall(`/api/onboarding/walkthroughs/${autotriggerId}`)
+      .then((status) => {
+        if (status.status !== "not_started") return;
+        openedAutomatically = true;
+        return start(autotriggerId);
+      })
+      .catch(() => {
+        // A failed status fetch must never block the page -- silently
+        // skip auto-triggering rather than surface an error the user
+        // did not ask to see.
+      });
+  });
+
+  function appendReplayParamToLinks(selector) {
+    const params = new URLSearchParams(window.location.search);
+    const replayId = params.get("onboarding_replay");
+    if (!replayId) return;
+    document.querySelectorAll(selector).forEach((link) => {
+      const url = new URL(link.href, window.location.href);
+      url.searchParams.set("onboarding_replay", replayId);
+      link.href = url.toString();
+    });
+  }
+
+  return {start, appendReplayParamToLinks};
 })();
