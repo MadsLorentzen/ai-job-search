@@ -78,7 +78,7 @@ export function resolveWorkspaceArtifactPath(workspace, candidate) {
 }
 
 async function assertNoLinkEscape(fs, workspace, absolutePath) {
-  const root = resolve(workspace);
+  const root = await fs.realpath(resolve(workspace)).catch(() => resolve(workspace));
   let current = absolutePath;
   for (let i = 0; i < 64; i += 1) {
     let stat;
