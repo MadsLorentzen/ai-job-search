@@ -15,9 +15,9 @@ per-file diff commands.
 
 ### Fixed
 
-- **`/scrape` now persists each posting's publication date** - Step 2's contract guarantees a
+- **`/scrape` now persists each posting's publication date** (#390) - Step 2's contract guarantees a
   `date` on every portal CLI's search output (CI enforces it in `test_scrape_contract.py`) and
-  Step 3 uses that date to scope a run to the last 14 days, but Step 4's `seen_jobs.json` schema
+  Step 1b uses that date to scope a run to the last 14 days, but Step 4's `seen_jobs.json` schema
   stored no posting date at all: `first_seen` is when the scraper saw an entry, not when the
   employer posted it. The freshness window was therefore unauditable the moment a run ended, and
   `/rank` - which reads the stored entry, not the run - had no age signal to weigh. A

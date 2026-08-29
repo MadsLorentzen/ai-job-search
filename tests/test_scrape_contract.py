@@ -93,11 +93,11 @@ class SeenJobsPostingDateTests(unittest.TestCase):
     """The posting date Step 2 guarantees must survive into Step 4's storage.
 
     Step 2's contract promises a `date` on every portal CLI's search output and
-    the test above keeps every CLI honest about emitting it. Step 3 then uses
+    the test above keeps every CLI honest about emitting it. Step 1b then uses
     that date to scope the run to the last 14 days - and Step 4's schema drops
     it. `first_seen` records when this scraper first saw an entry, not when the
     employer posted it, so once the run ends nothing can tell a posting
-    published yesterday from one published two years ago: the Step 3 window is
+    published yesterday from one published two years ago: the Step 1b window is
     unauditable and /rank has no freshness signal to weigh.
 
     That failure landed for real: a freehire-search posting dated 2024-05-13 was
