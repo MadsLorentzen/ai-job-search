@@ -10,7 +10,6 @@ Download **Job Search Desk** from [Releases](https://github.com/iLevyTate/ai-job
 | --- | --- |
 | Windows | `JobSearchDesk-*-win-x64.exe` (one-click NSIS) or the portable `.exe` |
 | macOS Apple Silicon | `JobSearchDesk-*-mac-arm64.dmg` |
-| macOS Intel | `JobSearchDesk-*-mac-x64.dmg` |
 | Linux | `JobSearchDesk-*-linux-x64.AppImage` |
 
 Then:

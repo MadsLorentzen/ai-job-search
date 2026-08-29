@@ -184,7 +184,7 @@ export async function createWorkspace(dest, env = process.env) {
   };
 }
 
-const COMMON_WORKSPACE_NAMES = ["ai-job-search", "ai-job-search-personal"];
+const COMMON_WORKSPACE_NAMES = ["ai-job-search"];
 
 export function platformLabel(platform = process.platform) {
   if (platform === "win32") return "Windows";

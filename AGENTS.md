@@ -21,12 +21,12 @@ To prevent duplication and configuration drift across different AI agent framewo
 ## Learned User Preferences
 
 - Extend the existing Claude/Cowork job-search architecture instead of adding parallel frameworks; read existing files fully before changing them.
-- Never push personal profile, tailored CVs, or autofill answers to a public remote; share only the public US-framework fork.
-- When pulling upstream, keep US/North American search defaults; do not blind-sync the public fork.
+- Never commit or push a filled-in candidate profile, tailored CVs, or autofill answers to a public remote. Keep those in a private workspace.
+- When pulling upstream, keep US/North American search defaults; do not blind-sync Danish or EU-only defaults.
 - Keep the `gui/` desk a polished, full CLI-equivalent conversation in the browser, not a thin command launcher.
 
 ## Learned Workspace Facts
 
-- This workspace is a US-market fork of MadsLorentzen/ai-job-search: US boards and English defaults; Danish portal CLIs may remain in-tree but disabled.
-- Personal profile and application files belong on the private `personal` branch/remote; `origin/master` is the shareable North American framework.
+- This repository is a US-market fork of MadsLorentzen/ai-job-search: US boards and English defaults; Danish portal CLIs may remain in-tree but disabled.
+- `CLAUDE.md` and the `01-*.md` skill files in this repo are placeholders until a user runs `/setup` locally.
 - The optional Chrome desk lives in `gui/` and starts with `node gui/server.mjs` on macOS, Windows, and Linux (localhost only; Claude Code with skip-permissions). The installable Job Search Desk from GitHub Releases is the same desk: one-click start, official Claude Code install if missing, `claude auth login --claudeai` for the Chrome / claude.ai subscription.

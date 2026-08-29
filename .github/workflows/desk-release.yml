@@ -44,9 +44,6 @@ jobs:
           - os: macos-latest
             label: macOS arm64
             args: --mac --arm64
-          - os: macos-13
-            label: macOS x64
-            args: --mac --x64
           - os: ubuntu-latest
             label: Linux x64
             args: --linux --x64

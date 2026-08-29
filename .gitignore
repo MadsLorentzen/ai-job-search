@@ -62,6 +62,9 @@ Thumbs.db
 # Memory files (Claude Code user-specific)
 .claude/projects/
 
+# Desk local notes and conversation store (per-user, never share)
+.claude/desk/
+
 # Skills lock (auto-generated)
 skills-lock.json
 
@@ -78,8 +81,6 @@ cv/*.txt
 cover_letters/cover_*.*
 cover_letters/Cover_*.*
 !cover_letters/cover_example.tex
-cv/Ben_Kennedy_*.*
-cover_letters/Ben_Kennedy_*.*
 
 # documents/ subfolder contents are personal — only README and folder structure are tracked
 documents/cv/**

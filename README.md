@@ -18,7 +18,7 @@
   <a href="https://github.com/iLevyTate/ai-job-search/releases/latest"><img src="https://img.shields.io/github/v/release/iLevyTate/ai-job-search?label=Job%20Search%20Desk" alt="Latest Job Search Desk release"></a>
 </p>
 
-US boards, English defaults, and an installable **[Job Search Desk](https://github.com/iLevyTate/ai-job-search/releases/latest)** for Windows, macOS (Apple Silicon and Intel), and Linux. Built on [Claude Code](https://claude.com/claude-code). Open the Desk or clone the repo, fill in your profile, and let Claude evaluate postings, tailor your CV, write cover letters, and prep interviews.
+US boards, English defaults, and an installable **[Job Search Desk](https://github.com/iLevyTate/ai-job-search/releases/latest)** for Windows, macOS (Apple Silicon), and Linux. Built on [Claude Code](https://claude.com/claude-code). Open the Desk or clone the repo, fill in your profile, and let Claude evaluate postings, tailor your CV, write cover letters, and prep interviews.
 
 This is a North American fork of [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search). The upstream template remains the methodology source; this repo is the shareable US-market starting point.
 
@@ -171,7 +171,6 @@ If you would rather work in a window than the Claude Code TTY, install **Job Sea
 | --- | --- |
 | Windows | `JobSearchDesk-*-win-x64.exe` (one-click NSIS) or `*-portable.exe` |
 | macOS Apple Silicon | `JobSearchDesk-*-mac-arm64.dmg` |
-| macOS Intel | `JobSearchDesk-*-mac-x64.dmg` |
 | Linux | `JobSearchDesk-*-linux-x64.AppImage` |
 
 Native Chat is the default. The Terminal tab resumes the same Claude conversation. Files/Artifacts previews generated documents. Autofill pauses for Continue or Cancel and never submits. Open CLI still launches Claude Code in the same folder. Run the installer; Windows adds Start Menu and Desktop shortcuts and opens the app when setup finishes. Open a job-search folder or create a new copy of this public US-market repo (Git is optional). The desk opens the conversation when you are already signed in. It only asks you to log in to Claude Code when `claude auth status` reports you are signed out. If Claude Code is missing, the app installs it, then uses the same claude.ai login you already use in Chrome.
