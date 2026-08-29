@@ -158,9 +158,18 @@ If a command still uses `pdftotext -layout`, it must pass `-enc UTF-8` as well. 
 ```bash
 gh repo fork MadsLorentzen/ai-job-search --clone
 cd ai-job-search
+gh repo set-default <your-github-username>/ai-job-search
 ```
 
 Or manually: fork on GitHub, then clone your fork.
+
+> **The `set-default` line is not optional.** `gh repo fork --clone` sets the
+> **upstream** repo as gh's default repository ("The `upstream` remote will be set as
+> the default remote repository" — `gh repo fork --help`), and gh uses the default for
+> **creating issues and PRs**. Without it, any later `gh issue create` run from this
+> clone — by you or by an agent you have asked to track your applications — silently
+> files on the upstream **public** tracker, publishing whatever the issue contains
+> under your GitHub identity, on a repo where you cannot delete it (#389).
 
 > **Before you go further: forks are public.** GitHub cannot make a fork of a public
 > repository private, and `/setup` (section 6) writes your personal data into **tracked**

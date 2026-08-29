@@ -15,6 +15,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **Fork clones no longer point `gh issue create` at the upstream public tracker
+  undetected** (#389) - `gh repo fork --clone`, the exact command SETUP.md's fork step
+  recommends, sets the *upstream* repo as gh's default repository, and gh uses the
+  default for creating issues and PRs - so a user's own automation ("file a tracking
+  issue per application") silently published personal job-search data on the upstream
+  repo, under the user's identity, where they cannot delete it (four live instances from
+  two users in one week). SETUP.md section 2 now adds `gh repo set-default
+  <your-username>/ai-job-search` directly to the fork commands with a warning at the
+  point of decision (the #348 pattern), and a new `.github/ISSUE_TEMPLATE/` carries the
+  same heads-up the PR template already had, for the web-UI path. Blank issues stay
+  enabled - the template warns, it does not gatekeep.
 - **`freehire-search` fractional numeric flags no longer silently change the query** (#373) -
   `parseIntFlag` used bare `parseInt`, so a fractional value was truncated instead of
   rejected: `--jobage 0.5` became `0`, failed the `jobage > 0` guard, and the
