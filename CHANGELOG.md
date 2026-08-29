@@ -41,6 +41,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`linkedin-search` rejects fractional numeric flags instead of silently changing
+  the query** (#371) - bare `parseInt` truncated values before validation, so
+  `--jobage 0.5` became `0` and silently omitted LinkedIn's `f_TPR` freshness filter
+  while the CLI reported no argument error. `--jobage`, `--jobage-minutes`, `--page`,
+  and `--limit` now accept whole numbers >= 1 only and reject fractions and zero with
+  the stderr-JSON `BAD_ARG` contract, matching the other portal CLIs. Pinned by eight
+  cases verified to fail on the unfixed CLI. Reported by @Meet6338-X.
+
 - **`linkedin-search detail` accepts LinkedIn job URLs with trailing slashes** (#411) -
   passing a job URL with a trailing slash (e.g., `https://www.linkedin.com/jobs/view/<id>/`
   or a slugged variant with or without query strings) failed validation and exited 1 with

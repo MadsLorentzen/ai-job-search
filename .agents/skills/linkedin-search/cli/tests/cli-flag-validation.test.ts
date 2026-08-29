@@ -12,7 +12,7 @@ function parsedStderr(stderr: string): { error?: string; code?: string } {
 }
 
 describe("LinkedIn CLI flag validation", () => {
-  describe("--jobage NaN validation", () => {
+  describe("numeric flag validation", () => {
     test("non-numeric string exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "-l", LOCATION, "--jobage", "foo"]);
       expect(result.exitCode).not.toBe(0);
@@ -33,31 +33,39 @@ describe("LinkedIn CLI flag validation", () => {
       expect(err.code).not.toBe("BAD_ARG");
     });
 
-    test("float string truncated to integer, no error", async () => {
-      // parseInt("7.5") = 7, which is valid
-      const result = await runCLI(["search", "-l", LOCATION, "--jobage", "7.5", "--limit", "1"]);
-      const err = parsedStderr(result.stderr);
-      expect(err.code).not.toBe("BAD_ARG");
+    // Fractional values must be rejected, not truncated: parseInt("0.5") is 0,
+    // and jobage 0 makes buildTimeFilter return null, so f_TPR is silently
+    // omitted from the outbound request while the CLI exits 0 (#371).
+    for (const name of ["jobage", "jobage-minutes", "page", "limit"]) {
+      test(`--${name} fractional exits 1 with BAD_ARG instead of truncating`, async () => {
+        const result = await runCLI(["search", "-l", LOCATION, `--${name}`, "1.5"]);
+        expect(result.exitCode).not.toBe(0);
+        const err = parsedStderr(result.stderr);
+        expect(err.code).toBe("BAD_ARG");
+        expect(err.error).toMatch(new RegExp(name));
+      });
+    }
+
+    test("--jobage 0.5 exits 1 with BAD_ARG instead of dropping the freshness filter", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage", "0.5"]);
+      expect(result.exitCode).not.toBe(0);
+      expect(parsedStderr(result.stderr).code).toBe("BAD_ARG");
     });
 
-    test("zero is accepted (falsy int should not be treated as missing)", async () => {
-      const result = await runCLI(["search", "-l", LOCATION, "--jobage", "0", "--limit", "1"]);
-      const err = parsedStderr(result.stderr);
-      expect(err.code).not.toBe("BAD_ARG");
-    });
+    for (const name of ["jobage", "jobage-minutes", "page", "limit"]) {
+      test(`--${name} 0 exits 1 with BAD_ARG`, async () => {
+        const result = await runCLI(["search", "-l", LOCATION, `--${name}`, "0"]);
+        expect(result.exitCode).not.toBe(0);
+        const err = parsedStderr(result.stderr);
+        expect(err.code).toBe("BAD_ARG");
+        expect(err.error).toMatch(new RegExp(name));
+      });
+    }
   });
 
   describe("--jobage-minutes validation", () => {
     test("non-numeric string exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "foo"]);
-      expect(result.exitCode).not.toBe(0);
-      const err = parsedStderr(result.stderr);
-      expect(err.code).toBe("BAD_ARG");
-      expect(err.error).toMatch(/jobage-minutes/);
-    });
-
-    test("zero exits 1 with BAD_ARG", async () => {
-      const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "0"]);
       expect(result.exitCode).not.toBe(0);
       const err = parsedStderr(result.stderr);
       expect(err.code).toBe("BAD_ARG");
