@@ -74,5 +74,67 @@ class ScrapeSearchOutputContractTests(unittest.TestCase):
         self.assertEqual([], failures, "; ".join(failures) or "no portal CLIs checked")
 
 
+
+# Step 4's storage schema, derived the same way as the Step 2 contract above:
+# the field list lives in the spec, never duplicated here, so a schema change
+# fails this test instead of silently agreeing with a stale copy.
+_STEP4_SCHEMA_BLOCK = re.compile(r"Add ALL fetched jobs.*?```json(.*?)```", re.DOTALL)
+
+
+def derive_stored_fields() -> frozenset[str]:
+    text = SCRAPER_SKILL.read_text(encoding="utf-8")
+    match = _STEP4_SCHEMA_BLOCK.search(text)
+    if match is None:
+        raise AssertionError("Step 4 seen_jobs.json schema block not found in job-scraper/SKILL.md")
+    return frozenset(re.findall(r'"([a-z_]+)":', match.group(1)))
+
+
+class SeenJobsPostingDateTests(unittest.TestCase):
+    """The posting date Step 2 guarantees must survive into Step 4's storage.
+
+    Step 2's contract promises a `date` on every portal CLI's search output and
+    the test above keeps every CLI honest about emitting it. Step 3 then uses
+    that date to scope the run to the last 14 days - and Step 4's schema drops
+    it. `first_seen` records when this scraper first saw an entry, not when the
+    employer posted it, so once the run ends nothing can tell a posting
+    published yesterday from one published two years ago: the Step 3 window is
+    unauditable and /rank has no freshness signal to weigh.
+
+    That failure landed for real: a freehire-search posting dated 2024-05-13 was
+    scraped and ranked Strong Fit at position 1 of 133, its own scoring note
+    observing the listing "may be long stale" with nothing able to act on it.
+    """
+
+    def test_step4_schema_persists_a_posting_date(self):
+        stored = derive_stored_fields()
+        self.assertIn(
+            "posted_date",
+            stored,
+            "Step 4's seen_jobs.json schema stores no posting-date field, so a "
+            "posting's age is unrecoverable after the run that scraped it",
+        )
+
+    def test_the_step2_date_field_survives_into_storage(self):
+        contract = derive_contract_fields()
+        self.assertIn("date", contract, "Step 2 no longer guarantees a posting date")
+        stored = derive_stored_fields()
+        self.assertIn(
+            "posted_date",
+            stored,
+            "Step 2 guarantees a posting `date` and CI enforces every CLI emits it, "
+            "but Step 4 discards it at write time",
+        )
+
+    def test_posted_date_semantics_are_documented(self):
+        """A stored field the spec never explains gets backfilled by guessing."""
+        text = SCRAPER_SKILL.read_text(encoding="utf-8")
+        self.assertIn("`posted_date`", text, "posted_date is in the schema but never documented")
+        self.assertRegex(
+            text,
+            r"never infer a posting date",
+            "posted_date must carry the same never-backfill rule as `deadline`",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

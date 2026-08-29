@@ -11,6 +11,23 @@ prefer updating to a tagged release over pulling raw `master` (see
 files a release touched; `python3 tools/check_upstream_updates.py` lists them with
 per-file diff commands.
 
+## [Unreleased]
+
+### Fixed
+
+- **`/scrape` now persists each posting's publication date** - Step 2's contract guarantees a
+  `date` on every portal CLI's search output (CI enforces it in `test_scrape_contract.py`) and
+  Step 3 uses that date to scope a run to the last 14 days, but Step 4's `seen_jobs.json` schema
+  stored no posting date at all: `first_seen` is when the scraper saw an entry, not when the
+  employer posted it. The freshness window was therefore unauditable the moment a run ended, and
+  `/rank` - which reads the stored entry, not the run - had no age signal to weigh. A
+  `freehire-search` posting dated 2024-05-13 was scraped 27 months later and ranked Strong Fit at
+  position 1 of 133; the scoring note recorded that the listing "may be long stale" in prose
+  nothing reads, and an `/apply` run drafted a tailored CV and cover letter against it. The schema
+  gains `posted_date` (`null` when the portal returned no date, never inferred or backfilled).
+  Pinned by three new cases in `test_scrape_contract.py`, each verified to fail on the unfixed
+  spec. Reported and diagnosed from a real run by @sandunwijerathne.
+
 ## [1.7.0] - 2026-08-29
 
 ### Fixed
