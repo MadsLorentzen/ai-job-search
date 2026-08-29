@@ -1,5 +1,11 @@
 <p align="center">
-  <img src="assets/mascot/pip_flight_loop.gif" alt="Pip, the courier bird" width="200">
+  <img src="assets/mascot/pip_flight_loop.gif" alt="Pip, the courier bird" height="140">
+  &nbsp;&nbsp;
+  <img src="gui/build/icon.png" alt="Job Search Desk" height="140">
+</p>
+
+<p align="center">
+  <sub>Pip (shared mascot) · Job Search Desk (this fork)</sub>
 </p>
 
 # AI Job Search
@@ -8,10 +14,11 @@
 
 <p align="center">
   <a href="https://github.com/iLevyTate/ai-job-search/actions/workflows/ci.yml"><img src="https://github.com/iLevyTate/ai-job-search/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/iLevyTate/ai-job-search/actions/workflows/desk-release.yml"><img src="https://github.com/iLevyTate/ai-job-search/actions/workflows/desk-release.yml/badge.svg" alt="Desk release"></a>
   <a href="https://github.com/iLevyTate/ai-job-search/releases/latest"><img src="https://img.shields.io/github/v/release/iLevyTate/ai-job-search?label=Job%20Search%20Desk" alt="Latest Job Search Desk release"></a>
 </p>
 
-US boards, English defaults, and an installable **[Job Search Desk](https://github.com/iLevyTate/ai-job-search/releases/latest)** for macOS, Windows, and Linux. Built on [Claude Code](https://claude.com/claude-code). Clone it, fill in your profile, and let Claude evaluate postings, tailor your CV, write cover letters, and prep interviews.
+US boards, English defaults, and an installable **[Job Search Desk](https://github.com/iLevyTate/ai-job-search/releases/latest)** for Windows, macOS (Apple Silicon and Intel), and Linux. Built on [Claude Code](https://claude.com/claude-code). Open the Desk or clone the repo, fill in your profile, and let Claude evaluate postings, tailor your CV, write cover letters, and prep interviews.
 
 This is a North American fork of [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search). The upstream template remains the methodology source; this repo is the shareable US-market starting point.
 
@@ -71,7 +78,7 @@ The framework encodes career guidance best practices, including structured evalu
 - [Bun](https://bun.sh) (for job search and autofill CLI tools)
 - Chromium via Playwright (for `/autofill`; installed in step 2 below)
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/), [MacTeX](https://tug.org/mactex/), [TinyTeX](https://yihui.org/tinytex/), or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`. If using a minimal TeX install such as TinyTeX or BasicTeX, install the extra packages listed in [SETUP.md](SETUP.md#minimal-tex-install-tinytexbasictex).
-- Optional: `pdftotext` from [poppler](https://poppler.freedesktop.org/) (macOS: `brew install poppler`, Debian/Ubuntu: `apt install poppler-utils`, Windows: `choco install poppler`). `/apply` uses it for the ATS parseability check on the compiled CV. If missing, the check degrades gracefully to a visual keyword review.
+- Optional: `pypdf` (`pip install pypdf`) and/or `pdftotext` from [poppler](https://poppler.freedesktop.org/) (macOS: `brew install poppler`, Debian/Ubuntu: `apt install poppler-utils`, Windows: `choco install poppler`). `/apply` uses `python tools/verify_pdf.py` for the ATS parseability check on the compiled CV (pypdf first, Poppler fallback). If both are missing, the check degrades gracefully to a visual keyword review.
 
 ## Quick start
 
@@ -158,7 +165,16 @@ Postings are treated as untrusted input (the workflow follows no instructions em
 
 ### Optional: Job Search Desk app
 
-If you would rather click `/scrape` and `/apply` than live in the Claude Code TTY, install **Job Search Desk** from [Releases](../../releases) (macOS, Windows, Linux). Run the installer; Windows adds Start Menu and Desktop shortcuts and opens the app when setup finishes. Open a job-search folder or create a new copy of the public repo (Git is optional). The desk opens the conversation when you are already signed in. It only asks you to log in to Claude Code when `claude auth status` reports you are signed out. If Claude Code is missing, the app installs it, then uses the same claude.ai login you already use in Chrome.
+If you would rather work in a window than the Claude Code TTY, install **Job Search Desk** from [Releases](https://github.com/iLevyTate/ai-job-search/releases/latest):
+
+| OS | Installer |
+| --- | --- |
+| Windows | `JobSearchDesk-*-win-x64.exe` (one-click NSIS) or `*-portable.exe` |
+| macOS Apple Silicon | `JobSearchDesk-*-mac-arm64.dmg` |
+| macOS Intel | `JobSearchDesk-*-mac-x64.dmg` |
+| Linux | `JobSearchDesk-*-linux-x64.AppImage` |
+
+Native Chat is the default. The Terminal tab resumes the same Claude conversation. Files/Artifacts previews generated documents. Autofill pauses for Continue or Cancel and never submits. Open CLI still launches Claude Code in the same folder. Run the installer; Windows adds Start Menu and Desktop shortcuts and opens the app when setup finishes. Open a job-search folder or create a new copy of this public US-market repo (Git is optional). The desk opens the conversation when you are already signed in. It only asks you to log in to Claude Code when `claude auth status` reports you are signed out. If Claude Code is missing, the app installs it, then uses the same claude.ai login you already use in Chrome.
 
 From a clone, the same desk also starts with:
 
@@ -209,6 +225,7 @@ ai-job-search/
 │   │   ├── gmail-sync.md              # /gmail-sync auto-detect application status from Gmail
 │   │   ├── interview.md               # /interview stage-specific prep pack + mock interview
 │   │   ├── html-report.md             # /html-report generate application tracker dashboard
+│   │   ├── import.md                  # /import ingest hand-found postings
 │   │   ├── notion-sync.md             # /notion-sync one-way pipeline view in a Notion database
 │   │   └── reset.md                   # /reset wipe profile data or documents folder
 │   ├── skills/
@@ -249,11 +266,19 @@ ai-job-search/
 │   ├── references/                    # Reference letters
 │   └── applications/                  # Past application records (<company>_<role>/)
 ├── .github/workflows/ci.yml           # CI: LaTeX smoke compiles, skill lint, CLI typechecks
+├── .github/workflows/desk-release.yml # Job Search Desk installers on desk-v* tags
+├── gui/                               # Job Search Desk (Electron + localhost server)
+│   └── build/icon.png                 # Desk app icon
 ├── salary_lookup.py                   # Salary benchmarking tool (BYO data)
 ├── tools/
+│   ├── check_framework_version.py     # CI check: framework_version bumped when skill files change
+│   ├── check_upstream_updates.py      # Preview which personalized files an upstream update touches
 │   ├── convert_salary_excel.py        # Convert salary Excel to JSON
 │   ├── lint_skills.py                 # CI lint for skills, commands, settings.json
+│   ├── robots_check.py                # Gate the browser-header retry against robots.txt
 │   ├── security_guards.py             # CI guards: permission allowlist, gitignore rules, manifests
+│   ├── upstream_triage.py             # Sort upstream commits into worth-reviewing vs probably-skip
+│   ├── verify_pdf.py                  # Verify a compiled PDF's page count and extractable text
 │   └── README_SALARY_TOOL.md          # Salary tool setup instructions
 ├── job_scraper/                       # Scraper state (seen jobs, results)
 ├── gmail_sync/                        # /gmail-sync state (processed message IDs, last sync date)
@@ -272,7 +297,7 @@ The `/apply` command runs a **drafter-reviewer workflow** with mandatory PDF com
 4. **Spawn a reviewer agent** that researches the company and critiques the drafts
 5. **Revise** based on the reviewer's feedback
 6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. Claude reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
-7. **ATS-check the CV**: extract the PDF's text layer (`pdftotext`, optional dependency) and verify it the way an ATS parser sees it: contact details present as literal text, no garbled glyphs, sane reading order. Then score the posting's keyword coverage against the extraction. Keywords the profile genuinely supports get added; genuine gaps stay visible, never stuffed.
+7. **ATS-check the CV**: extract the PDF's text layer (`python tools/verify_pdf.py`, optional pypdf or Poppler) and verify it the way an ATS parser sees it: contact details present as literal text, no garbled glyphs, sane reading order. Then score the posting's keyword coverage against the extraction. Keywords the profile genuinely supports get added; genuine gaps stay visible, never stuffed.
 8. **Present** the final output with a verification checklist
 
 All claims in the CV and cover letter are verified against your actual profile. The system never fabricates skills or experience.
@@ -280,7 +305,7 @@ All claims in the CV and cover letter are verified against your actual profile. 
 ### What makes this workflow different
 
 - **PDF verification loop.** Most LaTeX-resume templates produce "looks fine in the .tex" output that breaks in the PDF: job titles orphan to the next page, cover letters spill onto page 2, bullet fonts silently fall back to the body font. The `/apply` command compiles and visually inspects every PDF and applies targeted fixes (`\needspace`, `\enlargethispage`, font-matching wrappers for list items) until the layout is clean. This runs automatically on every application.
-- **ATS verification on the PDF text layer.** An ATS reads the PDF's embedded text, not the rendered page, and LaTeX can silently produce PDFs whose text extracts as garbage (icon glyphs where the email should be, interleaved lines from multi-column layouts). `/apply` extracts the compiled CV's text layer with `pdftotext` and verifies contact details, reading order, and the posting's keyword coverage against what a parser actually sees. Honesty rule enforced: a keyword the profile doesn't support is acknowledged as a gap, never stuffed in.
+- **ATS verification on the PDF text layer.** An ATS reads the PDF's embedded text, not the rendered page, and LaTeX can silently produce PDFs whose text extracts as garbage (icon glyphs where the email should be, interleaved lines from multi-column layouts). `/apply` extracts the compiled CV's text layer with `python tools/verify_pdf.py` and verifies contact details, reading order, and the posting's keyword coverage against what a parser actually sees. Honesty rule enforced: a keyword the profile doesn't support is acknowledged as a gap, never stuffed in. Extraction prefers pypdf and falls back to Poppler.
 - **Relevance-weighted CV cutting.** When a CV overflows 2 pages, the workflow does not cut mechanically from the "oldest" section. It scores each candidate line by (a) relevance to the target posting, (b) uniqueness in the document, and (c) whether the cover letter depends on it, and cuts the lowest-total-score line first. An older-role bullet that hits posting keywords survives ahead of a recent-role bullet that does not.
 - **Drafter-reviewer separation.** The drafter writes; a second Claude agent, spawned with a fresh context, researches the company and critiques the drafts. The drafter then revises. This catches missed keywords, weak framing, and generic language that a single pass often leaves in.
 - **Token-efficient reviewer dispatch.** The reviewer agent receives drafts inline rather than re-reading them, and the verification checklist runs once at the end of the workflow rather than being duplicated by both agents. Note: the new compile-and-inspect step in Step 5 spends some of those savings on PDF rendering and layout iteration, so the workflow trades some end-to-end token cost for a real reduction in broken PDFs reaching the user.
