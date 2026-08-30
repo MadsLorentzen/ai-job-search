@@ -38,7 +38,17 @@ errors: list[str] = []
 # an entry must add it here too - that is the point: the diff shows both.
 ALLOWED_PERMISSIONS = {
     "Skill(job-application-assistant)",
-    "Bash(bun run:*)",
+    # Narrowed from the upstream template's blanket Bash(bun run:*), which
+    # pre-approved `bun run <any file>`. One entry per shipped portal CLI,
+    # matching what each SKILL.md already declares in its allowed-tools.
+    # A portal added by /add-portal needs its own entry here and in
+    # .claude/settings.json - that review step is the point.
+    "Bash(bun run .agents/skills/jobbank-search/cli/src/cli.ts:*)",
+    "Bash(bun run .agents/skills/jobdanmark-search/cli/src/cli.ts:*)",
+    "Bash(bun run .agents/skills/jobindex-search/cli/src/cli.ts:*)",
+    "Bash(bun run .agents/skills/jobnet-search/cli/src/cli.ts:*)",
+    "Bash(bun run .agents/skills/linkedin-search/cli/src/cli.ts:*)",
+    "Bash(bun run .agents/skills/freehire-search/cli/src/cli.ts:*)",
     "Bash(python salary_lookup.py:*)",
     "Bash(python3 salary_lookup.py:*)",
     "Bash(python tools/verify_pdf.py:*)",
