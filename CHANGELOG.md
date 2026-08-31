@@ -41,6 +41,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **Placeholder-integrity tests in `python-tests` now skip on forks** (#405) - the dedicated
+  `placeholder-integrity` job already gates on the upstream repo name, but `python-tests` ran
+  `unittest discover` with no such guard, so forks that personalized files via `/setup` failed
+  three sentinel checks permanently. Both test classes now use `@unittest.skipIf` on
+  `GITHUB_REPOSITORY` (defaulting to upstream when unset so local pristine-template runs still
+  execute).
+
 - **`convert_salary_excel.py` no longer mistakes a title/citation row for the header row**
   (#414) - header-row detection accepted the first row in the first 10 where *any* cell merely
   contained a company-pattern word, with no check that the row actually looked like a header. A
