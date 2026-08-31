@@ -76,6 +76,22 @@ Back in the main context, for each scored job:
 5. **Deadline urgency:** a deadline within 7 days gets a 🔥 marker and wins ties. A deadline that has already passed moves the job to `expired`. Take the deadline from the scoring agent's Step 2 JSON for a job scored in this run, and from the stored `deadline` in `seen_jobs.json` for one that already carries it - a stored value costs no fetch, so urgency is re-derived on every run without re-reading the posting. When both exist and disagree, the freshly scored value wins and replaces the stored one. A stored value that does not parse as `YYYY-MM-DD` is skipped for urgency as well - rule 6's defensive-parse rule applies wherever a stored deadline is compared.
 6. **Expiry sweep over already-ranked entries.** Before presenting, check the stored `deadline` of every `ranked` entry this run did not re-score. Any whose deadline has passed becomes `expired`; any within 7 days is listed under a short **Closing soon** heading in Step 5 with its 🔥 marker. This needs no fetch and no agent - it is a date comparison against values already on disk, and it is what finally enforces `/scrape`'s "only open positions" rule beyond the moment of fetching. **An entry with no stored `deadline` is left alone, never guessed at** - most entries predate the column, and inferring a deadline from `first_seen` would retire jobs on a date nobody set. **Parse stored deadlines defensively:** a stored value that is not a `YYYY-MM-DD` date is treated exactly like an absent one - left alone, never compared, never guessed at - and reported once in the Step 5 summary with its portal, so the bad value gets traced to its source instead of silently steering the sweep (portals have shipped `"ASAP"`, `DD.MM.YYYY`, and free-text deadline shapes into stored data). `--all` re-scores entries of any status including `expired`, so a job the sweep retired can still be revived by a later `--all` that re-fetches it and finds the posting live: the sweep is reversible, which is what makes an automated status change acceptable here at all.
 
+7. **Staleness flag:** a job whose stored `posted_date` is more than **30 days** old at
+   rank time stays in the ranking but carries a visible ⚠ marker with its age spelled out
+   alongside the score (e.g. "⚠ posted 2024-05-13, 27 months ago") - same treatment as a
+   location or language FLAG, for the user to judge. Age is a signal, never a veto: the
+   posting that motivated this rule was 27 months old *and still live*, so excluding on
+   age would wrongly bury real openings - and a stale posting with a future stored
+   `deadline` is still open by the stronger signal, so the flag notes the deadline too
+   rather than contradicting it. This costs no fetch: `posted_date` is already on disk
+   (written by `/scrape` Step 4), and age is re-derived on every run, never persisted.
+   **An entry with no `posted_date` (or `null`) gets no flag and no guess** - entries
+   predating the field simply lack the signal, and inferring age from `first_seen` would
+   flag jobs on a date nobody posted. Rule 6's defensive-parse rule applies wherever a
+   stored `posted_date` is compared: a value that does not parse as `YYYY-MM-DD` is
+   treated exactly like an absent one and reported once in the Step 5 summary with its
+   portal.
+
 Sort by overall score (descending), urgency as tiebreaker.
 
 ---

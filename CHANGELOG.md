@@ -13,6 +13,21 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Added
+
+- **`/rank` now consumes the `posted_date` #391 persists** (#390, the deferred second
+  half) - Step 3 gains a staleness flag: a posting whose stored `posted_date` is more
+  than 30 days old at rank time carries a visible ⚠ marker with its age spelled out
+  alongside the score ("⚠ posted 2024-05-13, 27 months ago"), the same FLAG treatment as
+  location and language - in the ranking, for the user to judge, never an exclusion (the
+  #390 posting was 27 months old *and still live*; age is a signal, not a veto, and a
+  future stored `deadline` outranks it). Costs no fetch: age is re-derived each run from
+  the stored value and never persisted. Boundary rules carried over verbatim from the
+  schema and rule 6: no `posted_date` or `null` means no flag and no guess (never
+  inferred from `first_seen`), and unparseable values are treated as absent and reported
+  once with their portal. Pinned by four new cases in `test_rank_command.py`, each
+  verified to fail against the rule-less spec.
+
 ### Security
 
 - **`settings.json` no longer pre-approves `bun run` on arbitrary files** (#396) - the
