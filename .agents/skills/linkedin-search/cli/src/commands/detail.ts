@@ -6,10 +6,10 @@ export interface DetailOpts {
 }
 
 /** Accept a raw job ID, a job-view URL, or a job URN. */
-function normalizeId(input: string): string | null {
+export function normalizeId(input: string): string | null {
   const urn = input.match(/urn:li:jobPosting:(\d+)/)
   if (urn) return urn[1]
-  const url = input.match(/-(\d{6,})(?:\?|$)/) || input.match(/\/(\d{6,})(?:\?|$)/)
+  const url = input.match(/-(\d{6,})(?:[\/?]|$)/) || input.match(/\/(\d{6,})(?:[\/?]|$)/)
   if (url) return url[1]
   const bare = input.match(/^\d{6,}$/)
   if (bare) return input

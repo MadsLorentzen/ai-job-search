@@ -1,5 +1,6 @@
 import { describe, test, expect } from "bun:test";
 import { parseJobCards, parseJobDetail, extractDivContent, minutesToTPR } from "../src/helpers";
+import { normalizeId } from "../src/commands/detail";
 
 // Minimal search-card markup: parseJobCards splits on the job-posting URN and
 // needs an id, a base-search-card__title, and a full-link. Everything else is
@@ -222,3 +223,55 @@ describe("minutesToTPR", () => {
     expect(minutesToTPR(-5)).toBeNull();
   });
 });
+
+describe("normalizeId", () => {
+  test("extracts ID from raw numeric string", () => {
+    expect(normalizeId("1234567890")).toBe("1234567890");
+  });
+
+  test("extracts ID from URN", () => {
+    expect(normalizeId("urn:li:jobPosting:1234567890")).toBe("1234567890");
+  });
+
+  test("extracts ID from simple job view URL without trailing slash", () => {
+    expect(normalizeId("https://www.linkedin.com/jobs/view/1234567890")).toBe("1234567890");
+  });
+
+  test("extracts ID from simple job view URL with trailing slash", () => {
+    expect(normalizeId("https://www.linkedin.com/jobs/view/1234567890/")).toBe("1234567890");
+  });
+
+  test("extracts ID from simple job view URL with query parameter", () => {
+    expect(normalizeId("https://www.linkedin.com/jobs/view/1234567890?refId=abc")).toBe("1234567890");
+  });
+
+  test("extracts ID from simple job view URL with trailing slash and query parameter", () => {
+    expect(normalizeId("https://www.linkedin.com/jobs/view/1234567890/?refId=abc")).toBe("1234567890");
+  });
+
+  test("extracts ID from slug URL without trailing slash", () => {
+    expect(normalizeId("https://www.linkedin.com/jobs/view/software-engineer-1234567890")).toBe("1234567890");
+  });
+
+  test("extracts ID from slug URL with trailing slash", () => {
+    expect(normalizeId("https://www.linkedin.com/jobs/view/software-engineer-1234567890/")).toBe("1234567890");
+  });
+
+  test("extracts ID from slug URL with trailing slash and tracking query params", () => {
+    expect(
+      normalizeId("https://www.linkedin.com/jobs/view/software-engineer-at-company-1234567890/?trackingId=xyz&refId=123"),
+    ).toBe("1234567890");
+  });
+
+  test("extracts ID from regional subdomain LinkedIn URL with trailing slash", () => {
+    expect(normalizeId("https://dk.linkedin.com/jobs/view/data-scientist-9876543210/")).toBe("9876543210");
+  });
+
+  test("returns null for non-job URLs and invalid strings", () => {
+    expect(normalizeId("https://www.linkedin.com/feed/")).toBeNull();
+    expect(normalizeId("not-a-url")).toBeNull();
+    expect(normalizeId("12345")).toBeNull(); // fewer than 6 digits
+    expect(normalizeId("")).toBeNull();
+  });
+});
+
