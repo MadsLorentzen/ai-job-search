@@ -33,11 +33,23 @@ describe("LinkedIn CLI flag validation", () => {
       expect(err.code).not.toBe("BAD_ARG");
     });
 
-    test("float string truncated to integer, no error", async () => {
-      // parseInt("7.5") = 7, which is valid
+    test("fractional value exits 1 with BAD_ARG instead of silently truncating", async () => {
+      // parseInt("7.5") = 7 - previously accepted silently. A fractional
+      // --jobage must be rejected, not truncated: truncation to 0 (e.g.
+      // "0.5") would otherwise drop the freshness filter entirely with no
+      // error (see helpers.ts jobageToTPR's `!days` guard).
       const result = await runCLI(["search", "-l", LOCATION, "--jobage", "7.5", "--limit", "1"]);
+      expect(result.exitCode).not.toBe(0);
       const err = parsedStderr(result.stderr);
-      expect(err.code).not.toBe("BAD_ARG");
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage/);
+    });
+
+    test("fractional value truncating to zero exits 1 rather than disabling the filter", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage", "0.5", "--limit", "1"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
     });
 
     test("zero is accepted (falsy int should not be treated as missing)", async () => {
@@ -58,6 +70,14 @@ describe("LinkedIn CLI flag validation", () => {
 
     test("zero exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "0"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/jobage-minutes/);
+    });
+
+    test("fractional value exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--jobage-minutes", "2.5"]);
       expect(result.exitCode).not.toBe(0);
       const err = parsedStderr(result.stderr);
       expect(err.code).toBe("BAD_ARG");
@@ -98,11 +118,27 @@ describe("LinkedIn CLI flag validation", () => {
       expect(err.code).toBe("BAD_ARG");
       expect(err.error).toMatch(/page/);
     });
+
+    test("fractional value exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--page", "1.5"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/page/);
+    });
   });
 
   describe("--limit NaN validation", () => {
     test("non-numeric string exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "-l", LOCATION, "--limit", "xyz"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/limit/);
+    });
+
+    test("fractional value exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--limit", "2.5"]);
       expect(result.exitCode).not.toBe(0);
       const err = parsedStderr(result.stderr);
       expect(err.code).toBe("BAD_ARG");

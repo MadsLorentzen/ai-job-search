@@ -125,13 +125,18 @@ async function main(): Promise<number> {
       return 1
     }
 
+    // Bare `parseInt` truncates instead of rejecting ("2.5" -> 2, "0.5" -> 0),
+    // so a fractional --jobage silently changed the freshness window instead
+    // of erroring - worst case landing on 0, which the downstream `!days`
+    // check then treats as "no filter" and drops --jobage entirely with no
+    // error at all. Require the raw string to already be an integer literal.
     const parseIntFlag = (name: string, raw: string | boolean | string[]): number | null => {
-      const val = parseInt(raw as string, 10)
-      if (isNaN(val)) {
-        process.stderr.write(JSON.stringify({ error: `--${name} must be a number, got "${raw}"`, code: "BAD_ARG" }) + "\n")
+      const str = typeof raw === "string" ? raw : String(raw)
+      if (!/^-?\d+$/.test(str)) {
+        process.stderr.write(JSON.stringify({ error: `--${name} must be an integer, got "${raw}"`, code: "BAD_ARG" }) + "\n")
         return null
       }
-      return val
+      return parseInt(str, 10)
     }
 
     if (flags.jobage !== undefined) {

@@ -26,6 +26,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **`linkedin-search`'s `--jobage`/`--jobage-minutes`/`--page`/`--limit` flags reject fractional
+  values instead of silently truncating them** (#371) - `parseIntFlag` in `cli.ts` validated with
+  bare `parseInt`, which truncates rather than erroring: `--jobage 7.5` silently became `7`, and
+  `--jobage 0.5` truncated to `0` - which `jobageToTPR`'s `!days` guard then treats as "no
+  filter," dropping the freshness window from the LinkedIn request entirely while the CLI still
+  exited 0. `parseIntFlag` now requires the raw flag value to already be an integer literal
+  (`/^-?\d+$/`) and rejects anything else with the standard `BAD_ARG` stderr-JSON error, matching
+  the Danish CLIs' `z.coerce.number().int()` strictness. Pinned by new cases in
+  `cli-flag-validation.test.ts` for all four flags. Reported by @Meet6338-X.
+
 - **The `documents/interview/**` ignore rule no longer claims interview prep is written there**
   (#336). `/interview` saves its pack to
   `documents/applications/<company>_<role>/interview_prep_<stage>.md`, already ignored by
