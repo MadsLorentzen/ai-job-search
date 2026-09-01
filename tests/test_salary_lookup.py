@@ -87,6 +87,34 @@ class FormatEntryTests(unittest.TestCase):
         self.assertIn("45000.0", rendered)
         self.assertIn("+12.5%", rendered)
 
+    def test_null_categories_with_sibling_dict_does_not_crash(self):
+        # --validate accepts "categories": null, so format_entry must not crash
+        # on it. entry.get("categories", {}) returns None (not {}) for an
+        # explicit null, and the numeric-field fallback then did None[key] = ....
+        entry = {
+            "company": "Example Corp",
+            "city": "",
+            "categories": None,
+            "engineering": {"count": 10, "index": 105.0},
+        }
+
+        rendered = format_entry(entry, {"index_baseline": 100, "index_label": "Index"})
+
+        self.assertRegex(rendered, r"Engineering\s+10\s+105\.0")
+
+    def test_null_metadata_does_not_crash(self):
+        # --validate accepts "metadata": null the same way; format_entry then did
+        # None.get("index_label", ...) -> AttributeError.
+        entry = {
+            "company": "Example Corp",
+            "city": "",
+            "categories": {"eng": {"count": 5, "index": 108.0}},
+        }
+
+        rendered = format_entry(entry, None)
+
+        self.assertRegex(rendered, r"Eng\s+5\s+108\.0")
+
 
 # ---------------------------------------------------------------------------
 # match_score tests (from #106)
@@ -329,6 +357,70 @@ class ValidateFlagTests(unittest.TestCase):
         )
         self.assertEqual(code, 0)
         self.assertIn("Duplicate company name", out)
+
+
+class NullShapeEndToEndTests(unittest.TestCase):
+    """The disagreement in full: --validate blesses a file with a null
+    metadata/categories, then the lookup path must render it, not crash.
+
+    Both payloads pass --validate on master; the second command then dies
+    (TypeError in the categories fallback, AttributeError on metadata.get).
+    """
+
+    def _run_main(self, payload, *argv_tail):
+        """Run main() against `payload` with the given argv. Returns
+        (exit_code_or_None, stdout). main() returns normally on a successful
+        render, so a missing SystemExit is success, not an error."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_file = Path(tmpdir) / "salary_data.json"
+            data_file.write_text(payload, encoding="utf-8")
+            original_data_file = salary_lookup.DATA_FILE
+            salary_lookup.DATA_FILE = data_file
+            argv_patch = mock.patch("sys.argv", ["salary_lookup.py", *argv_tail])
+            argv_patch.start()
+            try:
+                stdout = io.StringIO()
+                try:
+                    with redirect_stdout(stdout):
+                        salary_lookup.main()
+                    return None, stdout.getvalue()
+                except SystemExit as exc:
+                    return exc.code, stdout.getvalue()
+            finally:
+                argv_patch.stop()
+                salary_lookup.DATA_FILE = original_data_file
+
+    def test_null_categories_passes_validate_then_renders(self):
+        payload = (
+            '{"metadata": {"index_label": "Index", "index_baseline": 100},'
+            ' "companies": [{"company": "Foo A/S", "city": "Aarhus",'
+            ' "categories": null,'
+            ' "engineering": {"count": 10, "index": 105}}]}'
+        )
+
+        code, out = self._run_main(payload, "--validate")
+        self.assertEqual(code, 0)
+        self.assertIn("OK", out)
+
+        code, out = self._run_main(payload, "Foo")
+        self.assertIsNone(code)
+        self.assertIn("Foo A/S", out)
+        self.assertRegex(out, r"Engineering\s+10\s+105")
+
+    def test_null_metadata_passes_validate_then_renders(self):
+        payload = (
+            '{"metadata": null,'
+            ' "companies": [{"company": "Foo A/S", "city": "Aarhus",'
+            ' "categories": {"engineering": {"count": 10, "index": 105}}}]}'
+        )
+
+        code, out = self._run_main(payload, "--validate")
+        self.assertEqual(code, 0)
+        self.assertIn("OK", out)
+
+        code, out = self._run_main(payload, "Foo")
+        self.assertIsNone(code)
+        self.assertRegex(out, r"Engineering\s+10\s+105")
 
 
 class UtilityTests(unittest.TestCase):

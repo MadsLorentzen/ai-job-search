@@ -53,6 +53,19 @@ per-file diff commands.
   Pinned by three new cases in `test_scrape_contract.py`, each verified to fail on the unfixed
   spec. Reported and diagnosed from a real run by @sandunwijerathne.
 
+- **`salary_lookup.py` no longer crashes on a `null` `metadata` or `categories`** - `--validate`
+  treats an explicit `"metadata": null` / `"categories": null` the same as an omitted key (the
+  shape checks are "...must be an object *when provided*" and skip `None`), but the renderer read
+  both through `dict.get(key, {})`, which only substitutes the default for an *absent* key - a
+  present-but-null value passed straight through. `format_entry` then hit `None.get("index_label",
+  ...)` (`AttributeError`) or, via the numeric-field fallback, `None[key] = value` (`TypeError`),
+  so a hand-maintained `salary_data.json` using `null` for "no value here" died with an uncaught
+  traceback right after printing `Found 1 match(es)`. `format_entry` now coerces both to `{}` up
+  front, so `null`, absent, and `{}` behave identically. Pinned by four cases in
+  `test_salary_lookup.py` - two unit calls into `format_entry` and two end-to-end (`main()
+  --validate` blesses the file, then the lookup path renders it), one per null shape, all verified
+  to fail on the unfixed renderer.
+
 ## [1.7.0] - 2026-08-29
 
 ### Fixed

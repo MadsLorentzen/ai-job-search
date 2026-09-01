@@ -291,6 +291,11 @@ def search_company(data, query, city=None):
 
 def format_entry(entry, metadata):
     """Format a single company entry for display."""
+    # `metadata` and `entry["categories"]` may be an explicit null: --validate
+    # treats a null the same as an omitted key ("...must be an object when
+    # provided"), but dict.get(key, default) only substitutes the default for an
+    # absent key, so a null reached `.get()`/`[]` here and crashed the lookup.
+    metadata = metadata or {}
     lines = []
     lines.append(f"\n{'='*60}")
     lines.append(f"  {entry['company']}")
@@ -298,8 +303,8 @@ def format_entry(entry, metadata):
         lines.append(f"  Location: {entry['city']}")
     lines.append(f"{'='*60}")
 
-    # Get category data (everything except company/city fields)
-    categories = entry.get("categories", {})
+    # Get category data (everything except company/city fields).
+    categories = entry.get("categories") or {}
     if not categories:
         # Fallback: treat any numeric fields as categories
         skip_keys = {"company", "city", "categories"}
