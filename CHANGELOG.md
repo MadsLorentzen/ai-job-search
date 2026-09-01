@@ -26,6 +26,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`linkedin-search detail` accepts LinkedIn job URLs with trailing slashes** (#411) -
+  passing a job URL with a trailing slash (e.g., `https://www.linkedin.com/jobs/view/<id>/`
+  or a slugged variant with or without query strings) failed validation and exited 1 with
+  `BAD_ID` before any network request because the regex delimiter strictly expected `?`
+  or end-of-string immediately after the numeric ID. The boundary check now matches
+  `[\/?]`, correctly extracting IDs from browser-copied URLs, regional subdomains, and
+  links with tracking parameters. Pinned by eleven new cases in `parsing.test.ts`.
+
 - **The `documents/interview/**` ignore rule no longer claims interview prep is written there**
   (#336). `/interview` saves its pack to
   `documents/applications/<company>_<role>/interview_prep_<stage>.md`, already ignored by
