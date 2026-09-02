@@ -1,4 +1,6 @@
+import io
 import unittest
+from contextlib import redirect_stderr
 from types import SimpleNamespace
 
 from tools.convert_salary_excel import (
@@ -285,6 +287,47 @@ class DetectColumnTypeTests(unittest.TestCase):
         categories = companies[0]["categories"]
         self.assertEqual(categories["a"], {"count": 10, "index": 100.0})
         self.assertEqual(categories["b"], {"count": 20, "index": 200.0})
+
+    def test_parse_sheet_ignores_citation_row_mentioning_company_pattern_word(self):
+        # A title/source-citation row above the real header - standard in
+        # real Danish union/statistics exports - can contain a stray
+        # company-pattern word ("arbejdsgiver" = employer) in running prose.
+        # It must not be mistaken for the header: that misreads the real
+        # header row as data (producing a bogus "Firma" company) and drops
+        # every real company's salary data (issue #414).
+        ws = FakeWorksheet([
+            ("Lønstatistik 2025",),
+            ("Kilde: Medlemsundersøgelse opdelt efter arbejdsgiver og branche",),
+            (),
+            ("Firma", "By", "Antal alle", "Lønindeks alle"),
+            ("Novo Nordisk A/S", "Bagsværd", 500, 108.5),
+            ("Ørsted A/S", "Fredericia", 200, 105.2),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(len(companies), 2)
+        self.assertEqual(companies[0]["company"], "Novo Nordisk A/S")
+        self.assertEqual(companies[0]["city"], "Bagsværd")
+        self.assertEqual(companies[0]["categories"]["alle"], {"count": 500, "index": 108.5})
+        self.assertEqual(companies[1]["company"], "Ørsted A/S")
+
+    def test_parse_sheet_warns_when_no_salary_columns_detected(self):
+        # A header row with only company/city columns and no salary data
+        # is a strong signal something is wrong (a misdetected header row,
+        # or a sheet with no salary data at all) - it should be flagged,
+        # not silently reported as a successful conversion.
+        ws = FakeWorksheet([
+            ("Company", "City"),
+            ("Example Corp", "Aarhus"),
+        ])
+
+        stderr = io.StringIO()
+        with redirect_stderr(stderr):
+            companies = parse_sheet(ws)
+
+        self.assertEqual(companies[0]["categories"], {})
+        self.assertIn("No salary data columns detected", stderr.getvalue())
 
 
 if __name__ == "__main__":

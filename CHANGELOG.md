@@ -41,6 +41,20 @@ per-file diff commands.
 
 ### Fixed
 
+- **`convert_salary_excel.py` no longer mistakes a title/citation row for the header row**
+  (#414) - header-row detection accepted the first row in the first 10 where *any* cell merely
+  contained a company-pattern word, with no check that the row actually looked like a header. A
+  source-citation line above the real header table - standard in real Danish union/statistics
+  exports, e.g. "Kilde: ... opdelt efter arbejdsgiver ..." - tripped it purely because
+  "arbejdsgiver" (employer) appeared in prose. The real header row then got parsed as a data row
+  (its "Firma" cell became a bogus company entry), and every genuine company lost all its salary
+  data, silently: exit 0, "Done! Wrote N company entries," with `categories: {}` on every one. A
+  candidate row is now only accepted when it also has a second cell matching a city/count/index
+  pattern - a real header always has more than a bare company column, unlike a caption sentence.
+  As a backstop independent of that fix, a sheet that ends up with zero detected salary columns
+  now prints a warning instead of reporting success silently. Pinned by two new cases in
+  `tests/test_convert_salary_excel.py`, both verified to fail on the unfixed script.
+
 - **`jobbank-search` no longer dies over one malformed feed date** (#416) - `new Date()`
   on a present-but-unparseable `pubDate` yields an Invalid Date whose `toISOString()`
   throws `RangeError`, and `normalizeSearchItem` runs inside an unguarded `items.map()`,

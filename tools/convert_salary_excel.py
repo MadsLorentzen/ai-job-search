@@ -127,14 +127,23 @@ def detect_column_type(header):
 
 def parse_sheet(ws, sheet_label=None):
     """Parse a single worksheet into a list of company entries and detected categories."""
-    # Find header row
+    # Find header row. A candidate row needs a company-pattern cell AND
+    # corroboration - at least one other cell matching a city/count/index
+    # pattern - so a title or source-citation row above the real header
+    # (common in real statistics exports, e.g. "Kilde: ... opdelt efter
+    # arbejdsgiver ...") isn't mistaken for it just because it mentions a
+    # company-pattern word in prose. A real header row for this format
+    # always has more than a bare company column.
     header_row = None
     for row_idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=False), start=1):
-        for cell in row:
-            if cell.value and header_matches(str(cell.value), COMPANY_PATTERNS):
-                header_row = row_idx
-                break
-        if header_row:
+        cell_texts = [str(cell.value).strip() for cell in row if cell.value]
+        if not any(header_matches(t, COMPANY_PATTERNS) for t in cell_texts):
+            continue
+        if any(
+            header_matches(t, CITY_PATTERNS) or header_matches(t, COUNT_PATTERNS) or header_matches(t, INDEX_PATTERNS)
+            for t in cell_texts
+        ):
+            header_row = row_idx
             break
 
     if header_row is None:
@@ -221,6 +230,14 @@ def parse_sheet(ws, sheet_label=None):
     # Untyped columns become standalone
     for col_idx, col_header in untyped_cols:
         categories.append({"name": col_header.lower().replace(" ", "_"), "value_col": col_idx})
+
+    if not categories:
+        print(
+            f"Warning: No salary data columns detected in sheet '{ws.title}' "
+            "(only a company/city column was found) - the header row may be "
+            "wrong, or this sheet has no salary data.",
+            file=sys.stderr,
+        )
 
     # Parse data rows
     companies = []
