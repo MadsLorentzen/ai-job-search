@@ -41,13 +41,23 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobnet-search` no longer dies over one ad with a null publication date** (#418, the
+  sibling of #416 from the same audit) - `date: job.publicationDate.slice(0, 10)` trusted
+  a TypeScript interface claim (`publicationDate: string`) that nothing validates at
+  runtime: `apiFetch` casts the JSON body, so one `null` threw `TypeError` inside the
+  `jobAds` map and the whole search of a default-ON portal exited 1 as `API_ERROR` - while
+  the neighboring `applicationDeadline` field was already null-guarded with a `1900-01-01`
+  sentinel check. The field is now typed nullable (so the compiler enforces the guard) and
+  degrades per-item to `date: null`, the shape the `seen_jobs.json` contract documents.
+  Pinned by a new case in `search-normalization.test.ts`, verified to fail on the unfixed
+  code with the exact production TypeError.
+
 - **Placeholder-integrity tests in `python-tests` now skip on forks** (#405) - the dedicated
   `placeholder-integrity` job already gates on the upstream repo name, but `python-tests` ran
   `unittest discover` with no such guard, so forks that personalized files via `/setup` failed
   three sentinel checks permanently. Both test classes now use `@unittest.skipIf` on
   `GITHUB_REPOSITORY` (defaulting to upstream when unset so local pristine-template runs still
   execute).
-
 - **`convert_salary_excel.py` no longer mistakes a title/citation row for the header row**
   (#414) - header-row detection accepted the first row in the first 10 where *any* cell merely
   contained a company-pattern word, with no check that the row actually looked like a header. A

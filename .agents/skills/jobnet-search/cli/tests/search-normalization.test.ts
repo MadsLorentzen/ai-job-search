@@ -161,3 +161,23 @@ describe("Jobnet search normalization", () => {
     expect(output.results[1].deadline).toBe("2026-08-01");
   });
 });
+
+describe("Jobnet null publicationDate degradation", () => {
+  // publicationDate: string was a TypeScript claim, not runtime validation -
+  // apiFetch casts the JSON body, so one ad with a null publication date
+  // threw TypeError from .slice() inside the jobAds map and killed the whole
+  // search as API_ERROR (#418). The neighboring applicationDeadline field is
+  // already guarded (null check + 1900-01-01 sentinel); this pins the same
+  // per-item degradation for publicationDate: date null, no throw.
+  test("an ad with a null publicationDate yields date: null instead of crashing the search", () => {
+    const data = apiResponse();
+    data.jobAds[0].publicationDate = null;
+
+    // The shared fixture flags carry limit: 1, which would slice off the
+    // second ad; lift the limit so the survives-alongside assertion is real.
+    const output = createSearchOutput(data, { ...flags, limit: undefined });
+
+    expect(output.results[0].date).toBeNull();
+    expect(output.results[1].date).toBe("2026-07-02");
+  });
+});
