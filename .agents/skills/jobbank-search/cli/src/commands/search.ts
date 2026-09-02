@@ -5,7 +5,13 @@ import { rssFetch, fetchWithUA, writeError, parseRssDescription, extractJobIdFro
 export function normalizeSearchItem(item: RssItem): Record<string, unknown> {
   const parsed = parseRssDescription(item.description)
   const id = extractJobIdFromUrl(item.link)
-  const posted = item.pubDate ? new Date(item.pubDate).toISOString() : ""
+  // Guard the parse: new Date(<unparseable>) is an Invalid Date whose
+  // toISOString() throws RangeError, and this runs inside an unguarded
+  // items.map() - one bad feed item would kill the whole search as
+  // API_ERROR (#416). An unparseable pubDate degrades to the same shape
+  // as an absent one: posted "", date null.
+  const parsedDate = item.pubDate ? new Date(item.pubDate) : null
+  const posted = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : ""
   return {
     id,
     title: item.title,

@@ -27,6 +27,21 @@ describe("Jobbank search normalization", () => {
     expect(result.date).toBeNull();
   });
 
+  // A present-but-unparseable pubDate must degrade to the same null-date shape
+  // as an absent one, never throw: toISOString() on an Invalid Date raises
+  // RangeError, and normalizeSearchItem runs inside an unguarded items.map(),
+  // so one bad feed item killed the whole search as API_ERROR (#416). The
+  // un-CDATA'd fallback capture in parseRssItems can deliver exactly such a
+  // value.
+  for (const bad of ["date unavailable", "2026-09-02T08:00:00+02:00x", "I går"]) {
+    test(`emits a null date instead of throwing on unparseable pubDate ${JSON.stringify(bad)}`, () => {
+      const result = normalizeSearchItem({ ...rssItem(), pubDate: bad });
+
+      expect(result.posted).toBe("");
+      expect(result.date).toBeNull();
+    });
+  }
+
   test("keeps the native fields alongside the contract date (additive)", () => {
     const result = normalizeSearchItem(rssItem());
 

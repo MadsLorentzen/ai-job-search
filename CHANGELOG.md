@@ -41,6 +41,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobbank-search` no longer dies over one malformed feed date** (#416) - `new Date()`
+  on a present-but-unparseable `pubDate` yields an Invalid Date whose `toISOString()`
+  throws `RangeError`, and `normalizeSearchItem` runs inside an unguarded `items.map()`,
+  so a single bad RSS item killed the entire search with `{"error": "Invalid Date",
+  "code": "API_ERROR"}` and exit 1 - a whole default-ON portal lost to one item, with
+  the error pointing at the API. The un-CDATA'd fallback capture in `parseRssItems` can
+  deliver exactly such a value. An unparseable `pubDate` now degrades to the same shape
+  as an absent one (`posted` empty, `date: null`, per the `seen_jobs.json` contract that
+  #391 put this field on), and every other item survives. Pinned by three new cases in
+  `search-normalization.test.ts`, each verified to fail on the unfixed code.
 - **`linkedin-search` rejects fractional numeric flags instead of silently changing
   the query** (#371) - bare `parseInt` truncated values before validation, so
   `--jobage 0.5` became `0` and silently omitted LinkedIn's `f_TPR` freshness filter
