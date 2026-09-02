@@ -49,11 +49,18 @@ per-file diff commands.
   "arbejdsgiver" (employer) appeared in prose. The real header row then got parsed as a data row
   (its "Firma" cell became a bogus company entry), and every genuine company lost all its salary
   data, silently: exit 0, "Done! Wrote N company entries," with `categories: {}` on every one. A
-  candidate row is now only accepted when it also has a second cell matching a city/count/index
-  pattern - a real header always has more than a bare company column, unlike a caption sentence.
-  As a backstop independent of that fix, a sheet that ends up with zero detected salary columns
-  now prints a warning instead of reporting success silently. Pinned by two new cases in
-  `tests/test_convert_salary_excel.py`, both verified to fail on the unfixed script.
+  candidate row is now accepted only when a *different* cell in the same row also matches a
+  city/count/index pattern - same-cell corroboration doesn't count, since a citation sentence can
+  pack a count-pattern word into the same sentence as the company-pattern one (e.g. "...opdelt
+  efter arbejdsgiver, antal svar 1234"). Sheets whose only real header has purely untyped salary
+  columns (e.g. "Base pay 2025" / "Bonus 2025", neither of which matches a known city/count/index
+  pattern) have nothing to corroborate against in any row, so detection falls back to the original
+  any-cell-mentions-company rule when the strict pass finds nothing in the first 10 rows. As a
+  backstop independent of either pass, a sheet that ends up with zero detected salary columns now
+  prints a warning instead of reporting success silently. Pinned by four cases in
+  `tests/test_convert_salary_excel.py`: the original citation-row and zero-columns cases fail
+  against the pre-fix script; the same-cell-corroboration and untyped-column-fallback cases each
+  fail against the single-pass version of this fix that came before the fallback was added.
 
 - **`jobbank-search` no longer dies over one malformed feed date** (#416) - `new Date()`
   on a present-but-unparseable `pubDate` yields an Invalid Date whose `toISOString()`

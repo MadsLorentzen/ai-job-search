@@ -312,6 +312,44 @@ class DetectColumnTypeTests(unittest.TestCase):
         self.assertEqual(companies[0]["categories"]["alle"], {"count": 500, "index": 108.5})
         self.assertEqual(companies[1]["company"], "Ørsted A/S")
 
+    def test_parse_sheet_rejects_citation_row_with_count_word_in_same_cell(self):
+        # Corroboration must come from a DIFFERENT cell than the company
+        # match. A single free-text sentence can pack both a company-pattern
+        # word and a count-pattern word together (e.g. "... opdelt efter
+        # arbejdsgiver, antal svar 1234") - same-cell corroboration must not
+        # be enough, or this citation row reintroduces the bogus-header bug.
+        ws = FakeWorksheet([
+            ("Lønstatistik 2025",),
+            ("Kilde: undersøgelse opdelt efter arbejdsgiver, antal svar 1234",),
+            (),
+            ("Firma", "By", "Antal alle", "Lønindeks alle"),
+            ("Novo Nordisk A/S", "Bagsværd", 500, 108.5),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(len(companies), 1)
+        self.assertEqual(companies[0]["company"], "Novo Nordisk A/S")
+        self.assertEqual(companies[0]["categories"]["alle"], {"count": 500, "index": 108.5})
+
+    def test_parse_sheet_falls_back_when_no_row_has_cross_cell_corroboration(self):
+        # A header with only untyped salary columns (no header matches a
+        # known city/count/index pattern - "Base pay"/"Bonus" don't) has
+        # nothing to corroborate against in any row. The strict cross-cell
+        # check must fall back to the original any-cell-mentions-company
+        # rule rather than failing to find a header at all.
+        ws = FakeWorksheet([
+            ("Company", "Base pay 2025", "Bonus 2025"),
+            ("Example Corp", 55000, 5000),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(len(companies), 1)
+        self.assertEqual(companies[0]["company"], "Example Corp")
+        self.assertEqual(companies[0]["categories"]["base_pay_2025"], {"index": 55000.0})
+        self.assertEqual(companies[0]["categories"]["bonus_2025"], {"index": 5000.0})
+
     def test_parse_sheet_warns_when_no_salary_columns_detected(self):
         # A header row with only company/city columns and no salary data
         # is a strong signal something is wrong (a misdetected header row,
