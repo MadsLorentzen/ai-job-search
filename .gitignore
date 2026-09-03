@@ -119,3 +119,6 @@ company_research/*.json
 
 # Personal application form answers (see applicant_answers.example.json)
 applicant_answers.json
+
+# autoapply run artifacts
+application*.png

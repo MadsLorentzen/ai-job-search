@@ -1,0 +1,76 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Apply - Project Coordinator</title>
+<h1>Project Coordinator</h1>
+<form>
+  <label for="first_name">First Name *</label>
+  <input id="first_name" name="job_application[first_name]" type="text">
+
+  <label for="last_name">Last Name *</label>
+  <input id="last_name" name="job_application[last_name]" type="text">
+
+  <label for="email">Email *</label>
+  <input id="email" name="job_application[email]" type="email">
+
+  <label for="phone">Phone</label>
+  <input id="phone" name="job_application[phone]" type="tel">
+
+  <label for="loc">City</label>
+  <input id="loc" type="text" placeholder="City">
+
+  <label for="resume">Resume/CV</label>
+  <input id="resume" name="resume" type="file">
+
+  <label for="cover">Cover Letter</label>
+  <input id="cover" name="cover_letter" type="file">
+
+  <label for="li">LinkedIn Profile</label>
+  <input id="li" type="url">
+
+  <label for="school">School</label>
+  <input id="school" type="text">
+
+  <label for="degree">Degree</label>
+  <select id="degree">
+    <option value="">Select...</option>
+    <option value="1">High School</option>
+    <option value="2">Bachelor of Commerce</option>
+    <option value="3">Master's Degree</option>
+  </select>
+
+  <label for="grad">Graduation Year</label>
+  <input id="grad" type="text">
+
+  <label for="sponsor">Will you now or in the future require sponsorship for employment visa status?</label>
+  <select id="sponsor">
+    <option value="">Select...</option>
+    <option value="y">Yes</option>
+    <option value="n">No</option>
+  </select>
+
+  <label for="auth">Are you legally authorized to work in Canada?</label>
+  <select id="auth">
+    <option value="">Select...</option>
+    <option value="y">Yes</option>
+    <option value="n">No</option>
+  </select>
+
+  <label for="gender">Gender</label>
+  <select id="gender">
+    <option value="">Select...</option>
+    <option value="f">Female</option>
+    <option value="m">Male</option>
+    <option value="d">Decline to self-identify</option>
+  </select>
+
+  <label for="hear">How did you hear about this job?</label>
+  <input id="hear" type="text">
+
+  <label for="why">Why do you want to work here?</label>
+  <textarea id="why"></textarea>
+
+  <label><input type="checkbox" id="agree"> I certify that the information provided is true and complete.</label>
+  <label><input type="checkbox" id="notify"> Email me about similar roles.</label>
+
+  <button type="button">Submit Application</button>
+</form>
