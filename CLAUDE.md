@@ -21,10 +21,10 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 - **Languages:**
   | Language | Level |
   |----------|-------|
-  | Mandarin | Native |
-  | English | Native |
+  | English | Full professional |
+  | Mandarin | Full professional |
   | Cantonese | Conversational |
-  | French | Conversational (untested) |
+  | French | Conversational - **TCF Canada in progress** |
 - **CV language:** English
 
 - **Status:** Employed (Associate Project Manager, JY Construction) and actively looking
@@ -67,11 +67,11 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 - **Lofter writing and community leadership** (Mar 2020 - Jun 2023) - Long-form writing, editorial planning, contributor coordination, digital publishing. *(Confirm figures before quoting.)*
 
 ### Technical Skills
-- **Primary:** AI-assisted workflow design; prompt design and prompt libraries; multi-agent workflow prototyping; Microsoft Excel (PivotTables, XLOOKUP, dashboards); knowledge-base structuring and documentation governance
+- **Primary:** Project systems administration (workflow configuration to standards/templates, role- and data-dependent access, record integrity); user documentation (SOPs, runbooks); training and adoption; AI-assisted workflow design; prompt design and prompt libraries; multi-agent workflow prototyping; Microsoft Excel (PivotTables, XLOOKUP, dashboards); knowledge-base structuring and documentation governance
 - **Secondary:** SQL; SAP / internal business systems; Monday.com; Wave; CSV / JSON / Markdown documentation; process mapping; requirements gathering; data organization and validation
 - **Working knowledge (do not list as a core skill):** Tableau
 - **Domain:** Construction and tenant-improvement project coordination; procurement and RFQ/bid comparison; supply chain and logistics operations; permitting, landlord and Strata approval processes
-- **Software:** Microsoft 365 / Office / Teams; Monday.com; Notion; Confluence; Wave; Gmail; ChatGPT; Claude; Claude Code; Gemini; Microsoft Copilot
+- **Software:** Microsoft 365 (Excel with PivotTables and XLOOKUP, Word, Outlook, Teams, SharePoint); Monday.com; Notion; Confluence; SAP; Wave; Adobe InDesign; Canvas; Microsoft Copilot and Azure AI Foundry (hands-on); Claude; Claude Code; ChatGPT; Gemini
 
 ### Certifications
 - None recorded yet. *(Asked during /setup and not provided - re-run `/setup --section education` to add, or run `/upskill` to identify which would pay off.)*
@@ -132,6 +132,7 @@ These are hard limits on what may appear in any generated CV, cover letter, or a
 - Always distinguish **deployed workflow** vs **tested prototype** vs **planned integration** when describing AI work.
 - Do **not** generalize the invoice time saving across all invoices, or claim full accounting automation.
 - Do **not** state the UBC degree has been conferred until conferral is confirmed.
+- **Never name client companies, sites, or permit numbers in an outward-facing document.** Caroline's own approved resume abstracts them ("a shopping centre tenant improvement", "office, retail, and restaurant projects") and generated documents must do the same. KFC, Burger King, New York Fries, H Mart, Haidilao, KIOKII, Peppa Pets, Tsawwassen Mills, the Dunbar Street address and permit BP060172 appear in `01-candidate-profile.md` as **internal recall only** - they are her employer's client relationships, not hers to publish.
 - **Unconfirmed figures must not be used.** See `VERIFY-BEFORE-SUBMITTING.md` for the open list (including the ~CAD 38,000 cost reduction, ~CAD 568,000 engagement value, 13 active projects, and the "quotation cycle from days to hours" claim).
 
 ## Verification Checklist

@@ -2,7 +2,32 @@
 framework_version: 1.4.3
 ---
 
-# CV Templates and Tailoring Guide
+# CV Templates
+
+<!-- ACTIVE-TEMPLATE -->
+## ACTIVE TEMPLATE: ats-resume (HTML + Chromium)
+
+**This supersedes the moderncv/LaTeX instructions below for all CV work.** Caroline supplied an
+approved one-page format (the Marcon version); it is reproduced exactly at
+`templates/ats-resume/example.html` with `templates/ats-resume/style.css`.
+
+- **Source format:** HTML + CSS, not LaTeX. No LaTeX toolchain is assumed.
+- **Build command:** `python3 tools/build_resume.py cv/main_<company>_<role>.html`
+  (headless Chromium print-to-PDF; exits non-zero if the result is not exactly one page)
+- **Page target:** exactly **1 page**, not 2. If a draft overflows, cut a bullet before
+  reaching for `class="tight"` on `<body>`.
+- **Per-application workflow:** copy `templates/ats-resume/example.html` to
+  `cv/main_<company>_<role>.html`, then rewrite **only**: the tagline, the professional summary,
+  the emphasis and keyword choice inside existing bullets, and the skills groupings. Section
+  order, structure and styling do not change.
+- **Never** name client companies, sites or permit numbers. Abstract them the way the approved
+  version does.
+- **ATS verification:** `pdftotext -layout -enc UTF-8 <pdf> <txt>` and confirm the email, phone
+  and LinkedIn appear as literal text, no `(cid:` markers, and heading order matches the page.
+
+<!-- /ACTIVE-TEMPLATE -->
+
+ and Tailoring Guide
 
 <!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
 

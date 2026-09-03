@@ -1,0 +1,77 @@
+/* ATS-safe one-page resume - matches Caroline Lyu's approved format.
+   Single column, no tables for layout, no text in images, no icon-only contact
+   details. Times New Roman metrics (Liberation Serif is metric-compatible and
+   is what the approved PDF used). */
+
+@page { size: Letter; margin: 0.42in 0.5in; }
+
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+body {
+  font-family: "Times New Roman", "Liberation Serif", Times, serif;
+  font-size: 9.5pt;
+  line-height: 1.13;
+  color: #000;
+  margin: 0;
+}
+
+/* ---------- header ---------- */
+.name {
+  font-size: 15pt;
+  font-weight: bold;
+  text-align: center;
+  margin: 0 0 2pt;
+}
+.tagline {
+  font-size: 9pt;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 0.2pt;
+  margin: 0 0 2pt;
+}
+.contact {
+  font-size: 9.5pt;
+  text-align: center;
+  margin: 0 0 5pt;
+}
+.contact a { color: #000; text-decoration: none; }
+
+/* ---------- sections ---------- */
+h2 {
+  font-size: 10pt;
+  font-weight: bold;
+  letter-spacing: 0.3pt;
+  margin: 5pt 0 1pt;
+  padding-bottom: 1pt;
+  border-bottom: 0.75pt solid #000;
+  page-break-after: avoid;
+}
+
+p { margin: 0 0 2pt; text-align: justify; }
+
+/* ---------- entries ---------- */
+.entry { margin-bottom: 3pt; page-break-inside: avoid; }
+
+/* Role line: title/company left, dates right. Flex, not a table - a layout
+   table can scramble ATS reading order; flex serializes left-then-right. */
+.entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12pt;
+}
+.entry-title { font-weight: bold; }
+.entry-date { white-space: nowrap; }
+.entry-note { font-style: italic; margin: 0 0 2pt; }
+
+ul { margin: 1pt 0 0; padding-left: 13pt; }
+li { margin-bottom: 1pt; text-align: justify; }
+
+/* ---------- skills ---------- */
+.skills p { margin-bottom: 2.5pt; }
+.skills .label { font-weight: bold; }
+
+/* Tighten everything by one notch when a draft runs a few lines long.
+   Add class="tight" to <body> rather than hand-editing sizes. */
+body.tight { font-size: 9pt; line-height: 1.08; }
+body.tight h2 { margin-top: 5.5pt; }
