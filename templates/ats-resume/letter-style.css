@@ -1,0 +1,33 @@
+/* One-page cover letter, matched to the ATS resume header so the two
+   documents read as one set. Same Times New Roman metrics. */
+
+@page { size: Letter; margin: 0.75in 0.85in; }
+
+body {
+  font-family: "Times New Roman", "Liberation Serif", Times, serif;
+  font-size: 11pt;
+  line-height: 1.32;
+  color: #000;
+  margin: 0;
+}
+
+.name { font-size: 15pt; font-weight: bold; text-align: center; margin: 0 0 2pt; }
+.contact { font-size: 9.5pt; text-align: center; margin: 0 0 4pt; }
+.contact a { color: #000; text-decoration: none; }
+hr { border: none; border-top: 0.75pt solid #000; margin: 0 0 14pt; }
+
+.date { margin: 0 0 12pt; }
+.recipient { margin: 0 0 12pt; }
+.recipient div { margin: 0; }
+
+p { margin: 0 0 9pt; text-align: justify; }
+.salutation { margin-bottom: 9pt; }
+
+ul { margin: 0 0 9pt; padding-left: 17pt; }
+li { margin-bottom: 4pt; text-align: justify; }
+
+.close { margin-top: 14pt; }
+.close .sig { margin-top: 22pt; font-weight: bold; }
+
+body.tight { font-size: 10.5pt; line-height: 1.24; }
+body.tight p { margin-bottom: 7pt; }
