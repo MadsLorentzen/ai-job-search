@@ -113,10 +113,10 @@ Sort by overall score (descending), urgency as tiebreaker.
 
 ## Step 4: Update State
 
-Concatenate the Step 2 agents' JSON arrays into one file in the session scratchpad (`$SCRATCHPAD/rank_results.json`) rather than restating them in prose, then write the results back with the tool. It reads `job_scraper/seen_jobs.json`, edits the entries and writes it atomically, so the state never passes through the conversation in either direction:
+Concatenate the Step 2 agents' JSON arrays into one temporary file - a scratch or working-directory path outside the repo tree, never committed - rather than restating them in prose, then write the results back with the tool. It reads `job_scraper/seen_jobs.json`, edits the entries and writes it atomically, so the state never passes through the conversation in either direction:
 
 ```bash
-python3 tools/rank_state.py apply --results "$SCRATCHPAD/rank_results.json"
+python3 tools/rank_state.py apply --results "<path to that temporary file>"
 ```
 
 What it writes per entry - all additive to the scraper's schema:
