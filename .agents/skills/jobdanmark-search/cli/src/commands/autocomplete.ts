@@ -4,7 +4,12 @@ import { apiFetch, writeError } from "../helpers.js"
 
 interface AutocompleteItem {
   id: string
-  text: string
+  // Nullable because apiFetch casts the JSON body with no runtime validation:
+  // an item missing its text arrives typed as if it had one, and the filter
+  // below is the only place the command derefs it (#421). A null text can
+  // never match the required non-empty query, so such an item is filtered
+  // out here and downstream output never sees it.
+  text: string | null
   value: number
   category: string
   slug: string
@@ -13,6 +18,23 @@ interface AutocompleteItem {
 interface AutocompleteGroup {
   title: string
   items: AutocompleteItem[]
+}
+
+/**
+ * Filter the API's autocomplete groups to items whose text matches the query
+ * (the API always returns all categories, so a nonsense query must yield []).
+ * Exported for tests.
+ */
+export function filterAutocompleteGroups(raw: AutocompleteGroup[], query: string): AutocompleteGroup[] {
+  const queryLower = query.toLowerCase()
+  return raw
+    .map((g) => ({
+      title: g.title,
+      items: (g.items ?? []).filter(
+        (item) => typeof item.text === "string" && item.text.toLowerCase().includes(queryLower),
+      ),
+    }))
+    .filter((g) => g.items.length > 0)
 }
 
 export const autocomplete = defineCommand({
@@ -44,18 +66,7 @@ export const autocomplete = defineCommand({
 
       if (signal.aborted) return
 
-      const queryLower = flags.query.toLowerCase()
-
-      // Filter groups: only include items whose text matches the query (API always returns all categories)
-      // This ensures a nonsense query returns []
-      const filtered = raw
-        .map((g) => ({
-          title: g.title,
-          items: (g.items ?? []).filter((item) =>
-            item.text.toLowerCase().includes(queryLower)
-          ),
-        }))
-        .filter((g) => g.items.length > 0)
+      const filtered = filterAutocompleteGroups(raw, flags.query)
 
       let result = filtered
 
@@ -93,7 +104,7 @@ function outputTable(data: AutocompleteGroup[]): void {
     for (const item of group.items) {
       const cat = item.category.padEnd(10)
       const id = item.id.substring(0, 20).padEnd(20)
-      const text = item.text.substring(0, 32).padEnd(32)
+      const text = (item.text ?? "").substring(0, 32).padEnd(32)
       const value = String(item.value).padEnd(6)
       const slug = item.slug
       console.log(`${cat} ${id} ${text} ${value} ${slug}`)
@@ -105,7 +116,7 @@ function outputPlain(data: AutocompleteGroup[]): void {
   for (const group of data) {
     console.log(`=== ${group.title} ===`)
     for (const item of group.items) {
-      console.log(`  ${item.text} (${item.category}, id=${item.value}, slug=${item.slug})`)
+      console.log(`  ${item.text ?? ""} (${item.category}, id=${item.value}, slug=${item.slug})`)
     }
   }
 }

@@ -41,6 +41,18 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobdanmark-search` autocomplete no longer dies over one suggestion without text**
+  (#421, closing out the #416/#418 audit - every other deref site in the six CLIs
+  checked and confirmed guarded) - the filter derefed `item.text.toLowerCase()` from a
+  cast API response on the same line that already guards `g.items ?? []`, so one item
+  with a null or missing `text` threw `TypeError` and the whole command exited 1 as
+  `API_ERROR`. The filter now lives in an exported `filterAutocompleteGroups` (the
+  jobnet testability pattern), `text` is typed nullable so the compiler enforces the
+  guard, and an item without usable text is skipped - it can never match the required
+  non-empty query, so downstream output never sees one. Pinned by three cases in the
+  new `autocomplete-filtering.test.ts`; the null-text case fails against the verbatim
+  unguarded extraction with the exact production TypeError.
+
 - **`jobnet-search` no longer dies over one ad with a null publication date** (#418, the
   sibling of #416 from the same audit) - `date: job.publicationDate.slice(0, 10)` trusted
   a TypeScript interface claim (`publicationDate: string`) that nothing validates at
