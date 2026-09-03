@@ -71,3 +71,13 @@ export function writeError(error: string, code: string): void {
 export function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim()
 }
+
+export function normalizeSlug(input: string): string | null {
+  const trimmed = input.trim()
+  if (!trimmed) return null
+  const match = trimmed.match(/\/job\/([^/?#]+)/)
+  if (match) return match[1]
+  if (/^[a-zA-Z0-9_-]+$/.test(trimmed)) return trimmed
+  return null
+}
+

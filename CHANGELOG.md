@@ -41,6 +41,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobbank-search`, `jobdanmark-search`, and `jobnet-search` detail commands now accept full URLs** -
+  the portal contract specifies `detail <id|url>`. Passing a full posting URL (with or without
+  trailing slashes, slug segments, or query parameters) previously caused `jobbank-search` and
+  `jobdanmark-search` to construct invalid double-URL strings, and `jobnet-search` to interpolate the
+  full URL into the API endpoint path. All three detail handlers now extract and normalize the
+  underlying ID or slug via dedicated helper functions, and exit 1 with code `BAD_ID` on unparseable
+  inputs, matching `linkedin-search` and `freehire-search`. Pinned by 24 unit tests across the three
+  CLIs' `detail-url-normalization.test.ts`.
+
 - **`/rank` now bounds each scoring batch** (#395) - a bare run scores at most 10
   eligible jobs instead of attempting the entire backlog. `--limit <N>` controls
   scoring independently of `--top`, and the report makes deferred work visible so
