@@ -268,6 +268,7 @@ def main() -> int:
                     help="affirm the form's 'I certify / I agree' statements and tick them. "
                          "Passing this is your declaration, not the tool's.")
     ap.add_argument("--screenshot", default="application.png")
+    ap.add_argument("--proxy", help="outbound proxy, e.g. http://host:port (defaults to $HTTPS_PROXY)")
     ap.add_argument("--timeout", type=int, default=30000)
     args = ap.parse_args()
 
@@ -282,6 +283,11 @@ def main() -> int:
         chrome = find_chrome()
         if chrome:
             launch["executable_path"] = chrome
+        # Honour an outbound proxy the shell already uses; Chromium does not read
+        # HTTPS_PROXY on its own the way curl does.
+        proxy = args.proxy or os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
+        if proxy:
+            launch["proxy"] = {"server": proxy}
         ctx = pw.chromium.launch_persistent_context(args.profile, **launch)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         page.set_default_timeout(args.timeout)
