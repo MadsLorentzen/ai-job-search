@@ -30,6 +30,32 @@ If the candidate's permit also constrains *hours* or *start date* (a student vis
 
 A role that fails this gate is not scored and not drafted. Everything below applies only to roles that pass it.
 
+### Candidate status: Caroline Lyu
+
+She is **not** a Canadian citizen or permanent resident. She holds a **Canadian work permit valid to 2029-07-08**, with no recorded restriction on hours, employer or start date.
+
+| Situation | Verdict |
+|---|---|
+| Posting requires Canadian **citizenship or PR** | **FAIL — hard stop.** Quote the wording back. Common in federal government, defence, and some critical-infrastructure and financial roles. |
+| Posting requires a **security clearance** | **FAIL** in most cases — Canadian clearances are normally gated on citizenship or PR. Verify the specific level rather than assuming. |
+| Posting asks whether the applicant **requires sponsorship** | **PASS.** The correct answer is **No** — she is already authorized to work in Canada until 2029-07-08. |
+| Posting is silent | **PROCEED, unverified.** Check the employer's careers page. |
+| Role is **outside Canada** | **FAIL** — the permit is Canadian. |
+
+Do not raise the Francophone (Mobilité Francophone) immigration stream with an employer: it normally requires **tested** French at NCLC 5+, and her French is conversational and untested.
+
+## Deal-breaker Gate — run before scoring
+
+A hard filter, like the gates above. A posting matching any row is not scored and not drafted.
+
+| Condition | Verdict |
+|---|---|
+| **Small construction company** (contractor, subcontractor, design-build or renovation firm of roughly under ~50 staff) | **FAIL — hard stop.** Explicitly stated deal-breaker. Report it and move on. |
+| Large construction, engineering or development organizations; owner-side, developer-side or general-contractor roles at scale | **PASS** — the exclusion is small construction firms, not the construction sector as a whole. |
+| Compensation clearly below **CAD 55,000** where the posting states a range | **FLAG, deprioritize.** Not an automatic fail; a strong AI-implementation role may still be worth discussing. Never surface this figure in an application. |
+
+When company size is not stated, check headcount on LinkedIn before drafting rather than guessing.
+
 ## Language Gate — run before scoring
 
 This gate checks a posting's language requirements against what the candidate actually speaks. It is not one of the five Scoring Dimensions below - it runs before them, structured the same way as the Eligibility Gate above: read the posting, classify against profile data, and treat a hard mismatch as FAIL before scoring. Its verdict is tracked downstream: `/rank` records the result as `language_gate` (PASS/FAIL/FLAG) with a supporting `language_note`, persists both into `seen_jobs.json`, and treats a FAIL as a shortlist veto; `/scrape` surfaces the flag in its results table and carries a language-override rule for postings whose ad language differs from the role's working language. `/apply`'s language detection (Step 1, which extracts a posting's required language generically) feeds this same check.
@@ -60,9 +86,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** AI-assisted workflow design; prompt design and prompt libraries; AI adoption, training and enablement; knowledge-base structuring and documentation governance; project coordination across many parallel stakeholders; procurement, RFQ issuance and bid comparison; permitting, landlord and Strata approval processes; Microsoft Excel (PivotTables, XLOOKUP, dashboards); Microsoft 365 / Teams / Monday.com; bilingual Mandarin-English business communication
+**Moderate match areas:** multi-agent workflow prototyping (some live, some prototype); SAP / internal business systems; inventory, warehouse and logistics operations; process mapping and requirements gathering; budgeting and bookkeeping support; Notion / Confluence / Wave; basic SQL; Tableau (working knowledge)
+**Weak match areas (do not claim):** software engineering and production integration; advanced SQL and data modelling at scale; ML/model development, RAG engineering, API development, Microsoft Foundry implementation; professional-level French; formal accounting or finance qualification; anything requiring a certification she does not hold
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for? Match on the function and nature of the work performed, not the literal job title - a "Data Consultant" and a "Data Scientist" role can be functionally identical.
@@ -74,9 +100,11 @@ Does work history align with what they're looking for? Match on the function and
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** internal AI enablement and adoption; project coordination for commercial construction, renovation and tenant improvement; procurement and vendor/quotation management; cross-functional and cross-timezone operations coordination
+**Moderate:** supply chain, inventory and logistics operations (Haier internship, Oakel City Floor dispatch); business analysis and reporting; knowledge management and documentation; training and facilitation
+**Entry-level:** data analysis and BI roles; program management with formal budget ownership; any role expecting several years of post-degree tenure
+
+**Tenure caveat:** her first post-degree role began 2026-05-30. Score any posting demanding 3+ years of professional experience accordingly, and treat 5+ years as a genuine mismatch rather than a stretch.
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -91,10 +119,12 @@ Does the role and company culture match the behavioral profile?
 **Red flags to research:** Department disorganization, work dominated by maintenance over development, poor chemistry with leadership, culture mismatches. Check reviews, media coverage, LinkedIn connections, and network contacts for insider perspective.
 
 ### 4. Location & Logistics (Pass/Fail + Notes)
-- Within commute range: PASS
-- Remote with occasional office: PASS
-- Requires relocation: FAIL (deal-breaker)
+- Greater Vancouver, Greater Toronto, Calgary, Montreal: PASS (priority metros)
+- Elsewhere in Canada: PASS - she is willing to relocate; note relocation support in the assessment
+- Remote or hybrid anywhere in Canada: PASS
+- Outside Canada: FAIL - her work permit is Canadian
 - Frequent international travel: FLAG (discuss with user)
+- **Montreal and other Quebec postings:** apply the Language Gate. French is conversational and untested, so any posting requiring professional or bilingual French is FLAGGED for her judgment, not auto-passed.
 
 ### 5. Career Alignment & Motivation (0-100)
 Does this role advance career goals and contain tasks that energize?
@@ -107,19 +137,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Move into AI implementation as the core of the job, not a side responsibility (2-3 year goal)
+- Build depth in the systems underneath the workflows: data, integration, business systems
+- Grow into owning an AI adoption programme end to end - strategy, rollout, training, governance, measurement
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: designing workflows and frameworks that people actually adopt; removing repetitive manual work; unblocking stalled processes; building structure where none exists; cross-language and cross-team coordination
+- Tasks that drain: repeating a manual task that could be systematized; work with no ownership or visible impact
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: currently employed, so she can be selective. Compensation floor CAD 55,000 (internal ranking only - never surfaced in an application). Canadian work permit valid to 2029-07-08, so no sponsorship needed; a role offering PR support is a positive but not a requirement.
+- **Flexibility**: no dependants or commute constraints on file. Willing to relocate anywhere in Canada.
+- **Professional development**: values employers that will fund or make room for building technical depth (SQL, BI, business systems) and formal certification - she currently holds none.
 
 ### 6. Salary Benchmark (Optional)
 
