@@ -41,6 +41,27 @@ per-file diff commands.
 
 ### Fixed
 
+- **The portal CLIs' unknown-flag guard no longer lets a single-dash flag through** (#426) -
+  the guard in the four bunli-based CLIs (`jobnet`, `jobbank`, `jobindex`, `jobdanmark`) inspected
+  only tokens starting with `--`, so an undefined *short* flag bypassed it entirely: bunli
+  discarded it, the search ran unfiltered, and the CLI exited 0 with no error. Live against
+  jobnet, `search -q "sygeplejerske"` returned all 18,179 ads as a successful search against 667
+  for the real `--search-string` query - the same shape as review finding F13 (jobdanmark, 13,862
+  results) that motivated the guard in the first place, reached by the likelier route: `-q` is the
+  documented short for the keyword search in `linkedin-search`, `freehire-search` and
+  `jobindex-search`, so a cross-portal habit produces it. Both dash forms are now checked, with
+  declared shorts (`jobindex`'s `-q`) and bunli's built-in `-h`/`-v` still valid. A negative number
+  is rejected too rather than skipped: bunli does not consume a `-`-prefixed token as the previous
+  flag's value, so `--radius -5` silently fell back to the default radius instead of failing its
+  own `min(1)` schema - erroring on it is the trade `linkedin-search` already makes, and a value
+  that must begin with a dash uses the `--flag=value` form. `linkedin-search` and
+  `freehire-search` were unaffected; they normalize `-x` to a long name before checking it. Pinned
+  by thirteen new cases across the four CLIs' `cli-flag-validation.test.ts`, network-free because
+  the guard runs before dispatch: eight bug-pinning cases (the short flag and the negative number,
+  per CLI), each verified to fail on the unfixed guard, plus five regression guards that pass on
+  both and exist to keep the fix from over-rejecting - `-h` in each CLI, and `jobindex`'s declared
+  `-q`.
+
 - **`jobdanmark-search` autocomplete no longer dies over one suggestion without text**
   (#421, closing out the #416/#418 audit - every other deref site in the six CLIs
   checked and confirmed guarded) - the filter derefed `item.text.toLowerCase()` from a

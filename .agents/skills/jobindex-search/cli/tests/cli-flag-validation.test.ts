@@ -77,4 +77,40 @@ describe("unknown flag rejection", () => {
     expect(error.code).toBe("UNKNOWN_FLAG");
     expect(error.error).toContain("--bogus-flag");
   });
+
+  // #426: the guard inspected only `--long` tokens, so a single-dash flag was
+  // discarded in silence. This CLI is the one portal that declares a short
+  // (`-q` for --query), so the fix has to reject undeclared shorts without
+  // breaking the declared one.
+  test("an undeclared short flag exits 1 with a JSON error", async () => {
+    const result = await runCLI(["search", "-z", "bogus"]);
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toBe("");
+    const error = JSON.parse(result.stderr);
+    expect(error.code).toBe("UNKNOWN_FLAG");
+    expect(error.error).toContain("-z");
+  });
+
+  // Network-free proof that the declared short survives the guard: -q is
+  // scanned before --bogus-flag, so naming --bogus-flag in the error means -q
+  // passed. Asserting -q is accepted directly would require a live search.
+  test("the declared short -q passes the guard", async () => {
+    const result = await runCLI(["search", "-q", "test", "--bogus-flag", "xyz"]);
+    expect(result.exitCode).toBe(1);
+    const error = JSON.parse(result.stderr);
+    expect(error.error).toContain("--bogus-flag");
+    expect(error.error).not.toContain("-q ");
+  });
+
+  test("a negative number is rejected instead of silently falling back to the default", async () => {
+    const result = await runCLI(["search", "--query", "test", "--limit", "-5"]);
+    expect(result.exitCode).toBe(1);
+    expect(JSON.parse(result.stderr).code).toBe("UNKNOWN_FLAG");
+  });
+
+  test("-h still prints help rather than being rejected as unknown", async () => {
+    const result = await runCLI(["search", "-h"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe("");
+  });
 });

@@ -94,4 +94,33 @@ describe("unknown flag rejection", () => {
     expect(result.exitCode).toBe(1);
     expect(JSON.parse(result.stderr).code).toBe("UNKNOWN_FLAG");
   });
+  // #426: the guard inspected only `--long` tokens, so a single-dash flag was
+  // discarded in silence - the same failure the long-form tests above pin,
+  // reached by the likelier route. `-q` is the documented short for the
+  // keyword search in linkedin-search, freehire-search and jobindex-search,
+  // so it is what a cross-portal habit produces here; live, it returned the
+  // portal's entire database as a successful, unfiltered search.
+  test("-q (another portal's short flag) is rejected, not treated as no filter", async () => {
+    const result = await runCLI(["search", "-q", "test"]);
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toBe("");
+    const error = JSON.parse(result.stderr);
+    expect(error.code).toBe("UNKNOWN_FLAG");
+    expect(error.error).toContain("-q");
+  });
+
+  // bunli discards a `-`-prefixed token instead of consuming it as the
+  // previous flag's value, so a negative number never reached the option's
+  // own schema - it silently fell back to the default. Loud beats silent.
+  test("a negative number is rejected instead of silently falling back to the default", async () => {
+    const result = await runCLI(["search", "--search-string", "test", "--limit", "-5"]);
+    expect(result.exitCode).toBe(1);
+    expect(JSON.parse(result.stderr).code).toBe("UNKNOWN_FLAG");
+  });
+
+  test("-h still prints help rather than being rejected as unknown", async () => {
+    const result = await runCLI(["search", "-h"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe("");
+  });
 });
