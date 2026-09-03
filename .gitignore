@@ -116,3 +116,6 @@ company_research/*.json
 
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/
+
+# Personal application form answers (see applicant_answers.example.json)
+applicant_answers.json
