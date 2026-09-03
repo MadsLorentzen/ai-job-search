@@ -484,5 +484,38 @@ class PostedDateStalenessSpec(unittest.TestCase):
         )
 
 
+class RankBatchLimitSpec(unittest.TestCase):
+    """The expensive fetch-and-score batch is bounded independently of output."""
+
+    def setUp(self):
+        self.sections = _sections(COMMAND.read_text(encoding="utf-8"))
+
+    def test_step0_documents_default_limit_distinct_from_top(self):
+        step0 = self.sections.get("Step 0: Parse Input", "")
+        self.assertIn("`--limit <N>`", step0)
+        self.assertIn("default 10", step0)
+        self.assertIn("`--top <N>`", step0)
+        self.assertIn(
+            "They are independent",
+            step0,
+            "--limit must bound scoring without being confused with shortlist size",
+        )
+
+    def test_step1_applies_limit_after_eligibility_filters(self):
+        step1 = self.sections.get("Step 1: Load State", "")
+        self.assertIn("Apply `--limit` after those filters", step1)
+        self.assertIn("count every remaining eligible candidate as deferred", step1)
+        self.assertIn(
+            "keep their current status",
+            step1,
+            "deferred jobs must remain eligible for a later run",
+        )
+
+    def test_step5_reports_deferral_and_how_to_continue(self):
+        report = self.sections.get("Job Ranking - YYYY-MM-DD", "")
+        self.assertIn("jobs deferred", report)
+        self.assertIn("re-run `/rank` to continue", report)
+
+
 if __name__ == "__main__":
     unittest.main()

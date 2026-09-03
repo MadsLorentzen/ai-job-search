@@ -41,6 +41,11 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/rank` now bounds each scoring batch** (#395) - a bare run scores at most 10
+  eligible jobs instead of attempting the entire backlog. `--limit <N>` controls
+  scoring independently of `--top`, and the report makes deferred work visible so
+  re-running `/rank` can continue it.
+
 - **The portal CLIs' unknown-flag guard no longer lets a single-dash flag through** (#426) -
   the guard in the four bunli-based CLIs (`jobnet`, `jobbank`, `jobindex`, `jobdanmark`) inspected
   only tokens starting with `--`, so an undefined *short* flag bypassed it entirely: bunli

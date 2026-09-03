@@ -12,10 +12,13 @@ Follow these steps **in order**.
 
 `$ARGUMENTS` may contain:
 
-- Nothing → rank all jobs with status `new` in `job_scraper/seen_jobs.json`
+- Nothing → rank up to 10 jobs with status `new` in `job_scraper/seen_jobs.json`
 - A focus area (e.g. `/rank data science`) → rank only jobs whose title or stored fit-notes match the focus
 - `--all` → re-rank every job that has not been applied to, including previously ranked ones (useful after the profile changes)
+- `--limit <N>` → maximum number of jobs to score this run (default 10)
 - `--top <N>` → shortlist size (default 5)
+
+`--limit` bounds the expensive fetch-and-score work; `--top` only bounds how many scored jobs appear in the shortlist. They are independent: jobs beyond `--limit` are deferred, not silently discarded.
 
 ---
 
@@ -23,13 +26,14 @@ Follow these steps **in order**.
 
 1. Read `job_scraper/seen_jobs.json`. If the file is missing or has no entries, tell the user to run `/scrape` first and stop.
 2. Read `job_search_tracker.csv`. Build the exclusion set: any company+role already in the tracker is out of scope regardless of flags - it has been applied to or consciously tracked.
-3. Select candidates: entries with status `new` (or entries of any status with `--all`), minus the exclusion set, filtered by the focus area if one was given.
-4. If no candidates remain, say so ("Nothing new to rank - run /scrape to find fresh postings") and stop.
-5. Read the scoring framework and profile **once**:
+3. Select eligible candidates: entries with status `new` (or entries of any status with `--all`), minus the exclusion set, filtered by the focus area if one was given.
+4. Apply `--limit` after those filters. Keep at most N eligible candidates for this run and count every remaining eligible candidate as deferred. Deferred jobs keep their current status so a later `/rank` run continues the backlog.
+5. If no candidates remain, say so ("Nothing new to rank - run /scrape to find fresh postings") and stop.
+6. Read the scoring framework and profile **once**:
    - `.claude/skills/job-application-assistant/04-job-evaluation.md`
    - `.claude/skills/job-application-assistant/01-candidate-profile.md`
 
-State how many jobs will be ranked before proceeding.
+State how many jobs will be ranked and how many are deferred before proceeding.
 
 ---
 
@@ -117,6 +121,7 @@ Do not modify `job_search_tracker.csv` - that file records applications, and `/r
 
 Ranked <N> new postings (<X> shortlisted, <Y> below threshold, <Z> expired/vetoed).
 Swept <S> previously ranked entries (<E> newly expired, <C> closing soon).
+<D> jobs deferred to the next run - re-run `/rank` to continue.
 
 ### Shortlist
 
