@@ -15,6 +15,14 @@ per-file diff commands.
 
 ### Added
 
+- **Source host verification in `/apply` Step 1** (#431, `.claude/commands/apply.md`,
+  `tests/test_apply_host_check.py`) - before proceeding to draft CV and cover letters,
+  Step 1 verifies the posting URL's provenance against installed portal boards and the
+  six standard ATS apex domains (`greenhouse.io`, `lever.co`, `myworkdayjobs.com`/`workday.com`,
+  `ashbyhq.com`, `smartrecruiters.com`, `workable.com`). Look-alike prefix/suffix spoofing
+  fails closed, and unrecognized hosts are plainly flagged as unverified in the evaluation
+  output (`⚠ Unverified source host: <hostname>`) before drafting tokens are spent.
+
 - **CHANGELOG structure guard** (`tests/test_changelog_structure.py`) - every PR edits this one
   shared file by hand near the same line, and nothing checked the result: a second `### Fixed`
   heading landed directly under `[Unreleased]`, above `### Added`, on #425 and was fixed by hand
