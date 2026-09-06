@@ -15,6 +15,12 @@ per-file diff commands.
 
 ### Added
 
+- **`/expand` project and portfolio expansion** (`.claude/commands/expand.md`,
+  `tests/test_expand_command.py`) - expands candidate discovery
+  to technical projects from public GitHub repositories, extracting structured summaries
+  (problem domain, tech stack, key technical challenges, and verifiable outcomes) to
+  populate the `## Independent Projects` section of `01-candidate-profile.md`.
+
 - **CHANGELOG structure guard** (`tests/test_changelog_structure.py`) - every PR edits this one
   shared file by hand near the same line, and nothing checked the result: a second `### Fixed`
   heading landed directly under `[Unreleased]`, above `### Added`, on #425 and was fixed by hand
