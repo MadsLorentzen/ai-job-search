@@ -15,6 +15,13 @@ per-file diff commands.
 
 ### Added
 
+- **CHANGELOG structure guard** (`tests/test_changelog_structure.py`) - every PR edits this one
+  shared file by hand near the same line, and nothing checked the result: a second `### Fixed`
+  heading landed directly under `[Unreleased]`, above `### Added`, on #425 and was fixed by hand
+  at merge time. The `[Unreleased]` section is now checked on every PR for duplicate headings,
+  headings outside the Keep a Changelog set, entries above any heading, and leftover conflict
+  markers. Released sections are history and are not inspected.
+
 - **`/rank` now consumes the `posted_date` #391 persists** (#390, the deferred second
   half) - Step 3 gains a staleness flag: a posting whose stored `posted_date` is more
   than 30 days old at rank time carries a visible ⚠ marker with its age spelled out
@@ -40,6 +47,18 @@ per-file diff commands.
   behavior for anything not on the reviewed list. Thanks @vkotaru.
 
 ### Fixed
+
+- **`/setup` now fills the contact blocks inside `05-cv-templates.md` and
+  `06-cover-letter-templates.md`, and `/reset` restores them** - Step 3 personalised
+  `cv/main_example.tex` but never the LaTeX contact blocks embedded in the two template files
+  `/apply` actually compiles from, so a full Path B or C run left `[YOUR_NAME]`, `[YOUR_EMAIL]`
+  and `[YOUR_PHONE]` in both, and whether they reached a document depended on the drafter
+  noticing (a real user ran `/setup` and then hand-edited both files, #420).
+  `06-cover-letter-templates.md` was not a Step 3 target at all. Step 3.5 now names the `05`
+  contact tokens, a new Step 3.6 covers the `06` contact line and signature (Path A never fills
+  it, so it runs for every path), the completion summary lists `06`, and `/reset` clears both
+  blocks instead of listing `06` as framework-only. Pinned by `tests/test_setup_command.py`; the
+  existing `/reset` coverage test is what forced the `reset.md` half.
 
 - **`/rank` no longer reads or rewrites the whole of `seen_jobs.json` on every run** (#395) -
   Step 1 used to read the entire state file into the conversation to select candidates by
