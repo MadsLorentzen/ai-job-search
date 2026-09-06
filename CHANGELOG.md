@@ -41,6 +41,12 @@ per-file diff commands.
 
 ### Added
 
+- **`/expand` project and portfolio expansion** (`.claude/commands/expand.md`,
+  `tests/test_expand_command.py`) - expands candidate discovery
+  to technical projects from public GitHub repositories, extracting structured summaries
+  (problem domain, tech stack, key technical challenges, and verifiable outcomes) to
+  populate the `## Independent Projects` section of `01-candidate-profile.md`.
+
 - **Stale sweep branch in `/outcome`** (`.claude/commands/outcome.md`,
   `tests/test_outcome_stale.py`) - introduces `/outcome stale [N]` (and `/outcome sweep [N]`)
   to batch-resolve open applications quiet for 60+ (or N) days. Displays a numbered summary
