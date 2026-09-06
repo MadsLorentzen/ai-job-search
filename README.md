@@ -158,6 +158,7 @@ Postings are treated as untrusted input (the workflow follows no instructions em
 - **`/html-report`** generates a self-contained HTML dashboard from `job_search_tracker.csv` and the application archives — stat cards, status/sector/channel/funnel charts (inline SVG, no external dependencies), and a filterable applications table. Opens directly in a browser, fully offline. Re-run it any time after `/apply` or `/outcome` adds new entries.
 - **`/add-template`** registers your own CV or cover letter template (LaTeX, Typst, or another toolchain) in place of the stock ones. It captures the template's instructions (source extension, compile command, fonts, style rules, page limit), runs a mandatory test compile, and wires the template into `/apply`. See [Custom templates](#custom-templates) below.
 - **`/add-portal`** generates a job-portal search skill for a job board in your market. It investigates the portal (search URL pattern, result structure, access rules), scaffolds the CLI skill from the same structure as the shipped ones, and test-runs a live query before registering. See [Job search tools](#job-search-tools) below.
+- **`/audit`** performs a comprehensive, read-only health check on your workspace. It verifies environment runtimes (Python, Bun, LuaLaTeX, XeLaTeX, PDF text extraction), profile and contact block completeness, active portal skills, tracker and archive consistency, and upstream security guards.
 
 `/reset` is also available, see [Starting over](#starting-over) below.
 

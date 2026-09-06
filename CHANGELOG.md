@@ -15,6 +15,13 @@ per-file diff commands.
 
 ### Added
 
+- **`/audit` workspace diagnostic and health check command** (`.claude/commands/audit.md`,
+  `tests/test_audit_command.py`) - performs a comprehensive, read-only diagnostic on the
+  workspace: verifies local environment toolchains (`python`, `bun`, LaTeX, PDF extractors),
+  checks candidate profile and onboarding completeness (detects remaining placeholders and
+  unconfigured contact blocks), inspects active vs. disabled portal search skills, validates
+  tracker schema and file archive integrity, and runs framework security and lint guards.
+
 - **CHANGELOG structure guard** (`tests/test_changelog_structure.py`) - every PR edits this one
   shared file by hand near the same line, and nothing checked the result: a second `### Fixed`
   heading landed directly under `[Unreleased]`, above `### Added`, on #425 and was fixed by hand
