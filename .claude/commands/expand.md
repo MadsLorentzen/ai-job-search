@@ -55,6 +55,7 @@ Look up the GitHub username from `01-candidate-profile.md`. If a GitHub URL or u
 2. For each repository found:
    - Fetch the repository README
    - Note: name, description, primary language(s), topics/tags, any frameworks or libraries mentioned in the README
+   - If the repository represents an independent technical project (not an empty stub or uncustomized fork), extract a project summary (problem domain, tech stack, and demonstrable technical results) for consideration under Independent Projects
 3. Also retrieve the full repository list if available (to catch unpinned repos)
 
 If no GitHub username or URL is found in the profile, skip this source and note it was skipped.
@@ -108,11 +109,17 @@ After enriching all items, build a deduplicated competency map. Group findings i
 **Domain Knowledge** (subject matter expertise: geophysics, ML, NLP, etc.)  
 **Methods and Practices** (agile, version control, reproducibility, testing, etc.)  
 **Soft / Behavioral** (leadership, communication, collaboration signals from references and project descriptions)  
+**Independent Projects & Portfolio** (distinct technical projects from GitHub with problem domain, tech stack, and key technical milestone)
 
 For each competency, record:
 - The competency name
 - The source item it came from (e.g. "Coursera — Deep Learning Specialisation", "GitHub — repo-name", "Reference letter — Jens Jensen")
 - Whether it came from direct lookup (A), inference (B), or both
+
+For each project, record:
+- Project name
+- One-line summary: problem tackled, tech stack used, and verifiable outcome/impact
+- Source (e.g. "GitHub — repo-name")
 
 Remove anything already present in `01-candidate-profile.md` or `02-behavioral-profile.md`.
 
@@ -120,7 +127,7 @@ Remove anything already present in `01-candidate-profile.md` or `02-behavioral-p
 
 ## Step 4: Present Grouped Summary
 
-Present all new competencies for the user's review before writing anything. Format:
+Present all new competencies and project additions for the user's review before writing anything. Format:
 
 ```
 ## /expand found [N] new competency signals across [M] sources
@@ -129,6 +136,11 @@ Present all new competencies for the user's review before writing anything. Form
 Source: [Course/cert name — Provider]
   + [Competency 1]
   + [Competency 2]
+  ...
+
+**PROJECTS & PORTFOLIO**
+Source: [GitHub — repo-name]
+  + [Project Name]: [Problem, stack, and outcome]
   ...
 
 **GITHUB — [repo-name]**
@@ -169,6 +181,7 @@ Wait for the user's response before writing anything.
 Apply only the confirmed items. Use the Edit tool to add to the relevant sections of each file — do not rewrite entire files.
 
 ### Additions to `01-candidate-profile.md`
+- Independent projects → append to the `## Independent Projects` section formatted as `- **[Project Name]**: [Description with stack and outcome] *(GitHub — repo-name)*`
 - Technical skills (primary and secondary) → append to the Technical Skills section
 - Domain knowledge → append to the Domain Knowledge or Technical Skills section (match the existing structure)
 - Methods and practices → append appropriately
@@ -189,7 +202,7 @@ After writing, present:
 ## /expand Complete
 
 ### Added to 01-candidate-profile.md
-[List each competency added, with source]
+[List each competency and independent project added, with source]
 
 ### Added to 02-behavioral-profile.md
 [List each behavioral signal added, with source]
@@ -214,3 +227,4 @@ After writing, present:
 - **User confirms before writing.** The full competency map is shown and confirmed before a single file is touched.
 - **Behavioral signals are labeled.** Anything inferred from tone, language, or indirect signals is marked as inferred so it is reviewed critically.
 - **GitHub is fully scanned.** All public repositories are checked, not just pinned ones — unpinned repos often contain significant competency signals.
+- **Portfolio & projects grounded in code.** Independent projects added to the profile must reflect real projects found in public GitHub repositories — never fabricated project claims.
