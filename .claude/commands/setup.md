@@ -367,15 +367,18 @@ Replace skill match areas with the user's actual skills:
 Update career goals and motivation filters with their actual preferences.
 
 ### 5. Update `05-cv-templates.md` *(Path B and C; skip if Path A populated it)*
-Add role-specific profile statement templates based on their background.
+Add role-specific profile statement templates based on their background, and personalise the contact block inside the file's LaTeX template: replace `[FIRST_NAME]`, `[LAST_NAME]`, `[YOUR_ADDRESS]`, `[YOUR_PHONE]`, `[YOUR_EMAIL]`, `[YOUR_LINKEDIN_URL]` and `[YOUR_GITHUB_URL]` (and `[YOUR_NAME]` in the PDF title) with their actual details. Check this block whichever path ran - Path A extracts profile statements from documents, not the contact block. `/apply` builds every tailored CV from this template, so a placeholder left here reaches a compiled document.
 
-### 6. Update `07-interview-prep.md` *(Path B and C; skip if Path A populated it)*
+### 6. Update `06-cover-letter-templates.md` *(all paths - Path A does not fill this block)*
+Personalise the contact line and the signature inside the file's LaTeX template: replace `[YOUR_NAME]`, `[YOUR_EMAIL]`, `[YOUR_PHONE]` and `[YOUR_LINKEDIN_URL]` in the `\namesection{}` line, and `[YOUR_NAME]` in `\signature{}`. Path A merges only structural patterns (openings, bullets, closings) into this file, never the contact block. `/apply` compiles every cover letter from this template.
+
+### 7. Update `07-interview-prep.md` *(Path B and C; skip if Path A populated it)*
 Create STAR examples from their actual experience (at least 3-4 examples). Path A leaves STAR stubs under "## STAR Candidates (Complete Manually)" rather than full examples; if any stubs are present, mention them in Step 4 so the user knows to flesh them out.
 
-### 7. Update `cv/main_example.tex`
+### 8. Update `cv/main_example.tex`
 Replace placeholder personal data with their actual name, contact info, and add their education and most recent experience entries.
 
-### 8. Generate `.claude/skills/job-scraper/search-queries.md`
+### 9. Generate `.claude/skills/job-scraper/search-queries.md`
 Replace all placeholder tokens in the search queries file with the user's actual information from Section 9 (or the equivalent follow-up questions in Path A's Step A7):
 - Replace `[YOUR_PRIMARY_ROLE_TYPE]`, `[YOUR_PRIMARY_JOB_TITLE]`, etc. with actual role titles
 - Replace `[YOUR_KEY_SKILL]`, `[YOUR_DOMAIN_KEYWORD_1]`, etc. with actual skills and domain terms
@@ -399,7 +402,8 @@ Present a summary:
 > - `.claude/skills/job-application-assistant/01-candidate-profile.md` - Structured profile
 > - `.claude/skills/job-application-assistant/02-behavioral-profile.md` - Behavioral assessment
 > - `.claude/skills/job-application-assistant/04-job-evaluation.md` - Personalized evaluation framework
-> - `.claude/skills/job-application-assistant/05-cv-templates.md` - CV templates with your profile statements
+> - `.claude/skills/job-application-assistant/05-cv-templates.md` - CV templates with your profile statements and contact block
+> - `.claude/skills/job-application-assistant/06-cover-letter-templates.md` - Cover letter templates with your contact line and signature
 > - `.claude/skills/job-application-assistant/07-interview-prep.md` - STAR examples from your experience
 > - `cv/main_example.tex` - Your LaTeX CV template
 > - `.claude/skills/job-scraper/search-queries.md` - Job search queries for `/scrape`

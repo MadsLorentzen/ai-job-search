@@ -32,7 +32,7 @@ PROFILE_SENTINEL = "[YOUR_EMAIL]"
 
 
 def personalize_cv(text: str) -> str:
-    """Apply /setup Step 3.7's documented edit: replace placeholder personal
+    """Apply /setup Step 3.8's documented edit: replace placeholder personal
     data with a real name and contact info. Header comments and hyperref
     metadata are not personal data, so they are deliberately left alone -
     that is exactly why a comment-located sentinel guards nothing."""
