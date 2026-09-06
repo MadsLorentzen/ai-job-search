@@ -1,7 +1,7 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
 import { parse } from "node-html-parser"
-import { BASE_URL, writeError } from "../helpers.js"
+import { BASE_URL, normalizeSlug, writeError } from "../helpers.js"
 import { extractCity, toContractDate } from "./search.js"
 
 interface JsonLdJobPosting {
@@ -226,9 +226,15 @@ export const detail = defineCommand({
   handler: async ({ flags, positional, signal }) => {
     if (signal.aborted) return
 
-    const slug = positional[0]
-    if (!slug) {
+    const rawSlug = positional[0]
+    if (!rawSlug) {
       writeError("slug argument is required", "MISSING_REQUIRED")
+      process.exit(1)
+    }
+
+    const slug = normalizeSlug(rawSlug)
+    if (!slug) {
+      writeError(`Could not extract slug from "${rawSlug}"`, "BAD_ID")
       process.exit(1)
     }
 

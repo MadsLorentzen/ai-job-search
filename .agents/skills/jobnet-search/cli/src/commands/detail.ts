@@ -1,6 +1,6 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
-import { apiFetch, writeError, stripHtml } from "../helpers.js"
+import { apiFetch, normalizeJobId, writeError, stripHtml } from "../helpers.js"
 
 export interface DetailApiResponse {
   id: string
@@ -87,9 +87,15 @@ export const detail = defineCommand({
   handler: async ({ positional, flags, signal }) => {
     if (signal.aborted) return
 
-    const id = positional[0] as string | undefined
-    if (!id) {
+    const rawId = positional[0] as string | undefined
+    if (!rawId) {
       writeError("Job ad ID is required", "MISSING_REQUIRED")
+      process.exit(1)
+    }
+
+    const id = normalizeJobId(rawId)
+    if (!id) {
+      writeError(`Could not parse job ad ID from "${rawId}"`, "BAD_ID")
       process.exit(1)
     }
 

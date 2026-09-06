@@ -159,10 +159,16 @@ export function parseRssDescription(desc: string): ParsedDescription {
   return { jobType, company, location, deadline }
 }
 
+export function normalizeJobId(input: string): string | null {
+  const trimmed = input.trim()
+  if (/^\d+$/.test(trimmed)) return trimmed
+  const match = trimmed.match(/\/job\/(\d+)(?:\/|$|\?|#)/)
+  return match ? match[1] : null
+}
+
 export function extractJobIdFromUrl(url: string): string {
   // URL format: https://jobbank.dk/job/{id}/{company-slug}/{title-slug}
-  const match = url.match(/\/job\/(\d+)\//)
-  return match ? match[1] : ""
+  return normalizeJobId(url) ?? ""
 }
 
 function findJobPosting(value: unknown): Record<string, unknown> | null {

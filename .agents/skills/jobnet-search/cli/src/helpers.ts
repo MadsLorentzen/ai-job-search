@@ -55,3 +55,13 @@ export function stripHtml(html: string): string {
     .replace(/\s+/g, " ")
     .trim()
 }
+
+export function normalizeJobId(input: string): string | null {
+  const trimmed = input.trim()
+  if (!trimmed) return null
+  if (/^[a-zA-Z0-9_-]+$/.test(trimmed)) return trimmed
+  const match = trimmed.match(/(?:\/find-job\/|\/JobAdDetails\/|\/Details\/)(?:detaljer\/)?([a-zA-Z0-9_-]+)(?:\/|$|\?|#)/i)
+  if (match) return match[1]
+  return null
+}
+
