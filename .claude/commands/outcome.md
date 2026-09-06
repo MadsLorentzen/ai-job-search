@@ -22,6 +22,8 @@ Follow these steps **in order**.
 - `followup` → enter the follow-up branch (Step 2b) over every quiet open application, using the default threshold of **10 days**
 - `followup <N>`, e.g. `/outcome followup 14` → follow-up branch with an N-day threshold
 - `followup <company>`, e.g. `/outcome followup acme` → draft a follow-up for that application now, regardless of threshold
+- `stale` or `sweep` → enter the stale application sweep branch (Step 2c) over open applications quiet for **60+ days**
+- `stale <N>` or `sweep <N>`, e.g. `/outcome stale 90` → stale sweep branch with an N-day threshold
 
 ---
 
@@ -33,7 +35,7 @@ Follow these steps **in order**.
    ```
    **If the file exists and its header does not end in `,deadline`, append `,deadline` to the header line only** - no data row is touched. Legacy rows then read as an empty deadline. This is the one edit to an existing tracker this command may make outside a matched row, and Step 4's "never restructure the CSV" governs that row, not this header line.
 2. **With an argument:** match rows case-insensitively on company (and role, if given). One match → proceed. Several → list them and ask. None → the application was made outside the workflow; collect company, role, date applied, channel, and posting URL from the user and add a tracker row.
-3. **Without an argument:** list all rows whose status is not final (see **Tracker status vocabulary** below) as a numbered table (company, role, date applied, current status, deadline, days quiet, follow-ups sent) and ask which to update. The two derived columns come straight from existing data: **days quiet** counts from the row's `date` or the latest dated entry in `notes`, whichever is more recent; **follow-ups sent** counts the `followed up YYYY-MM-DD` markers in `notes`. If any open row is 10+ days quiet with fewer than two follow-ups sent, add one line under the table: "Some of these have gone quiet - want a follow-up draft? (Step 2b)". If every row is resolved, say so and stop.
+3. **Without an argument:** list all rows whose status is not final (see **Tracker status vocabulary** below) as a numbered table (company, role, date applied, current status, deadline, days quiet, follow-ups sent) and ask which to update. The two derived columns come straight from existing data: **days quiet** counts from the row's `date` or the latest dated entry in `notes`, whichever is more recent; **follow-ups sent** counts the `followed up YYYY-MM-DD` markers in `notes`. If any open row is 10+ days quiet with fewer than two follow-ups sent, add one line under the table: "Some of these have gone quiet - want a follow-up draft? (Step 2b)". If any open rows are 60+ days quiet, also offer: "You have applications quiet for 60+ days — run `/outcome stale` to batch-resolve them (Step 2c)." If every row is resolved, say so and stop.
 
    **`drafted` rows are listed but never counted as quiet** - nothing was sent, so nobody is late replying. List them under their own heading ("Drafted, not yet submitted"), leave **days quiet** and **follow-ups sent** blank, and keep them out of the follow-up offer above.
 
@@ -107,6 +109,51 @@ Enter this branch from the `followup` argument (Step 0) or from the offer under 
 If the user decides not to send, log nothing.
 
 **Termination.** When an application hits two follow-ups and stays silent, do not offer a third. This is the moment to continue in this same command's Step 2: note how long it has been since last contact and let the user decide whether to record `no_response` - as ever, no imposed cutoff. And if the user mentions an actual response while in this branch (an interview invitation, a rejection), drop out of the branch and record it through the normal Step 2 flow.
+
+---
+
+## Step 2c: Stale Sweep Branch (batch-resolve quiet applications)
+
+Enter this branch from the `stale` or `sweep` argument (Step 0), or from the suggestion under the open-pipeline table in Step 1.3. In an extended job hunt, applications that received no response accumulate and clutter the tracker, `/html-report` funnel metrics, and `/notion-sync`. This branch operationalizes batch-cleaning old quiet applications while keeping the user in full control.
+
+**Candidates.** An application qualifies when its tracker `status` is open and submitted (`applied` or `interview`), the threshold has passed since its `date` (or since the latest dated entry in `notes`, whichever is more recent), and its status is neither final nor `drafted` (`drafted` applications were never submitted and cannot receive a response). Parse dates defensively — skip unparseable rows with a note.
+
+**Threshold.** The default threshold is **60 days** quiet. If the user specified an integer `<N>` (e.g. `/outcome stale 90` or `/outcome sweep 45`), use N days instead.
+
+**Presentation.** If no open applications exceed the threshold, report:
+> "No open applications exceed the <N>-day quiet threshold. Your tracker is up to date!"
+and stop.
+
+Otherwise, present qualifying applications as a numbered table:
+
+```
+## Stale Applications ([K] quiet for [N]+ days)
+
+| # | Company | Role | Date Applied | Days Quiet | Follow-ups Sent | Current Status | Proposed Status |
+|---|---------|------|--------------|------------|-----------------|----------------|-----------------|
+| 1 | Acme    | SWE  | 2026-05-10   | 118        | 2               | applied        | no_response     |
+| 2 | Beta    | MLE  | 2026-06-01   | 96         | 1               | applied        | no_response     |
+```
+
+Then ask:
+
+> **How would you like to resolve these applications?**
+>
+> - **`all`** — Mark all [K] applications as `no_response` and update archives
+> - **`select`** — Specify which numbers to resolve (e.g. "1, 3" or "1-4")
+> - **`skip`** — Cancel without making any changes
+
+Wait for the user's explicit response before writing anything.
+
+**Execution.** For each application the user confirms:
+
+1. **Update Tracker:** update the row's `status` column to `no_response` (using the canonical spelling from **Tracker status vocabulary**). Append `stale resolved no_response (YYYY-MM-DD)` to `notes`. Follow Step 4's rule: never restructure the CSV, preserve all other columns intact.
+2. **Update Archive:** derive `documents/applications/<company>_<role>/` per the **Subfolder naming** rule. If the folder exists, update or write `outcome.md` with:
+   - `**Status:** no_response`
+   - `**Date resolved:** YYYY-MM-DD`
+   - Append to `## Notes`: `- Stale resolution: marked no_response after [N] days quiet (YYYY-MM-DD)`
+
+**Calibration Handoff.** If 3 or more applications were resolved in this sweep, continue to Step 5 to offer calibration handoff. Otherwise present a summary of resolved applications and stop.
 
 ---
 
@@ -193,3 +240,4 @@ If the recorded status is `hired`, congratulate the user warmly first - this is 
 6. **Follow-ups: draft only, never send.** The follow-up branch produces text for the user to send themselves. It never emails, messages, or submits anything, and it must not be wired to tools that do.
 7. **Follow-ups: no new claims.** Every substantive statement in a follow-up or thank-you note comes from the archived submitted materials. Rule 3 applies with no exceptions.
 8. **Maximum two follow-ups per application.** After the second silent follow-up, the honest move is recording the resolution, not persistence.
+9. **Stale sweep: user confirms before writing.** The stale sweep branch never marks applications as no_response automatically. It always presents the qualifying candidate list and waits for explicit user confirmation (all, select, or skip).

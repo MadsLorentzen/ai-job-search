@@ -15,6 +15,13 @@ per-file diff commands.
 
 ### Added
 
+- **Stale sweep branch in `/outcome`** (`.claude/commands/outcome.md`,
+  `tests/test_outcome_stale.py`) - introduces `/outcome stale [N]` (and `/outcome sweep [N]`)
+  to batch-resolve open applications quiet for 60+ (or N) days. Displays a numbered summary
+  of qualifying applications, requires explicit user confirmation (`all`, `select`, or `skip`),
+  resolves confirmed rows to `no_response`, logs dated entries to `notes`, updates archive
+  `outcome.md` files, and hands off to calibration when 3+ applications are resolved.
+
 - **CHANGELOG structure guard** (`tests/test_changelog_structure.py`) - every PR edits this one
   shared file by hand near the same line, and nothing checked the result: a second `### Fixed`
   heading landed directly under `[Unreleased]`, above `### Added`, on #425 and was fixed by hand
