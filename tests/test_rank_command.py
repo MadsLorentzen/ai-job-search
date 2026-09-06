@@ -6,6 +6,8 @@ lint_skills.py enforces, and the persistence of scoring-agent gaps/strengths
 into seen_jobs.json (previously computed in Step 2 and thrown away after
 Step 5's terminal output).
 """
+import json
+import re
 import subprocess
 import sys
 import unittest
@@ -501,20 +503,140 @@ class RankBatchLimitSpec(unittest.TestCase):
             "--limit must bound scoring without being confused with shortlist size",
         )
 
-    def test_step1_applies_limit_after_eligibility_filters(self):
+    def test_step1_applies_limit_via_the_state_tool(self):
         step1 = self.sections.get("Step 1: Load State", "")
-        self.assertIn("Apply `--limit` after those filters", step1)
-        self.assertIn("count every remaining eligible candidate as deferred", step1)
         self.assertIn(
-            "keep their current status",
+            "tools/rank_state.py candidates --limit 10",
             step1,
-            "deferred jobs must remain eligible for a later run",
+            "Step 1 must select candidates with the CLI, passing --limit through to it",
+        )
+        self.assertIn(
+            "deferred",
+            step1,
+            "deferred jobs must remain eligible for a later run - the tool's own output "
+            "must document that they keep their current status",
         )
 
     def test_step5_reports_deferral_and_how_to_continue(self):
         report = self.sections.get("Job Ranking - YYYY-MM-DD", "")
         self.assertIn("jobs deferred", report)
         self.assertIn("re-run `/rank` to continue", report)
+
+
+class RankStateToolSpec(unittest.TestCase):
+    """Guards for routing Step 1/3/4 through tools/rank_state.py (#395).
+
+    /rank's Step 1 and Step 4 used to read the whole of seen_jobs.json into the
+    conversation and write it back by hand - a cost paid on every run
+    regardless of batch size, on a file that only grows. These tests pin that
+    the spec now delegates that traffic to the CLI instead of re-describing a
+    manual read/write, and - the condition attached to this change - that the
+    write-back fields the tool must preserve are derived from Step 2's own
+    JSON schema rather than retyped as a second, driftable list.
+    """
+
+    def setUp(self):
+        self.text = COMMAND.read_text(encoding="utf-8")
+        self.sections = _sections(self.text)
+
+    def _step2_result_fields(self) -> list[str]:
+        """The field names Step 2's scoring-agent JSON contract declares.
+
+        Extracted from the fenced ```json block in Step 2 rather than
+        hardcoded, so a future edit to that contract is what this test reads
+        - it cannot silently drift from what agents actually return.
+        """
+        step2 = self.sections.get("Step 2: Batch-Fetch and Score", "")
+        block = step2.split("```json", 1)[1].split("```", 1)[0]
+        fields = re.findall(r'"([a-z_]+)":', block)
+        self.assertTrue(fields, "could not extract Step 2's JSON field names - block shape changed")
+        return fields
+
+    def test_step1_never_reads_the_state_file_manually(self):
+        step1 = self.sections.get("Step 1: Load State", "")
+        self.assertIn(
+            "Never read `job_scraper/seen_jobs.json` into the conversation",
+            step1,
+            "Step 1 must forbid the manual read this fix removes",
+        )
+        self.assertIn("tools/rank_state.py candidates", step1)
+
+    def test_step4_writes_back_through_apply_not_by_hand(self):
+        step4 = self.sections.get("Step 4: Update State", "")
+        self.assertIn(
+            "tools/rank_state.py apply",
+            step4,
+            "Step 4 must write results with the CLI; re-emitting seen_jobs.json by hand "
+            "reproduces the exact cost this fix removes",
+        )
+        self.assertIn(
+            "never re-read to build it",
+            step4,
+            "apply's own printed output, not a fresh read of the state file, must be what "
+            "Step 5's report is built from",
+        )
+
+    def test_step4_preserves_every_field_step2_declares(self):
+        """The condition on this change: Step 4's write-back semantics must
+        survive the move into a script, for every field Step 2 promises to
+        return - not just the ones a hand-picked list happens to name."""
+        step4 = self.sections.get("Step 4: Update State", "")
+        # `language` (the posting's own language) is Step 2 output the write-back
+        # rules were never required to persist - 04-job-evaluation.md's Language
+        # Gate section already documents it as informational, not stored state.
+        # "scores" is a nested object of four dimension names (technical,
+        # experience, behavioral, career) that Step 4 turns into rank_score /
+        # rank_verdict, not persisted verbatim; "language" is informational
+        # only, per 04-job-evaluation.md's Language Gate section.
+        not_persisted_verbatim = {"key", "status", "language", "scores", "technical", "experience", "behavioral", "career"}
+        must_persist = set(self._step2_result_fields()) - not_persisted_verbatim
+        missing = [f for f in must_persist if f'"{f}"' not in step4]
+        self.assertFalse(missing, f"Step 4 does not mention persisting: {missing}")
+
+    def test_step4_documents_the_location_verdict_legacy_migration(self):
+        step4 = self.sections.get("Step 4: Update State", "")
+        self.assertIn(
+            "never the bare `location` key",
+            step4,
+            "Step 4 must forbid writing the verdict to the scraper's place field",
+        )
+        self.assertIn(
+            "legacy",
+            step4,
+            "Step 4 must document the location_verdict-absent migration from the old location key",
+        )
+
+    def test_step4_documents_deadline_null_is_not_a_correction(self):
+        step4 = self.sections.get("Step 4: Update State", "")
+        self.assertIn(
+            "absence is not a correction",
+            step4,
+            "a null deadline from the agent must never erase a stored one",
+        )
+
+    def test_step3_sweep_runs_through_the_tool(self):
+        step3 = self.sections.get("Step 3: Aggregate and Rank", "")
+        self.assertIn(
+            "tools/rank_state.py sweep",
+            step3,
+            "rule 6's expiry sweep must run through the CLI, not a manual re-read",
+        )
+
+    def test_tracker_stays_read_only(self):
+        step4 = self.sections.get("Step 4: Update State", "")
+        self.assertIn(
+            "never applies",
+            step4,
+            "Step 4 must still state that job_search_tracker.csv is read-only for /rank",
+        )
+
+    def test_settings_and_guards_allow_the_new_tool(self):
+        settings = json.loads((REPO / ".claude" / "settings.json").read_text(encoding="utf-8"))
+        allow = settings["permissions"]["allow"]
+        guards = (REPO / "tools" / "security_guards.py").read_text(encoding="utf-8")
+        for entry in ("Bash(python tools/rank_state.py:*)", "Bash(python3 tools/rank_state.py:*)"):
+            self.assertIn(entry, allow, f"{entry} missing from .claude/settings.json")
+            self.assertIn(entry, guards, f"{entry} missing from security_guards.py's reviewed allowlist")
 
 
 if __name__ == "__main__":

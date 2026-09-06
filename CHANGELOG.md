@@ -41,6 +41,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/rank` no longer reads or rewrites the whole of `seen_jobs.json` on every run** (#395) -
+  Step 1 used to read the entire state file into the conversation to select candidates by
+  eye, and Step 4 emitted it back to record scores: a cost paid on every run regardless of
+  batch size, growing for the life of the workspace. `tools/rank_state.py` now owns that
+  traffic - `candidates` selects and projects only the fields a scoring agent needs, `sweep`
+  runs rule 6's expiry pass on disk, and `apply` writes results back atomically and prints
+  the rows Step 5's report is built from. Preserves Step 4's existing write-back rules
+  exactly: the `location` → `location_verdict` legacy migration, the deadline
+  null-is-not-a-correction rule, and verbatim strengths/gaps persistence. No scoring policy
+  changes - no new status value, no new persisted field.
+
 - **`jobbank-search`, `jobdanmark-search`, and `jobnet-search` detail commands now accept full URLs** -
   the portal contract specifies `detail <id|url>`. Passing a full posting URL (with or without
   trailing slashes, slug segments, or query parameters) previously caused `jobbank-search` and
