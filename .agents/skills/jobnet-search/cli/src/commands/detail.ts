@@ -9,13 +9,14 @@ export interface DetailApiResponse {
   body: string
   publicationDateTime: string
   unpublicationDateTime: string | null
-  approvalStatus: string
-  views: number
+  approvalStatus: string | null
+  views: number | null
   createdDateTime: string
   updatedDateTime: string
-  isAnonymousEmployer: boolean
+  isAnonymousEmployer: boolean | null
   hasLogo: boolean
   logoUrl: string | null
+  isExternal?: boolean
   employer: {
     cvrNumber: string | null
     pNumber: string | null
@@ -23,7 +24,7 @@ export interface DetailApiResponse {
     hasCompanyLogo: boolean
   }
   job: {
-    type: string
+    type: string | null
     address: {
       streetName: string | null
       city: string | null
@@ -32,21 +33,21 @@ export interface DetailApiResponse {
       countryCode: string
       countryName: string
     }
-    noFixedWorkplace: boolean
-    isLimitedPeriod: boolean
-    isDisabilityFriendly: boolean
-    isPartTime: boolean
+    noFixedWorkplace: boolean | null
+    isLimitedPeriod: boolean | null
+    isDisabilityFriendly: boolean | null
+    isPartTime: boolean | null
     employmentDate: string | null
     conceptUriDa: string | null
     preferredLabelDa: string | null
     driversLicenses: unknown[]
     classifications: unknown[]
     shifts: unknown[]
-    isFavorite: boolean
+    isFavorite: boolean | null
   }
   application: {
     deadlineDate: string | null
-    availablePositions: number
+    availablePositions: number | null
     contactPersons: Array<{
       firstNames: string | null
       lastName: string | null
@@ -54,7 +55,7 @@ export interface DetailApiResponse {
     }>
     url: string | null
     urlText: string | null
-    isApplicationDeadlineASAP: boolean
+    isApplicationDeadlineASAP: boolean | null
   }
   organisationTypeId: number | null
   user: string | null
@@ -72,13 +73,14 @@ export function mapSearchAdToDetail(raw: JobAdRaw & { jobAdUrl?: string | null; 
     body: raw.description ?? "",
     publicationDateTime: raw.publicationDate ?? "",
     unpublicationDateTime: null,
-    approvalStatus: "Godkendt",
-    views: 0,
+    approvalStatus: null,
+    views: null,
     createdDateTime: raw.publicationDate ?? "",
     updatedDateTime: raw.publicationDate ?? "",
-    isAnonymousEmployer: false,
+    isAnonymousEmployer: null,
     hasLogo: Boolean(raw.hasLogo),
     logoUrl: raw.logoUrl ?? null,
+    isExternal: true,
     employer: {
       cvrNumber: raw.cvr ?? null,
       pNumber: null,
@@ -86,7 +88,7 @@ export function mapSearchAdToDetail(raw: JobAdRaw & { jobAdUrl?: string | null; 
       hasCompanyLogo: Boolean(raw.hasLogo),
     },
     job: {
-      type: raw.jobAnnouncementTypeName || (raw.workHourPartTime ? "PartTime" : "FullTime"),
+      type: raw.jobAnnouncementTypeName ?? (raw.workHourPartTime != null ? (raw.workHourPartTime ? "PartTime" : "FullTime") : null),
       address: {
         streetName: street && street.length > 0 ? street : null,
         city: raw.postalDistrictName ?? raw.municipality ?? null,
@@ -95,25 +97,25 @@ export function mapSearchAdToDetail(raw: JobAdRaw & { jobAdUrl?: string | null; 
         countryCode: raw.country === "Danmark" ? "DK" : (raw.country || "DK"),
         countryName: raw.country || "Danmark",
       },
-      noFixedWorkplace: false,
-      isLimitedPeriod: false,
-      isDisabilityFriendly: false,
-      isPartTime: Boolean(raw.workHourPartTime),
+      noFixedWorkplace: null,
+      isLimitedPeriod: null,
+      isDisabilityFriendly: null,
+      isPartTime: raw.workHourPartTime != null ? Boolean(raw.workHourPartTime) : null,
       employmentDate: null,
       conceptUriDa: raw.conceptUriDa ?? null,
       preferredLabelDa: raw.occupation ?? null,
       driversLicenses: [],
       classifications: [],
       shifts: [],
-      isFavorite: Boolean(raw.isFavorite),
+      isFavorite: raw.isFavorite != null ? Boolean(raw.isFavorite) : null,
     },
     application: {
       deadlineDate: raw.applicationDeadline ?? null,
-      availablePositions: 1,
+      availablePositions: null,
       contactPersons: [],
       url: raw.jobAdUrl && raw.jobAdUrl.trim().length > 0 ? raw.jobAdUrl.trim() : null,
       urlText: null,
-      isApplicationDeadlineASAP: raw.applicationDeadlineStatus === "NotDisclosed",
+      isApplicationDeadlineASAP: raw.applicationDeadlineStatus ? raw.applicationDeadlineStatus === "NotDisclosed" : null,
     },
     organisationTypeId: null,
     user: null,
@@ -182,6 +184,7 @@ export const detail = defineCommand({
           })
           const match = searchResult.jobAds?.find((ad) => ad.jobAdId === id)
           if (match) {
+            process.stderr.write("note: detail endpoint returned 404; retrieved external posting summary from search endpoint\n")
             data = prepareDetail(mapSearchAdToDetail(match))
           }
         } catch {
@@ -214,13 +217,13 @@ function outputTable(data: DetailApiResponse): void {
   console.log(`ID:          ${data.id}`)
   console.log(`Title:       ${data.title}`)
   console.log(`Employer:    ${data.employer.name}`)
-  console.log(`Type:        ${data.job.type}`)
+  console.log(`Type:        ${data.job.type ?? "-"}`)
   console.log(`City:        ${data.job.address.city ?? "-"}`)
   console.log(`Postal:      ${data.job.address.postalCode ?? "-"}`)
   console.log(`Country:     ${data.job.address.countryName}`)
   console.log(`Published:   ${data.publicationDateTime}`)
   console.log(`Deadline:    ${data.application.deadlineDate ?? "-"}`)
-  console.log(`Positions:   ${data.application.availablePositions}`)
+  console.log(`Positions:   ${data.application.availablePositions ?? "-"}`)
   console.log(`Apply URL:   ${data.application.url ?? "-"}`)
 }
 
@@ -235,7 +238,7 @@ export function formatDetailPlain(data: DetailApiResponse): string {
     `Location: ${data.job.address.city ?? "-"}, ${data.job.address.countryName}`,
     `Published: ${data.publicationDateTime}`,
     `Deadline: ${data.application.deadlineDate ?? "-"}`,
-    `Positions: ${data.application.availablePositions}`,
+    `Positions: ${data.application.availablePositions ?? "-"}`,
   ]
 
   if (data.application.url) {

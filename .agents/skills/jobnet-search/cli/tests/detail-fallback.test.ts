@@ -1,4 +1,4 @@
-﻿import { describe, expect, test } from "bun:test"
+import { describe, expect, test } from "bun:test"
 import { mapSearchAdToDetail } from "../src/commands/detail"
 import type { JobAdRaw } from "../src/commands/search"
 
@@ -36,6 +36,10 @@ describe("mapSearchAdToDetail (Issue #432 external ad fallback)", () => {
     expect(detail.title).toBe("AI Technical Artist")
     expect(detail.body).toBe("<p>Great job opening at Tactile.</p>")
     expect(detail.publicationDateTime).toBe("2026-09-05T00:00:00+02:00")
+    expect(detail.isExternal).toBe(true)
+    expect(detail.views).toBeNull()
+    expect(detail.approvalStatus).toBeNull()
+    expect(detail.isAnonymousEmployer).toBeNull()
     expect(detail.employer.name).toBe("Tactile Games")
     expect(detail.employer.cvrNumber).toBe("32319882")
     expect(detail.employer.hasCompanyLogo).toBe(true)
@@ -47,9 +51,13 @@ describe("mapSearchAdToDetail (Issue #432 external ad fallback)", () => {
     expect(detail.job.address.countryCode).toBe("DK")
     expect(detail.job.address.countryName).toBe("Danmark")
     expect(detail.job.isPartTime).toBe(false)
+    expect(detail.job.noFixedWorkplace).toBeNull()
+    expect(detail.job.isLimitedPeriod).toBeNull()
+    expect(detail.job.isDisabilityFriendly).toBeNull()
     expect(detail.job.preferredLabelDa).toBe("Programmør og systemudvikler")
     expect(detail.job.conceptUriDa).toBe("http://data.star.dk/esco/occupation/8b6456a3-ae9a-45a0-a65b-fed797521753")
     expect(detail.application.deadlineDate).toBe("2026-12-05T00:00:00+01:00")
+    expect(detail.application.availablePositions).toBeNull()
     expect(detail.application.url).toBe("https://job-boards.eu.greenhouse.io/tactilegames/jobs/4890782101")
     expect(detail.application.isApplicationDeadlineASAP).toBe(false)
   })
