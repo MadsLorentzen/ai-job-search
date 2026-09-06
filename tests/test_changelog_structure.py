@@ -24,8 +24,13 @@ CONFLICT_MARKERS = ("<<<<<<< ", "=======", ">>>>>>> ")
 
 
 def unreleased_block(text: str) -> str:
-    """The lines between `## [Unreleased]` and the next `## [` heading."""
-    start = text.index("## [Unreleased]")
+    """The lines between `## [Unreleased]` and the next `## [` heading.
+
+    An absent heading (right after a release cut) yields an empty block:
+    nothing to check is not a defect."""
+    start = text.find("## [Unreleased]")
+    if start == -1:
+        return ""
     end = text.find("\n## [", start + 1)
     return text[start:] if end == -1 else text[start:end]
 
@@ -107,6 +112,12 @@ class UnreleasedProblemsTests(unittest.TestCase):
         text = CLEAN.replace("### Fixed", "<<<<<<< HEAD\n### Fixed")
         problems = unreleased_problems(text)
         self.assertTrue(any("conflict marker" in p for p in problems), problems)
+
+    def test_missing_unreleased_section_is_not_a_defect(self):
+        # Right after a release cut there may be no [Unreleased] heading at all
+        # (the 1.7.0 cut removed it). Nothing to check is not a failure.
+        text = "# Changelog\n\n## [1.7.1] - 2026-09-06\n\n### Fixed\n\n- **A fixed thing** - described.\n"
+        self.assertEqual(unreleased_problems(text), [])
 
     def test_released_sections_are_not_inspected(self):
         # A duplicate heading in an old release is history, not a defect here.
