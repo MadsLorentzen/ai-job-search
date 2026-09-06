@@ -1,6 +1,7 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
 import { apiFetch, normalizeJobId, writeError, stripHtml } from "../helpers.js"
+import type { JobAdRaw, SearchApiResponse } from "./search.js"
 
 export interface DetailApiResponse {
   id: string
@@ -60,6 +61,66 @@ export interface DetailApiResponse {
 }
 
 /**
+ * Maps a raw JobAd from the search endpoint to a DetailApiResponse.
+ * Used as a fallback when /FindJob/JobAdDetails/<id> returns 404 for external ads (#432).
+ */
+export function mapSearchAdToDetail(raw: JobAdRaw & { jobAdUrl?: string | null; jobAnnouncementTypeName?: string | null }): DetailApiResponse {
+  const street = raw.workPlaceAddress ? raw.workPlaceAddress.trim() : null
+  return {
+    id: raw.jobAdId,
+    title: raw.title,
+    body: raw.description ?? "",
+    publicationDateTime: raw.publicationDate ?? "",
+    unpublicationDateTime: null,
+    approvalStatus: "Godkendt",
+    views: 0,
+    createdDateTime: raw.publicationDate ?? "",
+    updatedDateTime: raw.publicationDate ?? "",
+    isAnonymousEmployer: false,
+    hasLogo: Boolean(raw.hasLogo),
+    logoUrl: raw.logoUrl ?? null,
+    employer: {
+      cvrNumber: raw.cvr ?? null,
+      pNumber: null,
+      name: raw.hiringOrgName ?? "",
+      hasCompanyLogo: Boolean(raw.hasLogo),
+    },
+    job: {
+      type: raw.jobAnnouncementTypeName || (raw.workHourPartTime ? "PartTime" : "FullTime"),
+      address: {
+        streetName: street && street.length > 0 ? street : null,
+        city: raw.postalDistrictName ?? raw.municipality ?? null,
+        postalCode: raw.postalCode ? String(raw.postalCode) : null,
+        municipality: raw.municipality ?? null,
+        countryCode: raw.country === "Danmark" ? "DK" : (raw.country || "DK"),
+        countryName: raw.country || "Danmark",
+      },
+      noFixedWorkplace: false,
+      isLimitedPeriod: false,
+      isDisabilityFriendly: false,
+      isPartTime: Boolean(raw.workHourPartTime),
+      employmentDate: null,
+      conceptUriDa: raw.conceptUriDa ?? null,
+      preferredLabelDa: raw.occupation ?? null,
+      driversLicenses: [],
+      classifications: [],
+      shifts: [],
+      isFavorite: Boolean(raw.isFavorite),
+    },
+    application: {
+      deadlineDate: raw.applicationDeadline ?? null,
+      availablePositions: 1,
+      contactPersons: [],
+      url: raw.jobAdUrl && raw.jobAdUrl.trim().length > 0 ? raw.jobAdUrl.trim() : null,
+      urlText: null,
+      isApplicationDeadlineASAP: raw.applicationDeadlineStatus === "NotDisclosed",
+    },
+    organisationTypeId: null,
+    user: null,
+  }
+}
+
+/**
  * Normalize a raw detail response before any output format sees it.
  *
  * The API's "deadline not disclosed" sentinel is 1900-01-01 (it arrives with
@@ -99,30 +160,52 @@ export const detail = defineCommand({
       process.exit(1)
     }
 
+    let data: DetailApiResponse | null = null
+
     try {
-      const data = prepareDetail(
+      data = prepareDetail(
         await apiFetch<DetailApiResponse>(`/FindJob/JobAdDetails/${id}`, {
           incrementViews: "false",
         }),
       )
-
-      if (signal.aborted) return
-
-      if (flags.format === "json") {
-        console.log(JSON.stringify(data, null, 2))
-      } else if (flags.format === "table") {
-        outputTable(data)
-      } else {
-        outputPlain(data)
-      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       if (message.includes("404") || message.includes("Not Found")) {
-        writeError("Job ad not found", "NOT_FOUND")
+        // Fallback for external ads: JobAdDetails returns 404 for ads with isExternal: true,
+        // but /FindJob/Search returns the full ad object including HTML description (#432).
+        try {
+          const searchResult = await apiFetch<SearchApiResponse>("/FindJob/Search", {
+            searchString: id,
+            resultsPerPage: "5",
+            pageNumber: "1",
+            orderType: "PublicationDate",
+          })
+          const match = searchResult.jobAds?.find((ad) => ad.jobAdId === id)
+          if (match) {
+            data = prepareDetail(mapSearchAdToDetail(match))
+          }
+        } catch {
+          // If fallback search fails, fall through to NOT_FOUND
+        }
+
+        if (!data) {
+          writeError("Job ad not found", "NOT_FOUND")
+          process.exit(1)
+        }
       } else {
         writeError(message, "API_ERROR")
+        process.exit(1)
       }
-      process.exit(1)
+    }
+
+    if (signal.aborted || !data) return
+
+    if (flags.format === "json") {
+      console.log(JSON.stringify(data, null, 2))
+    } else if (flags.format === "table") {
+      outputTable(data)
+    } else {
+      outputPlain(data)
     }
   },
 })
