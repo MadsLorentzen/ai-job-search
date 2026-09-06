@@ -19,7 +19,9 @@ Hold this content in context throughout the command. Do not re-read these files 
 
 ## Step 1: Discovery — Scan All Sources
 
-Scan every available source for "experience items" — anything that implies skill, knowledge, or competency. Process sources in this order.
+**If `$ARGUMENTS` is non-empty, skip this whole step.** The user is naming the experience item directly (`/expand Azure AI Engineer Associate, passed 2026-08`) — take it as prose, claim no date or provider they did not state, and go to Step 2. Ask one question if it is too vague to look up.
+
+Otherwise scan every available source for "experience items" — anything that implies skill, knowledge, or competency. Process sources in this order.
 
 ### 1a. documents/cv/
 Read all files in `documents/cv/`. Extract:
@@ -48,21 +50,48 @@ Read all files in `documents/references/`. Extract:
 - Competency language used by the referee (what skills or qualities they mention)
 - Any specific projects, tools, or methods named
 
-### 1e. GitHub Profile
-Look up the GitHub username from `01-candidate-profile.md`. If a GitHub URL or username is present:
+### 1e. GitHub Profiles (use the `gh` CLI, not WebFetch)
+**WebFetch cannot see private repositories.** Most of a working engineer's recent evidence is private, so a WebFetch-only scan systematically misses the strongest material. Use `gh`.
 
-1. Use WebFetch or WebSearch to retrieve the public profile and pinned repositories
-2. For each repository found:
-   - Fetch the repository README
-   - Note: name, description, primary language(s), topics/tags, any frameworks or libraries mentioned in the README
-3. Also retrieve the full repository list if available (to catch unpinned repos)
+1. Run `gh auth status` to list available accounts. Note the currently active one — you will restore it after every switch.
+2. For **each** account known for this candidate (a personal account and a work account are both normal), run `gh auth switch -u <account>`, then:
+   ```bash
+   gh api --paginate "user/repos?per_page=100&affiliation=owner&visibility=all" \
+     --jq '.[] | "\(.name)\t\(.private)\t\(.language // "-")\t\(.pushed_at[0:7])\t\(.description // "")"'
+   ```
+   `gh api` does **not** paginate on its own — without `--paginate` everything past the first 100 repos is silently dropped.
+3. For each **employer or collaboration org** the candidate belongs to, using an account with access:
+   ```bash
+   gh api --paginate "orgs/<org>/repos?per_page=100" --jq '.[].name'
+   # then per repo (login-regex = the candidate's GitHub login, anchored, e.g. '^octocat'):
+   gh api --paginate "repos/<org>/<repo>/contributors?per_page=100" \
+     --jq '.[] | select(.login|test("<login-regex>";"i")) | .contributions'
+   ```
+   `<login-regex>` is a **regex**, not a glob. Anchor it (`^login`) — an unanchored pattern, and especially one carried over from a shell glob (`login*` reads as "zero or more of the last character"), matches unrelated accounts.
 
-If no GitHub username or URL is found in the profile, skip this source and note it was skipped.
+   **Do not use `gh search commits`** for this: it caps at 100 results and silently undercounts (it reported 7 commits on a repo that had 76). The contributors API counts the default branch only, so state that limitation in the report rather than presenting counts as complete.
+
+   **Empty output is not evidence of no contribution.** The jq filter prints nothing and exits 0 when the login is absent, when work landed on a non-default branch, or when the account lacks access. List such repos under "Needs manual review" and ask the candidate — do not report them as no involvement.
+4. Fetch READMEs only for repos whose description suggests significant new competency signal, and prefer `gh api "repos/<owner>/<repo>/contents/README.md" -H "Accept: application/vnd.github.raw"`.
+5. **Restore the originally active account immediately after the last read for each switched account** (`gh auth switch -u <original>`) — not at the end of the command. `gh auth switch` mutates global CLI state on the user's machine, so leaving it switched across the Step 4 confirmation wait breaks `gh` and git credentials in every other terminal. If the command aborts, errors, or the user answers `skip`, restore before exiting.
+
+Private repo contents and employer org work are competency evidence for the local profile, never quotable material for a CV. Record them with that caveat attached.
+
+If no GitHub account is known, skip this source and note it was skipped.
 
 ### 1f. Other URLs in Profile
 Check `01-candidate-profile.md` for any other URLs (portfolio site, personal website, Kaggle, Google Scholar, ResearchGate, publication links). For each:
 - Fetch the page
 - Extract any tools, methods, datasets, awards, or skills mentioned
+
+**Google Scholar deserves a dedicated pass** when present: re-read total citations, h-index, i10-index and the full paper list with per-paper citation counts and author position. These numbers change, they are the strongest quantitative credibility signal available, and a stale count on a CV is a missed opportunity rather than an error.
+
+### 1g. Authenticated internal sources
+Wikis, ticket systems and document stores behind a login (Confluence, Jira, SharePoint, Google Drive, Notion) often hold the candidate's most substantial recent work: strategy documents they authored, initiatives they own, PoCs they ran.
+
+- **Confluence / Jira:** use the Atlassian MCP tools with the site's `cloudId`. Search the space for pages the candidate authored; a page ID the candidate supplies can be fetched directly.
+- **SharePoint / OneDrive / Office documents:** require an authenticated Microsoft 365 connector. If it is not connected, say so plainly and ask the candidate either to authenticate it or to export the file locally and give you the path. **Never** reconstruct the contents of a document you could not read, and never present hand-supplied summaries as if the source had been verified.
+- Everything from these sources is employer-confidential by default. Record it with an `[internal]` marker and flag it as needing a clearance check before it appears on a CV or in a cover letter.
 
 ---
 
@@ -172,6 +201,8 @@ Apply only the confirmed items. Use the Edit tool to add to the relevant section
 - Technical skills (primary and secondary) → append to the Technical Skills section
 - Domain knowledge → append to the Domain Knowledge or Technical Skills section (match the existing structure)
 - Methods and practices → append appropriately
+- Certifications (name, issuer, date) → append to the `## Certifications` section; if the file has none, create it directly after `## Education`. Record the certification as its own fact, not only the competencies it implies — a certification dropped in favour of its implied skills never reaches the CV
+- Awards, courses and volunteering → the matching existing section (`## Awards`, `## Volunteering & Extracurricular`)
 
 For each addition, add a brief source annotation in a comment or parenthetical: *(Coursera — Deep Learning Specialisation)*, *(GitHub — project-name)*, etc. This makes future `/expand` runs idempotent.
 
@@ -213,4 +244,4 @@ After writing, present:
 - **Both approaches, always.** Web lookup and inference are applied together — not as alternatives. A named course gets its official syllabus AND a reasoned competency list.
 - **User confirms before writing.** The full competency map is shown and confirmed before a single file is touched.
 - **Behavioral signals are labeled.** Anything inferred from tone, language, or indirect signals is marked as inferred so it is reviewed critically.
-- **GitHub is fully scanned.** All public repositories are checked, not just pinned ones — unpinned repos often contain significant competency signals.
+- **GitHub is fully scanned.** Every known account and org is scanned via the `gh` CLI — private and org repositories included, not just public or pinned ones, and paginated so nothing past the first 100 is dropped. Private and employer material is local competency evidence only, never quotable on a CV.
