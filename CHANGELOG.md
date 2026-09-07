@@ -15,6 +15,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobnet-search detail` no longer reports an externally hosted ad as not found** (#432) -
+  Jobnet's `/FindJob/JobAdDetails/<id>` returns 404 for ads with `isExternal: true`, so `detail`
+  on an ad `search` had just listed exited 1 with `NOT_FOUND`, and `/scrape` read the posting as
+  gone rather than hosted elsewhere (2 of 3 ads in a fresh sample). On that 404 the command now
+  falls back to the search endpoint, which does carry the ad's description and the external
+  application URL, and returns the record marked `isExternal: true` with a stderr note; fields the
+  search payload does not carry (`views`, `approvalStatus`, the boolean flags) are `null`, never
+  guessed. Verified live on two external ads.
+
 - **`09-web-research.md`'s curl snippets no longer write into the repo when `$SCRATCHPAD`
   is unset** - both runnable blocks in the 403-escalation path start with `cd "$SCRATCHPAD"`,
   and nothing in the repository ever sets that variable (`git grep 'SCRATCHPAD='` returns
