@@ -30,6 +30,18 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/outcome` and `/interview` no longer confuse two roles at the same company** (#443)
+  (`.claude/commands/outcome.md`, `.claude/commands/interview.md`,
+  `tests/test_apply_records_application.py`) - when a tracker row's `cv_file` /
+  `cover_letter_file` columns are empty, both commands fell back to a company-prefix glob
+  (`cv/main_<company>*.tex`). Two roles at one company both match it, so `/outcome` copied
+  whichever the filesystem returned first into the archive as `cv_draft.tex` - the file whose
+  purpose is to record what was actually submitted - and its own "leave an existing archived
+  file" rule then made the wrong copy permanent. Both fallbacks now glob the full
+  `<company>_<role>` stem, derived by the **Subfolder naming** rule in `documents/README.md`
+  rather than restated, and skip with a note instead of widening the search. Dropping the
+  hardcoded `.tex` also makes a template registered by `/add-template` findable.
+
 - **`jobnet-search detail` no longer reports an externally hosted ad as not found** (#432) -
   Jobnet's `/FindJob/JobAdDetails/<id>` returns 404 for ads with `isExternal: true`, so `detail`
   on an ad `search` had just listed exited 1 with `NOT_FOUND`, and `/scrape` read the posting as
