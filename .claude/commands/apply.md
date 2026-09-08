@@ -240,7 +240,9 @@ The script reports, per page, where the text starts and stops, bottom whitespace
 
 The hole check is the one a visual read misses. A moderncv `\cventry` renders as a `tabular`, so it is an **unbreakable block**: when it does not fit in the space left, the whole entry jumps to the next page and leaves a hole behind, while the document still compiles and still reports the right page count. Fix it by shortening the entry that follows the hole, not by stretching the page.
 
-If Poppler is missing the script exits 2 with `skipped:` — note the degraded mode in the Step 6 report and rely on the visual inspection alone.
+If Poppler is missing, or the `pdftotext` first in PATH is the xpdf build Git for Windows ships (no `-bbox`), the script exits 2 with `skipped:` — note the degraded mode in the Step 6 report and rely on the visual inspection alone. Exit 2 is never a layout verdict.
+
+The thresholds are calibrated for the stock moderncv and `cover.cls` geometry; a template registered via `/add-template` may report a phantom hole above a footer the 90pt band does not cover.
 
 Then read both PDFs via the Read tool and verify:
 

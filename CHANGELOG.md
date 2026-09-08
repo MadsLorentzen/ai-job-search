@@ -35,10 +35,14 @@ per-file diff commands.
   check - a moderncv `\cventry` is an unbreakable `tabular`, so an entry that does not fit
   jumps to the next page and leaves a hole behind (observed at 273pt, roughly 19 blank
   lines) while the document still compiles, still reports the correct page count, and still
-  passes `tools/verify_pdf.py`. Geometry comes from Poppler `pdftotext -bbox`, already a
-  dependency; a missing Poppler degrades to a `skipped:` exit rather than a hard failure.
+  passes `tools/verify_pdf.py`. Geometry comes from Poppler `pdftotext -bbox`; Poppler is
+  optional repo-wide (since #369 `verify_pdf.py` prefers pypdf), and word bounding boxes
+  have no pypdf equivalent, so this is the one step that still wants it. A missing Poppler
+  - or the xpdf-based `pdftotext` Git for Windows puts ahead of it in PATH, which rejects
+  `-bbox` - degrades to a `skipped:` exit 2 rather than reporting a phantom layout failure.
   Page count is deliberately left to `verify_pdf.py --pages` so that one rule keeps one
-  implementation. Tests use synthetic page geometry, so they need neither Poppler nor a
+  implementation. Thresholds are calibrated for the stock moderncv and `cover.cls`
+  geometry. Tests use synthetic page geometry, so they need neither Poppler nor a
   LaTeX toolchain.
 
 ### Fixed

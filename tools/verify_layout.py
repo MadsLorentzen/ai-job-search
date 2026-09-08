@@ -23,15 +23,28 @@ failure below produces a clean compile, a correct page count, and a PDF that pas
 Page count is deliberately NOT checked here: `tools/verify_pdf.py --pages` already does
 that, and CI runs it. Two implementations of one rule drift.
 
-Geometry comes from Poppler word bounding boxes (`pdftotext -bbox`), the same dependency
-`verify_pdf.py` already relies on. Line height serves as a font-size proxy to spot
-section headings; left edge (xMin) separates bullet lines from entry headers.
+Geometry comes from Poppler word bounding boxes (`pdftotext -bbox`). Poppler is optional
+repo-wide - since #369 `verify_pdf.py` prefers pypdf and falls back to Poppler - but word
+bounding boxes have no pypdf equivalent, so this is the one step that still wants it.
+Without it, or with an extractor that cannot do `-bbox` (Git-for-Windows ships an
+xpdf-based `pdftotext` that shadows Poppler in PATH and rejects the flag), the check
+reports `skipped:` and exits 2 rather than inventing a layout failure. Line height serves
+as a font-size proxy to spot section headings; left edge (xMin) separates bullet lines
+from entry headers.
+
+The thresholds below are calibrated for the stock moderncv (`cv/`) and cover.cls
+(`cover_letters/`) geometry. A template registered via `/add-template` may need them
+retuned - an article-class page number sitting outside the 90pt footer band, for
+instance, is read as body text and turns the space above it into a phantom hole.
 
 Usage:
     python tools/verify_layout.py cv/main_acme_ml_engineer.pdf
     python tools/verify_layout.py cover_letters/cover_acme_ml_engineer.pdf
 
-Exit codes: 0 clean, 1 layout problem, 2 bad invocation or Poppler missing.
+Exit codes: 0 clean, 1 layout problem, 2 bad invocation or no usable extractor.
+
+The shipped `cv/main_example.pdf` exits 1 by design: its placeholder page 2 is mostly
+empty, which is the thin-final-page failure the checklist asks you to fix before sending.
 
 Tests live in tests/test_verify_layout.py and run against synthetic pages, so the
 suite needs neither Poppler nor a compiled PDF.
@@ -125,6 +138,13 @@ class Page:
         return bool(median) and line.height > median * HEADING_HEIGHT_RATIO
 
     def largest_gap(self) -> tuple[float, float]:
+        """Largest top-to-top distance between body lines, and where it starts.
+
+        Measured top-to-top rather than bottom-to-top, so a tall line inflates the gap
+        by its own height (a 160pt void under a heading reads as ~174pt). That errs
+        toward over-detection, which is the right direction for a check whose job is
+        to stop a hole from shipping.
+        """
         tops = sorted({round(l.top, 1) for l in self.body})
         if len(tops) < 2:
             return (0.0, 0.0)
@@ -134,10 +154,26 @@ class Page:
 def parse_pdf(path: Path) -> list[Page]:
     if not shutil.which("pdftotext"):
         raise RuntimeError("pdftotext (Poppler) not found; install poppler-utils")
-    out = subprocess.run(
-        ["pdftotext", "-bbox", "-enc", "UTF-8", str(path), "-"],
-        capture_output=True, text=True, check=True,
-    ).stdout
+    try:
+        out = subprocess.run(
+            ["pdftotext", "-bbox", "-enc", "UTF-8", str(path), "-"],
+            capture_output=True,
+            text=True,
+            # pdftotext emits UTF-8; without this Windows decodes it as cp1252 and
+            # a non-ASCII glyph in the CV crashes the run (same fix as verify_pdf.py).
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        ).stdout
+    except subprocess.CalledProcessError as exc:
+        # An xpdf-based pdftotext has no -bbox and exits 99. That is a broken extractor,
+        # not a broken document, so it degrades to the skip path instead of exit 1.
+        detail = (exc.stderr or "").strip() or f"exit {exc.returncode}"
+        raise RuntimeError(
+            f"pdftotext could not produce bounding boxes for {path} ({detail}); "
+            "a pdftotext without -bbox is usually the xpdf build that Git for Windows "
+            "puts ahead of Poppler in PATH"
+        ) from exc
     pages = []
     for _w, h, body in PAGE_RE.findall(out):
         buckets: dict[float, list[tuple[float, float, float, str]]] = {}

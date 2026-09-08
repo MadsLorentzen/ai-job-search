@@ -10,15 +10,13 @@ and passes tools/verify_pdf.py, while the rendered page is visibly broken.
 """
 
 import io
-import sys
+import subprocess
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "tools"))
-
-from verify_layout import Page, Line, find_orphans, report  # noqa: E402
+from tools.verify_layout import Line, Page, find_orphans, main, parse_pdf, report
 
 A4_HEIGHT = 842.0
 
@@ -111,6 +109,37 @@ class TestOrphans(unittest.TestCase):
         s1 = Page(A4_HEIGHT, [line(50, left=50.0), line(700, left=50.0, text="Data Analyst")])
         s2 = Page(A4_HEIGHT, [line(60, left=70.0, text="- first bullet")])
         self.assertTrue(any("orphaned from its bullets" in m for m in find_orphans([s1, s2])))
+
+class TestExtractorFailure(unittest.TestCase):
+    """A broken extractor must not masquerade as a broken document.
+
+    Git for Windows ships an xpdf-based pdftotext with no -bbox flag; it shadows
+    Poppler in a default PATH and exits 99. Reported as a layout problem it would
+    send /apply chasing a phantom hole, so it has to land on the skip path.
+    """
+
+    def test_pdftotext_without_bbox_raises_a_skippable_error(self):
+        failure = subprocess.CalledProcessError(99, "pdftotext", stderr="Error: unknown flag")
+        with patch("tools.verify_layout.shutil.which", return_value="/usr/bin/pdftotext"), patch(
+            "tools.verify_layout.subprocess.run", side_effect=failure
+        ):
+            with self.assertRaisesRegex(RuntimeError, "bounding boxes"):
+                parse_pdf(Path("cv/main_example.pdf"))
+
+    def test_missing_poppler_raises_a_skippable_error(self):
+        with patch("tools.verify_layout.shutil.which", return_value=None):
+            with self.assertRaisesRegex(RuntimeError, "not found"):
+                parse_pdf(Path("cv/main_example.pdf"))
+
+    def test_extractor_failure_exits_2_not_1(self):
+        """Exit 1 means "your document is broken"; a dead extractor must never claim that."""
+        with patch("tools.verify_layout.parse_pdf", side_effect=RuntimeError("no -bbox")), patch(
+            "sys.argv", ["verify_layout.py", __file__]
+        ):
+            err = io.StringIO()
+            with redirect_stdout(io.StringIO()), patch("sys.stderr", err):
+                self.assertEqual(main(), 2)
+            self.assertIn("skipped:", err.getvalue())
 
 
 if __name__ == "__main__":
