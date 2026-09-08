@@ -11,6 +11,7 @@ test("runtime dependencies are production dependencies without lifecycle scripts
   assert.ok(pkg.dependencies["node-pty"]);
   assert.ok(pkg.dependencies["@xterm/xterm"]);
   assert.ok(pkg.dependencies["@xterm/addon-fit"]);
+  assert.ok(pkg.dependencies["electron-updater"]);
   assert.equal(pkg.scripts.postinstall, undefined);
   assert.match(pkg.scripts["test:unit"], /node --test/);
   assert.match(pkg.scripts["test:renderer"], /tests\/renderer/);
@@ -33,6 +34,9 @@ test("Windows installer replaces the previous Desk and can keep a copy", async (
   assert.match(yml, /allowToChangeInstallationDirectory:\s*false/);
   assert.match(yml, /include:\s*build\/installer\.nsh/);
   assert.match(yml, /deleteAppDataOnUninstall:\s*false/);
+  assert.match(yml, /provider:\s*github/);
+  assert.match(yml, /owner:\s*iLevyTate/);
+  assert.match(yml, /repo:\s*ai-job-search/);
   assert.match(nsis, /replace it with this version/);
   assert.match(nsis, /keep a copy of the old app/);
   // A wildcard CopyFiles skips subdirectories; robocopy /E keeps app.asar.

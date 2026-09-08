@@ -14,6 +14,14 @@ per-file diff commands.
 ## [Unreleased]
 
 ### Added
+- Job Search Desk first-timer follow-through: the installed app checks GitHub
+  Releases and offers **Restart** when a new Desk build is downloaded
+  (portable builds link to Releases instead). **Setup** is a short optional
+  form (name, location, target roles) that seeds `/setup` so a first click is
+  not a three-path interview. An empty Jobs tab shows a marked-fake practice
+  posting so someone can run Apply before they scrape. First-run on Windows
+  explains SmartScreen (More info, then Run anyway): that warning is a
+  missing signature, not a virus scan.
 - Job Search Desk: a **Jobs** tab (what Find Jobs found, ranked, with Apply,
   Autofill, Interested and Ignore per row), an **Applications** tab (the
   tracker with status, deadline, inline CV and letter preview, and buttons to

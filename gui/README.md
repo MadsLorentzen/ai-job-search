@@ -14,7 +14,7 @@ Download **Job Search Desk** from [Releases](https://github.com/iLevyTate/ai-job
 
 Then:
 
-1. Run the installer. On Windows it asks whether to replace the previous Job Search Desk or keep a copy, then adds Start Menu and Desktop shortcuts and launches the app. macOS: open the `.dmg` and drag the app to Applications. Linux: mark the AppImage executable and run it.
+1. Run the installer. On Windows it asks whether to replace the previous Job Search Desk or keep a copy, then adds Start Menu and Desktop shortcuts and launches the app. If Windows SmartScreen says it protected your PC, click **More info**, then **Run anyway**. That warning is a missing signature, not a virus scan. macOS: open the `.dmg` and drag the app to Applications. Linux: mark the AppImage executable and run it.
 2. Open an existing job-search folder, or create a new copy of the public repo (downloads it; Git is optional).
 3. The desk starts Claude Code as soon as it opens. If Claude Code is missing, it runs Anthropic's official installer. If you are signed out, it opens the **claude.ai** login: the same Claude Pro / Max / Team / Enterprise account you use in Chrome.
 4. Optional: install [Claude in Chrome](https://chromewebstore.google.com/detail/claude/fcoeoabgfenejglbffodgkkbkcdhcgfn) if you want the browser extension connected later.
@@ -68,7 +68,7 @@ Claude in Chrome is optional and off unless you set `JOB_SEARCH_CLAUDE_CHROME=1`
 ## How to use it
 
 1. Sign in only if the desk reports you are signed out. Claude Code opens one claude.ai tab for that; if no tab appears, use the **Open the sign-in page** link on the same card. Install Claude Code only if it is missing.
-2. Click a step in the left column. **Setup**, **Find Jobs**, **Rank**, **Interview**, and **Outcome** run as soon as you click them. **Apply** asks for one thing: the job link, or the whole posting pasted in if the site blocks links. **Autofill** asks for the application form link. **More steps…** (or Ctrl+K) lists everything else, such as Import and Upskill.
+2. Click a step in the left column. **Setup** asks for name, location, and the roles you want (every field is optional; skip them and Claude asks). **Find Jobs**, **Rank**, **Interview**, and **Outcome** run as soon as you click them. **Apply** asks for one thing: the job link, or the whole posting pasted in if the site blocks links. **Autofill** asks for the application form link. An empty Jobs tab offers a marked-fake practice posting so you can try Apply before you scrape. **More steps…** (or Ctrl+K) lists everything else, such as Import and Upskill. The installed app shows **Restart** when a new Desk build is ready (the portable exe links to Releases instead).
 3. While Claude works the chat says what it is doing: *Thinking*, *Reading job_search_tracker.csv*, *Writing*. Stop cancels the turn. Scroll up whenever you like; a **Latest** button brings you back. When Claude has a question, a **Needs you** card lists the choices; pick one or type your own answer. When the header says **Asks before acting** (Safe mode), the same kind of card asks before a tool runs.
 4. **Scrape**, then talk: "which of these are real Staff AI roles?" **Rank** when the table is too long.
 5. **Autofill** fills the employer form and hands the browser to you. Review it, then click Submit yourself. Desk shows Continue and Cancel only.

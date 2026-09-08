@@ -1511,6 +1511,8 @@ body.gated .stage {
   background: rgba(0, 0, 0, 0.16);
 }
 .job-row.bucket-ignored { opacity: 0.6; }
+.job-row.sample { border-style: dashed; }
+.empty + .job-list { margin-top: 1rem; }
 .job-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.75rem; }
 .job-head h3 {
   margin: 0;

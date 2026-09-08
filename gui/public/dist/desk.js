@@ -9614,7 +9614,7 @@ ${incoming}`;
     const bits = [job.company, job.location, job.portal ? `via ${job.portal}` : "", job.firstSeen ? `found ${job.firstSeen}` : ""].filter(Boolean);
     return bits.map(escapeHtml2).join(" \xB7 ");
   }
-  function renderJobs(container, { jobs = [], filter = "open", query = "", status = "ready", error = "" } = {}) {
+  function renderJobs(container, { jobs = [], filter = "open", query = "", status = "ready", error = "", sample = null } = {}) {
     const document2 = container.ownerDocument;
     container.replaceChildren();
     if (status === "loading") {
@@ -9626,7 +9626,13 @@ ${incoming}`;
       return;
     }
     if (!jobs.length) {
-      container.innerHTML = `<div class="empty"><p class="kicker">Jobs</p><h2>No jobs found yet.</h2><p>Click <strong>Find Jobs</strong> in the left column and Claude searches the job boards for openings that match you. They show up here, ready to apply to.</p><div class="empty-actions"><button type="button" data-action="scrape">Find jobs now</button></div></div>`;
+      const practice = sample ? `<div class="job-list"><article class="job-row bucket-new sample" data-job-key="${escapeHtml2(sample.key)}">
+          <div class="job-head"><h3>${escapeHtml2(sample.title || "Practice role")}</h3><span class="pill">Practice</span></div>
+          <p class="job-meta">${escapeHtml2([sample.company, sample.location].filter(Boolean).join(" \xB7 "))}</p>
+          <p class="app-notes">Practice only. Draft a packet against this sample. Do not send it to anyone.</p>
+          <div class="row-actions"><button type="button" data-job-action="apply">Practice apply</button></div>
+        </article></div>` : "";
+      container.innerHTML = `<div class="empty"><p class="kicker">Jobs</p><h2>No jobs found yet.</h2><p>Click <strong>Find Jobs</strong> in the left column and Claude searches the job boards for openings that match you. They show up here, ready to apply to. Or practice on a marked-fake posting first.</p><div class="empty-actions"><button type="button" data-action="scrape">Find jobs now</button>${sample ? `<button type="button" class="ghost" data-sample-job>Practice with a sample job</button>` : ""}</div></div>${practice}`;
       return;
     }
     const counts = countBuckets(jobs);
@@ -9851,8 +9857,26 @@ ${incoming}`;
   }
   function commandNeedsInput(command) {
     if (!command) return false;
+    if (command.id === "setup") return true;
     if (commandTakesPaste(command)) return true;
     return (command.arguments || []).some((argument) => argument.required);
+  }
+  function seedSetupPrompt(values = {}) {
+    const name = String(values.setupName || "").trim();
+    const location2 = String(values.setupLocation || "").trim();
+    const target = String(values.setupTarget || "").trim();
+    const notes = String(values.setupNotes || "").trim();
+    if (!name && !location2 && !target && !notes) return "/setup";
+    const lines = [
+      "/setup",
+      "",
+      "I already filled what I know. Use Path A if documents/cv has a resume, otherwise Path C for anything still blank. Do not re-ask fields that have a value."
+    ];
+    if (name) lines.push(`Name: ${name}`);
+    if (location2) lines.push(`Location: ${location2}`);
+    if (target) lines.push(`Target roles: ${target}`);
+    if (notes) lines.push(`Notes: ${notes}`);
+    return lines.join("\n");
   }
   var FIELD_LABELS = {
     url: "Link",
@@ -9902,6 +9926,7 @@ ${incoming}`;
   }
   function commandInputError(command, values = {}) {
     if (!command) return "";
+    if (command.id === "setup") return "";
     if (commandTakesPaste(command)) {
       const normalized = normalizeCommandValues(command, values);
       const filled = (command.arguments || []).some((argument) => {
@@ -9919,6 +9944,7 @@ ${incoming}`;
     return "";
   }
   function renderCommandInvocation(command, values = {}) {
+    if (command?.id === "setup") return seedSetupPrompt(values);
     const normalized = normalizeCommandValues(command, values);
     const parts = [command.invocation];
     let multiline = "";
@@ -9945,6 +9971,12 @@ ${incoming}`;
 ${multiline}` : rendered;
   }
   function renderCommandForm(command) {
+    if (command?.id === "setup") {
+      return `<label data-arg="setupName"><span>Name, as it should appear on a CV</span><input name="setupName" type="text" autocomplete="name" placeholder="Optional"></label>
+<label data-arg="setupLocation"><span>Where you live</span><input name="setupLocation" type="text" autocomplete="address-level2" placeholder="City, state. Remote is fine."></label>
+<label data-arg="setupTarget"><span>Roles you want</span><input name="setupTarget" type="text" placeholder="Staff engineer, research scientist"></label>
+<label data-arg="setupNotes"><span>Anything else Claude should know</span><textarea name="setupNotes" rows="4" placeholder="Optional. Skip any field; Claude will ask."></textarea></label>`;
+    }
     if (commandTakesPaste(command)) {
       const placeholder = escapeHtml3(COMMAND_PLACEHOLDERS[command.id] || "Paste a link or the full text.");
       return `<label data-arg="${PASTE_FIELD}"><span>Job link or posting</span><textarea name="${PASTE_FIELD}" rows="6" placeholder="${placeholder}"></textarea></label>`;
@@ -10720,9 +10752,15 @@ ${multiline}` : rendered;
   }
   function openCommandSheet(command) {
     activeCommand = command;
-    sheetKicker.textContent = command.invocation;
-    sheetTitle.textContent = command.title;
-    sheetCopy.textContent = command.description || "Add what the step needs, then run.";
+    if (command.id === "setup") {
+      sheetKicker.textContent = "/setup";
+      sheetTitle.textContent = "Build your profile";
+      sheetCopy.textContent = "Fill what you know. Claude asks only for the rest. Add a CV first if you have one.";
+    } else {
+      sheetKicker.textContent = command.invocation;
+      sheetTitle.textContent = command.title;
+      sheetCopy.textContent = command.description || "Add what the step needs, then run.";
+    }
     sheetFields.innerHTML = renderCommandForm(command);
     sheetError.hidden = true;
     sheetError.textContent = "";
@@ -10976,7 +11014,7 @@ ${multiline}` : rendered;
   var resetPending = false;
   var progressInfo = null;
   var toolsInfo = null;
-  var jobsState = { jobs: [], filter: "open", query: "", status: "loading", error: "" };
+  var jobsState = { jobs: [], filter: "open", query: "", status: "loading", error: "", sample: null, samplePosting: "" };
   var applicationsState = { applications: [], status: "loading", error: "", preview: null };
   async function loadProgress() {
     try {
@@ -11006,7 +11044,14 @@ ${multiline}` : rendered;
       const res = await fetch("/jobs");
       if (!res.ok) throw new Error("Could not read the job list.");
       const body = await res.json();
-      jobsState = { ...jobsState, jobs: body.jobs || [], status: "ready", error: "" };
+      jobsState = {
+        ...jobsState,
+        jobs: body.jobs || [],
+        sample: body.sample || null,
+        samplePosting: body.samplePosting || "",
+        status: "ready",
+        error: ""
+      };
     } catch (error) {
       jobsState = { ...jobsState, status: "error", error: error.message };
     }
@@ -11349,6 +11394,12 @@ ${multiline}` : rendered;
       if (id === "chat") requestAnimationFrame(scrollLog);
     }
   });
+  function applyPracticeJob() {
+    if (!jobsState.samplePosting) return;
+    runStep("apply", `/apply
+
+${jobsState.samplePosting}`);
+  }
   jobsEl.addEventListener("click", async (event) => {
     const filter = event.target.closest("[data-job-filter]");
     if (filter) {
@@ -11356,13 +11407,21 @@ ${multiline}` : rendered;
       paintJobs();
       return;
     }
+    if (event.target.closest("[data-sample-job]")) {
+      applyPracticeJob();
+      return;
+    }
     const action = event.target.closest("[data-job-action]");
     if (!action) return;
     const row = action.closest("[data-job-key]");
-    const job = jobsState.jobs.find((item) => item.key === row?.dataset.jobKey);
+    const job = jobsState.jobs.find((item) => item.key === row?.dataset.jobKey) || (jobsState.sample?.key === row?.dataset.jobKey ? jobsState.sample : null);
     if (!job) return;
     const kind = action.dataset.jobAction;
     if (kind === "apply") {
+      if (job.sample) {
+        applyPracticeJob();
+        return;
+      }
       if (job.url) runStep("apply", `/apply ${job.url}`);
       else runStep("apply", `/apply
 ${[job.title, job.company].filter(Boolean).join(" at ")} (no link was saved; ask me for the posting if you need it)`);
@@ -11783,9 +11842,48 @@ ${[job.title, job.company].filter(Boolean).join(" at ")} (no link was saved; ask
       gateAction.disabled = false;
     });
   }
+  var updateBtn = document.getElementById("update-btn");
+  async function refreshUpdate() {
+    if (!updateBtn) return;
+    try {
+      const res = await fetch("/update/status");
+      if (!res.ok) return;
+      const info = await res.json();
+      if (info.channel === "downloaded" && info.version) {
+        updateBtn.hidden = false;
+        updateBtn.textContent = `Restart for ${info.version}`;
+      } else if (info.channel === "manual") {
+        updateBtn.hidden = false;
+        updateBtn.textContent = "Get latest Desk";
+      } else {
+        updateBtn.hidden = true;
+      }
+      updateBtn.dataset.channel = info.channel || "";
+      updateBtn.dataset.releases = info.releasesUrl || "";
+    } catch {
+    }
+  }
+  updateBtn?.addEventListener("click", async () => {
+    if (updateBtn.dataset.channel === "manual") {
+      const href = updateBtn.dataset.releases;
+      if (href) window.open(href, "_blank", "noreferrer");
+      return;
+    }
+    try {
+      const res = await post("/update/install");
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.ok === false) {
+        notice(data?.error || "Could not restart into the new version.");
+      }
+    } catch {
+      notice("Could not reach the local desk.");
+    }
+  });
   checkClaude();
   tickClock();
   window.setInterval(tickClock, 3e4);
+  refreshUpdate();
+  window.setInterval(refreshUpdate, 6e4);
   sizePrompt();
   promptEl.focus();
 })();

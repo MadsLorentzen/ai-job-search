@@ -41,8 +41,27 @@ export function commandTakesPaste(command) {
 
 export function commandNeedsInput(command) {
   if (!command) return false;
+  if (command.id === "setup") return true;
   if (commandTakesPaste(command)) return true;
   return (command.arguments || []).some((argument) => argument.required);
+}
+
+export function seedSetupPrompt(values = {}) {
+  const name = String(values.setupName || "").trim();
+  const location = String(values.setupLocation || "").trim();
+  const target = String(values.setupTarget || "").trim();
+  const notes = String(values.setupNotes || "").trim();
+  if (!name && !location && !target && !notes) return "/setup";
+  const lines = [
+    "/setup",
+    "",
+    "I already filled what I know. Use Path A if documents/cv has a resume, otherwise Path C for anything still blank. Do not re-ask fields that have a value.",
+  ];
+  if (name) lines.push(`Name: ${name}`);
+  if (location) lines.push(`Location: ${location}`);
+  if (target) lines.push(`Target roles: ${target}`);
+  if (notes) lines.push(`Notes: ${notes}`);
+  return lines.join("\n");
 }
 
 const FIELD_LABELS = {
@@ -102,6 +121,7 @@ export function normalizeCommandValues(command, values = {}) {
 
 export function commandInputError(command, values = {}) {
   if (!command) return "";
+  if (command.id === "setup") return "";
   if (commandTakesPaste(command)) {
     const normalized = normalizeCommandValues(command, values);
     const filled = (command.arguments || []).some((argument) => {
@@ -120,6 +140,7 @@ export function commandInputError(command, values = {}) {
 }
 
 export function renderCommandInvocation(command, values = {}) {
+  if (command?.id === "setup") return seedSetupPrompt(values);
   const normalized = normalizeCommandValues(command, values);
   const parts = [command.invocation];
   let multiline = "";
@@ -146,6 +167,12 @@ export function renderCommandInvocation(command, values = {}) {
 }
 
 export function renderCommandForm(command) {
+  if (command?.id === "setup") {
+    return `<label data-arg="setupName"><span>Name, as it should appear on a CV</span><input name="setupName" type="text" autocomplete="name" placeholder="Optional"></label>
+<label data-arg="setupLocation"><span>Where you live</span><input name="setupLocation" type="text" autocomplete="address-level2" placeholder="City, state. Remote is fine."></label>
+<label data-arg="setupTarget"><span>Roles you want</span><input name="setupTarget" type="text" placeholder="Staff engineer, research scientist"></label>
+<label data-arg="setupNotes"><span>Anything else Claude should know</span><textarea name="setupNotes" rows="4" placeholder="Optional. Skip any field; Claude will ask."></textarea></label>`;
+  }
   if (commandTakesPaste(command)) {
     const placeholder = escapeHtml(COMMAND_PLACEHOLDERS[command.id] || "Paste a link or the full text.");
     return `<label data-arg="${PASTE_FIELD}"><span>Job link or posting</span><textarea name="${PASTE_FIELD}" rows="6" placeholder="${placeholder}"></textarea></label>`;

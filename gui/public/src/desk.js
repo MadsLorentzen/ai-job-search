@@ -542,9 +542,15 @@ function runAction(name) {
 
 function openCommandSheet(command) {
   activeCommand = command;
-  sheetKicker.textContent = command.invocation;
-  sheetTitle.textContent = command.title;
-  sheetCopy.textContent = command.description || "Add what the step needs, then run.";
+  if (command.id === "setup") {
+    sheetKicker.textContent = "/setup";
+    sheetTitle.textContent = "Build your profile";
+    sheetCopy.textContent = "Fill what you know. Claude asks only for the rest. Add a CV first if you have one.";
+  } else {
+    sheetKicker.textContent = command.invocation;
+    sheetTitle.textContent = command.title;
+    sheetCopy.textContent = command.description || "Add what the step needs, then run.";
+  }
   sheetFields.innerHTML = renderCommandForm(command);
   sheetError.hidden = true;
   sheetError.textContent = "";
@@ -824,7 +830,7 @@ stopBtn.addEventListener("click", async () => {
 let resetPending = false;
 let progressInfo = null;
 let toolsInfo = null;
-let jobsState = { jobs: [], filter: "open", query: "", status: "loading", error: "" };
+let jobsState = { jobs: [], filter: "open", query: "", status: "loading", error: "", sample: null, samplePosting: "" };
 let applicationsState = { applications: [], status: "loading", error: "", preview: null };
 
 async function loadProgress() {
@@ -859,7 +865,14 @@ async function loadJobs() {
     const res = await fetch("/jobs");
     if (!res.ok) throw new Error("Could not read the job list.");
     const body = await res.json();
-    jobsState = { ...jobsState, jobs: body.jobs || [], status: "ready", error: "" };
+    jobsState = {
+      ...jobsState,
+      jobs: body.jobs || [],
+      sample: body.sample || null,
+      samplePosting: body.samplePosting || "",
+      status: "ready",
+      error: "",
+    };
   } catch (error) {
     jobsState = { ...jobsState, status: "error", error: error.message };
   }
@@ -1238,6 +1251,11 @@ const tabs = mountTabs(document.getElementById("surface-tabs"), {
     if (id === "chat") requestAnimationFrame(scrollLog);
   },
 });
+function applyPracticeJob() {
+  if (!jobsState.samplePosting) return;
+  runStep("apply", `/apply\n\n${jobsState.samplePosting}`);
+}
+
 jobsEl.addEventListener("click", async (event) => {
   const filter = event.target.closest("[data-job-filter]");
   if (filter) {
@@ -1245,13 +1263,22 @@ jobsEl.addEventListener("click", async (event) => {
     paintJobs();
     return;
   }
+  if (event.target.closest("[data-sample-job]")) {
+    applyPracticeJob();
+    return;
+  }
   const action = event.target.closest("[data-job-action]");
   if (!action) return;
   const row = action.closest("[data-job-key]");
-  const job = jobsState.jobs.find((item) => item.key === row?.dataset.jobKey);
+  const job = jobsState.jobs.find((item) => item.key === row?.dataset.jobKey)
+    || (jobsState.sample?.key === row?.dataset.jobKey ? jobsState.sample : null);
   if (!job) return;
   const kind = action.dataset.jobAction;
   if (kind === "apply") {
+    if (job.sample) {
+      applyPracticeJob();
+      return;
+    }
     if (job.url) runStep("apply", `/apply ${job.url}`);
     else runStep("apply", `/apply\n${[job.title, job.company].filter(Boolean).join(" at ")} (no link was saved; ask me for the posting if you need it)`);
     return;
@@ -1713,9 +1740,52 @@ function checkClaude() {
     });
 }
 
+const updateBtn = document.getElementById("update-btn");
+
+async function refreshUpdate() {
+  if (!updateBtn) return;
+  try {
+    const res = await fetch("/update/status");
+    if (!res.ok) return;
+    const info = await res.json();
+    if (info.channel === "downloaded" && info.version) {
+      updateBtn.hidden = false;
+      updateBtn.textContent = `Restart for ${info.version}`;
+    } else if (info.channel === "manual") {
+      updateBtn.hidden = false;
+      updateBtn.textContent = "Get latest Desk";
+    } else {
+      updateBtn.hidden = true;
+    }
+    updateBtn.dataset.channel = info.channel || "";
+    updateBtn.dataset.releases = info.releasesUrl || "";
+  } catch {
+    // Leave the last known button state if the endpoint blips.
+  }
+}
+
+updateBtn?.addEventListener("click", async () => {
+  if (updateBtn.dataset.channel === "manual") {
+    const href = updateBtn.dataset.releases;
+    if (href) window.open(href, "_blank", "noreferrer");
+    return;
+  }
+  try {
+    const res = await post("/update/install");
+    const data = await res.json().catch(() => null);
+    if (!res.ok || data?.ok === false) {
+      notice(data?.error || "Could not restart into the new version.");
+    }
+  } catch {
+    notice("Could not reach the local desk.");
+  }
+});
+
 checkClaude();
 
 tickClock();
 window.setInterval(tickClock, 30000);
+refreshUpdate();
+window.setInterval(refreshUpdate, 60_000);
 sizePrompt();
 promptEl.focus();

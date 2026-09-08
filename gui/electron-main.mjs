@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
+import { autoUpdater } from "electron-updater";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,7 @@ import { createDeskRuntimeFactory } from "./desk-session.mjs";
 import { startDesk } from "./server.mjs";
 import { createClaudePty, defaultSpawnPty } from "./terminal/claude-pty.mjs";
 import { switchToChat, switchToTerminal } from "./terminal/handoff.mjs";
+import { applyFakeUpdateState, registerUpdateInstaller, setUpdateState } from "./update.mjs";
 import {
   createWorkspace,
   defaultBrowseDir,
@@ -133,6 +135,41 @@ function createWindow() {
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+}
+
+async function startUpdates() {
+  const current = app.getVersion();
+  setUpdateState({ current, releasesUrl: "https://github.com/iLevyTate/ai-job-search/releases" });
+  if (applyFakeUpdateState()) return;
+  if (!app.isPackaged) {
+    setUpdateState({ channel: "dev", current });
+    return;
+  }
+  if (process.env.PORTABLE_EXECUTABLE_DIR) {
+    setUpdateState({ channel: "manual", current });
+    return;
+  }
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.on("checking-for-update", () => setUpdateState({ channel: "checking", current }));
+  autoUpdater.on("update-available", (info) => {
+    setUpdateState({ channel: "available", current, version: info?.version || "" });
+  });
+  autoUpdater.on("update-not-available", () => setUpdateState({ channel: "idle", current, version: "" }));
+  autoUpdater.on("update-downloaded", (info) => {
+    setUpdateState({ channel: "downloaded", current, version: info?.version || "" });
+  });
+  autoUpdater.on("error", (err) => {
+    setUpdateState({ channel: "error", current, error: err?.message || "Update check failed." });
+  });
+  registerUpdateInstaller(() => {
+    autoUpdater.quitAndInstall();
+  });
+  try {
+    await autoUpdater.checkForUpdates();
+  } catch (err) {
+    setUpdateState({ channel: "error", current, error: err?.message || "Update check failed." });
+  }
 }
 
 function focusMainWindow() {
@@ -347,6 +384,7 @@ if (!hasLock) {
       }
     }
     createWindow();
+    startUpdates().catch(() => {});
     claudeBootstrap.ensure().catch(() => {});
     const root = sourceWorkspace();
     if (root) {

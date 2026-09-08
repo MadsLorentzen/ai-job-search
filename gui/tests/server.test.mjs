@@ -93,3 +93,30 @@ test("GET /commands lists discovered workflows", async () => {
   assert.ok(body.commands.some((command) => command.id === "setup"));
   assert.ok(body.commands.some((command) => command.id === "scrape"));
 });
+
+test("GET /jobs includes the practice posting text", async () => {
+  const res = await fetch(`${base}/jobs`);
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.ok(Array.isArray(body.jobs));
+  assert.match(body.samplePosting, /PRACTICE POSTING/);
+});
+
+test("GET /update/status reports the idle channel by default", async () => {
+  const res = await fetch(`${base}/update/status`);
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.ok, true);
+  assert.match(body.releasesUrl, /github\.com\/iLevyTate\/ai-job-search\/releases/);
+});
+
+test("POST /update/install without a registered installer is a safe no-op", async () => {
+  const res = await fetch(`${base}/update/install`, {
+    method: "POST",
+    headers: { Origin: base, "Content-Type": "application/json" },
+    body: "{}",
+  });
+  assert.equal(res.status, 200);
+  const body = await res.json();
+  assert.equal(body.ok, false);
+});

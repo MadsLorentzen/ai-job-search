@@ -20,6 +20,7 @@
     <h2>Where should your job search live?</h2>
     <p class="lede">Desk keeps everything it finds and writes (job lists, CVs, cover letters) in one folder on this computer. Nothing leaves your machine.</p>
     <p id="browse-hint" class="hint">First time here? Choose Start a new job search. If you already have a Job Search Desk folder from before, open it.</p>
+    <p id="smartscreen-hint" class="hint" hidden>If Windows said it protected your PC, click More info, then Run anyway. That warning is a missing signature, not a virus scan.</p>
     <div id="found-list" class="found-list" hidden></div>
     <div class="choice-grid">
       <button type="button" id="clone-folder" class="choice">
@@ -207,6 +208,11 @@
           window.clearInterval(poll);
         }
       }, 2000);
+    }
+
+    if (/Windows/i.test(navigator.userAgent)) {
+      const warn = document.getElementById("smartscreen-hint");
+      if (warn) warn.hidden = false;
     }
 
     showFound();

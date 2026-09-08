@@ -55,3 +55,7 @@ linux:
   target:
     - AppImage
   artifactName: JobSearchDesk-${version}-linux-${arch}.${ext}
+publish:
+  provider: github
+  owner: iLevyTate
+  repo: ai-job-search

@@ -14,6 +14,7 @@ import {
   renderCommandInvocation,
   renderPaletteList,
   renderSidebar,
+  seedSetupPrompt,
 } from "../../public/src/chat-view.js";
 import { createDeskState, markEntered, queueFollowUp, reduceDeskEvent } from "../../public/src/event-store.js";
 
@@ -56,6 +57,20 @@ test("the paste box turns a link into the url argument and anything else into th
   assert.equal(renderCommandInvocation(commands[4], { url: "boards.example.com/jobs/1" }), "/autofill https://boards.example.com/jobs/1");
   assert.equal(renderCommandInvocation(commands[2], { paste: "boards.example.com/jobs/1" }), "/apply https://boards.example.com/jobs/1");
   assert.equal(commandInputError(commands[4], { url: "https://boards.example/1" }), "");
+});
+
+test("Setup is a short optional form that seeds /setup", () => {
+  assert.equal(commandNeedsInput(commands[0]), true);
+  assert.match(renderCommandForm(commands[0]), /name="setupName"/);
+  assert.match(renderCommandForm(commands[0]), /name="setupLocation"/);
+  assert.equal(seedSetupPrompt({}), "/setup");
+  assert.equal(renderCommandInvocation(commands[0], {}), "/setup");
+  const seeded = seedSetupPrompt({ setupName: "Sam Lee", setupLocation: "Austin, TX", setupTarget: "Staff engineer" });
+  assert.match(seeded, /^\/setup\n/);
+  assert.match(seeded, /Name: Sam Lee/);
+  assert.match(seeded, /Location: Austin, TX/);
+  assert.match(seeded, /Target roles: Staff engineer/);
+  assert.equal(commandInputError(commands[0], {}), "");
 });
 
 test("streaming updates a card in place instead of rebuilding the log", () => {

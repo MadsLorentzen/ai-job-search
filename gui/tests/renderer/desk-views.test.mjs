@@ -41,6 +41,14 @@ test("the jobs list offers Apply and Autofill per row and the right mark actions
   renderJobs(root, { jobs: [] });
   assert.ok(root.textContent.includes("No jobs found yet"));
   assert.ok(root.querySelector('[data-action="scrape"]'));
+  assert.equal(root.querySelector("[data-sample-job]"), null);
+  renderJobs(root, {
+    jobs: [],
+    sample: { key: "sample:practice", title: "Staff Software Engineer", company: "Northstar Practice Labs", location: "Remote" },
+  });
+  assert.ok(root.querySelector("[data-sample-job]"));
+  assert.ok(root.textContent.includes("Practice"));
+  assert.equal(root.querySelector('[data-job-action="apply"]').textContent, "Practice apply");
 });
 
 test("applications show status, files, and next actions", () => {

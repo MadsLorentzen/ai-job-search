@@ -44,7 +44,7 @@ function jobMeta(job) {
   return bits.map(escapeHtml).join(" · ");
 }
 
-export function renderJobs(container, { jobs = [], filter = "open", query = "", status = "ready", error = "" } = {}) {
+export function renderJobs(container, { jobs = [], filter = "open", query = "", status = "ready", error = "", sample = null } = {}) {
   const document = container.ownerDocument;
   container.replaceChildren();
   if (status === "loading") {
@@ -56,7 +56,15 @@ export function renderJobs(container, { jobs = [], filter = "open", query = "", 
     return;
   }
   if (!jobs.length) {
-    container.innerHTML = `<div class="empty"><p class="kicker">Jobs</p><h2>No jobs found yet.</h2><p>Click <strong>Find Jobs</strong> in the left column and Claude searches the job boards for openings that match you. They show up here, ready to apply to.</p><div class="empty-actions"><button type="button" data-action="scrape">Find jobs now</button></div></div>`;
+    const practice = sample
+      ? `<div class="job-list"><article class="job-row bucket-new sample" data-job-key="${escapeHtml(sample.key)}">
+          <div class="job-head"><h3>${escapeHtml(sample.title || "Practice role")}</h3><span class="pill">Practice</span></div>
+          <p class="job-meta">${escapeHtml([sample.company, sample.location].filter(Boolean).join(" · "))}</p>
+          <p class="app-notes">Practice only. Draft a packet against this sample. Do not send it to anyone.</p>
+          <div class="row-actions"><button type="button" data-job-action="apply">Practice apply</button></div>
+        </article></div>`
+      : "";
+    container.innerHTML = `<div class="empty"><p class="kicker">Jobs</p><h2>No jobs found yet.</h2><p>Click <strong>Find Jobs</strong> in the left column and Claude searches the job boards for openings that match you. They show up here, ready to apply to. Or practice on a marked-fake posting first.</p><div class="empty-actions"><button type="button" data-action="scrape">Find jobs now</button>${sample ? `<button type="button" class="ghost" data-sample-job>Practice with a sample job</button>` : ""}</div></div>${practice}`;
     return;
   }
   const counts = countBuckets(jobs);

@@ -34,7 +34,7 @@ Download the latest installer from **[Releases](https://github.com/iLevyTate/ai-
 
 Release CI does **not** build Intel Mac. Apple Silicon only on macOS.
 
-1. Run the installer. Windows adds Start Menu and Desktop shortcuts and launches the app. macOS: open the `.dmg` and drag the app to Applications. Linux: mark the AppImage executable and run it.
+1. Run the installer. Windows adds Start Menu and Desktop shortcuts and launches the app. If Windows SmartScreen says it protected your PC, click **More info**, then **Run anyway**. That warning is a missing signature, not a virus scan. macOS: open the `.dmg` and drag the app to Applications. Linux: mark the AppImage executable and run it.
 2. Open an existing job-search folder, or create a new copy of this public repo (Git is optional).
 3. The desk starts Claude Code when it opens. If Claude Code is missing, it runs Anthropic's installer. If you are signed out, it opens the same **claude.ai** login you use in Chrome.
 4. After you are signed in, run **Setup** once so the folder has your profile.

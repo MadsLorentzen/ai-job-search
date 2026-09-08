@@ -48,6 +48,8 @@ import {
   setJobMark,
   systemOpener,
 } from "./desk-data.mjs";
+import { attachSample } from "./sample-job.mjs";
+import { applyFakeUpdateState, getUpdateState, requestUpdateInstall } from "./update.mjs";
 
 const IS_WIN = process.platform === "win32";
 const IS_MAC = process.platform === "darwin";
@@ -685,7 +687,21 @@ const TEXT_PREVIEW_TYPES = { ".tex": "text/plain", ".md": "text/plain", ".txt": 
 
 async function handleDeskDataRequest(req, res, url) {
   if (req.method === "GET" && url.pathname === "/jobs") {
-    json(res, 200, { jobs: readJobs(workspace) });
+    const jobs = readJobs(workspace);
+    json(res, 200, { jobs, ...attachSample({ jobs }) });
+    return true;
+  }
+  if (req.method === "GET" && url.pathname === "/update/status") {
+    applyFakeUpdateState();
+    json(res, 200, getUpdateState());
+    return true;
+  }
+  if (req.method === "POST" && url.pathname === "/update/install") {
+    if (process.env.JOB_SEARCH_UPDATE_FAKE === "1") {
+      json(res, 200, { ok: true, dryRun: true });
+      return true;
+    }
+    json(res, 200, requestUpdateInstall());
     return true;
   }
   if (req.method === "POST" && url.pathname === "/jobs/mark") {
