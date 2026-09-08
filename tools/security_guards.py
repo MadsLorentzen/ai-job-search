@@ -58,6 +58,11 @@ ALLOWED_PERMISSIONS = {
     "Bash(python tools/verify_pdf.py:*)",
     "Bash(python3 tools/verify_pdf.py:*)",
     "Bash(pdftotext:*)",
+    # /expand Step 1e reads the authenticated account's repositories. Read-only
+    # endpoints only: `gh api` is not narrowed further because the repo path
+    # varies per candidate, but no write verb is pre-approved.
+    "Bash(gh auth status)",
+    "Bash(gh api:*)",
 }
 
 # Personal-data ignore rules that must never disappear from .gitignore.

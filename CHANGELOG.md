@@ -15,6 +15,22 @@ per-file diff commands.
 
 ### Added
 
+- **`/expand` scans private and collaborated GitHub repositories, and takes a named item
+  directly** (`.claude/commands/expand.md`, `tests/test_expand_command.py`) - Step 1e now
+  prefers the `gh` CLI over WebFetch, which sees only the public profile and its pinned
+  repositories while most of a working engineer's recent evidence is private. It lists
+  `affiliation=owner,collaborator` so work on someone else's repository is not missed,
+  passes `--paginate` because `gh api` silently drops everything past the first page, and
+  scans the **currently authenticated account only** - no `gh auth switch`, which would
+  mutate global CLI state and break `gh` and git credentials in the user's other
+  terminals. Empty contributor output is recorded as "needs manual review", never as no
+  involvement, and `gh search commits` is ruled out because it indexes the default branch
+  only (it reported 7 commits on a repository that had 76). Private material is local
+  competency evidence, never quotable in a CV. `/expand <item>` now skips discovery and
+  enriches the named item directly, Step 5 writes certifications as their own fact rather
+  than dissolving them into implied skills, and scanned sources carry the same
+  untrusted-input rule `/apply` applies to postings.
+
 - **`/expand` project and portfolio expansion** (`.claude/commands/expand.md`,
   `tests/test_expand_command.py`) - expands candidate discovery
   to technical projects from public GitHub repositories, extracting structured summaries
