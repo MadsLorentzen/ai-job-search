@@ -595,14 +595,15 @@ def test_evidence_profile_manager_crud_sources_concurrency_and_staleness(page, l
         certification.get_by_role("button", name="Delete").click()
     assert page.get_by_text("PRINCE2 Practitioner", exact=True).count() == 0
 
-    claude_source = page.locator('.profile-source[data-source-path="CLAUDE.md"]')
-    assert claude_source.get_by_text("Read-only", exact=True).is_visible()
-    assert claude_source.get_by_role("button", name="Edit").count() == 0
+    assert page.locator('.profile-source[data-source-path="CLAUDE.md"]').count() == 0
+    cv_source = page.locator('.profile-source[data-source-path="cv/main_example.tex"]')
+    assert cv_source.get_by_text("Read-only", exact=True).is_visible()
+    assert cv_source.get_by_role("button", name="Edit").count() == 0
     with page.expect_navigation(wait_until="networkidle"):
-        claude_source.locator(".profile-source-toggle").uncheck()
-    assert not page.locator('.profile-source[data-source-path="CLAUDE.md"] .profile-source-toggle').is_checked()
+        cv_source.locator(".profile-source-toggle").uncheck()
+    assert not page.locator('.profile-source[data-source-path="cv/main_example.tex"] .profile-source-toggle').is_checked()
     with page.expect_navigation(wait_until="networkidle"):
-        page.locator('.profile-source[data-source-path="CLAUDE.md"] .profile-source-toggle').check()
+        page.locator('.profile-source[data-source-path="cv/main_example.tex"] .profile-source-toggle').check()
 
     stale_response = page.request.post(
         f"{live_server.base_url}/api/profile/entries",

@@ -584,6 +584,18 @@ def build_workspace_view_model(
     review_items = _build_review_items(
         conn, workspace_id, artifacts["profile"], artifacts["fit"], artifacts["intelligence"]
     )
+    understanding_payload = _artifact_payload(artifacts["understanding"])
+    accepted_job_evidence_count = len(
+        _artifact_payload(artifacts["bundle"]).get("evidence", [])
+    )
+    if not artifacts["bundle"]:
+        accepted_job_evidence_count = sum(
+            len(understanding_payload.get(category, []))
+            for category in (
+                "requirements", "responsibilities", "language_requirements",
+                "eligibility_requirements", "logistics_requirements",
+            )
+        )
     outstanding = [item for item in review_items if _is_outstanding_review_item(item)]
     resolved_review_items = [item for item in review_items if item not in outstanding]
     acknowledged_content_items = [
@@ -780,6 +792,10 @@ def build_workspace_view_model(
     return {
         "workspace": workspace, "profile": artifacts["profile"],
         "job_posting": artifacts["job"], "resolved_job_evidence": artifacts["bundle"],
+        "accepted_job_evidence_count": accepted_job_evidence_count,
+        "understanding_has_no_grounded_evidence": (
+            understanding_state == "needs_review" and accepted_job_evidence_count == 0
+        ),
         "stages": stages,
         "evidence_items": _build_evidence_items(
             artifacts["profile"], artifacts["bundle"], artifacts["fit"],

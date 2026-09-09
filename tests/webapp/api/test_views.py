@@ -235,6 +235,8 @@ def test_workspace_renders_stepper_all_evidence_and_safe_controls(tmp_path):
         assert "0 of 2 required CV bullets/summary lines found." in text
         assert "insufficient_cover_letter_words" not in text
         assert "approved cover letter is" in text
+        assert "Review the proposed application wording." in text
+        assert 'href="#review"' in text
 
 
 def test_workspace_presents_reviewed_cv_and_cover_letter_as_usable_output(tmp_path):

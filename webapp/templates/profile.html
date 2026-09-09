@@ -8,6 +8,12 @@
   {% else %}<input name="{{ name }}" value="{{ value }}" {% if name not in ['location', 'institution', 'evidence', 'date_range', 'key_topics'] %}required{% endif %}>{% endif %}
   </label>
 {%- endmacro %}
+{% macro public_source_label(source_path) -%}
+  {%- if source_path.endswith('01-candidate-profile.md') -%}Your Profile
+  {%- elif source_path.endswith('.tex') -%}Uploaded CV
+  {%- else -%}Other information
+  {%- endif -%}
+{%- endmacro %}
 {% block content %}
 <section class="hero compact"><div><p class="eyebrow">Global candidate evidence</p><h1>My Evidence Profile</h1>
 <p>Maintain the facts the product may cite. Saved changes create a new immutable Evidence Snapshot and make dependent results stale until you rerun them.</p></div>
@@ -39,15 +45,15 @@
 <div id="profile-manager" data-revision="{{ profile_manager.revision }}">
 <section class="panel" data-onboarding-target="profile-sources-panel"><div class="panel-heading"><div><p class="eyebrow">Source management</p><h2>Evidence sources</h2><p>The Candidate Profile is the only editable source. Supplemental sources contribute evidence but remain read-only.</p></div></div>
 <div class="evidence-list">
-{% for source in profile_manager.sources %}
+{% for source in profile_manager.sources %}{% if source.source_path != 'CLAUDE.md' %}
 <article class="evidence-row profile-source" data-source-path="{{ source.source_path }}">
   <span class="badge {% if source.editable %}verified{% else %}neutral{% endif %}">{{ 'Editable' if source.editable else 'Read-only' }}</span>
-  <div><strong>{% if source.editable %}Candidate Profile{% elif source.source_path == 'CLAUDE.md' %}CLAUDE.md{% else %}CV{% endif %}</strong>
-  <p>{{ 'Required canonical source' if source.required else 'Supplemental source' }}</p><small>{{ source.source_path }}</small></div>
+  <div><strong>{% if source.editable %}Your Profile{% else %}Uploaded CV{% endif %}</strong>
+  <p>{{ 'Your editable information' if source.required else 'Additional information used to support your profile' }}</p></div>
   {% if source.required %}<span class="badge complete">Included · required</span>
   {% else %}<label class="source-toggle"><input type="checkbox" class="profile-source-toggle" {% if source.included %}checked{% endif %}> Included</label>{% endif %}
 </article>
-{% endfor %}
+{% endif %}{% endfor %}
 </div></section>
 
 <section class="panel" data-onboarding-target="profile-entries-panel"><div class="panel-heading"><div><p class="eyebrow">Canonical Candidate Profile</p><h2>Editable profile entries</h2><p>Add, edit, or remove source entries. Derived claims, corroborations, and conflicts are not edited here.</p></div></div>
@@ -78,13 +84,13 @@
 
 {% if profile and profile.payload.conflicts %}<section class="panel danger-panel"><div class="panel-heading"><div><h2>Conflicts detected</h2><p>Correct the Candidate Profile entry above or exclude an inappropriate supplemental source. Conflicts themselves are read-only.</p></div></div>
 {% for conflict in profile.payload.conflicts %}<article class="derived-conflict"><span class="badge review">Derived · read-only</span><strong>{{ conflict.field | replace('_', ' ') | title }}</strong>
-{% for variant in conflict.get('variants', []) %}<div><p>{{ variant.value }}</p><small>Sources: {% for provenance in variant.provenance %}{{ provenance.file }}{% if not loop.last %}, {% endif %}{% endfor %}</small></div>{% endfor %}</article>{% endfor %}</section>{% endif %}
+{% for variant in conflict.get('variants', []) %}{% set visible_provenance = variant.provenance | rejectattr('file', 'equalto', 'CLAUDE.md') | list %}<div><p>{{ variant.value }}</p>{% if visible_provenance %}<small>Sources: {% for provenance in visible_provenance %}{{ public_source_label(provenance.file) }}{% if not loop.last %}, {% endif %}{% endfor %}</small>{% endif %}</div>{% endfor %}</article>{% endfor %}</section>{% endif %}
 
 {% if profile %}<section class="panel" data-onboarding-target="profile-claims-panel"><div class="panel-heading"><div><h2>Generated evidence claims</h2><p>These are immutable outputs of the current snapshot builder, not editable profile records.</p></div></div>
 <div class="evidence-list">{% for entry in claims %}<article class="evidence-row">
   {% if entry.label == "Verified evidence" %}<span class="badge verified">Verified evidence</span>{% elif entry.label == "Missing evidence" %}<span class="badge missing">Missing evidence</span>{% else %}<span class="badge review">NEEDS_REVIEW</span>{% endif %}
   <div><strong>{{ entry.claim.field | replace('_', ' ') | title }}</strong><p>{{ entry.claim.value }}</p>
-  <small>Sources: {% for claim_source in entry.sources %}{{ 'Candidate Profile · Editable' if claim_source.endswith('01-candidate-profile.md') else claim_source ~ ' · Supplemental read-only' }}{% if not loop.last %}; {% endif %}{% endfor %} · evidence ID {{ entry.claim.id }}</small></div>
+  {% set visible_sources = entry.sources | reject('equalto', 'CLAUDE.md') | list %}<small>{% if visible_sources %}Sources: {% for claim_source in visible_sources %}{{ public_source_label(claim_source) }}{% if not loop.last %}; {% endif %}{% endfor %} · {% endif %}evidence ID {{ entry.claim.id }}</small></div>
 </article>{% endfor %}</div></section>{% else %}<section class="empty-state"><h2>Profile source found</h2><p>Select Refresh to build the Evidence Profile from the included sources.</p></section>{% endif %}
 {% endif %}
 {% endblock %}

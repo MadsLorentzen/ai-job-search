@@ -85,10 +85,19 @@ window.Onboarding = (function () {
     return state.definition.steps[state.status.current_step_index];
   }
 
-  function _renderStep() {
+  function _renderStep(retried = false) {
     const step = _currentStep();
     const target = document.querySelector(step.target);
     if (!target) {
+      // A page can replace a target during a navigation or refresh while the
+      // advance request is resolving. Give that transient DOM update one
+      // animation frame before ending an otherwise valid walkthrough.
+      if (!retried) {
+        requestAnimationFrame(() => {
+          if (state) _renderStep(true);
+        });
+        return;
+      }
       _failStepGracefully();
       return;
     }
