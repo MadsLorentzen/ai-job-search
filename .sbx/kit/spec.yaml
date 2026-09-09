@@ -1,0 +1,58 @@
+schemaVersion: "2"
+kind: mixin
+name: ai-job-search
+displayName: AI Job Search
+description: Project kit for the AI Job Search sandbox
+
+permissions:
+  network:
+    allow:
+      - "**"
+
+setup:
+  install:
+    - command: "apt-get update && apt-get install -y poppler-utils python3-pypdf xz-utils perl"
+      user: "0"
+      description: Install poppler-utils, python3-pypdf, xz-utils, and perl
+    - command: "curl -fsSL https://bun.sh/install | bash"
+      user: "1000"
+      description: Install bun
+    - command: |
+        cat >> /etc/sandbox-persistent.sh <<'EOF'
+        export BUN_INSTALL="$HOME/.bun"
+        export PATH="$BUN_INSTALL/bin:$PATH"
+        if [ -d "$HOME/.TinyTeX/bin" ]; then
+          for d in "$HOME/.TinyTeX/bin"/*; do
+            [ -d "$d" ] && export PATH="$d:$PATH"
+          done
+        fi
+        EOF
+      user: "1000"
+      description: Put bun and TinyTeX on PATH for every shell
+    - command: |
+        mkdir -p "$HOME/.local/bin"
+        curl -sL "https://tinytex.yihui.org/install-bin-unix.sh" | sh
+      user: "1000"
+      description: Install TinyTeX
+    - command: |
+        export PATH="$HOME/.local/bin:$PATH"
+        if [ -d "$HOME/.TinyTeX/bin" ]; then
+          for d in "$HOME/.TinyTeX/bin"/*; do
+            [ -d "$d" ] && export PATH="$d:$PATH"
+          done
+        fi
+        tlmgr install \
+          moderncv fontawesome5 fontawesome6 academicons import luatexbase pgf \
+          titlesec textpos xltxtra xunicode cite realscripts needspace
+      user: "1000"
+      description: Install LaTeX packages for CVs and cover letters
+
+agentInstructions:
+  content: |
+    Apt packages already installed:
+    - `poppler-utils` - `pdftotext`, `pdfinfo`, `pdftoppm` (ATS PDF text-layer checks)
+    - `python3-pypdf` - Python `pypdf` (`tools/verify_pdf.py`)
+    - `xz-utils` - `xz` / `unxz` (TinyTeX `.tar.xz` bundles)
+    - `perl` - required by the TinyTeX installer
+    bun is installed at `$HOME/.bun` and on PATH. Use `bun` for JavaScript/TypeScript tooling.
+    TinyTeX is installed at `$HOME/.TinyTeX` and on PATH (`xelatex`, `lualatex`, `pdflatex`, `tlmgr`).

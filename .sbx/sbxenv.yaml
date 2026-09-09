@@ -1,0 +1,7 @@
+schemaVersion: "1"
+name: ai-job-search
+agent: claude
+workspace: ..
+
+kits:
+  - ./kit

@@ -61,6 +61,8 @@ The framework encodes career guidance best practices, including structured evalu
 
 ## Prerequisites
 
+The easiest way to run the project is using [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/install/). Install it and issue `sbx env run .sbx`. See [`README.md`](.sbx/README.md). Otherwise, see the instructions below. 
+
 - [Claude Code](https://claude.com/claude-code) (CLI). Using a different agent tool (Codex, Antigravity, Gemini CLI)? Start at [`AGENTS.md`](AGENTS.md) - the portal search skills work there out of the box, and [community forks](https://github.com/MadsLorentzen/ai-job-search/discussions/78) adapt the full workflow.
 - Python 3.10+
 - [Bun](https://bun.sh) (for job search CLI tools)
