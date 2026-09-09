@@ -47,6 +47,25 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobindex-search detail` no longer fetches arbitrary URLs or invents posting-shaped
+  output** (#447) - the command fetched any `http(s)` input verbatim (no host check) and,
+  when the path didn't match its one pattern, silently used the whole input URL as the job
+  id; the only net was "the fetched page has a title", so a non-posting page came back as
+  a well-formed fake posting with exit 0 (demonstrated with jobindex's own homepage:
+  `id` = the URL, `title` = the site's tagline, `description` = navigation chrome). Every
+  other portal CLI rejects unparseable detail input with `BAD_ID` and constructs its fetch
+  URL from the extracted id; jobindex was the one CLI trusting the raw string - and
+  `/scrape`/`/rank` agents feed it stored URLs, so a ghost or redirected URL (the #331
+  class) yielded plausible garbage instead of an error. `buildUrl` now requires a
+  jobindex.dk host (apex or subdomain - look-alike and userinfo tricks rejected via real
+  URL parsing) plus a `/jobannonce/<id>` path, rebuilds the fetch URL from the extracted
+  id (the canonical short form the bare-id path always used), and exits 1 with the
+  stderr-JSON `BAD_ID` contract otherwise; bare ids stay permissive scheme- and
+  slash-free tokens (the jobnet precedent - the server 404s unknowns loudly). Pinned by
+  eight cases in the new `detail-input.test.ts`; the five rejection/canonicalization
+  cases fail against the verbatim unguarded extraction. Complementary to the `/apply`
+  host-check rule proposed in #431, which stays with its proposer.
+
 - **`/outcome` and `/interview` no longer confuse two roles at the same company** (#443)
   (`.claude/commands/outcome.md`, `.claude/commands/interview.md`,
   `tests/test_apply_records_application.py`) - when a tracker row's `cv_file` /

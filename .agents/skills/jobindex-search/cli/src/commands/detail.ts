@@ -60,23 +60,38 @@ function stripTags(html: string): string {
 }
 
 /**
- * Extract job ID from URL or return as-is if already an ID
+ * Parse a detail invocation's <id|url> into a canonical fetch target, or null.
+ *
+ * This is the gate between a stored (untrusted) URL and a network fetch, so it
+ * must never trust the raw string: the previous version fetched any http(s)
+ * URL verbatim and, when the path didn't match, used the whole input URL as
+ * the id - a non-posting page (a redirect target, a look-alike host, the
+ * homepage) came back as a well-formed fake posting with exit 0 (#447). A URL
+ * input now needs a jobindex.dk host (apex or subdomain) and a
+ * /jobannonce/<id> path, and the fetch URL is rebuilt from the extracted id -
+ * the canonical short form the bare-id path always used. A bare id stays a
+ * permissive scheme- and slash-free token (the jobnet precedent): the server
+ * 404s unknowns loudly, which is the honest failure. Exported for tests.
  */
-function extractIdFromUrl(url: string): string {
-  // Match IDs like h1647303, r13677312, etc.
-  const match = url.match(/\/jobannonce\/([a-zA-Z]\d+)/)
-  if (match) return match[1]
-  return url
-}
-
-function buildUrl(idOrUrl: string): { url: string; id: string } {
-  if (idOrUrl.startsWith("http")) {
-    const id = extractIdFromUrl(idOrUrl)
-    return { url: idOrUrl, id }
+export function buildUrl(idOrUrl: string): { url: string; id: string } | null {
+  const trimmed = idOrUrl.trim()
+  if (/^https?:\/\//i.test(trimmed)) {
+    let host: string
+    try {
+      host = new URL(trimmed).hostname.toLowerCase()
+    } catch {
+      return null
+    }
+    if (host !== "jobindex.dk" && !host.endsWith(".jobindex.dk")) return null
+    // Match IDs like h1647303, r13677312, etc.
+    const match = trimmed.match(/\/jobannonce\/([a-zA-Z]\d+)/)
+    if (!match) return null
+    return { url: `${BASE_URL}/jobannonce/${match[1]}`, id: match[1] }
   }
-  // It's a bare ID
-  const url = `${BASE_URL}/jobannonce/${idOrUrl}`
-  return { url, id: idOrUrl }
+  if (/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
+    return { url: `${BASE_URL}/jobannonce/${trimmed}`, id: trimmed }
+  }
+  return null
 }
 
 const DANISH_MONTHS: Record<string, string> = {
@@ -262,7 +277,15 @@ export const detail = defineCommand({
       process.exit(1)
     }
 
-    const { url, id } = buildUrl(idArg)
+    const parsed = buildUrl(idArg)
+    if (!parsed) {
+      writeError(
+        `Could not parse a jobindex job id or jobannonce URL from "${idArg}"`,
+        "BAD_ID",
+      )
+      process.exit(1)
+    }
+    const { url, id } = parsed
 
     try {
       const html = await htmlFetch(url)
