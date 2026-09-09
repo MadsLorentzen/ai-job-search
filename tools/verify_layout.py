@@ -168,7 +168,8 @@ def parse_pdf(path: Path) -> list[Page]:
     except subprocess.CalledProcessError as exc:
         # An xpdf-based pdftotext has no -bbox and exits 99. That is a broken extractor,
         # not a broken document, so it degrades to the skip path instead of exit 1.
-        detail = (exc.stderr or "").strip() or f"exit {exc.returncode}"
+        stderr_lines = (exc.stderr or "").strip().splitlines()
+        detail = stderr_lines[0] if stderr_lines else f"exit {exc.returncode}"
         raise RuntimeError(
             f"pdftotext could not produce bounding boxes for {path} ({detail}); "
             "a pdftotext without -bbox is usually the xpdf build that Git for Windows "
