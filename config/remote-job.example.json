@@ -2,6 +2,8 @@
   "remote": true,
   "brazil_eligible": true,
   "paid_in_usd": null,
+  "overlap_compatible": null,
+  "contract_compatible": null,
   "salary": {
     "min": 54000,
     "max": 72000,
@@ -12,6 +14,8 @@
   "evidence": {
     "remote": "Example only: fully remote.",
     "brazil_eligible": "Example only: hiring in Brazil.",
+    "overlap_compatible": "",
+    "contract_compatible": "",
     "salary": "Example only: USD 54,000-72,000 annual base."
   },
   "source_url": "https://example.com/jobs/example",

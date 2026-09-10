@@ -11,8 +11,9 @@ from tools.create_private_workspace import create
 class RemoteMarketTests(unittest.TestCase):
     def job(self):
         return {'remote': True, 'brazil_eligible': True, 'paid_in_usd': True,
+                'overlap_compatible': True, 'contract_compatible': True,
                 'salary': {'min': 54000, 'max': 72000, 'currency': 'USD', 'period': 'year', 'kind': 'listed'},
-                'evidence': {k:'explicit posting evidence' for k in ['remote','brazil_eligible','paid_in_usd','salary']},
+                'evidence': {k:'explicit posting evidence' for k in ['remote','brazil_eligible','paid_in_usd','salary','overlap_compatible','contract_compatible']},
                 'source_url':'https://example.com/job', 'checked_date':'2026-01-01'}
     def test_confirmed_annual_pay(self):
         result=classify(self.job()); self.assertEqual(result['verdict'],'PASS')
@@ -40,6 +41,49 @@ class RemoteMarketTests(unittest.TestCase):
         with self.assertRaises(ValueError):classify(j)
         j=self.job();j['remote']='true'
         with self.assertRaises(ValueError):classify(j)
+    def test_evidence_requires_nonblank_text(self):
+        for field in self.job()['evidence']:
+            for invalid in (None, '', ' \t\n', True, 1, ['excerpt'], {'text': 'excerpt'}):
+                with self.subTest(field=field, evidence=invalid):
+                    job = self.job()
+                    job['evidence'][field] = invalid
+                    self.assertEqual(classify(job)['verdict'], 'FLAG')
+
+    def test_working_hours_and_contract_must_be_confirmed(self):
+        for field in ('overlap_compatible', 'contract_compatible'):
+            with self.subTest(field=field):
+                job = self.job()
+                del job[field]
+                self.assertEqual(classify(job)['verdict'], 'FLAG')
+                job[field] = None
+                self.assertEqual(classify(job)['verdict'], 'FLAG')
+                job[field] = False
+                self.assertEqual(classify(job)['failures'], [field])
+                job[field] = 'true'
+                with self.assertRaises(ValueError):
+                    classify(job)
+
+    def test_invalid_job_and_floor(self):
+        for invalid in (None, [], 'posting', True, 42):
+            with self.subTest(job=invalid), self.assertRaises(ValueError):
+                classify(invalid)
+        for invalid in (None, True, '4500', -1, float('nan'), float('inf'), -float('inf')):
+            with self.subTest(floor=invalid), self.assertRaises(ValueError):
+                classify(self.job(), invalid)
+        self.assertEqual(classify(self.job(), 5000)['verdict'], 'FLAG')
+        self.assertEqual(classify(self.job(), 0)['verdict'], 'PASS')
+
+    def test_malformed_source_urls_are_flagged(self):
+        for invalid in (None, [], '', 'http://example.com/job', 'https://',
+                        'https://[broken', 'https://example.com:bad/job',
+                        'https://example.com:99999/job', 'https://bad host/job'):
+            with self.subTest(url=invalid):
+                job = self.job()
+                job['source_url'] = invalid
+                result = classify(job)
+                self.assertEqual(result['verdict'], 'FLAG')
+                self.assertIn('source URL missing or invalid', result['clarifications'])
+
     def test_source_contract(self):
         rows=parse('wwr',b'<rss><channel><item><title>Acme: Data Engineer</title><link>https://example.com/job</link></item></channel></rss>')
         self.assertEqual(rows[0]['title'],'Data Engineer')

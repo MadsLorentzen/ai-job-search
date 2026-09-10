@@ -27,6 +27,7 @@ Store source URL, exact supporting excerpt and checked date for each factual gat
 
 FAIL: mandatory office attendance or relocation, explicit Brazil exclusion,
 residency-only restriction incompatible with living in Brazil, non-USD payment,
+confirmed incompatible working-hour overlap or contract arrangement,
 or a confirmed salary maximum below the threshold.
 
 FLAG: 'remote' with no country scope, unknown payment currency, unpublished salary,
@@ -52,6 +53,9 @@ to ignored reports/<job>-eligibility.json and run:
 The schema/example is config/remote-job.example.json. This helper does not extract
 facts or override the user's profile; the agent supplies source-grounded fields.
 Record its verdict and reasons in the job's fit notes without changing tracker schema.
+Review `overlap_compatible` and `contract_compatible` explicitly with supporting
+excerpts: missing values remain FLAG and false values are FAIL. Recheck older
+eligibility records rather than guessing these values during migration.
 A FAIL vetoes recommendation/drafting unless the user explicitly changes that criterion.
 A FLAG remains visible; ask only the missing question that affects the next action.
 
@@ -78,7 +82,10 @@ availability questions. Do not attach reference contact details without authoriz
 
 ## Execution
 
-Runs on the home desktop through Claude Code; no cloud deployment or always-on
+For session recovery, confirmed-fact updates, authorized batches, and submission
+evidence, follow `11-application-operations.md`.
+
+Runs on the home desktop through the configured agent runtime; no cloud deployment or always-on
 service is needed. The model provider may receive the career text supplied to it.
 /apply prepares materials; it does not automatically submit forms. Submission,
 recruiter messages, assessments and account creation need explicit user instructions.

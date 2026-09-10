@@ -8,6 +8,7 @@ __pycache__/
 *.pyo
 .venv/
 venv/
+.local-deps/
 
 # Compiled documents
 *.pdf

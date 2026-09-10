@@ -24,6 +24,15 @@ try:
 except ImportError:
     sys.exit("lint_skills.py requires PyYAML: pip install pyyaml")
 
+if not callable(getattr(yaml, "safe_load", None)) or not isinstance(
+    getattr(yaml, "YAMLError", None), type
+):
+    sys.exit(
+        "lint_skills.py could not load PyYAML correctly. Check for a shadowing "
+        "yaml module or an unreadable installation, then install requirements-dev.txt "
+        "with the same Python interpreter used to run this tool."
+    )
+
 ROOT = Path(__file__).resolve().parent.parent
 errors: list[str] = []
 

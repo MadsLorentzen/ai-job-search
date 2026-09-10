@@ -64,6 +64,13 @@ class LinterRepoFixture(unittest.TestCase):
 
 
 class SettingsShapeTests(LinterRepoFixture):
+    def test_incomplete_yaml_installation_fails_cleanly(self):
+        (self.root / "tools" / "yaml.py").write_text("# incomplete module\n")
+        result = run_linter(self.root)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("could not load PyYAML correctly", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
     def test_valid_settings_pass(self):
         result = run_linter(self.root)
 
