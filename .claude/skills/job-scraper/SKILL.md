@@ -1,11 +1,11 @@
 ---
 name: scrape
 description: >
-  Finds new job postings matching your profile via installed portal-search CLIs
-  (LinkedIn, local job boards, and any skills added with /add-portal). Deduplicates
-  across runs. Triggers on: job scrape, find jobs, search jobs, new jobs, job search,
-  scrape jobs, /scrape
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run .agents/skills/*/cli/src/cli.ts *), Bash(python tools/job_key.py:*), Bash(python3 tools/job_key.py:*), WebFetch, WebSearch, Agent, AskUserQuestion
+  Finds new job postings matching your profile via installed portal-search skills
+  (LinkedIn and other CLI boards, browser-driven boards like JobStreet, and any
+  skills added with /add-portal). Deduplicates across runs. Triggers on: job scrape,
+  find jobs, search jobs, new jobs, job search, scrape jobs, /scrape
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run .agents/skills/*/cli/src/cli.ts *), Bash(python tools/job_key.py:*), Bash(python3 tools/job_key.py:*), WebFetch, WebSearch, Agent, AskUserQuestion, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, mcp__claude-in-chrome__tabs_close_mcp, mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__find, mcp__claude-in-chrome__read_page
 ---
 
 # Job Scraper
@@ -14,10 +14,12 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run 
 
 ## How It Works
 
-This skill searches job portals using the **installed portal-search CLIs** in
+This skill searches job portals using the **installed portal-search skills** in
 `.agents/skills/` (plus WebSearch as a fallback), using queries from your profile.
-It deduplicates against previously seen jobs and the application tracker, and
-presents new matches with a quick fit assessment.
+Most portal skills are bun CLIs; a portal skill whose `SKILL.md` frontmatter declares
+`interface: browser` is instead driven through the Claude-in-Chrome tools by following its
+own **Browser Recipe** section (see Step 1b). It deduplicates against previously seen jobs
+and the application tracker, and presents new matches with a quick fit assessment.
 
 ## Invocation
 
@@ -46,7 +48,7 @@ Optional arguments:
 
 Read `search-queries.md` (this directory) for the search strategy. By default, run the top 3 priority query categories. If the user said "broad", run all categories. If the user specified a focus area (e.g. "data science"), prioritize queries from that category.
 
-**Use the installed CLI tools as the primary search mechanism.** Fall back to `WebSearch` only for portals that do not have a CLI skill, or if `bun` is unavailable on the system.
+**Use the installed portal skills as the primary search mechanism** (bun CLIs, plus any `interface: browser` portal). Fall back to `WebSearch` only for boards with no installed portal skill, if `bun` is unavailable, or if a browser portal was skipped because no browser is reachable.
 
 #### 1a. Check bun availability
 
@@ -56,13 +58,17 @@ bun --version
 
 If this fails (bun not installed), skip to **1c (WebSearch fallback)** for all portals and note the fallback in the Step 5 output.
 
-#### 1b. Run CLI tools (primary — run these in parallel where possible)
+#### 1b. Run portal skills (primary)
 
-Discover all installed portal CLI skills by reading every `SKILL.md` found under `.agents/skills/*/SKILL.md`. Each file documents that portal's exact CLI flags and usage examples. **Use each portal's own documented interface — do not guess flags.** This approach automatically includes any new portals added via `/add-portal` without requiring changes to this file.
+Discover all installed portal skills by reading every `SKILL.md` found under `.agents/skills/*/SKILL.md`. Each file documents that portal's exact interface and usage examples. **Use each portal's own documented interface — do not guess flags or steps.** This approach automatically includes any new portals added via `/add-portal` without requiring changes to this file.
 
 **Honor the `enabled` toggle.** A portal is enabled unless its `SKILL.md` frontmatter sets `enabled: false` (a missing key means enabled — the default). Skip each disabled portal and record it for the Step 5 summary. A fork can thus keep a portal installed but sit out a run without deleting its directory.
 
-For each **enabled** portal skill:
+**Check the `interface` field.** A portal is a bun CLI unless its `SKILL.md` frontmatter sets `interface: browser` (a missing key means `cli` — the default).
+
+##### CLI portals (`interface: cli`) — run these in parallel where possible
+
+For each **enabled** CLI portal skill:
 
 1. Read its `SKILL.md` to find the correct `bun run …` invocation and supported flags.
 2. Translate the query terms from `search-queries.md` into that portal's flag format (e.g. `--key`, `--search-string`, `--query`, filter codes — whatever the portal's SKILL.md specifies).
@@ -74,12 +80,24 @@ Run all portal CLI calls in parallel where possible using the Agent tool. Collec
 
 If a CLI tool exits with a non-zero code, log the error message and continue — do not abort the whole search.
 
+##### Browser portals (`interface: browser`) — run these one at a time, in the main session
+
+A browser portal (e.g. `jobstreet-search`) reads a Cloudflare-walled or JS-only board through the user's own signed-in Chrome session. It has no `bun run` line; it is driven by following its `SKILL.md` **Browser Recipe** section with the `mcp__claude-in-chrome__*` tools.
+
+- **Availability gate.** Browser portals need the Claude-in-Chrome extension connected. `tabs_context_mcp` is the probe: if it errors or no browser is reachable (headless run, a fork/subagent with no MCP browser, extension not connected), **skip every browser portal** and record them for the Step 5 summary as `skipped (no browser)`. Do not fall back to WebSearch automatically — offer it in Step 5 instead.
+- **Serial, in the main session.** A browser session is single-threaded and its tool output is large; run browser portals **after** the parallel CLI batch, one portal at a time, in the main session (not via the Agent tool). Keep to the volume each portal's SKILL.md states (a handful of keyword searches, page 1-2).
+- **Per enabled browser portal:** open a fresh tab, follow its Browser Recipe with the queries from `search-queries.md` translated to that portal's URL form, apply the last-14-days filter client-side (browser portals carry a resolved `date` per result, same contract as a CLI with no recency flag), cap per query as its SKILL.md says, then close the tab.
+- Collect its emitted `results` into the same Step 2 pool, tagged with the portal skill name and `interface: browser`.
+- **Search-only is allowed.** A browser portal may omit `detail` when the board's `robots.txt` disallows detail pages (JobStreet does). For those results, Step 2 works from the card `snippet`/`subClassification`, `deadline` stays `null`, and closed-at-source detection is not available — see Step 2.
+- If the Browser Recipe hits a Cloudflare challenge or a sign-in wall, stop that portal, record it `inconclusive` for Step 4.75, and never retry the challenge in a loop.
+
 #### 1c. WebSearch fallback
 
 Use `WebSearch` for:
 - Portals listed in `search-queries.md` that do **not** have a corresponding directory under `.agents/skills/`
 - Any portal whose CLI fails at runtime
 - When bun is unavailable (Step 1a failed)
+- A browser portal that was skipped because no browser was reachable (Step 1b) — use its `site:` lines from `search-queries.md`
 
 Use the site-specific query strings from `search-queries.md` directly as WebSearch queries for these portals.
 
@@ -103,6 +121,18 @@ such a job, never silently drop it: write its entry to `seen_jobs.json` in Step 
 looks identical to a job never seen, and the recorded status is what makes a later
 ghost report self-triaging. `isActive: true` is only the absence of that banner, not
 proof the posting is open; deadlines and dead URLs remain `/rank`'s job.
+
+**From browser-portal results:** A browser portal returns rich card data (title, company,
+location, salary-or-null, resolved date, one-sentence snippet, the board's own
+subclassification) but may not offer a `detail` step — when its board's `robots.txt`
+disallows detail pages (JobStreet), the skill is search-only by design. For those results:
+take **key requirements** from the `snippet` + `subClassification`, set `deadline` to
+`null` (a genuine unknown — never infer one), and skip closed-at-source detection (there is
+no detail page to check for a "no longer accepting applications" banner). A result the
+portal marked `stale` (e.g. JobStreet's `30d+ ago`) carries `posted_date: null` and a
+`stale` flag — persist both in Step 4 so `/rank` can weigh freshness. Do **not** navigate
+to a browser portal's detail URL yourself to work around a missing `detail` step; the
+`robots.txt` restriction is the reason it is absent.
 
 **From WebSearch results:** Use `WebFetch` on the posting URL and extract the same
 fields manually. If it returns HTTP 403, retry with browser headers via curl per
@@ -163,7 +193,7 @@ It prints one line: the canonical key for that posting. The key must be a pure f
       "fit": "high/medium/low",
       "status": "new/skipped/ranked/expired",
       "portal": "<source portal skill, e.g. jobindex-search>",
-      "source": "cli/websearch"
+      "source": "cli/browser/websearch"
     }
   }
 }
@@ -171,7 +201,7 @@ It prints one line: the canonical key for that posting. The key must be a pure f
 
 The `portal` field records which CLI skill produced the job (results are already tagged per portal in Step 1b - persist that tag here). Entries written before this field existed lack it; the health check (Step 4.75) attributes those by matching the URL's domain against each portal's base URL, so do not backfill.
 
-The `source` field records which mechanism produced the entry: `cli` for Step 1b portal-CLI output, `websearch` for the Step 1c fallback. This is what keeps a ghost-job report diagnosable after the run's summary is gone: a stored entry whose URL later resolves to nothing (or to a different job) reads very differently depending on whether it came from live CLI output or from a search index that can be weeks stale - and a presented job with no entry here at all points at fabrication, which Rule 1 forbids. Entries written before this field existed lack it; never backfill it - the mechanism was not recorded.
+The `source` field records which mechanism produced the entry: `cli` for Step 1b portal-CLI output, `browser` for a Step 1b browser-portal Browser Recipe, `websearch` for the Step 1c fallback. This is what keeps a ghost-job report diagnosable after the run's summary is gone: a stored entry whose URL later resolves to nothing (or to a different job) reads very differently depending on whether it came from live CLI output, a live browser read, or a search index that can be weeks stale - and a presented job with no entry here at all points at fabrication, which Rule 1 forbids. Entries written before this field existed lack it; never backfill it - the mechanism was not recorded.
 
 `/rank` extends this schema additively: ranked entries also carry `rank_score` (0–100 overall score), `rank_verdict` (fit band, e.g. "strong fit"), `rank_date` (ISO date of ranking), the veto fields `location_verdict` and `language_gate` (both PASS/FAIL/FLAG) with `language_note` (the quoted requirement explaining a non-PASS), and `strengths`/`gaps` (1-3 verbatim bullets each, copied from the scoring agent's findings). The `status` field is set to `"ranked"`. Do not drop any of these fields when re-writing entries. Entries ranked before `strengths`/`gaps` existed simply lack them; readers tolerate their absence and never backfill by guessing. Entries ranked before the verdict rename may carry a legacy PASS/FAIL/FLAG string in `location` - read that as the verdict when `location_verdict` is absent; in fresh entries `location` is always a place, never a verdict.
 
@@ -208,14 +238,15 @@ specific person was found; these are search links, not results.
 
 ### Step 4.75: Portal Health Check
 
-Scraper-based portal CLIs rot silently: when a portal changes its markup, the parser usually exits 0 with zero results or with null/garbled fields, and the Step 1c fallback never fires because it only triggers on hard failure. This step catches that from evidence the run already holds.
+Portal skills rot silently: when a board changes its markup, a CLI parser usually exits 0 with zero results or null/garbled fields, and a browser portal's recipe reads a region with no job cards — in both cases the Step 1c fallback never fires because it only triggers on hard failure. This step catches that from evidence the run already holds.
 
 **Free pass (no extra requests).** For each enabled portal that ran in Step 1b:
 
 - **Degraded scan:** inspect the results it returned this run. Flags: `company` null or empty on every result, empty titles, undecoded entities (`&amp;`) or HTML fragments in titles, URLs that do not point at the portal. Any of these means the parser is half-working and `/scrape` is silently collecting junk.
 - **Yield history:** if the portal returned zero results across all of this run's queries, check whether `seen_jobs.json` holds prior entries from it (via the `portal` field, or by matching URL domains for entries predating the field). A portal that produced jobs on earlier runs and produces nothing now is suspect - the same queries worked before.
+- **Browser portals** additionally report `inconclusive` (never `broken`) when their run hit a Cloudflare / "verify you are human" challenge, a sign-in wall, or an unreachable extension — those are environment states, not markup rot. A browser portal is `broken` only when the page loaded normally but its results region was absent or held zero job cards across every query **and** `seen_jobs.json` has prior rows from it. Use each portal's own SKILL.md "Health signals" section for the exact discriminators.
 
-**Escalation (bounded, on suspicion only).** A suspect portal gets **one** sentinel probe: run its documented `search` with the example query from its own SKILL.md (that query provably worked when the skill was registered), the portal's limit flag capped at 3, `--format json`. If that returns nothing, retry **once** with a single common word. Only then is the verdict **broken**. A 429 or block page is **never** evidence of breakage - record the portal as **inconclusive (rate-limited)**, back off, and do not retry.
+**Escalation (bounded, on suspicion only).** A suspect portal gets **one** sentinel probe. For a CLI portal: run its documented `search` with the example query from its own SKILL.md (that query provably worked when the skill was registered), the portal's limit flag capped at 3, `--format json`. For a browser portal: re-run its Browser Recipe with the SKILL.md example query, cap 3, page 1. If that returns nothing, retry **once** with a single common word. Only then is the verdict **broken**. A 429, block page, Cloudflare challenge or sign-in wall is **never** evidence of breakage - record the portal as **inconclusive (rate-limited / challenged)**, back off, and do not retry.
 
 **Verdicts.** Healthy portals get silence - no table, no line. Anything else surfaces in the Step 5 summary as a health line.
 
@@ -226,7 +257,10 @@ Scraper-based portal CLIs rot silently: when a portal changes its markup, the pa
 Present new jobs in a table sorted by fit (high first). When Step 1b skipped
 portals (`enabled: false`), report them with the `skipped (disabled):` line below
 so opting one out stays visible rather than silent; omit the line when nothing
-was skipped. When any portal's results came from the Step 1c fallback this run
+was skipped. When Step 1b skipped browser portals because no browser was
+reachable, report them with the `skipped (no browser):` line and offer to cover
+that board via a WebSearch pass; omit the line when no browser portal was skipped.
+When any portal's results came from the Step 1c fallback this run
 (bun unavailable, or its CLI failed at runtime), report it with the
 `fallback (websearch):` line - fallback results come from a search index that
 can be stale, so the reader should know which rows carry that caveat; omit the
@@ -243,6 +277,8 @@ the skill.
 Found X new positions (Y high, Z medium, W low match).
 
 skipped (disabled): <portal-name>, <portal-name>
+
+skipped (no browser): <portal-name>, <portal-name>
 
 fallback (websearch): <portal-name>, <portal-name>
 
@@ -288,7 +324,7 @@ If the user decides to apply to any job, the tracker row is written by **job-app
 3. **Focus on configured geographic area.** Skip jobs that require relocation or are clearly outside commute range.
 4. **Only open positions.** Skip postings with expired deadlines or those marked as closed.
 5. **Be efficient with detail fetches.** Don't run `detail` or WebFetch on every search hit — pre-filter by title/snippet, then fetch only promising matches.
-6. **Parallel searches.** Run portal CLI searches in parallel; use WebSearch only for gaps the CLIs don't cover.
+6. **Parallel searches.** Run portal CLI searches in parallel; run browser portals (`interface: browser`) serially in the main session, after the CLI batch; use WebSearch only for gaps the portals don't cover.
 7. **No automated people lookups.** Referral contacts (Step 4.5) are LinkedIn search links only - never fetch or scrape LinkedIn people-search result pages programmatically.
 8. **Health checks are bounded and honest.** Step 4.75 spends at most one probe, one retry, and (in `health` mode) one detail fetch per portal - a diagnosis, not a crawl. A rate-limit is never evidence of breakage. Health verdicts come only from observed CLI output; a portal that could not be tested is reported as inconclusive, never guessed. The `enabled` toggle is the only thing the health check may edit, and only with confirmation.
 9. **Flag distribution patterns, never accuse.** The mass-posting signal (Step 2.5) describes how a listing is being distributed, not a claim that the employer is a scam. Never name a company as fraudulent or untrustworthy - present the observation and let the user decide.
