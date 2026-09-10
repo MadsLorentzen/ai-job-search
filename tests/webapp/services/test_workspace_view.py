@@ -723,6 +723,45 @@ def test_understanding_count_and_recovery_state_are_available_before_job_fit(tmp
     assert view["understanding_has_no_grounded_evidence"] is False
 
 
+def test_understanding_count_supersedes_historical_resolved_bundle(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    job = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_posting_snapshot",
+        content_id="job_historical_bundle", payload={"raw_text": "Python required"},
+    )
+    old_bundle = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="resolved_job_evidence",
+        content_id="bundle_historical", payload={"evidence": [{"id": "old_1"}]},
+    )
+    request = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_understanding_request",
+        content_id="request_current", payload={},
+    )
+    record_dependency_fingerprint(
+        conn, artifact_id=request["id"], upstream_artifact_type="job_posting_snapshot",
+        upstream_content_id=job["content_id"],
+    )
+    result = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_understanding_result",
+        content_id="result_current", payload={
+            "status": "READY", "requirements": [{"id": "job_1", "text": "Python required"}],
+            "responsibilities": [{"id": "job_2", "text": "Build pipelines"}],
+            "language_requirements": [{"id": "job_3", "text": "German preferred"}],
+            "eligibility_requirements": [], "logistics_requirements": [],
+        },
+    )
+    for artifact_type, artifact in (("job_posting_snapshot", job), ("job_understanding_request", request)):
+        record_dependency_fingerprint(
+            conn, artifact_id=result["id"], upstream_artifact_type=artifact_type,
+            upstream_content_id=artifact["content_id"],
+        )
+
+    view = build_workspace_view_model(conn, workspace_id)
+
+    assert len(old_bundle["payload"]["evidence"]) == 1
+    assert view["accepted_job_evidence_count"] == 3
+
+
 def test_no_grounded_understanding_is_marked_for_recovery(tmp_path):
     conn, workspace_id = _workspace(tmp_path)
     job = save_artifact(conn, workspace_id=workspace_id, artifact_type="job_posting_snapshot", content_id="job_empty", payload={"raw_text": "Source"})

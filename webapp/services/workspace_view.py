@@ -585,16 +585,21 @@ def build_workspace_view_model(
         conn, workspace_id, artifacts["profile"], artifacts["fit"], artifacts["intelligence"]
     )
     understanding_payload = _artifact_payload(artifacts["understanding"])
-    accepted_job_evidence_count = len(
-        _artifact_payload(artifacts["bundle"]).get("evidence", [])
-    )
-    if not artifacts["bundle"]:
+    if artifacts["understanding"]:
+        # Understanding is the current lifecycle stage until Job Fit creates a
+        # replacement resolved-evidence bundle.  An older bundle is retained
+        # for audit/history, but must not make the posting summary look as if
+        # it describes the freshly rerun Understanding result.
         accepted_job_evidence_count = sum(
             len(understanding_payload.get(category, []))
             for category in (
                 "requirements", "responsibilities", "language_requirements",
                 "eligibility_requirements", "logistics_requirements",
             )
+        )
+    else:
+        accepted_job_evidence_count = len(
+            _artifact_payload(artifacts["bundle"]).get("evidence", [])
         )
     outstanding = [item for item in review_items if _is_outstanding_review_item(item)]
     resolved_review_items = [item for item in review_items if item not in outstanding]
