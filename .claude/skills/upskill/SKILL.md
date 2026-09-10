@@ -21,6 +21,14 @@ roles needing clarification. Preserve upstream tracker fields and statuses.
 
 `/upskill` analyses jobs you have tracked and your current profile to identify skill gaps, then produces a heatmap of those gaps and a learning plan with concrete, web-searched study resources and a recommended study order.
 
+## Learning through projects
+
+When the user asks for GitHub projects to learn the gaps, follow
+`.claude/commands/learn-project.md` after the gap analysis. That project workflow
+requires explicit posting evidence and distinguishes unknown experience from a
+confirmed learning gap. If no postings exist, use portfolio-labs/ only as provisional
+options and request target job links. Do not claim they are application-derived.
+
 ## Invocation
 
 - **`/upskill`** — aggregate mode: analyses all jobs in `job_search_tracker.csv`, merged with ranked postings (`rank_score >= 45`) from `job_scraper/seen_jobs.json`

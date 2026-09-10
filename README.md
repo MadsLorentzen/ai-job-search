@@ -27,6 +27,11 @@ it creates a separate private local workspace for resumes, LinkedIn and referenc
 See [market policy](.claude/skills/job-application-assistant/10-remote-brazil.md).
 The workflow prepares applications; automatic submission is not implemented.
 
+Learning by building: use `/learn-project <job URL>` to convert specific requirements
+into milestones and acceptance checks. [Three provisional portfolio labs](portfolio-labs/README.md)
+cover data engineering, AI evaluation and battery-model validation. These are learning
+briefs, not completed projects or confirmed skill gaps.
+
 The experience and hiring results described below belong to the upstream author.
 
 ## Does it actually work?
