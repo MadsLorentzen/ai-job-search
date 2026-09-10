@@ -207,6 +207,65 @@ def test_candidate_profile_tour_does_not_mutate_the_profile_manager_revision(liv
     assert revision_after == revision_before
 
 
+def test_candidate_profile_tour_retries_one_transient_target_and_stops_after_one_permanent_miss(
+    live_server, page,
+):
+    """A target replaced during an advance gets one frame to return; a real
+    absence closes cleanly instead of leaving an orphaned overlay or looping."""
+    page.goto(live_server.base_url + "/profile", wait_until="networkidle")
+    with page.expect_navigation(wait_until="networkidle"):
+        page.get_by_role("button", name="Refresh snapshot from included sources").click()
+    definition = page.evaluate(
+        """async () => await (await fetch(
+            '/api/onboarding/walkthroughs/candidate_profile_intro/definition'
+        )).json()"""
+    )
+    second_target = definition["steps"][1]["target"]
+
+    page.get_by_role("button", name="Take the tour").click()
+    page.wait_for_selector(".onboarding-popover", timeout=2_000)
+    page.evaluate(
+        """selector => {
+            const target = document.querySelector(selector);
+            const parent = target.parentNode;
+            const nextSibling = target.nextSibling;
+            parent.removeChild(target);
+            const nativeRequestAnimationFrame = window.requestAnimationFrame;
+            window.__onboardingRetryFrameCount = 0;
+            window.requestAnimationFrame = callback => {
+                window.__onboardingRetryFrameCount += 1;
+                window.requestAnimationFrame = nativeRequestAnimationFrame;
+                return nativeRequestAnimationFrame(() => {
+                    parent.insertBefore(target, nextSibling);
+                    callback();
+                });
+            };
+        }""",
+        second_target,
+    )
+    page.get_by_role("button", name="Next").click()
+    page.wait_for_function(
+        "document.querySelector('.onboarding-popover-title')?.innerText === "
+        + json.dumps(definition["steps"][1]["title"]), timeout=2_000,
+    )
+    assert page.evaluate("window.__onboardingRetryFrameCount") == 1
+    assert page.locator(".onboarding-fail-notice").count() == 0
+    assert page.locator(".onboarding-popover").count() == 1
+
+    page.get_by_role("button", name="Skip").click()
+    page.wait_for_selector(".onboarding-popover", state="detached", timeout=2_000)
+    page.get_by_role("button", name="Take the tour").click()
+    page.wait_for_selector(".onboarding-popover", timeout=2_000)
+    page.evaluate(
+        """selector => document.querySelector(selector).remove()""", second_target
+    )
+    page.get_by_role("button", name="Next").click()
+    page.wait_for_selector(".onboarding-fail-notice", timeout=2_000)
+    assert page.locator(".onboarding-popover").count() == 0
+    page.wait_for_timeout(250)
+    assert page.locator(".onboarding-fail-notice").count() == 1
+
+
 def test_candidate_profile_tour_fails_gracefully_before_first_profile_setup(
     live_server_no_profile_yet, page
 ):
