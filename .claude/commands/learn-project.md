@@ -47,7 +47,34 @@ planned -> in_progress -> demonstrated, with commit, test output and a short exp
 of tradeoffs. Scaffold generation is not evidence of learned skill. A project completion
 must not silently add professional experience or inflated metrics to the resume.
 
+## Promote reviewed learning to application evidence
+
+When creating or extending a GitHub learning project, include a short side note in
+the progress report with its link, current milestone and what the user can learn.
+Keep it out of resumes and application fields until the user has reviewed the work
+and confirmed they have learned it. Generated code, passing tests and publication
+alone do not satisfy this condition.
+
+After that review and learning confirmation, record the date, reviewed commit,
+demonstrated skills, the user's contribution and any remaining limitations in the
+private candidate profile. Relevant evidence may then be used in tailored resumes
+and application answers without repeatedly asking for permission to reuse it.
+Describe it as a personal learning or portfolio project, accurately distinguish
+AI-assisted work from the user's own contribution, and use only verified results.
+Never convert it into employment tenure, production deployment or unearned mastery.
+Materially new claims from later project changes need new supporting review evidence.
+
 ## Save and GitHub
+
+At milestone reviews, follow
+`.claude/skills/job-application-assistant/12-portfolio-writing.md` to consider a
+Medium article about the work and save a concrete writing step in the private backlog.
+
+Create each personal side project in its own standalone repository and sibling
+working directory, outside this job-search framework fork. Keep `portfolio-labs/`
+for reusable project briefs and links only; do not place project implementations,
+runtime environments, or generated datasets here. Extend an existing suitable
+standalone project rather than creating a repository for every individual tool.
 
 Save job-specific gap analysis and feedback locally under ignored upskill/report-*.md.
 Public project files contain the learning specification, synthetic/public data recipe,

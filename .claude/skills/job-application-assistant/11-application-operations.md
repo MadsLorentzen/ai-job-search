@@ -78,3 +78,11 @@ separately. Do not claim a recurring run is active based on a prior chat message
 verify the saved scheduler configuration and current status. A request to keep
 applying authorizes continued work within scope, but does not itself establish an
 always-on process. State scheduling limitations when they affect continuation.
+
+## Portfolio development in daily runs
+
+Each daily career run also follows `12-portfolio-writing.md`: inspect existing
+projects and the private writing backlog, then suggest one useful Medium writing
+step when there is actionable progress. Keep application deadlines ahead of optional
+writing work. Preserve this instruction in a daily scheduler's prompt when setting
+up or updating that scheduler; this file alone does not enable a recurring run.

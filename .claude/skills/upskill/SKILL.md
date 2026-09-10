@@ -29,6 +29,10 @@ requires explicit posting evidence and distinguishes unknown experience from a
 confirmed learning gap. If no postings exist, use portfolio-labs/ only as provisional
 options and request target job links. Do not claim they are application-derived.
 
+For existing project milestones and portfolio-evidence gaps, also follow
+`.claude/skills/job-application-assistant/12-portfolio-writing.md` to recommend a
+Medium write-up when useful. Documenting demonstrated work can be the next step.
+
 ## Invocation
 
 - **`/upskill`** — aggregate mode: analyses all jobs in `job_search_tracker.csv`, merged with ranked postings (`rank_score >= 45`) from `job_scraper/seen_jobs.json`

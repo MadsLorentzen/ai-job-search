@@ -24,7 +24,25 @@ Read `.claude/skills/job-application-assistant/10-remote-brazil.md` before this 
 Apply its gates before recommending roles; keep confirmed matches separate from
 roles needing clarification. Preserve upstream tracker fields and statuses.
 
+## Model routing for routine applications
+
+Use GPT-5.6 Terra with medium reasoning as the preferred starting point for routine fit screening, short tailored answers, form completion and submission tracking. Use GPT-5.6 Luna for listing extraction, deduplication and straightforward tracking. Escalate ambiguous screening questions, substantial resume tailoring, conflicting evidence or repeated browser failures to GPT-5.6 Sol or GPT-6 Astra.
+
+These are routing preferences, not a claim that the runtime has switched models. Use an available, authorized model-selection mechanism; otherwise report the limitation and continue with the current model. Keep profile facts, authorization scope, application state and verification evidence available across handoffs. Never place personal candidate data in the public repository.
+
+Validate the routine route on a small batch before expanding unattended volume. For each application, check location and work authorization, compensation requirements, factual grounding, duplicate status and a visible submission receipt. Record attempted, blocked and submitted states separately. Reconcile uncertain submissions before retrying.
+
+Honor standing user authorization for matching applications without repeatedly requesting routine confirmation. A model change does not override tool approval review, bypass a rejection or supply missing candidate facts. Escalate reasoning difficulties to a stronger model; handle actual authorization blocks through the required approval process.
+
+Learning-project evidence remains subject to the review and learning gate in `learn-project.md`, regardless of model tier.
+
 ## Step 0: Parse Input
+
+**Batch preparation and later approval**
+
+When the user requests a batch for later approval, prepare the requested number of application drafts privately and stop before entering personal data, uploading documents or submitting. Save a versioned manifest with each employer, role, destination URL, exact proposed answers, resume file/hash, fit caveats and unresolved questions. Provide one readable review packet so the user can approve the named batch or a subset in one instruction.
+
+Keep required factual answers unresolved when evidence is missing. Mark significant eligibility or must-have skill gaps as holds, exclude holds from default approval, and distinguish draft count from submission-ready count. A later approval applies to the saved payload and named destinations; it does not invent missing facts or override tool approval review. Recheck availability and duplicates at execution, and record applied only after a verified receipt.
 
 - If `$ARGUMENTS` looks like a URL, use `WebFetch` to retrieve the job posting content.
 - **If the fetch returns HTTP 403, or the content is a login wall or an unrelated listing page, do not give up and do not draft from the title.** Follow the escalation order in `.claude/skills/job-application-assistant/09-web-research.md`: retry with browser headers via curl, then search for the employer's own careers posting. Most corporate and bank sites reject WebFetch's user agent while serving the page normally to a browser.

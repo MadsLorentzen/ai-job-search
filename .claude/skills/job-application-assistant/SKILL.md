@@ -18,6 +18,8 @@ Load `10-remote-brazil.md` before evaluating or drafting. It governs this fork's
 Brazil eligibility, compensation gates, evidence handling and role priorities.
 For resumed searches or live application batches, also load
 `11-application-operations.md` for recovery and submission evidence rules.
+For daily career reviews and portfolio planning, load `12-portfolio-writing.md`
+to suggest Medium articles from existing projects and track writing progress.
 
 ## Workflow
 
