@@ -6,6 +6,13 @@ Follow these steps **exactly in order**. Do not skip steps.
 
 ---
 
+## Evidence requirement for this fork
+
+Read `.claude/skills/job-application-assistant/10-remote-brazil.md`.
+Work only in the private career workspace. Tag inferred competencies as unverified
+signals, not established experience. Confirm personal ownership and results before
+adding GitHub projects to application-ready profile facts; retain source links and dates.
+
 ## Step 0: Read Existing Profile Files
 
 Read these two files in parallel before doing anything else. You must know what is already there so you do not propose duplicates.

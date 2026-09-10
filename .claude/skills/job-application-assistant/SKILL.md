@@ -5,12 +5,17 @@ description: >
   and preparing for interviews. Triggers on keywords like: job posting, job application, CV,
   cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling
 allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Bash, Edit, Write, AskUserQuestion
-framework_version: 1.3.4
+framework_version: 1.3.5
 ---
 
 # Job Application Assistant
 
 ---
+
+## Market policy
+
+Load `10-remote-brazil.md` before evaluating or drafting. It governs this fork's
+Brazil eligibility, compensation gates, evidence handling and role priorities.
 
 ## Workflow
 

@@ -34,6 +34,12 @@ Optional arguments:
 
 ---
 
+## Remote-market defaults
+
+Read `.claude/skills/job-application-assistant/10-remote-brazil.md` before this workflow.
+Apply its gates before recommending roles; keep confirmed matches separate from
+roles needing clarification. Preserve upstream tracker fields and statuses.
+
 ## Execution Steps
 
 ### Step 0: Load State
@@ -47,6 +53,12 @@ Optional arguments:
 Read `search-queries.md` (this directory) for the search strategy. By default, run the top 3 priority query categories. If the user said "broad", run all categories. If the user specified a focus area (e.g. "data science"), prioritize queries from that category.
 
 **Use the installed CLI tools as the primary search mechanism.** Fall back to `WebSearch` only for portals that do not have a CLI skill, or if `bun` is unavailable on the system.
+
+#### Remote fork: Python sources
+
+Before the Bun source pass, run the read-only Python sources from search-queries.md.
+Their `results` arrays join the same result pool. They do not require Bun. On source
+failure, retain other results and report the unavailable source; do not retry in a loop.
 
 #### 1a. Check bun availability
 

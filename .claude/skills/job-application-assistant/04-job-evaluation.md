@@ -1,10 +1,16 @@
 ---
-framework_version: 1.2.6
+framework_version: 1.2.7
 ---
 
 # Job Evaluation Framework
 
 <!-- SETUP: Skill match areas and career goals are personalized by running /setup -->
+
+## Fork market gate
+
+Apply `10-remote-brazil.md` before the gates below. For this Brazil-based remote
+search it takes precedence over generic commute and destination-country assumptions.
+A FLAG is not a verified pass. Salary benchmarking never substitutes for payment evidence.
 
 ## Eligibility Gate — run before scoring
 
@@ -91,8 +97,8 @@ Does the role and company culture match the behavioral profile?
 **Red flags to research:** Department disorganization, work dominated by maintenance over development, poor chemistry with leadership, culture mismatches. Check reviews, media coverage, LinkedIn connections, and network contacts for insider perspective.
 
 ### 4. Location & Logistics (Pass/Fail + Notes)
-- Within commute range: PASS
-- Remote with occasional office: PASS
+- Mandatory commuting or office attendance: FAIL
+- Fully remote from Brazil with role-specific evidence: PASS
 - Requires relocation: FAIL (deal-breaker)
 - Frequent international travel: FLAG (discuss with user)
 

@@ -11,6 +11,12 @@ allowed-tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 
 ---
 
+## Remote-market defaults
+
+Read `.claude/skills/job-application-assistant/10-remote-brazil.md` before this workflow.
+Apply its gates before recommending roles; keep confirmed matches separate from
+roles needing clarification. Preserve upstream tracker fields and statuses.
+
 ## Overview
 
 `/upskill` analyses jobs you have tracked and your current profile to identify skill gaps, then produces a heatmap of those gaps and a learning plan with concrete, web-searched study resources and a recommended study order.

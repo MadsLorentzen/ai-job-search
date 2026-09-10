@@ -1,0 +1,19 @@
+{
+  "remote": true,
+  "brazil_eligible": true,
+  "paid_in_usd": null,
+  "salary": {
+    "min": 54000,
+    "max": 72000,
+    "currency": "USD",
+    "period": "year",
+    "kind": "listed"
+  },
+  "evidence": {
+    "remote": "Example only: fully remote.",
+    "brazil_eligible": "Example only: hiring in Brazil.",
+    "salary": "Example only: USD 54,000-72,000 annual base."
+  },
+  "source_url": "https://example.com/jobs/example",
+  "checked_date": "2026-09-10"
+}

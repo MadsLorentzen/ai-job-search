@@ -18,6 +18,17 @@ An AI-powered job application framework built on [Claude Code](https://claude.co
 >
 > This project has **no affiliated cryptocurrency, token, or paid sponsorship program**. Anything claiming otherwise is unauthorized and should be treated as a scam. The only ways to support the project are the Ko-fi link below and contributing on GitHub.
 
+## Remote Brazil / USD edition
+
+This fork targets remote AI Engineering, Data Science and Data Engineering roles
+available from Brazil, with a USD 4,500/month base target and optional automotive focus.
+**Start with [the desktop setup guide](docs/REMOTE_SETUP.md)** before upstream setup:
+it creates a separate private local workspace for resumes, LinkedIn and references.
+See [market policy](.claude/skills/job-application-assistant/10-remote-brazil.md).
+The workflow prepares applications; automatic submission is not implemented.
+
+The experience and hiring results described below belong to the upstream author.
+
 ## Does it actually work?
 
 I'm a geophysicist by training. When my position was cut in late 2025, I built this framework to run my own job search - the same `/scrape`, `/apply`, and `/interview` workflow in this repo, used weekly, on my own career. I was upfront about it with every employer I spoke to, and instead of counting against me, it usually sparked a genuine technical conversation.

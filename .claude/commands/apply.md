@@ -18,6 +18,12 @@ This rule is the input side of the Step 3 Factual Grounding Audit, not a competi
 
 ---
 
+## Remote-market defaults
+
+Read `.claude/skills/job-application-assistant/10-remote-brazil.md` before this workflow.
+Apply its gates before recommending roles; keep confirmed matches separate from
+roles needing clarification. Preserve upstream tracker fields and statuses.
+
 ## Step 0: Parse Input
 
 - If `$ARGUMENTS` looks like a URL, use `WebFetch` to retrieve the job posting content.
@@ -98,7 +104,7 @@ Also read the most recent existing CV and cover letter files for concrete struct
 - Tailor the opening paragraph to the specific role and company
 - Address to a named person if available in the posting, otherwise "Dear Hiring Manager" (or equivalent in posting language)
 - Keep to approximately one page
-- Any mention of agentic coding or AI tooling must reference **Claude Code** by name
+- Name AI tools only when the candidate profile confirms their use
 
 Write both files to disk. Keep the exact text of both drafts in working memory — you will pass them inline to the reviewer in Step 3 and revise them in Step 4 without re-reading.
 

@@ -8,6 +8,12 @@ Follow these steps **in order**.
 
 ---
 
+## Remote-market defaults
+
+Read `.claude/skills/job-application-assistant/10-remote-brazil.md` before this workflow.
+Apply its gates before recommending roles; keep confirmed matches separate from
+roles needing clarification. Preserve upstream tracker fields and statuses.
+
 ## Step 0: Parse Input
 
 `$ARGUMENTS` may contain:

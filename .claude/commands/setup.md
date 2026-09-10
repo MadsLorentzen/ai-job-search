@@ -6,6 +6,17 @@ There are three paths into setup. Step 0 picks the right one; all three converge
 
 ---
 
+## Fork workspace prerequisite
+
+Read `.claude/skills/job-application-assistant/10-remote-brazil.md` first.
+If working in the public source checkout, run `python tools/create_private_workspace.py`
+and ask the user to open Claude in the printed local workspace before onboarding.
+Do not populate tracked public profiles. If `.private-workspace.json` is present,
+continue onboarding here; the copy has no git remote and is ignored by default.
+Preserve the fork's role, Brazil-remote and USD defaults unless the user changes them.
+Collect reference resumes, LinkedIn export, approved GitHub links, project ownership
+and measurable outcomes; do not synthesize missing contact details or degree dates.
+
 ## Step 0: Welcome & Choose Path
 
 If `$ARGUMENTS` contains `--section <name>`, skip directly to that section in Path C for an update-only flow. Do not run the path-selection prompt below.

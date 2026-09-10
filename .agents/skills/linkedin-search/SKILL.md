@@ -11,7 +11,7 @@ description: >
   positions open, remote jobs, "are there any X jobs in <place>", look up this
   job posting.
 context: fork
-enabled: true  # set to false to keep this portal installed but have /scrape skip it
+enabled: false  # Use public search or manually supplied postings in this fork
 allowed-tools: Bash(bun run .agents/skills/linkedin-search/cli/src/cli.ts *)
 ---
 
