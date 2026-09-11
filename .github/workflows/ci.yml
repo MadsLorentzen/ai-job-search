@@ -73,7 +73,11 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci --prefix extension
+      - run: npm --prefix extension run typecheck
+      - run: npm --prefix extension test
+      - run: npm --prefix extension run build
       - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: python -m playwright install --with-deps chromium
       - run: python -m pytest -q --browser-channel chrome
 
   dependency-review:
