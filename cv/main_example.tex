@@ -1,169 +1,58 @@
-%% Example CV - [YOUR_NAME]
-%% Comprehensive overview of all competencies, experience, and achievements.
-%% Use as a master reference when tailoring role-specific CVs.
-%%
-%% SETUP: Run /setup to populate this with your actual information.
-%% Compile with: lualatex main_example.tex
-%% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
-
 \documentclass[11pt,a4paper,sans]{moderncv}
 \moderncvstyle{banking}
 \moderncvcolor{blue}
-
-% Force both first and last name AND section headings to render in moderncv
-% blue (color1). Default banking on lualatex+MiKTeX leaves these black, which
-% looks inconsistent with the rest of the blue accent scheme.
-\renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
-
 \usepackage[utf8]{inputenc}
 \usepackage{hyperref}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
-    pdfpagemode=FullScreen,
-}
 \usepackage[scale=0.80]{geometry}
-\usepackage{import}
-
-% personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Shawn}{Macharia Mugambi}
+\address{Nairobi, Kenya}{}{}
+\phone[mobile]{+254 799 417 935}
+\email{shawnmugambi1@gmail.com}
+\extrainfo{\href{https://www.linkedin.com/in/shawnmugambi/}{LinkedIn}, \href{https://github.com/shawnmacharia}{GitHub}, \href{https://shawnmacharia.vercel.app}{Portfolio}}
 
 \begin{document}
-
 \makecvtitle
 
-% ============================================================
-%     PROFILE STATEMENT
-% ============================================================
-
-\vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
-
-% ============================================================
-%     CORE COMPETENCIES
-% ============================================================
+\small{Data Engineer and Analytics Engineer with an Actuarial Science foundation and hands-on experience designing automated ELT pipelines, Medallion architectures, data-quality controls, and Power BI semantic layers. Experienced with Python, SQL, Docker, Airflow, dbt, BigQuery, PostgreSQL, and SQL Server.}
 
 \section{Core Competencies}
-\vspace{1pt}
 \begin{itemize}
-
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
-
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
-
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
-
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
-
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
-
+\item \textbf{ELT and orchestration}: Python, SQL, Apache Airflow, dbt Core, Docker
+\item \textbf{Data architecture}: Medallion Architecture, Bronze/Silver/Gold, Kimball star schemas
+\item \textbf{Data quality}: Reconciliation, validation rules, observability, exception reporting
+\item \textbf{Warehousing}: Google BigQuery, PostgreSQL, SQL Server, MySQL, DuckDB, SQLite
+\item \textbf{Business intelligence}: Power BI, Power Query, DAX, semantic models, Streamlit
 \end{itemize}
-
-% ============================================================
-%     PROFESSIONAL EXPERIENCE
-% ============================================================
 
 \section{Professional Experience}
-\vspace{3pt}
 \begin{itemize}
-
-% --- Most Recent Role ---
-\item{\cventry{[YYYY-Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
-\begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
+\item{\cventry{Sep 2025--Aug 2026}{Data Analyst / Analytics Engineer}{Data Cycle Analytics}{Nairobi, Kenya}{}{\begin{itemize}
+\item Architected FinOps Sentinel, a containerised Docker microservice using Redis and SQL Server to continuously match transactions and eliminate manual reconciliation checks.
+\item Engineered Python/SQL ELT processes for messy ERP CSV and SAP data, schema standardisation, validation, and exception reporting.
+\item Built BigQuery warehouses with dbt using Medallion Architecture and trusted Bronze, Silver, and Gold layers.
+\item Developed Python observability layers for data-quality anomalies and delivered Power BI reports for finance and operations stakeholders.
 \end{itemize}}}
-
-\vspace{3pt}
-
-% --- Previous Role ---
-\item{\cventry{[YYYY-YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
-\begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
+\item{\cventry{Jun 2025--Aug 2025}{Data and Analytics Intern}{Minet Insurance}{Kampala, Uganda}{}{\begin{itemize}
+\item Reconciled financial and operational datasets across multiple systems to maintain actuarial-ready accuracy.
+\item Built automated Power BI reporting pipelines for claims tracking and anomaly investigation.
 \end{itemize}}}
-
-\vspace{3pt}
-
-% --- Earlier Role ---
-\item{\cventry{[YYYY-YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
-\begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
+\item{\cventry{May 2022--Jul 2022}{Actuarial Trainee / Data Validation Support}{APA Insurance}{Kampala, Uganda}{}{\begin{itemize}
+\item Executed cross-ledger validations and automated quality checks on policy and claims portfolios.
+\item Collaborated with underwriting and claims teams on record keeping and exception documentation.
 \end{itemize}}}
-
 \end{itemize}
 
-% ============================================================
-%     EDUCATION
-% ============================================================
-
-\section{Education}
-\vspace{1pt}
+\section{Selected Projects}
 \begin{itemize}
-
-\item{\cventry{[YYYY-YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
-
-\vspace{3pt}
-
-\item{\cventry{[YYYY-YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
-}}
-
+\item \textbf{ActuaParse AI}: Built a local Medallion pipeline for actuarial and financial PDF extraction using Ollama, Pydantic, JSONL, and SQLite. \href{https://github.com/shawnmacharia/ActuaParse-AI}{GitHub}
+\item \textbf{EPRA Fuel Price Data Engineering Pipeline}: Built an Airflow, Docker, PostgreSQL, BigQuery, dbt, Power BI, and DAX pipeline with a Kimball star schema. \href{https://github.com/shawnmacharia/epra-fuel-data-pipeline}{GitHub}
 \end{itemize}
 
-% ============================================================
-%     LANGUAGES
-% ============================================================
-
-\section{Languages}
-\vspace{1pt}
+\section{Education and Certifications}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
-\end{itemize}
-
-% ============================================================
-%     PUBLICATIONS (optional)
-% ============================================================
-
-\section{Publications}
-\vspace{1pt}
-\begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
-% ============================================================
-
-\section{Honors and Awards}
-\vspace{1pt}
-\begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
-\end{itemize}
-
-% ============================================================
-%     REFERENCES
-% ============================================================
-
-\section{References}
-\vspace{1pt}
-\begin{itemize}
-\item{Available upon request.}
+\item{\cventry{Jan 2021--Nov 2025}{Bachelor of Science in Actuarial Science}{Daystar University}{Nairobi, Kenya}{}{}}
+\item Microsoft Certified: Power BI Data Analyst Associate
+\item CIFA Level 1 completed; Level 2 in progress
 \end{itemize}
 
 \end{document}

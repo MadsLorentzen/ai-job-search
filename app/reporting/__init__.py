@@ -1,0 +1,1 @@
+"""Deterministic offline reports."""

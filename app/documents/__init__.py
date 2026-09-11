@@ -1,0 +1,1 @@
+"""Deterministic document compilation and validation."""

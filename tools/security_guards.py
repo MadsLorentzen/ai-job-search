@@ -142,6 +142,9 @@ def _hook_commands(event: str, entries: object):
 
 def check_permissions() -> None:
     path = ROOT / ".claude" / "settings.json"
+    if not path.exists():
+        print("note: Claude Code settings absent; local application policy is active")
+        return
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
