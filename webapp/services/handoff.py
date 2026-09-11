@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import secrets
 import sqlite3
-from datetime import datetime, timezone
+import uuid
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from webapp.persistence.artifacts import get_artifact
@@ -30,23 +31,53 @@ class PairingSecretInvalid(HandoffError):
     pass
 
 
-def generate_pairing_secret() -> str:
-    return secrets.token_urlsafe(32)
+class PairingSecretExpired(HandoffError):
+    pass
+
+
+def generate_pairing_secret(
+    conn: sqlite3.Connection, *, account_id: str, commit: bool = True,
+) -> str:
+    secret = secrets.token_urlsafe(32)
+    secret_id = f"pairsec_{uuid.uuid4().hex[:20]}"
+    now = datetime.now(timezone.utc)
+    expires_at = (now + timedelta(minutes=10)).isoformat()
+    conn.execute(
+        "INSERT INTO pairing_secrets "
+        "(id, account_id, secret_hash, created_at, expires_at, consumed_at) "
+        "VALUES (?, ?, ?, ?, ?, NULL)",
+        (secret_id, account_id, hash_pairing_secret(secret), now.isoformat(), expires_at),
+    )
+    if commit:
+        conn.commit()
+    return secret
 
 
 def exchange_pairing_secret_for_credential(
-    conn: sqlite3.Connection, *, account_id: str, one_time_secret: str,
+    conn: sqlite3.Connection, *, one_time_secret: str,
 ) -> dict[str, Any]:
-    # The one-time secret itself is never persisted; only a freshly
-    # generated durable secret's hash is stored. The one-time secret's
-    # sole purpose is to have been shown once, out-of-band, by an already
-    # account-scoped webapp page (see Section 5.1 of the design spec) —
-    # this function trusts that the caller already verified that context.
-    durable_secret = secrets.token_urlsafe(32)
-    secret_hash = hash_pairing_secret(durable_secret)
-    credential = create_extension_credential(
-        conn, account_id=account_id, secret_hash=secret_hash,
+    secret_hash = hash_pairing_secret(one_time_secret)
+    row = conn.execute(
+        "SELECT * FROM pairing_secrets WHERE secret_hash = ?", (secret_hash,)
+    ).fetchone()
+    if row is None:
+        raise PairingSecretInvalid("pairing code not recognized")
+    if row["consumed_at"] is not None:
+        raise PairingSecretInvalid("pairing code already used")
+    now_iso = datetime.now(timezone.utc).isoformat()
+    if row["expires_at"] < now_iso:
+        raise PairingSecretExpired("pairing code expired")
+
+    conn.execute(
+        "UPDATE pairing_secrets SET consumed_at = ? WHERE id = ?",
+        (now_iso, row["id"]),
     )
+    durable_secret = secrets.token_urlsafe(32)
+    credential = create_extension_credential(
+        conn, account_id=row["account_id"],
+        secret_hash=hash_pairing_secret(durable_secret),
+    )
+    conn.commit()
     return {"credential_id": credential["id"], "durable_secret": durable_secret}
 
 
