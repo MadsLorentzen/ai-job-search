@@ -165,21 +165,35 @@ CREATE INDEX idx_pairing_secrets_hash ON pairing_secrets(secret_hash);
 
 ### 5.2 `generate_pairing_secret` — now persists
 
+**New imports required** in `webapp/services/handoff.py`: this file
+currently imports `secrets`, `sqlite3`, `datetime, timezone` (no
+`timedelta`), and no `uuid` at all (verified against the file's actual
+import block, lines 1-6) — `timedelta` and `uuid` must both be added for
+the code below to run.
+
+**Note:** `_now()` is a helper in `webapp/persistence/handoff.py`, not in
+`webapp/services/handoff.py` — the services file's existing code
+(`webapp/services/handoff.py:212`) instead calls
+`datetime.now(timezone.utc).isoformat()` inline. The code below follows
+that same existing inline pattern rather than introducing a call to a
+helper that isn't in scope in this file.
+
 ```python
+import uuid
+from datetime import datetime, timedelta, timezone  # timedelta is new
+
 def generate_pairing_secret(
     conn: sqlite3.Connection, *, account_id: str, commit: bool = True,
 ) -> str:
     secret = secrets.token_urlsafe(32)
     secret_id = f"pairsec_{uuid.uuid4().hex[:20]}"
-    now = _now()
-    expires_at = (
-        datetime.now(timezone.utc) + timedelta(minutes=10)
-    ).isoformat()
+    now = datetime.now(timezone.utc)
+    expires_at = (now + timedelta(minutes=10)).isoformat()
     conn.execute(
         "INSERT INTO pairing_secrets "
         "(id, account_id, secret_hash, created_at, expires_at, consumed_at) "
         "VALUES (?, ?, ?, ?, ?, NULL)",
-        (secret_id, account_id, hash_pairing_secret(secret), now, expires_at),
+        (secret_id, account_id, hash_pairing_secret(secret), now.isoformat(), expires_at),
     )
     if commit:
         conn.commit()
@@ -209,12 +223,13 @@ def exchange_pairing_secret_for_credential(
         raise PairingSecretInvalid("pairing code not recognized")
     if row["consumed_at"] is not None:
         raise PairingSecretInvalid("pairing code already used")
-    if row["expires_at"] < _now():
+    now_iso = datetime.now(timezone.utc).isoformat()
+    if row["expires_at"] < now_iso:
         raise PairingSecretExpired("pairing code expired")
 
     conn.execute(
         "UPDATE pairing_secrets SET consumed_at = ? WHERE id = ?",
-        (_now(), row["id"]),
+        (now_iso, row["id"]),
     )
     durable_secret = secrets.token_urlsafe(32)
     credential = create_extension_credential(
