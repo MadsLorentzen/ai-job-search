@@ -89,11 +89,13 @@ Task 5's note).
   a real `chrome.scripting` injection.
 - `extension/manifest.json` — **modify**. Add `host_permissions:
   ["http://127.0.0.1:8420/*"]`. `background.service_worker` already points
-  at `background/index.js` (matches the bundler output path from Task 6).
+  at `background/index.js` (matches the bundler output path from the
+  separate local-build plan).
 - `extension/test/message-router.test.ts` — **new**.
 - `extension/test/snapshot-source.test.ts` — **new**.
-- `extension/package.json` — **modify**. Add a real `build` script (Task 6;
-  this task's bundling need is satisfied by that script, not a separate one).
+- `extension/package.json` — **modify**. Add a real `build` script (owned by
+  the separate local-build plan; this task's bundling need is satisfied by
+  that script, not a script added here).
 
 ---
 
@@ -352,9 +354,9 @@ git commit -m "feat(extension): add injected candidate-snapshot reader for conte
   from `extension/src/adapters/index.ts` (existing, unchanged);
   `readInjectedSnapshot` from Task 2.
 - Produces: a side-effecting module (no exports needed — this is the actual
-  file esbuild bundles as the content-script entry point in Task 6). Running
-  it calls `runContentScript` once against `document` and wires
-  `sendMessage` to `chrome.runtime.sendMessage`.
+  file esbuild bundles as the content-script entry point in Task 6 of the
+  separate local-build plan). Running it calls `runContentScript` once
+  against `document` and wires `sendMessage` to `chrome.runtime.sendMessage`.
 
 This task has no unit test of its own: it is 100% `chrome.*`/`document`
 glue with no branching logic — the logic it calls (`runContentScript`,
@@ -442,8 +444,8 @@ git commit -m "feat(extension): add content-script entry point wiring runContent
   existing, unchanged; `MessageRouter` from Task 1;
   `INJECTED_SNAPSHOT_KEY` from Task 2.
 - Produces: a side-effecting module (bundled as the service worker entry
-  point in Task 6). Registers `chrome.action.onClicked` and
-  `chrome.runtime.onMessage`.
+  point in Task 6 of the separate local-build plan). Registers
+  `chrome.action.onClicked` and `chrome.runtime.onMessage`.
 
 This task has no unit test of its own for the same reason as Task 3 — it is
 Chrome API registration glue. Its only real logic (translating a message
@@ -563,9 +565,10 @@ git commit -m "feat(extension): add background service worker entry point wiring
 - Modify: `extension/manifest.json`
 
 **Interfaces:**
-- Consumes: nothing new — references file paths that Task 6's build
-  produces (`background/index.js`, `content/index.js`).
-- Produces: a manifest ready for Task 6's build to copy into `dist/`.
+- Consumes: nothing new — references file paths that the separate
+  local-build plan's build produces (`background/index.js`, `content/index.js`).
+- Produces: a manifest ready for the separate local-build plan's build to
+  copy into `dist/`.
 
 - [ ] **Step 1: Add the loopback host permission**
 
