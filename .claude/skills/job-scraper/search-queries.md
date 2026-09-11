@@ -12,14 +12,14 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Primary:
+- **linkedin.com/jobs** - LinkedIn job listings (filter: Germany / remote); also covered by `linkedin-search` CLI
+- **freehire-search** CLI - general country-agnostic coverage
+- **arbeitsagentur-search** CLI - Bundesagentur für Arbeit (Germany's official employment agency job board), added via `/add-portal`. Has a `--remote` flag (filters on each posting's own home-office flag) and a `--radius` flag for distance-based search around a city - useful for the remote-first, then Fulda/Frankfurt/Munich location preference. StepStone.de and Indeed Germany remain ruled out: each explicitly disallows automated search access in its own `robots.txt`.
+- **xing-search** CLI - Xing (xing.com), the DACH-market professional network, added via `/add-portal`. Xing's own job-search page and GraphQL API are `robots.txt`-disallowed for every crawler, so this works differently from every other portal here: it caches Xing's public job-URL sitemap and verifies keyword matches against each candidate's server-rendered detail page rather than hitting a real search endpoint. See `.agents/skills/xing-search/url-reference.md` for the full access-rules writeup. Because the sitemap mixes years-old expired postings with current ones, a search can return fewer results than requested - that's expected, not a bug.
 
 Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for known target companies
+- Direct Google searches with `site:` filters for known target companies (none specified yet - candidate is open to any non-automotive sector)
 
 ## Query Categories
 
@@ -27,54 +27,71 @@ Queries are grouped by priority. Write **each category in every language from yo
 
 **Organize by function, not job title.** The same underlying work carries different titles across companies and markets (a "Data Scientist" role at one employer may be posted as "Insights Analyst" or "Data Consultant" at another). Name each priority category after the function it covers, and list several plausible job titles as query variants within that category rather than betting an entire priority tier on one exact title string.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: Project / Technical Leadership
 
-These match your strongest and most desired career direction.
-
-```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE_1]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE_2]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE_1]" [YOUR_COUNTRY]
-```
-
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
+These match the strongest and most desired career direction: a full Project Lead role, owning delivery end-to-end (not just Scrum facilitation).
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:linkedin.com/jobs "Project Lead" Germany
+site:linkedin.com/jobs "Technical Project Lead" Germany
+site:linkedin.com/jobs "Projektleiter" Deutschland
+"Project Lead" remote Germany
+"Projektleiter" Softwareentwicklung remote
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
+### Priority 2: Senior Embedded / C Engineering
 
-Adjacent roles you could pivot into.
+These match deep technical domain expertise - the alternative target lane to Priority 1.
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
+site:linkedin.com/jobs "Senior Embedded Engineer" Germany
+site:linkedin.com/jobs "Senior C Engineer" OR "Senior C Developer" Germany
+"embedded" "bare-metal" OR "low-level" C engineer remote
+"Embedded Software Engineer" bare-metal Germany
+"Eingebettete Systeme" Entwickler C remote
 ```
+
+### Priority 3: Non-Automotive Sector Pivot (semiconductor, industrial, medtech, energy)
+
+Sector-first queries rather than title-first, aimed squarely at the "leave automotive" goal - semiconductor (echoing the AMD/AIXTRON/Arm candidates found this session), industrial automation, medical devices, and energy are the sectors that have surfaced the strongest non-automotive matches so far.
+
+```
+site:linkedin.com/jobs "embedded" OR "firmware" semiconductor Germany
+site:linkedin.com/jobs C engineer "medical device" OR "medizintechnik" Germany
+"Embedded Software" Halbleiter OR semiconductor remote Germany
+"Firmware Engineer" Germany -automotive
+```
+
+**Note:** this replaced a former "Agile / Scrum Leadership" category. The candidate does not want to work as a Scrum Master - see the Deal-breakers note below and `04-job-evaluation.md`'s Career goals. Scrum/SAFe remains a genuine skill worth mentioning in a cover letter for a Technical Lead role, but is no longer a search target on its own.
 
 ### Priority 4: Broader Technical / Consulting
 
-Wider net for general technical roles.
+Wider net for general technical roles, explicitly outside the automotive sector (see career goal in `01-candidate-profile.md` / `04-job-evaluation.md`).
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+"C developer" remote Germany -automotive
+"technical consultant" embedded OR "low-level" Germany
+site:linkedin.com/jobs "software engineer" C bare-metal -automotive
 ```
+
+**Sector note:** the candidate has an explicit goal to leave the automotive industry after 8+ years in it. Deprioritize postings at automotive OEMs/Tier-1 suppliers unless the role is fully remote or otherwise a clearly strong match; a non-automotive sector is itself a positive signal in `04-job-evaluation.md`'s Career Alignment dimension.
+
+**Skill note - C, not C++:** the candidate is expert-level in C but a self-assessed beginner in C++. Do not add "C++" as a search term on its own - a posting whose title or core requirement is C++ (e.g. "C++ Developer", "modern C++", "C++14/17/20") is a real skill gap, not a synonym for C. A posting listing "C or C++" or "C/C++" as an either/or requirement is fine to include, since C alone covers it; one requiring strong, independent C++ ownership is not, even if C also appears on the CV.
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+When evaluating results, verify the job location matches the candidate's preference. Define acceptable areas:
+- **Fully remote** - top preference, any location in Germany (or EU with compatible time zone)
+- Fulda and surrounding area
+- Frankfurt am Main
+- Munich (acceptable, implies relocation)
+- Any other location requiring relocation, without remote/hybrid flexibility (too far - deal-breaker, see `04-job-evaluation.md`)
+
+Also treat a **hard-required 5 days/week in-office policy** and a **significant/frequent travel requirement** as deal-breakers regardless of city - see `04-job-evaluation.md`'s Location & Logistics dimension.
+
+**Role-type note - not a Scrum Master.** The candidate does not want to work as a Scrum Master or Agile Coach, even though it is part of his current job title and a genuine skill. Do not search for or score up "Scrum Master" / "Agile Coach" as a target role on its own - see `04-job-evaluation.md`'s Career goals and Motivation filter.
+
+**Sector exclusion - not defense.** The candidate does not want to work in the defense/military sector, even at a company that also has acceptable civilian divisions. Deprioritize and flag roles involving secure/military communications, cryptographic devices for government/military use, avionics/airborne defense, or weapons systems - and companies whose core business is defense (Rheinmetall, HENSOLDT, Helsing, Diehl, etc.) outright. See `04-job-evaluation.md`'s Motivation filter.
 
 ## Language Filter
 

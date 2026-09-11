@@ -113,6 +113,9 @@ company_research/*.json
 .agents/**/node_modules/
 .agents/**/*.log
 .agents/usage/
+# xing-search's locally-synced job sitemap cache (~50MB, rebuilt from Xing's
+# public sitemap on demand - not something to commit).
+.agents/**/.cache/
 
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/
