@@ -7,6 +7,7 @@ import webapp.persistence.migrations as migrations
 from webapp.persistence.migrations import (
     APPLICATION_DOCUMENTS_MIGRATION_ID,
     HANDOFF_SESSIONS_MIGRATION_ID,
+    ONBOARDING_WALKTHROUGHS_MIGRATION_ID,
 )
 
 
@@ -63,13 +64,14 @@ def test_exact_004_application_documents_upgrade_to_005_handoff(tmp_path):
         "1, ?, 'sha256/aa/existing.docx', NULL, 'now')",
         (workspace["id"], "a" * 64),
     )
+    conn.execute("DROP TABLE onboarding_progress")
     conn.execute("DROP TABLE submission_confirmations")
     conn.execute("DROP TABLE handoff_events")
     conn.execute("DROP TABLE handoff_sessions")
     conn.execute("DROP TABLE extension_credentials")
     conn.execute(
-        "DELETE FROM schema_migrations WHERE id = ?",
-        (HANDOFF_SESSIONS_MIGRATION_ID,),
+        "DELETE FROM schema_migrations WHERE id IN (?, ?)",
+        (HANDOFF_SESSIONS_MIGRATION_ID, ONBOARDING_WALKTHROUGHS_MIGRATION_ID),
     )
     conn.commit()
 
@@ -91,6 +93,10 @@ def test_exact_004_application_documents_upgrade_to_005_handoff(tmp_path):
     assert conn.execute(
         "SELECT 1 FROM schema_migrations WHERE id = ?",
         (HANDOFF_SESSIONS_MIGRATION_ID,),
+    ).fetchone() is not None
+    assert conn.execute(
+        "SELECT 1 FROM schema_migrations WHERE id = ?",
+        (ONBOARDING_WALKTHROUGHS_MIGRATION_ID,),
     ).fetchone() is not None
     assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
     conn.close()

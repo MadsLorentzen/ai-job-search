@@ -156,8 +156,11 @@ def test_profile_manager_page_exposes_editable_and_read_only_boundaries(tmp_path
         assert page.status_code == 200
         for text in (
             "My Evidence Profile", "Editable profile entries", "Candidate Profile · Editable",
-            "Supplemental source", "Read-only", "Add profile information",
+            "Additional information used to support your profile", "Read-only", "Add profile information",
             "Generated evidence claims",
         ):
             assert text in page.text
+        assert "CLAUDE.md" not in page.text
+        assert "<small>.claude/skills/" not in page.text
+        assert "<small>cv/main_example.tex" not in page.text
         assert "Edit conflict" not in page.text

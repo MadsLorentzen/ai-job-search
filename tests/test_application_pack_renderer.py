@@ -4,15 +4,18 @@ import ast
 import copy
 import json
 import time
+import zipfile
 from io import BytesIO
 from pathlib import Path
 
 import pytest
 from docx import Document
 
+import product.application_pack_renderer as renderer
 from product.application_pack_contract import ApplicationPackContractError
 from product.application_pack_renderer import (
     RendererError,
+    _freeze_docx_bytes,
     render_application_pack,
     render_cover_letter_document,
     render_cv_document,
@@ -85,6 +88,38 @@ def _pack(
 def _paragraph_texts(document_bytes: bytes) -> list[str]:
     document = Document(BytesIO(document_bytes))
     return [paragraph.text for paragraph in document.paragraphs]
+
+
+def _archive_with_creator_system(create_system: int) -> bytes:
+    buffer = BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        info = zipfile.ZipInfo("word/document.xml", date_time=(1980, 1, 1, 0, 0, 0))
+        info.compress_type = zipfile.ZIP_DEFLATED
+        info.create_system = create_system
+        info.external_attr = 0
+        archive.writestr(info, b"<document>same content</document>")
+    return buffer.getvalue()
+
+
+def test_docx_freezer_normalizes_windows_and_unix_creator_metadata(monkeypatch):
+    windows_archive = _archive_with_creator_system(0)
+    unix_archive = _archive_with_creator_system(3)
+    original_zip_info = zipfile.ZipInfo
+
+    def freezer_zip_info_for(create_system):
+        class PlatformZipInfo(original_zip_info):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.create_system = create_system
+
+        return PlatformZipInfo
+
+    monkeypatch.setattr(renderer.zipfile, "ZipInfo", freezer_zip_info_for(0))
+    frozen_windows = _freeze_docx_bytes(windows_archive)
+    monkeypatch.setattr(renderer.zipfile, "ZipInfo", freezer_zip_info_for(3))
+    frozen_unix = _freeze_docx_bytes(unix_archive)
+
+    assert frozen_windows == frozen_unix
 
 
 def test_v0_baseline_renderer_bytes_are_frozen_from_a7faadd():

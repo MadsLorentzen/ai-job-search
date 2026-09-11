@@ -217,6 +217,7 @@ def test_post_002_upgrade_backfills_default_owner_without_data_loss(tmp_path):
         "003_accounts_ownership",
         "004_application_documents",
         "005_handoff_sessions",
+        "006_onboarding_walkthroughs",
     }
     assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
     create_account(

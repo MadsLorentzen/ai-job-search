@@ -237,7 +237,7 @@ def test_friendly_completion_issues_report_exact_counts(tmp_path, monkeypatch):
     assert any("0 of 2 required CV bullets" in message for message in friendly)
 
 
-def test_unmapped_completion_issue_code_fails_loudly_instead_of_disappearing():
+def test_unmapped_completion_issue_code_is_omitted_from_user_copy():
     from webapp.services.workspace_view import _friendly_completion_issues
 
     review_completion = {
@@ -247,14 +247,7 @@ def test_unmapped_completion_issue_code_fails_loudly_instead_of_disappearing():
         "qualifying_cover_letter_paragraph_count": 0,
         "cover_letter_word_count": 0,
     }
-    try:
-        _friendly_completion_issues(review_completion)
-    except KeyError:
-        pass
-    else:
-        raise AssertionError(
-            "an unmapped issue code was silently dropped instead of raising"
-        )
+    assert _friendly_completion_issues(review_completion) == []
 
 
 def test_historical_pack_with_incomplete_current_material_flag_true_when_both_hold(
@@ -700,6 +693,86 @@ def test_omitting_all_usable_material_keeps_gate_four_incomplete(tmp_path, monke
         "insufficient_cover_letter_words",
     ]
     assert view["controls"]["can_confirm_pack"] is False
+
+
+def test_understanding_count_and_recovery_state_are_available_before_job_fit(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    job = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_posting_snapshot",
+        content_id="job_count", payload={"raw_text": "Python required"},
+    )
+    request = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_understanding_request",
+        content_id="request_count", payload={},
+    )
+    record_dependency_fingerprint(conn, artifact_id=request["id"], upstream_artifact_type="job_posting_snapshot", upstream_content_id=job["content_id"])
+    result = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_understanding_result",
+        content_id="result_count", payload={
+            "status": "READY", "requirements": [{"id": "job_1", "text": "Python required"}],
+            "responsibilities": [{"id": "job_2", "text": "Build pipelines"}],
+            "language_requirements": [], "eligibility_requirements": [],
+            "logistics_requirements": [],
+        },
+    )
+    for artifact_type, artifact in (("job_posting_snapshot", job), ("job_understanding_request", request)):
+        record_dependency_fingerprint(conn, artifact_id=result["id"], upstream_artifact_type=artifact_type, upstream_content_id=artifact["content_id"])
+
+    view = build_workspace_view_model(conn, workspace_id)
+    assert view["accepted_job_evidence_count"] == 2
+    assert view["understanding_has_no_grounded_evidence"] is False
+
+
+def test_understanding_count_supersedes_historical_resolved_bundle(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    job = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_posting_snapshot",
+        content_id="job_historical_bundle", payload={"raw_text": "Python required"},
+    )
+    old_bundle = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="resolved_job_evidence",
+        content_id="bundle_historical", payload={"evidence": [{"id": "old_1"}]},
+    )
+    request = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_understanding_request",
+        content_id="request_current", payload={},
+    )
+    record_dependency_fingerprint(
+        conn, artifact_id=request["id"], upstream_artifact_type="job_posting_snapshot",
+        upstream_content_id=job["content_id"],
+    )
+    result = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_understanding_result",
+        content_id="result_current", payload={
+            "status": "READY", "requirements": [{"id": "job_1", "text": "Python required"}],
+            "responsibilities": [{"id": "job_2", "text": "Build pipelines"}],
+            "language_requirements": [{"id": "job_3", "text": "German preferred"}],
+            "eligibility_requirements": [], "logistics_requirements": [],
+        },
+    )
+    for artifact_type, artifact in (("job_posting_snapshot", job), ("job_understanding_request", request)):
+        record_dependency_fingerprint(
+            conn, artifact_id=result["id"], upstream_artifact_type=artifact_type,
+            upstream_content_id=artifact["content_id"],
+        )
+
+    view = build_workspace_view_model(conn, workspace_id)
+
+    assert len(old_bundle["payload"]["evidence"]) == 1
+    assert view["accepted_job_evidence_count"] == 3
+
+
+def test_no_grounded_understanding_is_marked_for_recovery(tmp_path):
+    conn, workspace_id = _workspace(tmp_path)
+    job = save_artifact(conn, workspace_id=workspace_id, artifact_type="job_posting_snapshot", content_id="job_empty", payload={"raw_text": "Source"})
+    request = save_artifact(conn, workspace_id=workspace_id, artifact_type="job_understanding_request", content_id="request_empty", payload={})
+    record_dependency_fingerprint(conn, artifact_id=request["id"], upstream_artifact_type="job_posting_snapshot", upstream_content_id=job["content_id"])
+    result = save_artifact(conn, workspace_id=workspace_id, artifact_type="job_understanding_result", content_id="result_empty", payload={"status": "NEEDS_REVIEW", "requirements": [], "responsibilities": [], "language_requirements": [], "eligibility_requirements": [], "logistics_requirements": []})
+    for artifact_type, artifact in (("job_posting_snapshot", job), ("job_understanding_request", request)):
+        record_dependency_fingerprint(conn, artifact_id=result["id"], upstream_artifact_type=artifact_type, upstream_content_id=artifact["content_id"])
+    view = build_workspace_view_model(conn, workspace_id)
+    assert view["accepted_job_evidence_count"] == 0
+    assert view["understanding_has_no_grounded_evidence"] is True
 
 
 def test_acknowledging_unsafe_profile_item_does_not_resolve_ui_review(

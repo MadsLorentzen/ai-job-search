@@ -108,7 +108,7 @@ _COMPLETION_ISSUE_MESSAGES: dict[str, Any] = {
     ),
     MISSING_CV_BULLET: lambda result: "At least one approved CV bullet is required.",
     INSUFFICIENT_CV_WORDS: lambda result: (
-        f"Your approved CV wording is {result['cv_word_count']} words â€” it needs "
+        f"Your approved CV wording is {result['cv_word_count']} words — it needs "
         f"at least {MIN_CV_WORDS}."
     ),
     INSUFFICIENT_COVER_LETTER_PARAGRAPHS: lambda result: (
@@ -116,7 +116,7 @@ _COMPLETION_ISSUE_MESSAGES: dict[str, Any] = {
         f"{MIN_COVER_LETTER_PARAGRAPHS} required cover-letter paragraphs found."
     ),
     INSUFFICIENT_COVER_LETTER_WORDS: lambda result: (
-        f"Your approved cover letter is {result['cover_letter_word_count']} words â€” "
+        f"Your approved cover letter is {result['cover_letter_word_count']} words — "
         f"it needs at least {MIN_COVER_LETTER_WORDS}."
     ),
 }
@@ -183,6 +183,7 @@ def _friendly_completion_issues(
     return [
         _COMPLETION_ISSUE_MESSAGES[code](review_completion)
         for code in review_completion.get("issues", [])
+        if code in _COMPLETION_ISSUE_MESSAGES
     ]
 
 
@@ -583,6 +584,23 @@ def build_workspace_view_model(
     review_items = _build_review_items(
         conn, workspace_id, artifacts["profile"], artifacts["fit"], artifacts["intelligence"]
     )
+    understanding_payload = _artifact_payload(artifacts["understanding"])
+    if artifacts["understanding"]:
+        # Understanding is the current lifecycle stage until Job Fit creates a
+        # replacement resolved-evidence bundle.  An older bundle is retained
+        # for audit/history, but must not make the posting summary look as if
+        # it describes the freshly rerun Understanding result.
+        accepted_job_evidence_count = sum(
+            len(understanding_payload.get(category, []))
+            for category in (
+                "requirements", "responsibilities", "language_requirements",
+                "eligibility_requirements", "logistics_requirements",
+            )
+        )
+    else:
+        accepted_job_evidence_count = len(
+            _artifact_payload(artifacts["bundle"]).get("evidence", [])
+        )
     outstanding = [item for item in review_items if _is_outstanding_review_item(item)]
     resolved_review_items = [item for item in review_items if item not in outstanding]
     acknowledged_content_items = [
@@ -779,6 +797,10 @@ def build_workspace_view_model(
     return {
         "workspace": workspace, "profile": artifacts["profile"],
         "job_posting": artifacts["job"], "resolved_job_evidence": artifacts["bundle"],
+        "accepted_job_evidence_count": accepted_job_evidence_count,
+        "understanding_has_no_grounded_evidence": (
+            understanding_state == "needs_review" and accepted_job_evidence_count == 0
+        ),
         "stages": stages,
         "evidence_items": _build_evidence_items(
             artifacts["profile"], artifacts["bundle"], artifacts["fit"],

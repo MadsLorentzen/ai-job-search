@@ -87,6 +87,26 @@ class _FakeJobUnderstandingProvider:
         })
 
 
+class _UngroundedJobUnderstandingProvider:
+    provider_id = "fake"
+    model_id = "fake-model"
+    model_version = "fake-model-v0"
+
+    def extract(self, request):
+        from product.job_understanding_providers import ProviderResponse
+        return ProviderResponse(payload={
+            "schema_version": "job-understanding-candidate.v0",
+            "items": [{
+                "proposal_id": "proposal-ungrounded",
+                "category": "requirements",
+                "kind": "required",
+                "quote": "Provider-only fabricated requirement",
+                "certainty": "explicit",
+            }],
+            "suggestions": [], "ambiguous_statements": [], "warnings": [],
+        })
+
+
 def test_run_job_understanding_persists_both_request_and_result(tmp_path):
     conn = _conn(tmp_path)
     created = create_job_from_source_record(
@@ -103,6 +123,28 @@ def test_run_job_understanding_persists_both_request_and_result(tmp_path):
     saved_request = get_current_artifact(conn, workspace_id, "job_understanding_request")
     assert saved_request is not None
     assert saved_request["payload"]["request_id"] == "req_test_1"
+    conn.close()
+
+
+def test_run_job_understanding_persists_controlled_result_when_all_quotes_are_ungrounded(tmp_path):
+    conn = _conn(tmp_path)
+    created = create_job_from_source_record(
+        conn, company="Acme", title="Backend Engineer",
+        source_record={"schema_version": "job-source-record.v0", "source": "manual",
+                       "captured_at": "2026-08-18T00:00:00Z", "company": "Acme",
+                       "title": "Backend Engineer", "description": "Python is required."},
+    )
+    workspace_id = created["workspace"]["id"]
+
+    saved = run_job_understanding(
+        conn, workspace_id, _UngroundedJobUnderstandingProvider(), request_id="req_ungrounded"
+    )
+
+    assert saved["payload"]["status"] == "NEEDS_REVIEW"
+    assert saved["payload"]["requirements"] == []
+    assert len(saved["payload"]["warnings"]) == 1
+    assert "Provider-only fabricated requirement" not in saved["payload"]["warnings"][0]
+    assert get_current_artifact(conn, workspace_id, "job_understanding_result")["id"] == saved["id"]
     conn.close()
 
 

@@ -24,6 +24,8 @@ from webapp.services.workspace_view import (
 )
 from webapp.services.profile_manager import get_profile_manager
 from webapp.services.ownership import AccountScope
+from product.onboarding_walkthroughs import WALKTHROUGH_LAUNCH_CONTEXTS
+from webapp.services.onboarding import list_walkthrough_statuses
 
 router = APIRouter(tags=["views"])
 
@@ -70,6 +72,7 @@ def dashboard(
 ):
     if filter not in {"all", "active", "drafted", "applied", "interview", "offer", "final"}:
         filter = "active"
+    pending_replay = request.query_params.get("onboarding_replay")
     return request.app.state.templates.TemplateResponse(
         request,
         "dashboard.html",
@@ -79,6 +82,10 @@ def dashboard(
                 filter_name=filter,
                 extensions_dir=request.app.state.settings.extensions_dir,
                 account_id=scope.account_id,
+            ),
+            "pending_workspace_replay": (
+                pending_replay
+                in ("job_workflow_intro", "document_workflow_intro")
             ),
             **_search_context(conn, scope.account_id),
         },
@@ -252,7 +259,46 @@ def workspace_detail_page(
         )
     except JobWorkspaceNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    pending_replay = request.query_params.get("onboarding_replay")
+    onboarding_replay_expected = (
+        pending_replay
+        if pending_replay in ("job_workflow_intro", "document_workflow_intro")
+        else None
+    )
     return request.app.state.templates.TemplateResponse(
         request, "workspace_detail.html",
-        {**view, **_search_context(conn, scope.account_id)}
+        {
+            **view,
+            "onboarding_replay_expected": onboarding_replay_expected,
+            **_search_context(conn, scope.account_id),
+        }
+    )
+
+
+@router.get("/walkthroughs", response_class=HTMLResponse)
+def walkthroughs_page(
+    request: Request,
+    conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
+    statuses = list_walkthrough_statuses(conn, account_id=scope.account_id)
+    replay_links = {}
+    for item in statuses:
+        launch = WALKTHROUGH_LAUNCH_CONTEXTS.get(item["walkthrough_id"])
+        if launch is None:
+            continue
+        if launch["context"] == "page":
+            replay_links[item["walkthrough_id"]] = (
+                f"{launch['path']}?onboarding_replay={item['walkthrough_id']}"
+            )
+        else:
+            replay_links[item["walkthrough_id"]] = (
+                f"/?onboarding_replay={item['walkthrough_id']}"
+            )
+    return request.app.state.templates.TemplateResponse(
+        request, "walkthroughs.html", {
+            "walkthrough_statuses": statuses,
+            "replay_links": replay_links,
+            **_search_context(conn, scope.account_id),
+        }
     )

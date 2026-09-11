@@ -1,0 +1,24 @@
+.onboarding-backdrop{position:fixed;inset:0;z-index:1000;pointer-events:none}
+.onboarding-spotlight{position:fixed;border-radius:10px;box-shadow:0 0 0 4000px rgba(23,33,29,.55);pointer-events:none;z-index:1001}
+@media(prefers-reduced-motion:no-preference){.onboarding-spotlight{transition:top .18s ease,left .18s ease,width .18s ease,height .18s ease}.onboarding-popover{transition:top .18s ease,left .18s ease}}
+.onboarding-popover{position:fixed;z-index:1002;max-width:340px;background:var(--white);color:var(--ink);border-radius:14px;box-shadow:var(--shadow);padding:18px 20px;pointer-events:auto}
+.onboarding-popover:focus{outline:none}
+.onboarding-popover-close{position:absolute;top:10px;right:10px;appearance:none;border:0;background:transparent;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:6px;border-radius:8px}
+.onboarding-popover-close:hover{background:#edf2ee}
+.onboarding-popover-close:focus-visible,.onboarding-popover button:focus-visible,.onboarding-popover a:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.onboarding-popover-title{font-size:16px;font-weight:750;margin:0 26px 8px 0}
+.onboarding-popover-body{font-size:14px;color:var(--ink);margin:0 0 14px}
+.onboarding-popover-progress{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+.onboarding-popover-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.onboarding-popover-controls-primary{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.onboarding-popover-controls .button{padding:8px 13px;font-size:13px}
+.onboarding-popover-dont-show{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:500}
+.onboarding-popover-dont-show input{width:auto}
+.onboarding-fail-notice{position:fixed;bottom:20px;left:20px;max-width:360px;background:var(--white);border:1px solid var(--line);color:var(--muted);padding:11px 14px;border-radius:10px;box-shadow:var(--shadow);font-size:13px;z-index:1002}
+.onboarding-fail-notice button{margin-left:8px;appearance:none;border:0;background:transparent;color:var(--green);font-weight:700;cursor:pointer;padding:0}
+@media(max-width:640px){.onboarding-popover{left:12px!important;right:12px;max-width:none;width:calc(100vw - 24px)}}
+.hero-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.onboarding-why-seeing-this{margin:0 0 12px;font-size:12px;color:var(--muted)}
+.onboarding-why-seeing-this summary{cursor:pointer;font-weight:600;color:var(--ink)}
+.onboarding-why-seeing-this p{margin:6px 0 0}
+.onboarding-replay-prompt{background:var(--amber-soft,#fff1c9);color:#664400;padding:12px 16px;border-radius:10px;margin-bottom:16px}
