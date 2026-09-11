@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Pair extension · Job Search Workspace{% endblock %}
+{% block content %}
+<h1>Pair the extension</h1>
+<p>Open the JobSearch Application Handoff extension and paste this code to pair it with your account. This code expires in 10 minutes and can only be used once.</p>
+<p>
+  <code id="pairing-code" style="font-family: monospace; font-size: 1.25rem; user-select: all;">{{ one_time_secret }}</code>
+  <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('pairing-code').textContent)">Copy</button>
+</p>
+{% endblock %}
