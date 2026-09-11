@@ -26,7 +26,18 @@ ACCOUNT_B = "account_b"
 
 def test_every_user_facing_route_resolves_account_scope(tmp_path):
     app = create_app(_settings(tmp_path))
-    system_routes = {"/health", "/api/extensions"}
+    system_routes = {
+        "/health",
+        "/api/extensions",
+        # Pairing exchange is a legitimate third category: it's called by
+        # the extension BEFORE any credential exists, so get_extension_scope
+        # cannot apply, and it has no webapp session either. It's secured
+        # instead by the one-time pairing code's own recognized/
+        # not-consumed/not-expired validation (webapp/services/handoff.py::
+        # exchange_pairing_secret_for_credential), a different but equally
+        # real security boundary than account/extension scope.
+        "/api/handoff/pairing/exchange",
+    }
     # Two legitimate account-scoping mechanisms exist: get_account_scope
     # (webapp session) and get_extension_scope (X-Handoff-Credential header,
     # for routes reached by a browser extension with no webapp session).

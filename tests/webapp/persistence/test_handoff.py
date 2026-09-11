@@ -8,6 +8,7 @@ from webapp.persistence.migrations import (
     APPLICATION_DOCUMENTS_MIGRATION_ID,
     HANDOFF_SESSIONS_MIGRATION_ID,
     ONBOARDING_WALKTHROUGHS_MIGRATION_ID,
+    PAIRING_SECRETS_MIGRATION_ID,
 )
 
 
@@ -69,9 +70,14 @@ def test_exact_004_application_documents_upgrade_to_005_handoff(tmp_path):
     conn.execute("DROP TABLE handoff_events")
     conn.execute("DROP TABLE handoff_sessions")
     conn.execute("DROP TABLE extension_credentials")
+    conn.execute("DROP TABLE pairing_secrets")
     conn.execute(
-        "DELETE FROM schema_migrations WHERE id IN (?, ?)",
-        (HANDOFF_SESSIONS_MIGRATION_ID, ONBOARDING_WALKTHROUGHS_MIGRATION_ID),
+        "DELETE FROM schema_migrations WHERE id IN (?, ?, ?)",
+        (
+            HANDOFF_SESSIONS_MIGRATION_ID,
+            ONBOARDING_WALKTHROUGHS_MIGRATION_ID,
+            PAIRING_SECRETS_MIGRATION_ID,
+        ),
     )
     conn.commit()
 
