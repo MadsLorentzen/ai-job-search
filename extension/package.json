@@ -9,6 +9,7 @@
     "build:test-bundle": "esbuild src/adapters/index.ts --bundle --format=iife --global-name=HandoffAdapters --outfile=dist/adapters-bundle.js"
   },
   "devDependencies": {
+    "@types/chrome": "^0.2.9",
     "@types/jsdom": "^30.0.0",
     "esbuild": "^0.28.2",
     "jsdom": "^29.1.1",
