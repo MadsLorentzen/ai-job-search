@@ -13,19 +13,35 @@ function nextEventId(): string {
 // classification or decision logic of its own, it only reshapes and
 // forwards what the content script already decided.
 export class MessageRouter {
-  private clientSequence = 0;
+  private _clientSequence: number;
+
+  // Public so the background worker can detect a handoff-session change
+  // (e.g. after a service-worker restart) and know it must construct a
+  // fresh router rather than reuse a stale one.
+  public readonly handoffSessionId: string;
 
   constructor(
     private readonly queue: DurableEventQueue,
-    private readonly handoffSessionId: string,
-  ) {}
+    handoffSessionId: string,
+    startingClientSequence = 0,
+  ) {
+    this.handoffSessionId = handoffSessionId;
+    this._clientSequence = startingClientSequence;
+  }
+
+  // Public so the background worker can persist the sequence to
+  // chrome.storage.local after each route() call and resume from it if the
+  // service worker is torn down and respawned mid-session.
+  get clientSequence(): number {
+    return this._clientSequence;
+  }
 
   async route(message: ContentScriptMessage): Promise<void> {
-    this.clientSequence += 1;
+    this._clientSequence += 1;
     const { type, pageFieldKey, normalizedFieldType, observedAt, ...rest } = message;
     const event: QueuedEvent = {
       eventId: nextEventId(),
-      clientSequence: this.clientSequence,
+      clientSequence: this._clientSequence,
       handoffSessionId: this.handoffSessionId,
       eventType: type,
       eventPayload: rest,

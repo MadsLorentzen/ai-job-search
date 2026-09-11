@@ -63,4 +63,46 @@ describe("MessageRouter", () => {
     const queued = await store.getAll();
     expect(queued[0].eventId).not.toBe(queued[1].eventId);
   });
+
+  it("exposes handoffSessionId as a public readonly field", () => {
+    const store = new InMemoryStore();
+    const queue = new DurableEventQueue(store, vi.fn().mockResolvedValue(true));
+    const router = new MessageRouter(queue, "hs_1");
+
+    expect(router.handoffSessionId).toBe("hs_1");
+  });
+
+  it("starts clientSequence at 0 when no starting sequence is given, before any route() call", () => {
+    const store = new InMemoryStore();
+    const queue = new DurableEventQueue(store, vi.fn().mockResolvedValue(true));
+    const router = new MessageRouter(queue, "hs_1");
+
+    expect(router.clientSequence).toBe(0);
+  });
+
+  it("exposes clientSequence via a getter that reflects the count after route() calls", async () => {
+    const store = new InMemoryStore();
+    const queue = new DurableEventQueue(store, vi.fn().mockResolvedValue(true));
+    const router = new MessageRouter(queue, "hs_1");
+
+    await router.route(makeMessage());
+    expect(router.clientSequence).toBe(1);
+
+    await router.route(makeMessage());
+    expect(router.clientSequence).toBe(2);
+  });
+
+  it("accepts an optional starting sequence and resumes clientSequence/QueuedEvent numbering from it", async () => {
+    const store = new InMemoryStore();
+    const queue = new DurableEventQueue(store, vi.fn().mockResolvedValue(true));
+    const router = new MessageRouter(queue, "hs_1", 5);
+
+    expect(router.clientSequence).toBe(5);
+
+    await router.route(makeMessage());
+
+    const [queued] = await store.getAll();
+    expect(queued.clientSequence).toBe(6);
+    expect(router.clientSequence).toBe(6);
+  });
 });
