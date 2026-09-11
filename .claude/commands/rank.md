@@ -56,6 +56,13 @@ Dispatch parallel `general-purpose` agents via the **Agent tool**, ~5 jobs per a
 - Agents fetch each posting URL with WebFetch and score **only from actually fetched content**. If a URL is dead, redirects to a listing page, or the posting has expired, the agent marks that job `expired` - it never scores from the title alone and never fabricates posting content.
 - **Before marking anything `expired`, the agent must exhaust the escalation order** in `.claude/skills/job-application-assistant/09-web-research.md`: a `WebFetch` 403 is a rejected *client*, not a missing page, and retrying with browser headers via curl recovers most corporate and bank domains. A stored URL ending in a `#fragment` points at a listing page rather than a posting, so the agent should search the employer's own careers site for the role by name before writing the job off. Include this instruction in every scoring agent's prompt. `expired` means "retrieval genuinely failed after retrying", not "the first fetch was unhelpful".
 - Scope is triage: posting text vs. rubric. **No company research, no salary lookup, no web searches** - that depth belongs to `/apply`.
+- **Size the agent's output budget to the deliverable.** Five job scores in the
+  JSON shape below is roughly 4-8k output tokens. Setting `max_tokens` near the
+  context window (e.g. 128000) can exceed what the API key can afford - an
+  OpenRouter key limited below the requested budget rejects the request with
+  HTTP 402 and the whole agent dies, not just one response. Request a
+  realistic cap (~8k for a five-job scoring agent); if a 402 still occurs,
+  retry with a lower cap rather than abandoning the run.
 
 Each agent returns a JSON array, one object per job:
 
@@ -192,3 +199,5 @@ Rules for the presentation:
 5. **State moves through the tool, not the context.** `seen_jobs.json` is read, swept and written by `tools/rank_state.py`. It is never read into the conversation to be filtered by eye, and never re-emitted to be updated by hand: both cost the whole backlog per run and grow for the life of the workspace.
 6. **Honest scoring.** Gaps are reported per job; a low-scoring posting is presented as such. The score bands and weights come from `04-job-evaluation.md` - if the user disagrees with a ranking, the fix is updating their profile or the framework, not bending scores. Gaps are reported (Step 5) and persisted with it (Step 4), so the honest read outlives the terminal output.
 7. **State stays consistent.** `seen_jobs.json` fields are only added, never restructured, so `/scrape`'s dedup keeps working; the tracker is read-only for this command.
+8. **A profile change invalidates scores.** Scoring agents are dispatched against a specific profile; if `01-candidate-profile.md` is updated while results are pending (e.g. an updated CV arrives), their results are stale - rerun them with the new profile via `--all`, never hand-adjust their scores. `apply` stamps a `profile_hash` on every ranked entry and `python3 tools/rank_state.py shortlist` flags entries whose stored hash no longer matches the current profile as `stale_profile: true`, so stale triage scores cannot masquerade as current.
+9. **The apply-ready queue comes from the tool.** After presenting the shortlist, run `python3 tools/rank_state.py shortlist --top <shortlist size> --json` and report its `apply_status` per entry (ready / needs-clarification / hold / expired) so the user has a compact queue that survives the conversation. The tool reads only `rank_score`/`rank_verdict` and the gate fields - the scraper's stored `fit` value is deliberately invisible to it, so a stale scraper fit can never sit ambiguously next to a real rank score.

@@ -18,3 +18,7 @@ diagnostic assistant for AI, or validation benchmark for DS. Do not start all th
 Each lab is a build brief with milestones. Implement one milestone, commit your work,
 and explain the decision before asking the assistant to review it. Completion means
 reproducible evidence and understanding, not simply code produced by an agent.
+
+## Standalone implementations
+
+See [the project links](LEARNING_START.md). Keep this fork for reusable briefs; implement personal projects in separate repositories outside the fork.

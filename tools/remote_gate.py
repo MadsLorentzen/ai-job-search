@@ -8,20 +8,37 @@ from pathlib import Path
 
 
 def classify(job, floor=4500):
+    if not isinstance(job, dict):
+        raise ValueError('posting facts must be an object')
+    if type(floor) not in (int, float) or not math.isfinite(floor) or floor < 0:
+        raise ValueError('floor must be a finite nonnegative number')
     fail, flags = [], []
     evidence = job.get('evidence', {})
     if not isinstance(evidence, dict):
         raise ValueError('evidence must be an object')
-    for field in ('remote', 'brazil_eligible', 'paid_in_usd'):
+    def has_evidence(field):
+        excerpt = evidence.get(field)
+        return isinstance(excerpt, str) and bool(excerpt.strip())
+
+    for field in ('remote', 'brazil_eligible', 'paid_in_usd',
+                  'overlap_compatible', 'contract_compatible'):
         value = job.get(field)
         if value is not None and type(value) is not bool:
             raise ValueError(f'{field} must be true, false or null')
         if value is False:
             fail.append(field)
-        elif value is None or not evidence.get(field):
+        elif value is None or not has_evidence(field):
             flags.append(field + ': confirmation/evidence missing')
     url = job.get('source_url', '')
-    if not isinstance(url, str) or urlsplit(url).scheme != 'https' or not urlsplit(url).hostname:
+    try:
+        parsed = urlsplit(url) if isinstance(url, str) else None
+        valid_url = (parsed is not None and parsed.scheme == 'https'
+                     and bool(parsed.hostname) and not any(c.isspace() for c in url))
+        if parsed is not None:
+            parsed.port  # Validate malformed or out-of-range ports as well.
+    except ValueError:
+        valid_url = False
+    if not valid_url:
         flags.append('source URL missing or invalid')
     try:
         checked = date.fromisoformat(job.get('checked_date', ''))
@@ -49,7 +66,7 @@ def classify(job, floor=4500):
     monthly = None
     if salary.get('currency') == 'USD' and multiplier is not None and lower is not None and upper is not None:
         monthly = [round(lower * multiplier, 2), round(upper * multiplier, 2)]
-        if not evidence.get('salary') or salary.get('kind') not in ('listed', 'confirmed'):
+        if not has_evidence('salary') or salary.get('kind') not in ('listed', 'confirmed'):
             flags.append('salary is estimated or unverified')
         elif upper * multiplier < floor:
             fail.append('salary maximum below floor')

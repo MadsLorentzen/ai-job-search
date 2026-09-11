@@ -11,6 +11,7 @@ byte-identical to /outcome's, which is the entire reason for reusing it.
 How each reader treats `drafted` is pinned per reader below, because the
 right answer differs between them.
 """
+import fnmatch
 import re
 import subprocess
 import sys
@@ -383,6 +384,98 @@ class DeadlineSurvivesEveryWrite(unittest.TestCase):
             with self.subTest(file=path.name, rule=needle):
                 haystack = section(path, heading) if heading else path.read_text(encoding="utf-8")
                 self.assertIn(needle, haystack, why)
+
+
+class FallbackGlobFindsOneRolesDocuments(unittest.TestCase):
+    """The `cv_file` fallback must select one role's documents, not one company's.
+
+    `/apply` names drafts `cv/main_<company>_<role><CV_EXT>`, so two roles
+    at one company differ only in the role half. When the tracker row's
+    `cv_file`/`cover_letter_file` columns are empty - a row written before
+    #291, added by hand, or by /outcome's own outside-the-workflow path -
+    both readers fall back to a glob. A company-prefix glob matches both
+    roles and the first hit wins silently: /outcome copies it to
+    `cv_draft.tex`, and its own "leave an existing archived file" rule then
+    makes the wrong answer permanent (#443).
+
+    The globs are extracted from the specs rather than restated here, so
+    these tests pin what the specs actually say.
+    """
+
+    COMPANY = "Acme"
+    ROLES = ("Data Scientist", "ML Engineer", "ML Engineer II")
+
+    CASES = [
+        (OUTCOME, "## Step 3: Archive the Application Materials",
+         "by the **Subfolder naming** rule in `documents/README.md`",
+         "the archive locator must derive the stem by the one documented rule, "
+         "not invent a second derivation that drifts from it"),
+        (OUTCOME, "## Step 3: Archive the Application Materials",
+         "Never widen those globs to the company alone",
+         "without the prohibition the next edit relaxes the glob when it finds "
+         "no match, which is exactly the wrong-file-recorded-as-submitted case"),
+        (INTERVIEW, "## Step 1: Load the Application Context",
+         "by the **Subfolder naming** rule in `documents/README.md`",
+         "interview's fallback must resolve the same stem /apply wrote"),
+        (INTERVIEW, "## Step 1: Load the Application Context",
+         "Never widen those globs to the company alone",
+         "prep built from the sibling role's CV is a live-conversation failure"),
+    ]
+
+    def test_both_readers_glob_the_full_stem(self):
+        for path, heading, needle, why in self.CASES:
+            with self.subTest(file=path.name, rule=needle):
+                self.assertIn(needle, section(path, heading), why)
+
+    @staticmethod
+    def globs(path, heading):
+        """The two fallback globs exactly as the spec writes them."""
+        body = section(path, heading)
+        found = re.findall(r"`(cv/main_[^`]+|cover_letters/cover_[^`]+)`", body)
+        return [g for g in found if "*" in g]
+
+    def resolve(self, glob, role):
+        """Substitute the spec's placeholders the way the reader would."""
+        stem = ArchiveNameIsOnePathComponent.derive(self.COMPANY, role)
+        company = ArchiveNameIsOnePathComponent.derive(self.COMPANY, "").rstrip("_")
+        return glob.replace("<company>_<role>", stem).replace("<company>", company)
+
+    def drafted_files(self, ext=".tex"):
+        """Exactly what /apply Step 5 leaves in cv/ for two roles at one company."""
+        return [
+            "cv/main_%s%s" % (ArchiveNameIsOnePathComponent.derive(self.COMPANY, r), ext)
+            for r in self.ROLES
+        ]
+
+    def test_the_cv_glob_selects_the_row_s_own_role(self):
+        on_disk = self.drafted_files()
+        for path, heading in ((OUTCOME, "## Step 3: Archive the Application Materials"),
+                              (INTERVIEW, "## Step 1: Load the Application Context")):
+            cv_glob = next(g for g in self.globs(path, heading) if g.startswith("cv/"))
+            for role, expected in zip(self.ROLES, on_disk):
+                with self.subTest(file=path.name, role=role):
+                    hits = fnmatch.filter(on_disk, self.resolve(cv_glob, role))
+                    self.assertEqual(
+                        hits, [expected],
+                        "%s's fallback glob %r matched %r for role %r. A glob that "
+                        "matches both roles hands /outcome whichever the filesystem "
+                        "returns first, and it archives that as what was submitted."
+                        % (path.name, cv_glob, hits, role),
+                    )
+
+    def test_the_glob_finds_a_non_tex_template(self):
+        """`/add-template` makes `.typ` a real output; a hardcoded `.tex` misses it."""
+        on_disk = self.drafted_files(ext=".typ")
+        cv_glob = next(
+            g for g in self.globs(OUTCOME, "## Step 3: Archive the Application Materials")
+            if g.startswith("cv/")
+        )
+        hits = fnmatch.filter(on_disk, self.resolve(cv_glob, self.ROLES[0]))
+        self.assertEqual(
+            hits, [on_disk[0]],
+            "the fallback hardcodes an extension, so a template registered by "
+            "/add-template is invisible to it and /outcome archives nothing",
+        )
 
 
 class ArchiveNameIsOnePathComponent(unittest.TestCase):

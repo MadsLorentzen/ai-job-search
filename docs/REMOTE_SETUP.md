@@ -21,6 +21,11 @@ checkout remains an updateable framework; personal work happens in the separate 
 It is not encryption or an automatic backup. Do not initialize Git or force-add its
 personal files to a public repository. Keep a private local backup yourself.
 
+The same separation applies in Codex and other supported agent runtimes: open the
+printed private workspace as the career-work project. Keep the public checkout for
+framework edits and commits. On a later session, reopen the existing private copy
+instead of rerunning the helper into the same destination.
+
 In the private workspace, add your complete resumes to documents/cv/, LinkedIn PDF
 export to documents/linkedin/, letters to documents/references/ and transcripts to
 documents/diplomas/. Record GitHub/portfolio URLs and project ownership during /setup.
@@ -41,10 +46,23 @@ Inside Claude Code:
 /setup keeps the remote-market defaults. /expand proposes evidence-backed additions;
 review inferred skills. /apply tailors CVs/cover letters and portal answers, reviews and
 compiles PDFs. It does not submit forms or automatically apply while you sleep.
+An agent with supported browser tools can carry out separately authorized portal
+actions, subject to its runtime permissions. The canonical operating rules for
+batch authorization, profile readiness, submission receipts, and uncertain attempts
+are in `.claude/skills/job-application-assistant/11-application-operations.md`.
 
 Bun is needed for the existing Freehire CLI; Python sources use the standard library.
 LaTeX and PDF tooling are still needed for document generation: follow upstream SETUP.md.
 Cloud model processing is not offline: supplied career text can go to your model provider.
+
+## Resuming across tasks
+
+Read the existing private profile, tracker, application archives, and
+`reports/session-handoff.md` before continuing. Follow the recovery rules in
+`11-application-operations.md`; missing files and another task's reported counts
+must remain distinguishable from verified local evidence. Confirmed personal facts
+belong in the private profile, never in framework commits. A previous task's claim
+that a schedule is active is not a substitute for inspecting the scheduler.
 
 ## Search coverage
 
@@ -68,6 +86,7 @@ release does not automatically merge updates into personalized workspace copies.
 ## Validation
 
 ```powershell
+python -m pip install -r requirements-dev.txt
 python -m unittest tests.test_remote_market -v
 python tools/lint_skills.py
 python tools/security_guards.py
@@ -75,3 +94,8 @@ python tools/security_guards.py
 
 The private workspace helper and eligibility gate are tested without network access.
 No live applications are sent by tests. Existing upstream license and attribution remain.
+
+Existing reviewed eligibility JSON must be rechecked for `overlap_compatible` and
+`contract_compatible` with supporting excerpts. Missing values now produce FLAG;
+confirmed incompatibility produces FAIL. Do not fill these fields from assumptions
+when migrating old records.

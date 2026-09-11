@@ -1,0 +1,2 @@
+# Workflow lint only. Core Python tools and tests use the standard library.
+PyYAML==6.0.3
