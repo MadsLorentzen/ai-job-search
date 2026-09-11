@@ -7,7 +7,7 @@ cost is paid on every run regardless of how many jobs are actually scored, and
 it grows for the life of the workspace, since seen_jobs.json is append-only by
 design and most stored entries are `skipped`.
 
-This moves the state-file traffic into code. Three subcommands:
+This moves the state-file traffic into code. Four subcommands:
 
   candidates   select the eligible entries for this run and project only the
                fields a scoring agent needs
@@ -15,6 +15,9 @@ This moves the state-file traffic into code. Three subcommands:
                a stored-date comparison, no fetch, no agent
   apply        write scoring results back to seen_jobs.json and print the
                ranked/vetoed/expired rows Step 5's report is built from
+  shortlist    the apply-ready queue: ranked, live, untracked jobs ordered by
+               rank_score/rank_verdict (never the stale scraper fit), each
+               classified by apply_status and profile-staleness
 
 Selection and projection follow Step 1's existing rules exactly (status
 filter, tracker exclusion, focus filter, `--limit`/`--all`); the write-back
@@ -24,19 +27,28 @@ strengths/gaps persistence, idempotent skip of already-ranked entries); the
 sweep follows rule 6 exactly (defensive date parsing, an absent deadline left
 alone, `--all` making a retired entry revivable).
 
+The apply-ready queue (shortlist) closes the gap where a finished ranking left
+only scattered state behind: each entry carries an `apply_status`
+(ready / needs-clarification / hold / expired) derived from stored gate data,
+and a `stale_profile` flag when its stored profile hash no longer matches the
+current candidate profile - so a profile change invalidates old scores instead
+of letting them masquerade as current.
+
 Nothing here fetches a posting or judges a fit. Scoring stays with the model;
 this only removes the state file from the conversation.
 
 Usage:
   python3 tools/rank_state.py candidates [--all] [--focus TEXT] [--limit N]
   python3 tools/rank_state.py sweep [--write] [--exclude KEY,KEY]
-  python3 tools/rank_state.py apply --results results.json [--dry-run]
+  python3 tools/rank_state.py apply --results results.json [--profile-hash HEX] [--dry-run]
+  python3 tools/rank_state.py shortlist [--top N] [--min-score N] [--json]
 
-Both subcommands print JSON on stdout. Exit 0 on success, 1 on a usage or
+All subcommands print JSON on stdout. Exit 0 on success, 1 on a usage or
 state error, or on `apply` when any result could not be written.
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -48,13 +60,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 STATE = ROOT / "job_scraper" / "seen_jobs.json"
 TRACKER = ROOT / "job_search_tracker.csv"
+PROFILE = ROOT / ".claude" / "skills" / "job-application-assistant" / "01-candidate-profile.md"
 
 # 04-job-evaluation.md
 WEIGHTS = {"technical": 0.30, "experience": 0.25, "behavioral": 0.15, "career": 0.30}
 BANDS = ((75, "Strong Fit"), (60, "Good Fit"), (45, "Moderate Fit"), (30, "Weak Fit"), (0, "Poor Fit"))
 
 DEFAULT_LIMIT = 10
+DEFAULT_TOP = 5
 URGENT_DAYS = 7
+STALE_DAYS = 30
 ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
@@ -98,6 +113,22 @@ def parse_iso(value) -> date | None:
 
 def norm(text) -> str:
     return re.sub(r"[^a-z0-9]", "", str(text or "").lower())
+
+
+def profile_hash() -> str:
+    """SHA-256 of the canonical candidate profile, for rank-run stamping.
+
+    Improvement #6: ranking results are valid only against the profile they
+    were scored with. `apply` records this hash per entry; `shortlist` flags
+    entries whose stored hash no longer matches. A missing profile file yields
+    a stable digest of the empty string rather than an error - ranking is a
+    triage step and must not hard-fail on a missing optional file.
+    """
+    try:
+        data = PROFILE.read_bytes()
+    except OSError:
+        data = b""
+    return hashlib.sha256(data).hexdigest()[:16]
 
 
 def tracker_pairs(path: Path) -> set[tuple[str, str]]:
@@ -287,6 +318,7 @@ def cmd_apply(args) -> int:
         entry["rank_score"] = score
         entry["rank_verdict"] = band(score)
         entry["rank_date"] = today.isoformat()
+        entry["profile_hash"] = args.profile_hash or profile_hash()
         entry["location_verdict"] = result.get("location_verdict") or legacy or "PASS"
         entry["language_gate"] = result.get("language_gate") or "PASS"
         if entry["language_gate"] == "PASS":
@@ -347,6 +379,116 @@ def cmd_apply(args) -> int:
     return 1 if errors else 0
 
 
+def classify_apply_status(entry: dict, today: date) -> tuple[str, list[str]]:
+    """Improvement #2: the apply gate. Returns (status, reasons).
+
+    ready               - no blocking signals; safe to send to /apply
+    needs-clarification - compensable gaps the user must answer before applying
+                          (salary range absent, work-authorization unknown,
+                          seniority unclear, language above declared level)
+    hold                - a hard blocker (location or language FAIL veto)
+    expired             - past its stored deadline or already expired
+    """
+    reasons: list[str] = []
+
+    if entry.get("status") == "expired":
+        return "expired", ["status is expired"]
+    parsed = parse_iso(entry.get("deadline"))
+    if parsed is not None and parsed < today:
+        return "expired", [f"deadline {entry.get('deadline')} has passed"]
+
+    if entry_location_verdict(entry) == "FAIL":
+        reasons.append("location_verdict FAIL")
+    if entry.get("language_gate") == "FAIL":
+        reasons.append(f"language_gate FAIL: {entry.get('language_note') or 'requirement not declared'}")
+    if reasons:
+        return "hold", reasons
+
+    if entry_location_verdict(entry) == "FLAG":
+        reasons.append("location FLAG - confirm logistics")
+    if entry.get("language_gate") == "FLAG":
+        reasons.append(f"language FLAG - {entry.get('language_note') or 'requirement above declared level'}")
+    if entry.get("salary_range") in (None, "", "undisclosed"):
+        reasons.append("no salary range stored - confirm compensation before applying")
+    if not entry.get("work_authorization"):
+        reasons.append("work-authorization requirement unknown - confirm before applying")
+    posted = parse_iso(entry.get("posted_date"))
+    if posted is None:
+        posted_raw = entry.get("posted_date")
+        if posted_raw not in (None, ""):
+            reasons.append(f"posted_date {posted_raw!r} unparseable - verify posting age")
+    elif (today - posted).days > STALE_DAYS:
+        reasons.append(f"posted {(today - posted).days} days ago - verify the role is still open")
+
+    return ("needs-clarification" if reasons else "ready"), reasons
+
+
+def cmd_shortlist(args) -> int:
+    """The apply-ready queue /rank's Step 5 was missing (improvement #1).
+
+    Reads only stored state: no fetch, no agent. Ranked entries only, ordered
+    by rank_score descending. Never surfaces the scraper's `fit` field - the
+    rank_score/rank_verdict pair written by `apply` is the only score that
+    counts here, so scraper-level fit can no longer sit ambiguously next to a
+    later 59/"Moderate Fit".
+    """
+    doc, seen = load_state(args.state)
+    excluded = tracker_pairs(args.tracker)
+    current_hash = profile_hash()
+
+    items, untracked_skipped = [], 0
+    for key, entry in seen.items():
+        if entry.get("status") != "ranked":
+            continue
+        if (norm(entry.get("company")), norm(entry.get("title"))) in excluded:
+            untracked_skipped += 1
+            continue
+        status, reasons = classify_apply_status(entry, args.today)
+        stale = entry.get("profile_hash") not in (None, current_hash)
+        items.append(
+            {
+                "key": key,
+                "title": entry.get("title"),
+                "company": entry.get("company"),
+                "url": entry.get("url"),
+                "portal": entry.get("portal"),
+                "rank_score": entry.get("rank_score"),
+                "rank_verdict": entry.get("rank_verdict"),
+                "rank_date": entry.get("rank_date"),
+                "apply_status": status,
+                "reasons": reasons,
+                "stale_profile": stale,
+                "location_verdict": entry_location_verdict(entry),
+                "language_gate": entry.get("language_gate"),
+                "language_note": entry.get("language_note"),
+                "deadline": entry.get("deadline"),
+                "posted_date": entry.get("posted_date"),
+                "strengths": entry.get("strengths", []),
+                "gaps": entry.get("gaps", []),
+            }
+        )
+
+    min_score = args.min_score if args.min_score is not None else 0
+    items = [i for i in items if isinstance(i["rank_score"], (int, float)) and i["rank_score"] >= min_score]
+    items.sort(key=lambda i: (i["rank_score"], i.get("deadline") is not None), reverse=True)
+    if args.top is not None and args.top >= 0:
+        items = items[: args.top]
+
+    print(
+        json.dumps(
+            {
+                "shortlist": items,
+                "generated_for_profile": current_hash,
+                "stale_profile_count": sum(1 for i in items if i["stale_profile"]),
+                "excluded_by_tracker": untracked_skipped,
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
 def main() -> int:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--state", type=Path, default=STATE)
@@ -369,8 +511,15 @@ def main() -> int:
 
     app = sub.add_parser("apply", parents=[common], help="write scoring results back and print the ranking")
     app.add_argument("--results", required=True, help="JSON array from the scoring agents")
+    app.add_argument("--profile-hash", help="override the profile hash stamped onto ranked entries")
     app.add_argument("--dry-run", action="store_true")
     app.set_defaults(func=cmd_apply)
+
+    short = sub.add_parser("shortlist", parents=[common], help="apply-ready queue from stored rank state")
+    short.add_argument("--tracker", type=Path, default=TRACKER)
+    short.add_argument("--top", type=int, default=DEFAULT_TOP, help="0 for no cap")
+    short.add_argument("--min-score", type=int, default=0, help="drop entries below this rank_score")
+    short.set_defaults(func=cmd_shortlist)
 
     args = ap.parse_args()
     return args.func(args)
