@@ -157,6 +157,21 @@ def test_valid_code_pairs_and_persists_across_popup_reload(extension_context, li
     assert page.locator("#run-autofill").count() == 1
     assert code not in page.content(), "pairing code must never render in popup HTML"
 
+    # Regression guard for a real bug found during manual acceptance
+    # sign-off: popup.html originally had no CSS at all, so a real Chrome
+    # extension popup window (which sizes itself to the body's natural
+    # content width, unlike a normal browser tab) collapsed to a few
+    # dozen pixels wide, wrapping "Run autofill on this tab" almost
+    # character-by-character. This only asserts the CSS-declared body
+    # width is present and reasonable — it does NOT reproduce Chrome's
+    # actual popup-window auto-sizing quirk (a Playwright page opened via
+    # page.goto() renders at full viewport width like any other tab, so
+    # a button-wrapping assertion here would pass even with the bug
+    # reintroduced). Visually confirming the button doesn't wrap in a
+    # real toolbar-opened popup remains a manual check.
+    body_width = page.evaluate("document.body.getBoundingClientRect().width")
+    assert body_width >= 240, f"popup body CSS width regressed ({body_width}px)"
+
     page.reload()
     expect(page.locator("#app")).to_contain_text("Paired", timeout=5_000)
     page.close()
