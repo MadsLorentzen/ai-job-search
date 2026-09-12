@@ -8,7 +8,6 @@
     "build": "node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "build": "node build.mjs",
     "build:test-bundle": "esbuild src/adapters/index.ts --bundle --format=iife --global-name=HandoffAdapters --outfile=dist/adapters-bundle.js"
   },
   "devDependencies": {

@@ -11,6 +11,7 @@ export async function buildExtension() {
   await mkdir(resolve(outputRoot, "background"), { recursive: true });
   await mkdir(resolve(outputRoot, "content"), { recursive: true });
   await cp(resolve(extensionRoot, "manifest.json"), resolve(outputRoot, "manifest.json"));
+  await cp(resolve(extensionRoot, "icons"), resolve(outputRoot, "icons"), { recursive: true });
   await build({
     entryPoints: [resolve(extensionRoot, "src", "background", "index.ts")],
     bundle: true,
