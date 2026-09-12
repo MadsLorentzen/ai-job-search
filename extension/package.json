@@ -5,6 +5,8 @@
   "type": "module",
   "description": "Browser extension for the Application Handoff feature (Phase 2).",
   "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "node build.mjs",
     "build:test-bundle": "esbuild src/adapters/index.ts --bundle --format=iife --global-name=HandoffAdapters --outfile=dist/adapters-bundle.js"
