@@ -4,15 +4,16 @@ import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Script } from "node:vm";
+import { transformSync } from "esbuild";
 
 const extensionRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const distDir = path.join(extensionRoot, "dist");
+const distDir = path.join(extensionRoot, "dist", "extension");
 
 // Runs the real build once for this whole file, exactly as `npm run build`
 // would from a clean checkout, then asserts on the actual files it wrote —
 // not a simulation of the build.
 beforeAll(() => {
-  execFileSync("node", ["build.mjs"], { cwd: extensionRoot, stdio: "pipe" });
+  execFileSync("node", ["scripts/build.mjs"], { cwd: extensionRoot, stdio: "pipe" });
 });
 
 describe("extension build", () => {
@@ -42,9 +43,12 @@ describe("extension build", () => {
   it("bundles the background service worker as a non-empty, parseable JS file", () => {
     const content = readFileSync(path.join(distDir, "background/index.js"), "utf8");
     expect(content.length).toBeGreaterThan(0);
-    // Parses (never executes) the bundle to prove it's syntactically valid
-    // JS, without running arbitrary code from our own build output.
-    expect(() => new Script(content)).not.toThrow();
+    // The background bundle is a real ES module (manifest declares
+    // "type": "module", and it has a top-level `export` since Task 7 added
+    // runAutofillOnTab) — node:vm's Script only parses classic scripts, so
+    // an ESM-aware parse check is needed here instead. esbuild's own
+    // transform (already a devDependency) parses without executing.
+    expect(() => transformSync(content, { format: "esm", loader: "js" })).not.toThrow();
   });
 
   it("bundles the content script as a non-empty, parseable JS file", () => {

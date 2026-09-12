@@ -71,9 +71,7 @@ async function persistClientSequence(current: MessageRouter): Promise<void> {
   await chrome.storage.local.set({ [MANUAL_TEST_CLIENT_SEQUENCE_KEY]: value });
 }
 
-chrome.action.onClicked.addListener(async (tab) => {
-  if (!tab.id) return;
-
+export async function runAutofillOnTab(tabId: number): Promise<void> {
   const snapshot = await getManualTestValue<Record<string, unknown>>(MANUAL_TEST_SNAPSHOT_KEY);
   const handoffSessionId = await getManualTestValue<string>(MANUAL_TEST_SESSION_ID_KEY);
 
@@ -102,7 +100,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     // this tab, so the snapshot written by the first call is still visible
     // to the second call's injected bundle via INJECTED_SNAPSHOT_KEY.
     await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
+      target: { tabId },
       func: (key: string, value: unknown) => {
         (globalThis as unknown as Record<string, unknown>)[key] = value;
       },
@@ -110,13 +108,13 @@ chrome.action.onClicked.addListener(async (tab) => {
     });
 
     await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
+      target: { tabId },
       files: ["content/index.js"],
     });
   } catch (err) {
     console.warn("[JobSearch Handoff] injection failed", err);
   }
-});
+}
 
 // Cheap defensive guard: chrome.runtime.onMessage fires for messages from
 // any context in the extension, not just an injected content script. A
@@ -135,6 +133,17 @@ function isValidContentScriptMessage(
 }
 
 chrome.runtime.onMessage.addListener((message: unknown, sender) => {
+  if (
+    typeof message === "object" && message !== null &&
+    (message as { type?: unknown }).type === "popup_run_autofill" &&
+    typeof (message as { tabId?: unknown }).tabId === "number"
+  ) {
+    void runAutofillOnTab((message as { tabId: number }).tabId).catch(
+      (err) => console.warn("[JobSearch Handoff] autofill failed", err),
+    );
+    return;
+  }
+
   if (!isValidContentScriptMessage(message, sender)) return;
 
   // Fire-and-forget: chrome.runtime.onMessage listeners that return

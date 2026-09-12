@@ -10,6 +10,7 @@
     "type": "module"
   },
   "action": {
+    "default_popup": "popup.html",
     "default_title": "JobSearch Handoff",
     "default_icon": {
       "16": "icons/icon16.png",
