@@ -10,7 +10,10 @@ export async function buildExtension() {
   await rm(outputRoot, { recursive: true, force: true });
   await mkdir(resolve(outputRoot, "background"), { recursive: true });
   await mkdir(resolve(outputRoot, "content"), { recursive: true });
+  await mkdir(resolve(outputRoot, "popup"), { recursive: true });
   await cp(resolve(extensionRoot, "manifest.json"), resolve(outputRoot, "manifest.json"));
+  await cp(resolve(extensionRoot, "icons"), resolve(outputRoot, "icons"), { recursive: true });
+  await cp(resolve(extensionRoot, "popup.html"), resolve(outputRoot, "popup.html"));
   await build({
     entryPoints: [resolve(extensionRoot, "src", "background", "index.ts")],
     bundle: true,
@@ -26,6 +29,14 @@ export async function buildExtension() {
     platform: "browser",
     target: "chrome120",
     outfile: resolve(outputRoot, "content", "index.js"),
+  });
+  await build({
+    entryPoints: [resolve(extensionRoot, "src", "popup", "index.ts")],
+    bundle: true,
+    format: "esm",
+    platform: "browser",
+    target: "chrome120",
+    outfile: resolve(outputRoot, "popup", "index.js"),
   });
   const manifest = JSON.parse(await readFile(resolve(outputRoot, "manifest.json"), "utf8"));
   if (manifest.background?.service_worker !== "background/index.js") {

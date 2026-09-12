@@ -16,6 +16,7 @@ from webapp.persistence.search_workspaces import (
     list_search_workspaces,
 )
 from webapp.services.discovery import discovery_run_is_stale, grouped_discovery_candidates
+from webapp.services.handoff import generate_pairing_secret
 from webapp.services.http_api import JobWorkspaceNotFound
 from webapp.services.workspace_view import (
     build_dashboard_view_model,
@@ -224,6 +225,18 @@ def how_it_works_page(
 ):
     return request.app.state.templates.TemplateResponse(
         request, "how_it_works.html", _search_context(conn, scope.account_id)
+    )
+
+
+@router.get("/pairing", response_class=HTMLResponse)
+def pairing_page(
+    request: Request, conn: sqlite3.Connection = Depends(get_conn),
+    scope: AccountScope = Depends(get_account_scope),
+):
+    one_time_secret = generate_pairing_secret(conn, account_id=scope.account_id)
+    return request.app.state.templates.TemplateResponse(
+        request, "pairing.html",
+        {"one_time_secret": one_time_secret, **_search_context(conn, scope.account_id)},
     )
 
 

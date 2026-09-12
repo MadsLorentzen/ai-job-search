@@ -362,3 +362,11 @@ def test_javascript_controls_call_task13_endpoints_without_paths_or_secrets(tmp_
         assert "OPENAI_API_KEY" not in script
         assert "This does not submit an application" in script
         assert "submitted this application externally" in script
+
+
+def test_pairing_page_renders_a_code(tmp_path):
+    client, settings = _client(tmp_path)
+    with client:
+        response = client.get("/pairing")
+        assert response.status_code == 200
+        assert "expires in 10 minutes" in response.text

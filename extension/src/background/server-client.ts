@@ -14,6 +14,22 @@ export class ServerClient {
     return { "X-Handoff-Credential": credential, "Content-Type": "application/json" };
   }
 
+  async exchangePairing(
+    oneTimeSecret: string,
+  ): Promise<{ credentialId: string; durableSecret: string }> {
+    const response = await fetch(`${BASE_URL}/api/handoff/pairing/exchange`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ one_time_secret: oneTimeSecret }),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.detail ?? `pairing failed: ${response.status}`);
+    }
+    const result = await response.json();
+    return { credentialId: result.credential_id, durableSecret: result.durable_secret };
+  }
+
   async startSession(body: {
     workspaceId: string; packArtifactId: string; targetUrl: string;
     targetDomain: string; atsAdapterId: string; atsAdapterVersion: string;

@@ -22,6 +22,7 @@ ACCOUNTS_OWNERSHIP_MIGRATION_ID = "003_accounts_ownership"
 APPLICATION_DOCUMENTS_MIGRATION_ID = "004_application_documents"
 HANDOFF_SESSIONS_MIGRATION_ID = "005_handoff_sessions"
 ONBOARDING_WALKTHROUGHS_MIGRATION_ID = "006_onboarding_walkthroughs"
+PAIRING_SECRETS_MIGRATION_ID = "007_pairing_secrets"
 
 
 def _now() -> str:
@@ -49,6 +50,7 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
         (APPLICATION_DOCUMENTS_MIGRATION_ID, _migrate_application_documents, False),
         (HANDOFF_SESSIONS_MIGRATION_ID, _migrate_handoff_sessions, False),
         (ONBOARDING_WALKTHROUGHS_MIGRATION_ID, _migrate_onboarding_walkthroughs, False),
+        (PAIRING_SECRETS_MIGRATION_ID, _migrate_pairing_secrets, False),
     )
     for migration_id, operation, disable_foreign_keys in migrations:
         if conn.execute(
@@ -295,6 +297,24 @@ def _migrate_onboarding_walkthroughs(conn: sqlite3.Connection) -> None:
 
         CREATE INDEX idx_onboarding_progress_account_status
             ON onboarding_progress(account_id, status);
+        """,
+    )
+
+
+def _migrate_pairing_secrets(conn: sqlite3.Connection) -> None:
+    _execute_statements(
+        conn,
+        """
+        CREATE TABLE pairing_secrets (
+            id TEXT PRIMARY KEY,
+            account_id TEXT NOT NULL REFERENCES accounts(id),
+            secret_hash TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            consumed_at TEXT
+        );
+
+        CREATE INDEX idx_pairing_secrets_hash ON pairing_secrets(secret_hash);
         """,
     )
 

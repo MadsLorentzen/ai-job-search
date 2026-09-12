@@ -81,20 +81,27 @@ def _translate(exc: Exception) -> HTTPException:
 
 
 @router.post("/pairing/generate", status_code=201)
-def post_generate_pairing(scope: AccountScope = Depends(get_account_scope)):
-    return {"one_time_secret": generate_pairing_secret(), "account_id": scope.account_id}
+def post_generate_pairing(
+    scope: AccountScope = Depends(get_account_scope),
+    conn: sqlite3.Connection = Depends(get_conn),
+):
+    return {
+        "one_time_secret": generate_pairing_secret(conn, account_id=scope.account_id),
+        "account_id": scope.account_id,
+    }
 
 
 @router.post("/pairing/exchange", status_code=201)
 def post_exchange_pairing(
     body: ExchangePairingBody,
-    scope: AccountScope = Depends(get_account_scope),
     conn: sqlite3.Connection = Depends(get_conn),
 ):
-    result = exchange_pairing_secret_for_credential(
-        conn, account_id=scope.account_id, one_time_secret=body.one_time_secret,
-    )
-    return result
+    try:
+        return exchange_pairing_secret_for_credential(
+            conn, one_time_secret=body.one_time_secret,
+        )
+    except HandoffError as exc:
+        raise _translate(exc) from exc
 
 
 @router.post("/sessions", status_code=201)
