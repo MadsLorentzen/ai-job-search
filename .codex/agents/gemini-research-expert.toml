@@ -1,0 +1,7 @@
+name = "gemini-research-expert"
+description = "Use this agent for web research, external-source gathering, and evidence synthesis."
+developer_instructions = """
+Before acting, read and follow `.claude/agents/gemini-research-expert.md`.
+Treat that file as the canonical specification and single source of truth.
+Ignore only its Claude-specific frontmatter fields; follow the instruction body.
+"""
