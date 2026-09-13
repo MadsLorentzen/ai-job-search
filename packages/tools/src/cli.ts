@@ -5,6 +5,8 @@ import { upstreamUpdatesMain } from "./check_upstream_updates.ts";
 import { jobKeyMain } from "./job_key.ts";
 import { lintSkillsMain } from "./lint_skills.ts";
 import { rankStateMain } from "./rank_state.ts";
+import { convertSalaryExcelMain } from "./convert_salary_excel.ts";
+import { salaryLookupMain } from "./salary_lookup.ts";
 import { robotsCheckMain } from "./robots_check.ts";
 import { securityGuardsMain } from "./security_guards.ts";
 import { upstreamTriageMain } from "./upstream_triage.ts";
@@ -32,9 +34,13 @@ if (command === "job-key") {
   process.exit(securityGuardsMain(rest));
 } else if (command === "upstream-triage") {
   process.exit(upstreamTriageMain(rest));
+} else if (command === "convert-salary-excel") {
+  process.exit(convertSalaryExcelMain(rest));
+} else if (command === "salary-lookup") {
+  process.exit(salaryLookupMain(rest));
 } else {
   process.stderr.write(
-    "usage: cli.ts <job-key|rank-state|verify-layout|verify-pdf|lint-skills|robots-check|framework-version|upstream-updates|security-guards|upstream-triage> [args]\n",
+    "usage: cli.ts <job-key|rank-state|verify-layout|verify-pdf|lint-skills|robots-check|framework-version|upstream-updates|security-guards|upstream-triage|convert-salary-excel|salary-lookup> [args]\n",
   );
   process.exit(2);
 }
