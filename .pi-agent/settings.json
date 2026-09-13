@@ -1,9 +1,5 @@
 {
   "enabledModels": [
-    "openai-codex/gpt-5.6-*",
-    "openai-codex/gpt-6-*",
-    "anthropic/claude-opus-5",
-    "anthropic/claude-sonnet-5",
     "zai/*"
   ],
   "theme": "dark",
