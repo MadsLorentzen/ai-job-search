@@ -232,8 +232,8 @@ If either compile fails, fix the error and re-compile until clean.
 **Measure first, then look.** A visual read catches gross breakage but cannot tell you that a page is 40% empty, and the failure below survives both a clean compile and a correct page count:
 
 ```bash
-python tools/verify_layout.py cv/main_<company>_<role>.pdf
-python tools/verify_layout.py cover_letters/cover_<company>_<role>.pdf
+bun run packages/tools/src/cli.ts verify-layout cv/main_<company>_<role>.pdf
+bun run packages/tools/src/cli.ts verify-layout cover_letters/cover_<company>_<role>.pdf
 ```
 
 The script reports, per page, where the text starts and stops, bottom whitespace as a share of page height, and the largest vertical gap between lines. It exits 1 on: a hole over 100pt (~7 blank lines), a non-final page ending more than 25% early, body text colliding with the page-number footer, a final page more than 35% empty, and an entry header or section heading stranded at a page break. Page count is **not** checked here — that is `verify_pdf.py --pages`'s job, and Step 5d already runs it.
@@ -273,12 +273,12 @@ Do not proceed to Step 6 until both PDFs pass inspection.
 
 An ATS parser reads the PDF's embedded **text layer**, not the rendered page — a CV that passed visual inspection can still extract as garbage (icon glyphs where the contact details should be, scrambled reading order in multi-column layouts). This step verifies what a parser actually sees. It applies to the **CV only**; cover letters rarely go through keyword screening.
 
-**Availability check:** extract with `python tools/verify_pdf.py` (tries **pypdf** first — BSD, `pip install pypdf` — then Poppler `pdftotext`). If both are missing, print a one-line warning that the mechanical parse check is skipped, do the keyword-coverage check (item 3 below) against your visual Read of the PDF instead, and note the degraded mode in the Step 6 report. Same graceful-skip pattern as the salary lookup. If a documented fallback still shells out to `pdftotext -layout`, keep the `-enc UTF-8` flag: Xpdf-based builds default to Latin-1 output, and without it a correct non-ASCII CV fails the replacement-character check below.
+**Availability check:** extract with `bun run packages/tools/src/cli.ts verify-pdf` (tries **pypdf** first — BSD, `pip install pypdf` — then Poppler `pdftotext`). If both are missing, print a one-line warning that the mechanical parse check is skipped, do the keyword-coverage check (item 3 below) against your visual Read of the PDF instead, and note the degraded mode in the Step 6 report. Same graceful-skip pattern as the salary lookup. If a documented fallback still shells out to `pdftotext -layout`, keep the `-enc UTF-8` flag: Xpdf-based builds default to Latin-1 output, and without it a correct non-ASCII CV fails the replacement-character check below.
 
 **1. Extract the text layer:**
 
 ```bash
-python tools/verify_pdf.py cv/main_<company>_<role>.pdf --dump-text cv/main_<company>_<role>.txt
+bun run packages/tools/src/cli.ts verify-pdf cv/main_<company>_<role>.pdf --dump-text cv/main_<company>_<role>.txt
 ```
 
 The command prints `extractor: pypdf` or `extractor: pdftotext`. Record that name in the Step 6 report. Read the `.txt` file. If that tool is unavailable, the Poppler fallback is:
