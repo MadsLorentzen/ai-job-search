@@ -1,0 +1,9 @@
+{
+  "name": "job-tools",
+  "version": "0.1.0",
+  "type": "module",
+  "module": "src/cli.ts",
+  "scripts": {
+    "test": "bun test"
+  }
+}
