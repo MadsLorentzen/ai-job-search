@@ -6,6 +6,8 @@ import { jobKeyMain } from "./job_key.ts";
 import { lintSkillsMain } from "./lint_skills.ts";
 import { rankStateMain } from "./rank_state.ts";
 import { robotsCheckMain } from "./robots_check.ts";
+import { securityGuardsMain } from "./security_guards.ts";
+import { upstreamTriageMain } from "./upstream_triage.ts";
 import { verifyLayoutMain } from "./verify_layout.ts";
 import { verifyPdfMain } from "./verify_pdf.ts";
 
@@ -26,9 +28,13 @@ if (command === "job-key") {
   process.exit(frameworkVersionMain(rest));
 } else if (command === "upstream-updates") {
   process.exit(upstreamUpdatesMain(rest));
+} else if (command === "security-guards") {
+  process.exit(securityGuardsMain(rest));
+} else if (command === "upstream-triage") {
+  process.exit(upstreamTriageMain(rest));
 } else {
   process.stderr.write(
-    "usage: cli.ts <job-key|rank-state|verify-layout|verify-pdf|lint-skills|robots-check|framework-version|upstream-updates> [args]\n",
+    "usage: cli.ts <job-key|rank-state|verify-layout|verify-pdf|lint-skills|robots-check|framework-version|upstream-updates|security-guards|upstream-triage> [args]\n",
   );
   process.exit(2);
 }

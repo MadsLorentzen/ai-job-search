@@ -86,6 +86,8 @@ documents/interview/**
 
 # Personal job search tracking
 job_search_tracker.csv
+# The dedup backlog (the job-scraper skill writes state/seen_jobs.json)
+state/seen_jobs.json
 
 # Gmail sync state (message IDs, subjects - personal data)
 gmail_sync/
