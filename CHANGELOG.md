@@ -47,6 +47,24 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobdanmark-search detail` now backs off on 429/5xx like every other portal's detail
+  command** - the handler called `fetch()` directly instead of going through the CLI's own
+  request wrappers, so it carried none of the three things `apiFetch`/`apiPost` guarantee:
+  no 429/5xx retry loop (a rate-limited detail page wrote `API_ERROR` and exited after one
+  attempt, where jobnet, jobbank, jobindex, linkedin, and freehire all retry up to six
+  times), a hand-inlined User-Agent string that would drift from the exported `USER_AGENT`,
+  and a timeout the wrappers' tests never saw. `/scrape` calls `detail` once per
+  shortlisted posting, so a burst that tripped jobdanmark's rate limiter dropped those
+  postings outright - no description, no deadline - while the same burst on any other
+  portal rode it out. Demonstrated by driving the real command handler with a stubbed 429:
+  1 fetch attempt and exit 1 before, 7 attempts after (the contract's initial try plus six
+  retries). Fixed by adding `htmlFetch` to `helpers.ts` with the same backoff schedule,
+  timeout, and shared User-Agent as the JSON wrappers (404 returns `null` so `detail` keeps
+  its `NOT_FOUND` contract) and routing `detail` through it. Pinned in the existing
+  `retry-backoff`, `user-agent`, and `request-timeout` suites, which now cover all three
+  wrappers, plus a new `detail-backoff.test.ts` that exercises the handler path itself -
+  its retry cases fail against the bare `fetch()`.
+
 - **`jobindex-search detail` no longer fetches arbitrary URLs or invents posting-shaped
   output** (#447) - the command fetched any `http(s)` input verbatim (no host check) and,
   when the path didn't match its one pattern, silently used the whole input URL as the job
