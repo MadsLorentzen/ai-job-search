@@ -35,12 +35,12 @@ Do **not** respond to a 403 by softening the cover letter to vague generalities,
 Check it first. It is one cheap fetch, and the repo ships the check:
 
 ```bash
-python3 tools/robots_check.py '<URL>'
+bun run packages/tools/src/cli.ts robots-check '<URL>'
 ```
 
 Exit status `0` means the retry may proceed; `1` means it must not, so go to escalation step 3. The rules it applies are deliberately on the cautious side: longest-match wins, a tie between `Allow` and `Disallow` goes to `Disallow`, and a disallow for **either** `*` or `Claude-User` blocks the retry. A `404` means the site publishes no policy, which is permission; **any other failure to read `robots.txt` leaves permission unconfirmed and the retry does not happen.**
 
-Two details worth knowing, both covered by `tests/test_robots_check.py`:
+Two details worth knowing, both covered by `packages/tools/tests/robots_check.test.ts`:
 
 - **The WAF usually blocks `robots.txt` too.** On `privatebank.barclays.com` the policy file itself returns 403 to `Claude-User` and 200 to a browser. The checker therefore reads the policy as a browser if the honest request is refused, then obeys it strictly. A policy you are prevented from reading cannot be honored, and `robots.txt` is not the protected resource.
 - **Do not substitute `urllib.robotparser`.** It ends a record at a blank line and matches rules in file order, so a real-world file like Barclays' (blank lines between `User-agent: *` and its rules, `Allow: /` listed before `Disallow: /cs/`) reads as "everything allowed". That fails open, in the one direction that matters.

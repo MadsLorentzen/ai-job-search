@@ -13,7 +13,7 @@
 # is worse than a conflict. Merges stay a human decision, the same posture
 # /apply keeps (it drafts, never submits). Keep it that way.
 #
-# This is the commit-level companion to tools/check_upstream_updates.py, which
+# This is the commit-level companion to packages/tools/src/check_upstream_updates.ts, which
 # tracks personalized-file version stamps. Two tools, two questions.
 #
 # Runs only on forks (guarded below), so the upstream template never triggers
