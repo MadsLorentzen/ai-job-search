@@ -23,6 +23,13 @@
 \renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
 
 \usepackage[utf8]{inputenc}
+% pdflatex fallback only (the documented engine is lualatex, which skips this
+% branch). Without T1 font encoding pdflatex builds accented letters with
+% \accent, and the PDF text layer stores them decomposed - `e` + U+0300 rather
+% than U+00E8 - so an ATS keyword match on "Genève" fails while the page looks
+% right. moderncv 2.5 loads T1 itself under pdflatex; 2.3.1 (Debian/Ubuntu apt)
+% does not. \ifpdftex comes from iftex, which every moderncv version loads.
+\ifpdftex\usepackage[T1]{fontenc}\fi
 % moderncv loads hyperref itself in an \AtEndPreamble hook, so \hypersetup
 % must go in an \AtEndPreamble of our own: on moderncv < 2.4 a top-level
 % \usepackage{hyperref} clashes with the class's own
