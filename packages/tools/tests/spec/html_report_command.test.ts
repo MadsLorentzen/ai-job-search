@@ -6,7 +6,7 @@ import { REPO, WORKFLOWS, read, section } from "./helpers.ts";
 import { runCli } from "../helpers.ts";
 
 const COMMAND_FILE = `${WORKFLOWS}/html-report.md`;
-const APPLY = `${WORKFLOWS}/apply.md`;
+const APPLY = `${WORKFLOWS}/03-apply.md`;
 
 describe("/html-report command file", () => {
   test("exists and starts with the correct header", () => {

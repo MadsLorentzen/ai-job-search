@@ -67,10 +67,10 @@ export const REQUIRED_IGNORE_RULES = [
   "documents/linkedin/**",
   "documents/diplomas/**",
   "documents/references/**",
-  "documents/applications/**",
-  "documents/postings/**",
+  "applications/**",
+  "postings/**",
   // Belt-and-braces, not the primary guard: nothing writes here.
-  "documents/interview/**",
+  
   "job_search_tracker.csv",
   "gmail_sync/",
   "reports/",

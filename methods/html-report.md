@@ -1,6 +1,6 @@
 # /html-report - Generate Application Tracker Dashboard
 
-Generate a self-contained HTML dashboard from `job_search_tracker.csv` and the application archives under `documents/applications/`. The output is a single `.html` file — no server, no dependencies — that can be opened directly in a browser.
+Generate a self-contained HTML dashboard from `job_search_tracker.csv` and the application archives under `applications/`. The output is a single `.html` file — no server, no dependencies — that can be opened directly in a browser.
 
 ## Step 0: Parse Arguments
 
@@ -21,7 +21,7 @@ Read in parallel:
 
    Rows written before `deadline` existed have thirteen fields and no fourteenth value. Treat the missing field as empty - never drop the row, and never infer a deadline from its `date`.
 
-2. **`documents/applications/*/outcome.md`** — for each resolved application, read the outcome file to get the exact interview stages reached (the checkboxes) and any notes. Merge this into the matching tracker row by company+role fuzzy match (lowercase, ignore punctuation). If an archive exists for a row but there is no match, attach it as extra context anyway.
+2. **`applications/*/outcome.md`** — for each resolved application, read the outcome file to get the exact interview stages reached (the checkboxes) and any notes. Merge this into the matching tracker row by company+role fuzzy match (lowercase, ignore punctuation). If an archive exists for a row but there is no match, attach it as extra context anyway.
 
 Status normalisation — map tracker values to six canonical buckets before computing stats:
 - `drafted` → **Drafted** (documents written by `/apply`, not yet submitted)

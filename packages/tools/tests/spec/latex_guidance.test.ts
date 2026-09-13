@@ -1,13 +1,13 @@
 /** Guards for the LaTeX authoring guidance and example documents. Port of
  * tests/test_latex_guidance.py (skills under .pi-agent/skills). */
 import { describe, expect, test } from "bun:test";
-import { REPO, SKILLS, WORKFLOWS, read } from "./helpers.ts";
+import { REPO, SKILLS, WORKFLOWS, read, PROFILE, FACTORY } from "./helpers.ts";
 
-const CV_TEMPLATES = `${SKILLS}/job-application-assistant/05-cv-templates.md`;
-const COVER_TEMPLATES = `${SKILLS}/job-application-assistant/06-cover-letter-templates.md`;
-const APPLY = `${WORKFLOWS}/apply.md`;
-const EXAMPLE_CV = `${REPO}/cv/main_example.tex`;
-const EXAMPLE_COVER = `${REPO}/cover_letters/cover_example.tex`;
+const CV_TEMPLATES = `${FACTORY}/05-cv-templates.md`;
+const COVER_TEMPLATES = `${FACTORY}/06-cover-letter-templates.md`;
+const APPLY = `${WORKFLOWS}/03-apply.md`;
+const EXAMPLE_CV = `${REPO}/factory/main_example.tex`;
+const EXAMPLE_COVER = `${REPO}/factory/cover_example.tex`;
 
 const UNBRACED_BRACKET_ITEM = /\\item\s*\[/;
 const REQUIRED_ESCAPES = ["\\&", "\\%", "\\$", "\\#", "\\_"];

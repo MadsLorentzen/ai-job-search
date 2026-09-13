@@ -35,8 +35,8 @@ It applies the status filter (`new`, or any status with `--all`), the tracker ex
 If it reports no candidates, say so ("Nothing new to rank - run /scrape to find fresh postings") and stop. If it exits with "not found", tell the user to run `/scrape` first and stop.
 
 Then read the scoring framework and profile **once**:
-- `.pi-agent/skills/job-application-assistant/04-job-evaluation.md`
-- `.pi-agent/skills/job-application-assistant/01-candidate-profile.md`
+- `profile/04-job-evaluation.md`
+- `profile/01-candidate-profile.md`
 
 State how many jobs will be ranked and how many are deferred before proceeding.
 
@@ -48,7 +48,7 @@ Dispatch parallel `general-purpose` agents via the **Agent tool**, ~5 jobs per a
 
 - Pass each agent everything it needs **inline in the prompt** - the job list (title, company, URL) and a compact scoring rubric extracted from the files you read in Step 1: the strong/moderate/weak skill match areas, direct/adjacent experience domains, behavioral thrive/drain factors, career goals, deal-breakers, and the location constraints. Do **not** make agents re-read the profile files.
 - Agents fetch each posting URL with WebFetch and score **only from actually fetched content**. If a URL is dead, redirects to a listing page, or the posting has expired, the agent marks that job `expired` - it never scores from the title alone and never fabricates posting content.
-- **Before marking anything `expired`, the agent must exhaust the escalation order** in `.pi-agent/skills/job-application-assistant/09-web-research.md`: a `WebFetch` 403 is a rejected *client*, not a missing page, and retrying with browser headers via curl recovers most corporate and bank domains. A stored URL ending in a `#fragment` points at a listing page rather than a posting, so the agent should search the employer's own careers site for the role by name before writing the job off. Include this instruction in every scoring agent's prompt. `expired` means "retrieval genuinely failed after retrying", not "the first fetch was unhelpful".
+- **Before marking anything `expired`, the agent must exhaust the escalation order** in `profile/09-web-research.md`: a `WebFetch` 403 is a rejected *client*, not a missing page, and retrying with browser headers via curl recovers most corporate and bank domains. A stored URL ending in a `#fragment` points at a listing page rather than a posting, so the agent should search the employer's own careers site for the role by name before writing the job off. Include this instruction in every scoring agent's prompt. `expired` means "retrieval genuinely failed after retrying", not "the first fetch was unhelpful".
 - Scope is triage: posting text vs. rubric. **No company research, no salary lookup, no web searches** - that depth belongs to `/apply`.
 
 Each agent returns a JSON array, one object per job:

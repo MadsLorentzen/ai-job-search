@@ -37,13 +37,13 @@ In targeted mode, derive a slug from the job title and company for the report fi
    `date, company, sector, role, role_type, channel, status, contact_person, fit_rating, notes, cv_file, cover_letter_file, source, deadline`
 2. For each row, note the `role`, `company`, and `fit_rating`. The `fit_rating` column is a 0–100 score where 100 = perfect fit. You will use it to weight gaps — a lower fit rating means the role exposed more gaps.
 3. Read `state/seen_jobs.json`. Keep entries with `"status": "ranked"` and `rank_score >= 45` — the Moderate Fit floor from `04-job-evaluation.md` (below that, a job is Weak/Poor Fit and would otherwise dominate the heatmap with jobs the user shouldn't chase). For each kept entry, note its `title`, `company`, `rank_score`, and — when present — its recorded `gaps`. An entry with no `gaps` field (ranked before gap persistence existed) is skipped, counted, and reported once in the terminal: *"N ranked jobs were scored before gap persistence and contribute nothing; `/rank --all` re-scores them."* Never back-fill a missing `gaps` field by guessing from the title.
-4. Read `.pi-agent/skills/job-application-assistant/01-candidate-profile.md` to get the candidate's current skills and experience.
+4. Read `profile/01-candidate-profile.md` to get the candidate's current skills and experience.
 5. Check `upskill/` for the most recent aggregate report file (`report-YYYY-MM-DD.md`) — if one exists, note its date and load it for the diff in Step 8.
 
 ### Targeted mode
 1. Use WebFetch to retrieve the job posting from the URL.
 2. Extract: job title, company, required skills, preferred skills, responsibilities, and any domain context.
-3. Read `.pi-agent/skills/job-application-assistant/01-candidate-profile.md` for the candidate's current skills.
+3. Read `profile/01-candidate-profile.md` for the candidate's current skills.
 4. No tracker data is used in targeted mode.
 
 ## Step 3: Pass 1 — Hard Skill Diff

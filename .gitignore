@@ -76,12 +76,12 @@ documents/references/**
 # Also where /interview saves its prep packs (interview_prep_<stage>.md): these
 # name the employers applied to, quote what was submitted, and set out the
 # candidate's weak points.
-documents/applications/**
-documents/postings/**
+applications/**
+postings/**
 # Belt-and-braces, not the primary guard: nothing writes here. Prep packs land
-# in documents/applications/<company>_<role>/, covered above. Kept because
+# in applications/<company>_<role>/, covered above. Kept because
 # tools/security_guards.py pins it in REQUIRED_IGNORE_RULES.
-documents/interview/**
+applications/**/interview/**
 !documents/**/.gitkeep
 
 # Personal job search tracking

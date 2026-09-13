@@ -20,7 +20,7 @@ If `$ARGUMENTS` is empty or does not contain a recognized scope keyword, ask:
 >
 > - **`profile`** — Clears candidate data from the skill files (profile, behavioral, STAR examples, profile statements, personalized evaluation criteria, search queries). The framework structure, scoring framework, and writing rules are preserved. Use this to re-run `/setup` from scratch.
 >
-> - **`documents`** — Deletes all files you've placed in the `documents/` folder (CV PDFs, LinkedIn export, diplomas, references, pasted job postings, past applications). The folder structure and `README.md` are preserved.
+> - **`documents`** — Deletes all files you've placed in the `documents/` folder (LinkedIn export, diplomas, references), plus `postings/` and `applications/`. The folder structure and `README.md` are preserved.
 >
 > - **`all`** — Both of the above.
 >
@@ -38,12 +38,12 @@ Before doing anything, show the user precisely what will be wiped.
 
 Read the current state of these files and report whether each has content or is already empty:
 
-- `.pi-agent/skills/job-application-assistant/01-candidate-profile.md`
-- `.pi-agent/skills/job-application-assistant/02-behavioral-profile.md`
-- `.pi-agent/skills/job-application-assistant/04-job-evaluation.md` *(personalized match areas, career goals, and life-situation constraints only — the scoring framework is preserved)*
-- `.pi-agent/skills/job-application-assistant/05-cv-templates.md` *(profile statements section and the contact block inside the LaTeX template only — framework structure is preserved)*
-- `.pi-agent/skills/job-application-assistant/06-cover-letter-templates.md` *(contact line and signature inside the LaTeX template only — framework structure is preserved)*
-- `.pi-agent/skills/job-application-assistant/07-interview-prep.md` *(STAR examples and STAR candidates sections only — framework structure is preserved)*
+- `profile/01-candidate-profile.md`
+- `profile/02-behavioral-profile.md`
+- `profile/04-job-evaluation.md` *(personalized match areas, career goals, and life-situation constraints only — the scoring framework is preserved)*
+- `factory/05-cv-templates.md` *(profile statements section and the contact block inside the LaTeX template only — framework structure is preserved)*
+- `factory/06-cover-letter-templates.md` *(contact line and signature inside the LaTeX template only — framework structure is preserved)*
+- `methods/07-interview-prep.md` *(STAR examples and STAR candidates sections only — framework structure is preserved)*
 - `.pi-agent/skills/job-scraper/search-queries.md` *(role titles, domain keywords, and location terms only — query structure is preserved)*
 
 This list must stay in step with what `/setup` Step 3 populates: every skill file it writes candidate data into is cleared here.
@@ -81,18 +81,15 @@ The following files are NOT touched (they contain framework rules, not candidate
   - 03-writing-style.md
 
 Outside the profile scope, still holding your personal data: profile/profile.md and
-cv/main_example.tex. This scope covers skill files only.
+factory/main_example.tex. This scope covers skill files only.
 ```
 
 ### If scope includes `documents`:
 
-Use Glob to list all files present in `documents/cv/`, `documents/linkedin/`, `documents/diplomas/`, `documents/references/`, `documents/postings/`, and `documents/applications/`. Present as:
+Use Glob to list all files present in `documents/linkedin/`, `documents/diplomas/`, `documents/references/`, `postings/`, and `applications/`. Present as:
 
 ```
 ## Documents reset will delete:
-
-documents/cv/
-  - [filename] or "(empty)"
 
 documents/linkedin/
   - [filename] or "(empty)"
@@ -103,10 +100,10 @@ documents/diplomas/
 documents/references/
   - [filename] or "(empty)"
 
-documents/postings/
+postings/
   - [filename] or "(empty)"
 
-documents/applications/
+applications/
   - [subfolder/filename] or "(empty)"
 
 documents/README.md — NOT deleted (instructions file)
@@ -239,15 +236,14 @@ Leave the rest of the file intact: the portal-CLI and WebSearch-fallback explana
 
 ### Documents reset
 
-For each non-empty document subfolder, delete all files within it using Bash `rm`. Do not delete the folder itself, and do not delete `documents/README.md`.
+For each non-empty document subfolder, delete all files within it using Bash `rm`. Do not delete the folder itself, and do not delete `applications/AGENTS.md`.
 
 ```bash
-rm -f documents/cv/*
 rm -f documents/linkedin/*
 rm -f documents/diplomas/*
 rm -f documents/references/*
-rm -f documents/postings/*
-rm -rf documents/applications/*/
+rm -f postings/*
+rm -rf applications/*/
 ```
 
 ---
@@ -271,10 +267,10 @@ Then tell the user what to do next based on what was reset:
 **If profile was reset:**
 > The skill files are now blank. Run `/setup` to repopulate them. The command auto-detects any files in your `documents/` folder and offers to read from there; otherwise it walks you through a CV import or interactive interview.
 >
-> Note that `profile/profile.md` and `cv/main_example.tex` are outside the `profile` scope and still hold your personal data. If you are handing this fork over or making it public, clear them by hand.
+> Note that `profile/profile.md` and `factory/main_example.tex` are outside the `profile` scope and still hold your personal data. If you are handing this fork over or making it public, clear them by hand.
 
 **If documents were reset:**
-> The `documents/` folder is now empty. Add your career documents and run `/setup` to populate your profile. See `documents/README.md` for instructions on what to put where.
+> The `documents/` folder is now empty. Add your career documents and run `/setup` to populate your profile. See `applications/AGENTS.md` for instructions on what to put where.
 
 **If both were reset:**
 > Both your profile files and documents folder are now empty. Add documents to `documents/` (or skip and use the CV import / interview path), then run `/setup`.

@@ -1,5 +1,5 @@
 /** Tests for the /expand workflow spec. Port of
- * tests/test_expand_command.py (profile/workflows/expand.md). */
+ * tests/test_expand_command.py (methods/expand.md). */
 import { describe, expect, test } from "bun:test";
 import { WORKFLOWS, read } from "./helpers.ts";
 

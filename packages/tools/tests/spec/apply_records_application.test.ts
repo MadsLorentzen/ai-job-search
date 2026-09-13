@@ -1,18 +1,18 @@
 /** Guards for /apply's tracker recording step (Step 6b). Port of
- * tests/test_apply_records_application.py (paths: profile/workflows,
+ * tests/test_apply_records_application.py (paths: methods,
  * .pi-agent/skills, state/seen_jobs.json). */
 import { describe, expect, test } from "bun:test";
 import { REPO, WORKFLOWS, SKILLS, read, section } from "./helpers.ts";
 
-const APPLY = `${WORKFLOWS}/apply.md`;
-const OUTCOME = `${WORKFLOWS}/outcome.md`;
-const GMAIL_SYNC = `${WORKFLOWS}/gmail-sync.md`;
+const APPLY = `${WORKFLOWS}/03-apply.md`;
+const OUTCOME = `${WORKFLOWS}/04-outcome.md`;
+const GMAIL_SYNC = `${WORKFLOWS}/05-gmail-sync.md`;
 const HTML_REPORT = `${WORKFLOWS}/html-report.md`;
-const INTERVIEW = `${WORKFLOWS}/interview.md`;
+const INTERVIEW = `${WORKFLOWS}/06-interview.md`;
 const NOTION_SYNC = `${WORKFLOWS}/notion-sync.md`;
 const SKILL = `${SKILLS}/job-application-assistant/SKILL.md`;
 const SCRAPER = `${SKILLS}/job-scraper/SKILL.md`;
-const DOCS_README = `${REPO}/documents/README.md`;
+const DOCS_README = `${REPO}/applications/AGENTS.md`;
 
 const TRACKER_HEADER =
   "date,company,sector,role,role_type,channel,status,contact_person," +
@@ -113,7 +113,7 @@ describe("drafted means drafted to every reader", () => {
 describe("/apply archives the posting", () => {
   const CASES: [string, string, string][] = [
     [APPLY, "## Step 0: Parse Input", "full posting text verbatim"],
-    [APPLY, "### Step 6b: Record the Application", "`documents/applications/<company>_<role>/job_posting.md`"],
+    [APPLY, "### Step 6b: Record the Application", "`applications/<company>_<role>/job_posting.md`"],
     [APPLY, "### Step 6b: Record the Application", "never a fresh fetch"],
     [APPLY, "### Step 6b: Record the Application", "`/outcome` Step 1.4"],
     [OUTCOME, "## Step 1: Load State and Identify the Application", "4. Derive the archive folder name"],
@@ -168,9 +168,9 @@ describe("fallback glob finds one role's documents", () => {
   const ROLES = ["Data Scientist", "ML Engineer", "ML Engineer II"];
 
   const CASES: [string, string, string][] = [
-    [OUTCOME, "## Step 3: Archive the Application Materials", "by the **Subfolder naming** rule in `documents/README.md`"],
+    [OUTCOME, "## Step 3: Archive the Application Materials", "by the **Subfolder naming** rule in `applications/AGENTS.md`"],
     [OUTCOME, "## Step 3: Archive the Application Materials", "Never widen those globs to the company alone"],
-    [INTERVIEW, "## Step 1: Load the Application Context", "by the **Subfolder naming** rule in `documents/README.md`"],
+    [INTERVIEW, "## Step 1: Load the Application Context", "by the **Subfolder naming** rule in `applications/AGENTS.md`"],
     [INTERVIEW, "## Step 1: Load the Application Context", "Never widen those globs to the company alone"],
   ];
 
@@ -238,16 +238,16 @@ describe("fallback glob finds one role's documents", () => {
 
 describe("archive name is one path component", () => {
   const CASES: [string, string, string][] = [
-    [DOCS_README, "## applications/", "not a letter, digit or underscore is dropped"],
-    [DOCS_README, "## applications/", "single path component"],
-    [OUTCOME, "## Step 1: Load State and Identify the Application", "by the **Subfolder naming** rule in `documents/README.md`"],
+    [DOCS_README, "## Subfolder naming", "not a letter, digit or underscore is dropped"],
+    [DOCS_README, "## Subfolder naming", "single path component"],
+    [OUTCOME, "## Step 1: Load State and Identify the Application", "by the **Subfolder naming** rule in `applications/AGENTS.md`"],
     [APPLY, "### Requirement coverage (both documents)", "the same rule `/outcome` Step 1.4 uses"],
-    [SKILL, "### Step 2: Tailor CV", "by the **Subfolder naming** rule in `documents/README.md`"],
-    [GMAIL_SYNC, "## Step 2: Load State", "by the **Subfolder naming** rule in `documents/README.md`"],
-    [INTERVIEW, "## Step 1: Load the Application Context", "by the **Subfolder naming** rule in `documents/README.md`"],
+    [SKILL, "### Step 2: Tailor CV", "by the **Subfolder naming** rule in `applications/AGENTS.md`"],
+    [GMAIL_SYNC, "## Step 2: Load State", "by the **Subfolder naming** rule in `applications/AGENTS.md`"],
+    [INTERVIEW, "## Step 1: Load the Application Context", "by the **Subfolder naming** rule in `applications/AGENTS.md`"],
     [INTERVIEW, "### 6. Logistics", "archive folder derived in Step 1"],
-    [NOTION_SYNC, "## Step 5: Write the Detail Page", "by the **Subfolder naming** rule in `documents/README.md`"],
-    [DOCS_README, "## applications/", "If the derived name is empty"],
+    [NOTION_SYNC, "## Step 5: Write the Detail Page", "by the **Subfolder naming** rule in `applications/AGENTS.md`"],
+    [DOCS_README, "## Subfolder naming", "If the derived name is empty"],
   ];
 
   test("the rule has one home and every deriver cites it", () => {

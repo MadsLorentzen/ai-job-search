@@ -272,9 +272,9 @@ describe("gitignore pattern behavior (real git check-ignore)", () => {
   test("interview prep pack is ignored at the path the command writes", () => {
     // Two fragments, not one literal: the path is split across Step 1 (which
     // derives the archive folder) and Step 3 (which names the file).
-    const folder = "documents/applications/<company>_<role>/";
+    const folder = "applications/<company>_<role>/";
     const filename = "interview_prep_<stage>.md";
-    const spec = readFileSync(join(REPO_ROOT, "profile/workflows/interview.md"), "utf8");
+    const spec = readFileSync(join(REPO_ROOT, "methods/06-interview.md"), "utf8");
     expect(spec).toContain(folder);
     expect(spec).toContain(filename);
 
@@ -285,7 +285,7 @@ describe("gitignore pattern behavior (real git check-ignore)", () => {
       encoding: "utf8",
     });
     expect(res.status).toBe(0);
-    expect(res.stdout).toContain("documents/applications/**");
+    expect(res.stdout).toContain("applications/**");
   });
 });
 

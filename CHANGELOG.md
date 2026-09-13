@@ -294,12 +294,12 @@ per-file diff commands.
 
 - **The `documents/interview/**` ignore rule no longer claims interview prep is written there**
   (#336). `/interview` saves its pack to
-  `documents/applications/<company>_<role>/interview_prep_<stage>.md`, already ignored by
-  `documents/applications/**`; nothing has ever written to `documents/interview/`. Nothing leaked -
+  `applications/<company>_<role>/interview_prep_<stage>.md`, already ignored by
+  `applications/**`; nothing has ever written to `documents/interview/`. Nothing leaked -
   but it was the personal-data block's one dedicated line about interview material, so an auditor
   checking the framework's most sensitive artifact had every reason to read it and stop, at the
   only path in the block with no writer. The protection rationale now sits above
-  `documents/applications/**`, the rule that actually provides it, so the next reader finds it
+  `applications/**`, the rule that actually provides it, so the next reader finds it
   where it lives; `documents/interview/**` stays, relabelled belt-and-braces rather than primary
   guard (`REQUIRED_IGNORE_RULES` pins it, so removing it from `.gitignore` alone fails the guard).
   Pinned by `tests/test_security_guards.py`, which derives the prep-pack path from
@@ -673,7 +673,7 @@ per-file diff commands.
   the score itself"). The preamble now names `language_gate`/`language_note` and how each
   consumer uses them; a coupling test in `tests/test_rank_command.py` keeps the framework
   text honest about the tracking.
-- **`/reset documents` now clears `documents/postings/`** - the drop folder for
+- **`/reset documents` now clears `postings/`** - the drop folder for
   hand-pasted job posting text was absent from the preview, the delete block, and the
   user-facing scope description, after which the command told the user "The `documents/`
   folder is now empty" - false whenever postings were present, and they are exactly the
@@ -739,7 +739,7 @@ per-file diff commands.
 
 - **A `/` in a company or role name no longer nests the application archive one level too deep**
   (jakob1379/ai-job-search#22). `Novo Nordisk A/S` derived
-  `documents/applications/novo_nordisk_a/s_data_scientist/` - written and found by every command
+  `applications/novo_nordisk_a/s_data_scientist/` - written and found by every command
   that derives the path, silently skipped by the two that enumerate it, so the application never
   appeared in `/html-report`'s dashboard and `/setup`'s calibration never learned from it. The
   **Subfolder naming** rule in `documents/README.md` now drops every character that is not a
@@ -908,7 +908,7 @@ per-file diff commands.
   `/outcome` Step 3.2 tried to recover it by re-fetching a `source` URL the spec itself expects
   to be dead, and a posting pasted from an email or a PDF had no `source` to re-fetch at all.
   Step 6b item 7 now writes the posting verbatim to
-  `documents/applications/<company>_<role>/job_posting.md`, never a re-fetch or a
+  `applications/<company>_<role>/job_posting.md`, never a re-fetch or a
   reconstruction from memory; an existing file is left alone (a re-application to the same
   company and role keeps the earlier posting) and named in the report. Step 0 and the `/scrape`
   path (`job-application-assistant` SKILL.md Step 1) retain the full posting text, not a
@@ -1167,7 +1167,7 @@ per-file diff commands.
 - **The gitignore guard now covers every personal-output rule** - `security_guards.py`
   additionally requires the ignore rules for Gmail sync state (`gmail_sync/`), generated
   dashboards (`reports/`), upskill reports (`upskill/*.md`), Notion sync state
-  (`**/job_scraper/notion_sync.json`), pasted postings (`documents/postings/**`), scraper
+  (`**/job_scraper/notion_sync.json`), pasted postings (`postings/**`), scraper
   markdown output (`**/job_scraper/*.md`), and behavioral-report / LinkedIn-profile PDFs.
   With these, every `.gitignore` rule outside the guard's required list is build tooling
   noise, so any future weakening of the personal-data boundary fails CI. All rules were

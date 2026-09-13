@@ -21,23 +21,23 @@ v1 preps for a **specific application**. Generic no-target practice is out of sc
 
 ## Step 1: Load the Application Context
 
-1. **The archive** (started by `/apply`, maintained by `/outcome`): derive `<company>_<role>` by the **Subfolder naming** rule in `documents/README.md`, then use `documents/applications/<company>_<role>/`.
+1. **The archive** (started by `/apply`, maintained by `/outcome`): derive `<company>_<role>` by the **Subfolder naming** rule in `applications/AGENTS.md`, then use `applications/<company>_<role>/`.
    - `job_posting.md` - the exact posting the user applied to
    - `cv_draft.tex` and `cover_letter.tex` - what was actually submitted. **These are what the interviewer read**; every talking point must be consistent with their claims.
    - `outcome.md` - the stage reached so far and any recorded feedback from earlier stages. Feedback from stage N is the highest-value input for stage N+1 prep.
-2. **Fallbacks** (the application may predate `/outcome`): posting via WebFetch on the tracker row's `source` URL, or ask the user to paste it; CV via `cv/main_<company>_<role>.*` and cover letter via `cover_letters/cover_<company>_<role>.*`, deriving `<company>_<role>` by the **Subfolder naming** rule in `documents/README.md`. **Never widen those globs to the company alone**: with two roles at one company it would prep you from the sibling role's documents. State plainly which context is missing rather than guessing - and suggest `/outcome <company>` to build the archive for next time.
+2. **Fallbacks** (the application may predate `/outcome`): posting via WebFetch on the tracker row's `source` URL, or ask the user to paste it; CV via `cv/main_<company>_<role>.*` and cover letter via `cover_letters/cover_<company>_<role>.*`, deriving `<company>_<role>` by the **Subfolder naming** rule in `applications/AGENTS.md`. **Never widen those globs to the company alone**: with two roles at one company it would prep you from the sibling role's documents. State plainly which context is missing rather than guessing - and suggest `/outcome <company>` to build the archive for next time.
 3. **Ask the user what this interview is** (skip anything `outcome.md` already records): stage (phone screen / technical / case / final round), date, format (phone, video, onsite), and who is interviewing (names and titles, if known).
 4. **Read the frameworks once** - do not re-read them in later steps:
-   - `.pi-agent/skills/job-application-assistant/07-interview-prep.md`
-   - `.pi-agent/skills/job-application-assistant/01-candidate-profile.md`
-   - `.pi-agent/skills/job-application-assistant/02-behavioral-profile.md`
-   - `.pi-agent/skills/job-application-assistant/04-job-evaluation.md`
+   - `methods/07-interview-prep.md`
+   - `profile/01-candidate-profile.md`
+   - `profile/02-behavioral-profile.md`
+   - `profile/04-job-evaluation.md`
 
 ---
 
 ## Step 2: Research the Company (Interview-Focused)
 
-**First, check the cache**: read `company_research/<normalized-company-name>.json` per the Company Research Cache section in `04-job-evaluation.md` (normalize the company name the same way). If it exists and is within the documented TTL, start from it instead of researching from scratch — `/apply` may already have populated it for this same application. The verification rule below still applies regardless of source.
+**First, check the cache**: read `research/<normalized-company-name>.json` per the Company Research Cache section in `04-job-evaluation.md` (normalize the company name the same way). If it exists and is within the documented TTL, start from it instead of researching from scratch — `/apply` may already have populated it for this same application. The verification rule below still applies regardless of source.
 
 If the cache is missing or stale, execute the Company Research Checklist that `04-job-evaluation.md` defines: company website (mission, values, recent news), review sites, LinkedIn (team size, recent hires), and media coverage (growth, restructuring, workplace issues). Afterward, write (or overwrite) the cache file with the fresh findings per the schema in `04-job-evaluation.md`, so a later `/apply` or `/interview` run for the same company can reuse them.
 
@@ -46,7 +46,7 @@ Additions for interview purposes:
 - **Interviewer angle:** if interviewer names are known (from Step 1 or the tracker's `contact_person`), look up their public professional profile. A hiring manager probes team fit and motivation; a senior engineer probes technical depth; HR probes the CV timeline. Note the likely angle per interviewer - do not speculate beyond public information.
 - **Conversation hooks:** 2-3 recent, verifiable company specifics (a product launch, a stated strategic priority) the user can reference naturally in answers and in the "why this company" moment.
 
-**Verify before using:** every company claim that will appear in the prep pack must be independently confirmed via WebFetch/WebSearch - same rule the repo applies to cover-letter claims. An unverified "fact" delivered confidently in an interview is worse than no fact. On a 403, retry with browser headers per `.pi-agent/skills/job-application-assistant/09-web-research.md` rather than dropping to search snippets; a snippet is a lead, not a source.
+**Verify before using:** every company claim that will appear in the prep pack must be independently confirmed via WebFetch/WebSearch - same rule the repo applies to cover-letter claims. An unverified "fact" delivered confidently in an interview is worse than no fact. On a 403, retry with browser headers per `profile/09-web-research.md` rather than dropping to search snippets; a snippet is a lead, not a source.
 
 ---
 

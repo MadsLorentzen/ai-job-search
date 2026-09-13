@@ -127,7 +127,7 @@ describe("extractor failure", () => {
   // never 1 ("your document is broken").
 
   test("extractor failure exits 2 not 1", () => {
-    const code = verifyLayoutMain(["cv/main_example.pdf"], {
+    const code = verifyLayoutMain(["factory/main_example.pdf"], {
       which: () => "/usr/bin/pdftotext",
       run: () => ({ status: 99, stdout: "", stderr: "Error: unknown flag" }),
     });

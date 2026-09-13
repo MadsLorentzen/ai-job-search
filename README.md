@@ -1,9 +1,25 @@
 # AI Job Search — pi workspace
 
+<p align="center">
+  <img src="assets/mascot/pip_flight_loop.gif" alt="Pip, the courier bird" width="200">
+</p>
+
 A role-bound [pi](https://github.com/badlogic/pi-mono) agent workspace for job
 search and applications, forked from
 [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search)
 and migrated from Claude Code to a pi-native architecture.
+
+### 1. Fork and clone
+
+```fish
+gh repo fork --clone
+```
+
+> **This fork becomes your personal data store.** Anything you commit — postings,
+> applications, tracker state — is personal data in a **public** repository unless
+> you make the fork private. The `.gitignore` keeps the record folders out of git
+> by default; see section 8 of SETUP.md ("Pulling upstream updates") before you
+> push anything.
 
 ## The agent
 
@@ -16,7 +32,7 @@ The agent's identity is `.pi-agent/`, not the chat:
 | `.pi-agent/skills/` | Skills, loaded explicitly (portal CLIs, scrape, apply guidance) |
 | `.pi-agent/extensions/job-tools.ts` | Native tools: `job_candidates`, `job_rank_apply`, `job_key`, `cv_verify` |
 | `profile/profile.md` | Candidate profile (populated via the setup workflow) |
-| `profile/workflows/*.md` | Workflow specs (setup, scrape, apply, rank, outcome, …) — read on demand |
+| `methods/*.md` | Workflow specs (setup, scrape, apply, rank, outcome, …) — read on demand |
 | `state/` | `seen_jobs.json` (dedup backlog), `job_search_tracker.csv` |
 | `documents/`, `cv/`, `cover_letters/`, `templates/` | Postings, applications, LaTeX sources |
 | `packages/tools/` | Bun/TS tooling (rank-state, job-key, verify-pdf/layout, salary, guards) |

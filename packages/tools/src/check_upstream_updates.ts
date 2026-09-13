@@ -14,15 +14,15 @@ import { basename, join } from "node:path";
 const ROOT = new URL("../../..", import.meta.url).pathname;
 
 const FRAMEWORK_FILES = [
-  ".pi-agent/skills/job-application-assistant/01-candidate-profile.md",
-  ".pi-agent/skills/job-application-assistant/02-behavioral-profile.md",
-  ".pi-agent/skills/job-application-assistant/03-writing-style.md",
-  ".pi-agent/skills/job-application-assistant/04-job-evaluation.md",
-  ".pi-agent/skills/job-application-assistant/05-cv-templates.md",
-  ".pi-agent/skills/job-application-assistant/06-cover-letter-templates.md",
-  ".pi-agent/skills/job-application-assistant/07-interview-prep.md",
-  ".pi-agent/skills/job-application-assistant/08-application-forms.md",
-  ".pi-agent/skills/job-application-assistant/09-web-research.md",
+  "profile/01-candidate-profile.md",
+  "profile/02-behavioral-profile.md",
+  "profile/03-writing-style.md",
+  "profile/04-job-evaluation.md",
+  "factory/05-cv-templates.md",
+  "factory/06-cover-letter-templates.md",
+  "methods/07-interview-prep.md",
+  "methods/08-application-forms.md",
+  "profile/09-web-research.md",
   ".pi-agent/skills/job-application-assistant/SKILL.md",
   "AGENTS.md",
 ];

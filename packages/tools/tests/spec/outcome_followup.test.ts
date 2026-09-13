@@ -3,7 +3,7 @@
 import { describe, expect, test } from "bun:test";
 import { WORKFLOWS, read } from "./helpers.ts";
 
-const COMMAND = `${WORKFLOWS}/outcome.md`;
+const COMMAND = `${WORKFLOWS}/04-outcome.md`;
 
 describe("/outcome follow-up branch spec", () => {
   const text = () => read(COMMAND);

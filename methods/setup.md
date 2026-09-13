@@ -57,7 +57,7 @@ Then welcome the user with a single message that lists three paths. The wording 
 >
 > Three ways to start:
 >
-> **Path A: Documents folder** (best signal if you have several materials) - Drop your CV / LinkedIn export / diplomas / reference letters in the `documents/` folder, then say "go". I'll read everything and build your profile from it. See `documents/README.md` for the folder layout.
+> **Path A: Documents folder** (best signal if you have several materials) - Drop your CV / LinkedIn export / diplomas / reference letters in the `documents/` folder, then say "go". I'll read everything and build your profile from it. See `applications/AGENTS.md` for the folder layout.
 >
 > **Path B: Single CV import** - Paste or @-mention a single CV/resume here. I'll extract it and ask follow-up questions for what's missing.
 >
@@ -65,7 +65,7 @@ Then welcome the user with a single message that lists three paths. The wording 
 >
 > Which would you like?
 
-Wait for the user's choice. If they pick A but the folder is still empty, tell them what to add (point at `documents/README.md`) and stop.
+Wait for the user's choice. If they pick A but the folder is still empty, tell them what to add (point at `applications/AGENTS.md`) and stop.
 
 ---
 
@@ -91,19 +91,19 @@ Use Glob with `documents/**/*` to scan the full tree. Print:
 I will read these and cross-reference before proposing any changes.
 ```
 
-If every subfolder is empty, stop and tell the user to populate the folder. Point at `documents/README.md` for the layout.
+If every subfolder is empty, stop and tell the user to populate the folder. Point at `applications/AGENTS.md` for the layout.
 
 ### Step A2: Read Existing Skill Files
 
 Read these in parallel before extracting anything. You must know what is already there to make the merge intelligent.
 
-- `.pi-agent/skills/job-application-assistant/01-candidate-profile.md`
-- `.pi-agent/skills/job-application-assistant/02-behavioral-profile.md`
-- `.pi-agent/skills/job-application-assistant/03-writing-style.md`
-- `.pi-agent/skills/job-application-assistant/04-job-evaluation.md`
-- `.pi-agent/skills/job-application-assistant/05-cv-templates.md`
-- `.pi-agent/skills/job-application-assistant/06-cover-letter-templates.md`
-- `.pi-agent/skills/job-application-assistant/07-interview-prep.md`
+- `profile/01-candidate-profile.md`
+- `profile/02-behavioral-profile.md`
+- `profile/03-writing-style.md`
+- `profile/04-job-evaluation.md`
+- `factory/05-cv-templates.md`
+- `factory/06-cover-letter-templates.md`
+- `methods/07-interview-prep.md`
 
 Hold this content in context throughout Path A. Do not re-read.
 
@@ -242,7 +242,7 @@ Documents cover skills, experience, education, references, and behavioral signal
 - Commute or location constraints (if not visible from CV)
 - Job search configuration (use the questions from Path C Section 9 below)
 
-Then proceed to Step 3 to populate the non-skill files (`profile/profile.md`, `cv/main_example.tex`, `.pi-agent/skills/job-scraper/search-queries.md`). Step 3 will detect that the seven skill files are already populated and skip those substeps.
+Then proceed to Step 3 to populate the non-skill files (`profile/profile.md`, `factory/main_example.tex`, `.pi-agent/skills/job-scraper/search-queries.md`). Step 3 will detect that the seven skill files are already populated and skip those substeps.
 
 ---
 
@@ -352,13 +352,13 @@ Once data collection is complete, generate or finish populating the following fi
 ### 1. Update `profile/profile.md`
 Replace all `[PLACEHOLDER]` tokens with the user's actual information. Keep the structure, workflow, and verification checklist intact.
 
-### 2. Populate `01-candidate-profile.md` *(Path B and C; skip if Path A populated it)*
+### 2. Populate `profile/01-candidate-profile.md` *(Path B and C; skip if Path A populated it)*
 Write the full candidate profile with structured sections: Identity (including Languages, with levels), Education, Professional Experience, Independent Projects, Technical Skills, Publications, Awards, References.
 
-### 3. Populate `02-behavioral-profile.md` *(Path B and C; skip if Path A populated it)*
+### 3. Populate `profile/02-behavioral-profile.md` *(Path B and C; skip if Path A populated it)*
 Write the behavioral profile based on assessment results or synthesized answers.
 
-### 4. Update `04-job-evaluation.md` *(Path B and C; skip if Path A populated it)*
+### 4. Update `profile/04-job-evaluation.md` *(Path B and C; skip if Path A populated it)*
 Replace skill match areas with the user's actual skills:
 - Strong match areas: [their primary skills]
 - Moderate match areas: [their secondary skills]
@@ -366,16 +366,16 @@ Replace skill match areas with the user's actual skills:
 
 Update career goals and motivation filters with their actual preferences.
 
-### 5. Update `05-cv-templates.md` *(Path B and C; skip if Path A populated it)*
+### 5. Update `factory/05-cv-templates.md` *(Path B and C; skip if Path A populated it)*
 Add role-specific profile statement templates based on their background, and personalise the contact block inside the file's LaTeX template: replace `[FIRST_NAME]`, `[LAST_NAME]`, `[YOUR_ADDRESS]`, `[YOUR_PHONE]`, `[YOUR_EMAIL]`, `[YOUR_LINKEDIN_URL]` and `[YOUR_GITHUB_URL]` (and `[YOUR_NAME]` in the PDF title) with their actual details. Check this block whichever path ran - Path A extracts profile statements from documents, not the contact block. `/apply` builds every tailored CV from this template, so a placeholder left here reaches a compiled document.
 
-### 6. Update `06-cover-letter-templates.md` *(all paths - Path A does not fill this block)*
+### 6. Update `factory/06-cover-letter-templates.md` *(all paths - Path A does not fill this block)*
 Personalise the contact line and the signature inside the file's LaTeX template: replace `[YOUR_NAME]`, `[YOUR_EMAIL]`, `[YOUR_PHONE]` and `[YOUR_LINKEDIN_URL]` in the `\namesection{}` line, and `[YOUR_NAME]` in `\signature{}`. Path A merges only structural patterns (openings, bullets, closings) into this file, never the contact block. `/apply` compiles every cover letter from this template.
 
-### 7. Update `07-interview-prep.md` *(Path B and C; skip if Path A populated it)*
+### 7. Update `methods/07-interview-prep.md` *(Path B and C; skip if Path A populated it)*
 Create STAR examples from their actual experience (at least 3-4 examples). Path A leaves STAR stubs under "## STAR Candidates (Complete Manually)" rather than full examples; if any stubs are present, mention them in Step 4 so the user knows to flesh them out.
 
-### 8. Update `cv/main_example.tex`
+### 8. Update `factory/main_example.tex`
 Replace placeholder personal data with their actual name, contact info, and add their education and most recent experience entries.
 
 ### 9. Generate `.pi-agent/skills/job-scraper/search-queries.md`
@@ -399,13 +399,13 @@ Present a summary:
 > **Setup complete!** Here's what was generated:
 >
 > - `profile/profile.md` - Your full candidate profile
-> - `.pi-agent/skills/job-application-assistant/01-candidate-profile.md` - Structured profile
-> - `.pi-agent/skills/job-application-assistant/02-behavioral-profile.md` - Behavioral assessment
-> - `.pi-agent/skills/job-application-assistant/04-job-evaluation.md` - Personalized evaluation framework
-> - `.pi-agent/skills/job-application-assistant/05-cv-templates.md` - CV templates with your profile statements and contact block
-> - `.pi-agent/skills/job-application-assistant/06-cover-letter-templates.md` - Cover letter templates with your contact line and signature
-> - `.pi-agent/skills/job-application-assistant/07-interview-prep.md` - STAR examples from your experience
-> - `cv/main_example.tex` - Your LaTeX CV template
+> - `profile/01-candidate-profile.md` - Structured profile
+> - `profile/02-behavioral-profile.md` - Behavioral assessment
+> - `profile/04-job-evaluation.md` - Personalized evaluation framework
+> - `factory/05-cv-templates.md` - CV templates with your profile statements and contact block
+> - `factory/06-cover-letter-templates.md` - Cover letter templates with your contact line and signature
+> - `methods/07-interview-prep.md` - STAR examples from your experience
+> - `factory/main_example.tex` - Your LaTeX CV template
 > - `.pi-agent/skills/job-scraper/search-queries.md` - Job search queries for `/scrape`
 >
 > **Privacy note:** the files above now contain your personal data and are *tracked by git*.

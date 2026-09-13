@@ -3,8 +3,8 @@ import { describe, expect, test } from "bun:test";
 import { SKILLS, WORKFLOWS, read, sections } from "./helpers.ts";
 
 const COMMAND = `${WORKFLOWS}/setup.md`;
-const CV_TEMPLATES = `${SKILLS}/job-application-assistant/05-cv-templates.md`;
-const COVER_TEMPLATES = `${SKILLS}/job-application-assistant/06-cover-letter-templates.md`;
+const CV_TEMPLATES = `${FACTORY}/05-cv-templates.md`;
+const COVER_TEMPLATES = `${FACTORY}/06-cover-letter-templates.md`;
 
 function substeps(stepBody: string): Record<string, string> {
   return sections(stepBody, "###");

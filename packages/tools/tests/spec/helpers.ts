@@ -4,7 +4,9 @@ import { join } from "node:path";
 
 export const REPO = new URL("../../../..", import.meta.url).pathname;
 
-export const WORKFLOWS = join(REPO, "profile", "workflows");
+export const WORKFLOWS = join(REPO, "methods");
+export const PROFILE = join(REPO, "profile");
+export const FACTORY = join(REPO, "factory");
 export const SKILLS = join(REPO, ".pi-agent", "skills");
 
 export function read(...parts: string[]): string {

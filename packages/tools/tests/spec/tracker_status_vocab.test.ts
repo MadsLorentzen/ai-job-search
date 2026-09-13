@@ -3,12 +3,12 @@
 import { describe, expect, test } from "bun:test";
 import { WORKFLOWS, read, section } from "./helpers.ts";
 
-const OUTCOME = `${WORKFLOWS}/outcome.md`;
-const GMAIL_SYNC = `${WORKFLOWS}/gmail-sync.md`;
+const OUTCOME = `${WORKFLOWS}/04-outcome.md`;
+const GMAIL_SYNC = `${WORKFLOWS}/05-gmail-sync.md`;
 const HTML_REPORT = `${WORKFLOWS}/html-report.md`;
 const NOTION_SYNC = `${WORKFLOWS}/notion-sync.md`;
-const APPLY = `${WORKFLOWS}/apply.md`;
-const INTERVIEW = `${WORKFLOWS}/interview.md`;
+const APPLY = `${WORKFLOWS}/03-apply.md`;
+const INTERVIEW = `${WORKFLOWS}/06-interview.md`;
 
 const VOCAB_ANCHOR = "## Tracker status vocabulary";
 

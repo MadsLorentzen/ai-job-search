@@ -1,6 +1,6 @@
 /** Guards for the onboarding privacy warnings. Port of
  * tests/test_onboarding_privacy.py (setup workflow now at
- * profile/workflows/setup.md). */
+ * methods/setup.md). */
 import { describe, expect, test } from "bun:test";
 import { REPO, WORKFLOWS, read, headingSection } from "./helpers.ts";
 

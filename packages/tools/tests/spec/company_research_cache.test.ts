@@ -1,11 +1,11 @@
 /** Guards for the company-research cache spec. Port of
  * tests/test_company_research_cache.py. */
 import { describe, expect, test } from "bun:test";
-import { SKILLS, WORKFLOWS, read, sections } from "./helpers.ts";
+import { SKILLS, WORKFLOWS, read, sections , PROFILE, FACTORY } from "./helpers.ts";
 
-const EVALUATION = `${SKILLS}/job-application-assistant/04-job-evaluation.md`;
-const APPLY = `${WORKFLOWS}/apply.md`;
-const INTERVIEW = `${WORKFLOWS}/interview.md`;
+const EVALUATION = `${PROFILE}/04-job-evaluation.md`;
+const APPLY = `${WORKFLOWS}/03-apply.md`;
+const INTERVIEW = `${WORKFLOWS}/06-interview.md`;
 
 function applyResearchStep(): string {
   for (const [heading, body] of Object.entries(sections(read(APPLY), "###"))) {
@@ -30,7 +30,7 @@ describe("cache definition (04-job-evaluation.md)", () => {
 
   test("specifies location and ttl", () => {
     const body = evaluationSections()["Company Research Cache"] ?? "";
-    expect(body).toContain("company_research/");
+    expect(body).toContain("research/");
     expect(body).toContain("30");
     expect(body).toContain("fetched_date");
   });
@@ -51,12 +51,12 @@ describe("/apply wiring", () => {
   test("reviewer prompt checks cache before researching", () => {
     const body = applyResearchStep();
     expect(body).not.toBe("");
-    expect(body).toContain("company_research/");
+    expect(body).toContain("research/");
     expect(body).toMatch(/[Cc]heck the cache/);
   });
 
   test("reviewer prompt writes back after fresh research", () => {
-    expect(applyResearchStep()).toMatch(/write.*company_research\/|company_research\/.*write/);
+    expect(applyResearchStep()).toMatch(/write.*research\/|research\/.*write/);
   });
 
   test("restates verification still applies to a cache hit", () => {
@@ -68,7 +68,7 @@ describe("/interview wiring", () => {
   test("step 2 checks cache before researching", () => {
     const body = interviewResearchStep();
     expect(body).not.toBe("");
-    expect(body).toContain("company_research/");
+    expect(body).toContain("research/");
     expect(body).toMatch(/[Cc]heck the cache/);
   });
 

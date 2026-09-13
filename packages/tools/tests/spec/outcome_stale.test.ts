@@ -3,7 +3,7 @@
 import { describe, expect, test } from "bun:test";
 import { WORKFLOWS, read } from "./helpers.ts";
 
-const COMMAND = `${WORKFLOWS}/outcome.md`;
+const COMMAND = `${WORKFLOWS}/04-outcome.md`;
 
 function step2c(): string {
   const m = /## Step 2c: Stale Sweep Branch([\s\S]*?)(?=## Step 3:)/.exec(read(COMMAND));

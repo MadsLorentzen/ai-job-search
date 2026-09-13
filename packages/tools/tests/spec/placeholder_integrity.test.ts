@@ -2,13 +2,13 @@
  * tests/test_placeholder_integrity.py with the post-migration paths
  * (profile/profile.md, .pi-agent/skills). Upstream-only, like the CI job. */
 import { describe, expect, test } from "bun:test";
-import { REPO, SKILLS, read } from "./helpers.ts";
+import { REPO, SKILLS, read , PROFILE, FACTORY } from "./helpers.ts";
 
 const UPSTREAM = "MadsLorentzen/ai-job-search";
 
 const CI = `${REPO}/.github/workflows/ci.yml`;
-const EXAMPLE_CV = `${REPO}/cv/main_example.tex`;
-const PROFILE = `${SKILLS}/job-application-assistant/01-candidate-profile.md`;
+const EXAMPLE_CV = `${REPO}/factory/main_example.tex`;
+const PROFILE = `${REPO}/profile/01-candidate-profile.md`;
 const CANDIDATE_PROFILE = `${REPO}/profile/profile.md`;
 
 const CV_SENTINELS = ["\\name{[First]}{[Last]}", "\\email{[your.email@example.com]}"];
@@ -50,7 +50,7 @@ describe.skipIf(!isUpstream)("skill profile sentinel is data-located", () => {
   test("ci checks a data placeholder, not a header comment", () => {
     const ci = read(CI);
     expect(ci).toContain(
-      "check .pi-agent/skills/job-application-assistant/01-candidate-profile.md '\\[YOUR_EMAIL\\]'",
+      "check profile/01-candidate-profile.md '\\[YOUR_EMAIL\\]'",
     );
   });
 

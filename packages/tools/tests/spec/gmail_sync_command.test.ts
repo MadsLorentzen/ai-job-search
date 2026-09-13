@@ -3,7 +3,7 @@
 import { describe, expect, test } from "bun:test";
 import { WORKFLOWS, read } from "./helpers.ts";
 
-const GMAIL_SYNC = `${WORKFLOWS}/gmail-sync.md`;
+const GMAIL_SYNC = `${WORKFLOWS}/05-gmail-sync.md`;
 
 describe("/gmail-sync query operators", () => {
   test("query excludes sent and drafts explicitly", () => {

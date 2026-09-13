@@ -2,11 +2,11 @@
  * The .claude/settings.json allowlist test is obsolete after the pi
  * migration (pi settings carry no permissions.allow). */
 import { describe, expect, test } from "bun:test";
-import { WORKFLOWS, SKILLS, read, sections } from "./helpers.ts";
+import { WORKFLOWS, SKILLS, read, sections , PROFILE, FACTORY } from "./helpers.ts";
 
-const COMMAND = `${WORKFLOWS}/rank.md`;
+const COMMAND = `${WORKFLOWS}/02-rank.md`;
 const SCRAPER_SKILL = `${SKILLS}/job-scraper/SKILL.md`;
-const EVALUATION = `${SKILLS}/job-application-assistant/04-job-evaluation.md`;
+const EVALUATION = `${PROFILE}/04-job-evaluation.md`;
 
 const RANK_STATE = "bun run packages/tools/src/cli.ts rank-state";
 
