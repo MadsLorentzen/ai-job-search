@@ -634,7 +634,7 @@ class RankStateToolSpec(unittest.TestCase):
         settings = json.loads((REPO / ".claude" / "settings.json").read_text(encoding="utf-8"))
         allow = settings["permissions"]["allow"]
         guards = (REPO / "tools" / "security_guards.py").read_text(encoding="utf-8")
-        for entry in ("Bash(python tools/rank_state.py:*)", "Bash(python3 tools/rank_state.py:*)"):
+        for entry in ("Bash(bun run packages/tools/src/cli.ts rank-state:*)", "Bash(bun run packages/tools/src/cli.ts rank-state:*)"):
             self.assertIn(entry, allow, f"{entry} missing from .claude/settings.json")
             self.assertIn(entry, guards, f"{entry} missing from security_guards.py's reviewed allowlist")
 

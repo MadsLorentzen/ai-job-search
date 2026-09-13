@@ -143,10 +143,10 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
 1. Derive each entry's key with the helper, never by slugifying in the moment:
 
 ```bash
-python3 tools/job_key.py --company "<company>" --title "<title>" --url "<url>"
+bun run packages/tools/src/cli.ts job-key --company "<company>" --title "<title>" --url "<url>"
 ```
 
-It prints one line: the canonical key for that posting. The key must be a pure function of the posting, because two runs that slugify differently store the same job twice and defeat the dedup this step exists to provide. The helper also length-caps long titles and disambiguates the cap with a hash of the full slug, so a truncated title is stable across runs and two different long titles never collide. `python3 tools/job_key.py --audit` reports entries in an existing state file that predate this rule; it only reports, and never rewrites keys, since a rewritten key breaks the tracker's own company+role matching.
+It prints one line: the canonical key for that posting. The key must be a pure function of the posting, because two runs that slugify differently store the same job twice and defeat the dedup this step exists to provide. The helper also length-caps long titles and disambiguates the cap with a hash of the full slug, so a truncated title is stable across runs and two different long titles never collide. `bun run packages/tools/src/cli.ts job-key --audit` reports entries in an existing state file that predate this rule; it only reports, and never rewrites keys, since a rewritten key breaks the tracker's own company+role matching.
 
 2. Add ALL fetched jobs (new and skipped) to `seen_jobs.json` with structure:
 ```json
