@@ -1,5 +1,5 @@
 # Upstream commits this fork has consciously decided never to port.
-# tools/upstream_triage.py skips anything listed here so it stops re-surfacing
+# the bun upstream-triage tool skips anything listed here so it stops re-surfacing
 # in the weekly Upstream watch report. One SHA per line (short or full); text
 # after # is a note.
 #

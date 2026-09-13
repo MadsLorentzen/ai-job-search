@@ -11,5 +11,5 @@
 
 ## Verification
 <!-- What you ran, per CONTRIBUTING: bun run packages/tools/src/cli.ts lint-skills,
-     bun run packages/tools/src/cli.ts framework-version, bun test / bun run typecheck
-     in touched CLIs, python3 -m unittest discover -s tests -->
+     bun run packages/tools/src/cli.ts framework-version,
+     and `bun test` in packages/tools and touched CLIs -->
