@@ -1,11 +1,13 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { apiFetch, apiPost } from "../src/helpers";
+import { apiFetch, apiPost, htmlFetch } from "../src/helpers";
 
 // The portal contract requires backoff on 429/5xx. These tests pin the retry
 // loop offline: a stubbed fetch counts attempts, and a stubbed setTimeout
 // fires immediately so the exhaustion case does not sleep through the real
-// 500ms -> 5s backoff schedule. apiFetch and apiPost carry separate copies of
-// the loop, so both are exercised to keep them from drifting apart.
+// 500ms -> 5s backoff schedule. apiFetch, apiPost, and htmlFetch carry separate
+// copies of the loop, so all three are exercised to keep them from drifting
+// apart. htmlFetch is the one `detail` uses: before it existed, detail called
+// fetch() directly and a 429 failed on the first attempt (1 call, not 7).
 
 const originalFetch = globalThis.fetch;
 const originalSetTimeout = globalThis.setTimeout;
@@ -33,6 +35,7 @@ function stubFetch(responses: Array<() => Response>): { calls: number } {
 const wrappers: Array<[string, () => Promise<{ ok: boolean }>]> = [
   ["apiFetch", () => apiFetch<{ ok: boolean }>("/x")],
   ["apiPost", () => apiPost<{ ok: boolean }>("/x", {})],
+  ["htmlFetch", () => htmlFetch("https://jobdanmark.dk/job/x").then((html) => ({ ok: html !== null }))],
 ];
 
 for (const [name, call] of wrappers) {
@@ -65,3 +68,12 @@ for (const [name, call] of wrappers) {
     });
   });
 }
+
+describe("htmlFetch 404", () => {
+  test("returns null without retrying so detail keeps its NOT_FOUND contract", async () => {
+    const state = stubFetch([() => new Response("", { status: 404 })]);
+
+    expect(await htmlFetch("https://jobdanmark.dk/job/missing")).toBeNull();
+    expect(state.calls).toBe(1);
+  });
+});
