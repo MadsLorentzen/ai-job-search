@@ -14,7 +14,7 @@ CLI for searching jobs on LinkedIn's public job listings, for **any country/regi
 ## Installation
 
 ```bash
-cd .agents/skills/linkedin-search/cli
+cd .pi-agent/skills/linkedin-search/cli
 bun install   # optional — only installs TypeScript dev types
 ```
 

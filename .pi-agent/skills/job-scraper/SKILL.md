@@ -5,7 +5,6 @@ description: >
   (LinkedIn, local job boards, and any skills added with /add-portal). Deduplicates
   across runs. Triggers on: job scrape, find jobs, search jobs, new jobs, job search,
   scrape jobs, /scrape
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run .agents/skills/*/cli/src/cli.ts *), Bash(python tools/job_key.py:*), Bash(python3 tools/job_key.py:*), WebFetch, WebSearch, Agent, AskUserQuestion
 ---
 
 # Job Scraper
@@ -15,7 +14,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run 
 ## How It Works
 
 This skill searches job portals using the **installed portal-search CLIs** in
-`.agents/skills/` (plus WebSearch as a fallback), using queries from your profile.
+`.pi-agent/skills/` (plus WebSearch as a fallback), using queries from your profile.
 It deduplicates against previously seen jobs and the application tracker, and
 presents new matches with a quick fit assessment.
 
@@ -58,7 +57,7 @@ If this fails (bun not installed), skip to **1c (WebSearch fallback)** for all p
 
 #### 1b. Run CLI tools (primary — run these in parallel where possible)
 
-Discover all installed portal CLI skills by reading every `SKILL.md` found under `.agents/skills/*/SKILL.md`. Each file documents that portal's exact CLI flags and usage examples. **Use each portal's own documented interface — do not guess flags.** This approach automatically includes any new portals added via `/add-portal` without requiring changes to this file.
+Discover all installed portal CLI skills by reading every `SKILL.md` found under `.pi-agent/skills/*/SKILL.md`. Each file documents that portal's exact CLI flags and usage examples. **Use each portal's own documented interface — do not guess flags.** This approach automatically includes any new portals added via `/add-portal` without requiring changes to this file.
 
 **Honor the `enabled` toggle.** A portal is enabled unless its `SKILL.md` frontmatter sets `enabled: false` (a missing key means enabled — the default). Skip each disabled portal and record it for the Step 5 summary. A fork can thus keep a portal installed but sit out a run without deleting its directory.
 
@@ -77,7 +76,7 @@ If a CLI tool exits with a non-zero code, log the error message and continue —
 #### 1c. WebSearch fallback
 
 Use `WebSearch` for:
-- Portals listed in `search-queries.md` that do **not** have a corresponding directory under `.agents/skills/`
+- Portals listed in `search-queries.md` that do **not** have a corresponding directory under `.pi-agent/skills/`
 - Any portal whose CLI fails at runtime
 - When bun is unavailable (Step 1a failed)
 
@@ -106,7 +105,7 @@ proof the posting is open; deadlines and dead URLs remain `/rank`'s job.
 
 **From WebSearch results:** Use `WebFetch` on the posting URL and extract the same
 fields manually. If it returns HTTP 403, retry with browser headers via curl per
-`.claude/skills/job-application-assistant/09-web-research.md` before giving up — most
+`.pi-agent/skills/job-application-assistant/09-web-research.md` before giving up — most
 bank and corporate sites reject WebFetch's user agent while serving browsers normally.
 
 **Store a URL that actually resolves to the posting.** A listing-page URL with a
@@ -246,8 +245,8 @@ skipped (disabled): <portal-name>, <portal-name>
 
 fallback (websearch): <portal-name>, <portal-name>
 
-health: <portal-name> - degraded (company null on all 12 results); parsing anchors in .agents/skills/<portal-name>/url-reference.md
-health: <portal-name> - broken (0 results for the SKILL.md test query and a broader retry); parsing anchors in .agents/skills/<portal-name>/url-reference.md
+health: <portal-name> - degraded (company null on all 12 results); parsing anchors in .pi-agent/skills/<portal-name>/url-reference.md
+health: <portal-name> - broken (0 results for the SKILL.md test query and a broader retry); parsing anchors in .pi-agent/skills/<portal-name>/url-reference.md
 
 | # | Fit | Title | Company | Location | Deadline | URL |
 |---|-----|-------|---------|----------|----------|-----|

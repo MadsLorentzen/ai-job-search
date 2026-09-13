@@ -17,7 +17,7 @@ CLI for searching the [freehire.me](https://freehire.me) job aggregator across
 ## Installation
 
 ```bash
-cd .agents/skills/freehire-search/cli
+cd .pi-agent/skills/freehire-search/cli
 bun install   # optional — only installs TypeScript dev types
 ```
 
