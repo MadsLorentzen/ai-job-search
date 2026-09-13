@@ -1,5 +1,5 @@
 # CI for the framework itself: LaTeX smoke compiles, skill/command lint,
-# CLI typechecks, and (upstream only) placeholder integrity.
+# bun tool tests, and (upstream only) placeholder integrity.
 #
 # Fork-friendly by design: forks personalize CLAUDE.md, the skill files, and
 # cv/main_example.tex via /setup, so the placeholder-integrity job and the
@@ -54,24 +54,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: "3.12"
-      - run: python tools/security_guards.py
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - run: bun run packages/tools/src/cli.ts security-guards
 
-  python-tests:
-    name: Python tool tests (Python ${{ matrix.python-version }})
+  bun-tests:
+    name: Bun tool tests
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - run: python -m unittest discover -s tests -t . -v
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+      - run: bun install
+        working-directory: packages/tools
+      - run: bun test
+        working-directory: packages/tools
 
   dependency-review:
     name: Dependency review
@@ -136,7 +131,7 @@ jobs:
           apt-get install -y --no-install-recommends \
             texlive-luatex texlive-latex-extra texlive-xetex \
             texlive-fonts-extra texlive-fonts-recommended \
-            poppler-utils python3
+            poppler-utils
       - name: Install PDF inspection tools
         run: |
           if ! command -v pdfinfo >/dev/null || ! command -v pdftotext >/dev/null; then

@@ -1,6 +1,6 @@
 # Weekly upstream triage. Reports only - it NEVER merges, pushes, or edits code.
 #
-# It fetches the upstream template, runs tools/upstream_triage.py to sort the
+# It fetches the upstream template, runs the bun upstream-triage tool to sort the
 # commits this fork lacks into "worth reviewing" vs "probably skip" (dropping
 # cherry-picks already applied and changes that only touch files this fork
 # removed), and writes the result into a single rolling issue. You read it and
@@ -38,16 +38,14 @@ jobs:
   triage:
     name: Triage upstream commits
     # No-op on the upstream template itself. Pinned by
-    # tests/test_upstream_triage.py so a template clone never runs it by surprise.
+    # packages/tools/tests/upstream_triage.test.ts so a template clone never runs it by surprise.
     if: github.repository != 'MadsLorentzen/ai-job-search'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: "3.12"
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
 
       - name: Fetch upstream template
         run: |
@@ -59,7 +57,7 @@ jobs:
           {
             echo "_Last checked: $(date -u '+%Y-%m-%d %H:%M UTC') · [run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})_"
             echo
-            python tools/upstream_triage.py --remote upstream --branch master
+            bun run packages/tools/src/cli.ts upstream-triage --remote upstream --branch master
           } > report.md
           cat report.md
 

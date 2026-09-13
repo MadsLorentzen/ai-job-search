@@ -125,7 +125,7 @@ Does this role advance career goals and contain tasks that energize?
 
 If the salary lookup tool is configured (`salary_data.json` exists), look up the company:
 ```
-python salary_lookup.py "<Company Name>" --json
+bun run packages/tools/src/cli.ts salary-lookup "<Company Name>" --json
 ```
 
 If a city is known from the posting, add `--city "<City>"` to narrow results.

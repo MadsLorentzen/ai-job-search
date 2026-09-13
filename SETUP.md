@@ -14,19 +14,9 @@ npm install -g @anthropic-ai/claude-code
 
 You'll need an Anthropic API key or a Claude Pro/Team subscription. See the [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for details.
 
-### Python
+### Bun (for job search tools and repo tooling)
 
-Python 3.10+ is required for the salary lookup tool. Check with:
-
-```bash
-python3 --version
-```
-
-On Windows, `py --version` is often the most reliable check. If your system exposes Python as `python` instead of `python3`, use `python` in the commands below.
-
-### Bun (for job search tools)
-
-The job portal CLIs (four Danish portals plus the country-agnostic `linkedin-search` and `freehire-search` tools) are written in TypeScript and run with Bun.
+The job portal CLIs (four Danish portals plus the country-agnostic `linkedin-search` and `freehire-search` tools) and the repo's shared tooling (`packages/tools`, run as `bun run packages/tools/src/cli.ts <command>`) are written in TypeScript and run with Bun.
 
 - macOS/Linux:
 
@@ -259,7 +249,7 @@ If you have salary data (from a union, salary survey, Glassdoor, or personal res
 2. **Option B:** Convert from Excel:
    ```bash
    pip install openpyxl
-   python3 tools/convert_salary_excel.py path/to/salary-data.xlsx --source "My Salary Data 2025"
+   bun run packages/tools/src/cli.ts convert-salary-excel path/to/salary-data.xlsx --source "My Salary Data 2025"
    ```
 
 This creates `salary_data.json` which the `/apply` workflow uses for salary benchmarking. If you skip this step, salary lookup is simply omitted.
@@ -323,7 +313,7 @@ Upstream keeps improving the methodology files your fork has personalized, so pl
    - **`upstream_triage.py`** — *which upstream commits deserve my attention?* It walks the commits you're behind and sorts them into "worth reviewing" vs "probably skip", dropping anything you've already cherry-picked (matched by `git patch-id`, so ported work falls off with no bookkeeping), commits that only touch files your fork removed, and SHAs you've listed in `.github/upstream-wontport.txt`. It's report-only — it prints ready-to-run `git cherry-pick` lines but never merges, pushes, or opens a PR, because on a fork "applies cleanly" isn't "correct".
 
      ```bash
-     python3 tools/upstream_triage.py --remote upstream
+     bun run packages/tools/src/cli.ts upstream-triage --remote upstream
      ```
 
      Forks also inherit a `.github/workflows/upstream-watch.yml` that runs this weekly and writes the result into a single rolling issue (it no-ops on the upstream template itself, and stays disabled on a fork until you enable Actions).
@@ -346,7 +336,7 @@ Make sure Bun is installed and you ran `bun install` in each CLI directory. The 
 The cover letter template expects fonts in `cover_letters/OpenFonts/fonts/`. Make sure this directory exists and contains the Lato and Raleway font files.
 
 ### Stale `.claude/settings.local.json` from an older clone
-Shared Claude Code permissions now live in `.claude/settings.json` (scoped to `bun run`, `python salary_lookup.py`, and `python3 salary_lookup.py`). Earlier versions of this repo committed a broader `.claude/settings.local.json` that pre-approved `Bash(curl:*)`, `Bash(python:*)` and `Bash(bun:*)`. If you cloned before that change, git leaves the old file behind in your working copy, and its permissions still apply on top of `settings.json`. Delete it (or trim it to your own personal overrides):
+Earlier versions of this repo shipped shared Claude Code permissions in `.claude/settings.json` (scoped to `bun run` commands) and, before that, committed a broader `.claude/settings.local.json` that pre-approved `Bash(curl:*)`, `Bash(python:*)` and `Bash(bun:*)`. The template no longer ships Claude Code settings at all (it uses `.pi-agent/settings.json`), but if you cloned before that change, git leaves the old file behind in your working copy and its permissions still apply. Delete it:
 
 ```bash
 rm .claude/settings.local.json
