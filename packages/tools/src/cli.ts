@@ -12,6 +12,7 @@ import { securityGuardsMain } from "./security_guards.ts";
 import { upstreamTriageMain } from "./upstream_triage.ts";
 import { verifyLayoutMain } from "./verify_layout.ts";
 import { verifyPdfMain } from "./verify_pdf.ts";
+import { fetchPostingMain } from "./fetch_posting.ts";
 
 const [command, ...rest] = process.argv.slice(2);
 if (command === "job-key") {
@@ -22,6 +23,8 @@ if (command === "job-key") {
   process.exit(verifyLayoutMain(rest));
 } else if (command === "verify-pdf") {
   process.exit(verifyPdfMain(rest));
+} else if (command === "fetch-posting") {
+  process.exit(fetchPostingMain(rest));
 } else if (command === "lint-skills") {
   process.exit(lintSkillsMain(rest));
 } else if (command === "robots-check") {

@@ -1,6 +1,6 @@
 /** Guards for the /setup workflow spec. Port of tests/test_setup_command.py. */
 import { describe, expect, test } from "bun:test";
-import { SKILLS, WORKFLOWS, read, sections } from "./helpers.ts";
+import { SKILLS, WORKFLOWS, read, sections, FACTORY, PROFILE } from "./helpers.ts";
 
 const COMMAND = `${WORKFLOWS}/setup.md`;
 const CV_TEMPLATES = `${FACTORY}/05-cv-templates.md`;

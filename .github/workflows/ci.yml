@@ -237,6 +237,6 @@ jobs:
           check cv/main_example.tex '\\name{\[First\]}{\[Last\]}'
           check cv/main_example.tex '\\email{\[your\.email@example\.com\]}'
           check cover_letters/cover_example.tex '\[YOUR NAME\]'
-          check .pi-agent/skills/job-application-assistant/01-candidate-profile.md '\[YOUR_EMAIL\]'
+          check profile/01-candidate-profile.md '\[YOUR_EMAIL\]'
           check .pi-agent/skills/job-application-assistant/04-job-evaluation.md '\[YOUR_PRIMARY_SKILLS\]'
           exit $fail
