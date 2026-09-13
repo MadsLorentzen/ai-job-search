@@ -1,7 +1,9 @@
 #!/usr/bin/env bun
 /** Dispatcher mapping the old python invocations onto the bun/TS tools. */
 import { jobKeyMain } from "./job_key.ts";
+import { lintSkillsMain } from "./lint_skills.ts";
 import { rankStateMain } from "./rank_state.ts";
+import { robotsCheckMain } from "./robots_check.ts";
 import { verifyLayoutMain } from "./verify_layout.ts";
 import { verifyPdfMain } from "./verify_pdf.ts";
 
@@ -14,9 +16,13 @@ if (command === "job-key") {
   process.exit(verifyLayoutMain(rest));
 } else if (command === "verify-pdf") {
   process.exit(verifyPdfMain(rest));
+} else if (command === "lint-skills") {
+  process.exit(lintSkillsMain(rest));
+} else if (command === "robots-check") {
+  process.exit(robotsCheckMain(rest));
 } else {
   process.stderr.write(
-    "usage: cli.ts <job-key|rank-state|verify-layout|verify-pdf> [args]\n",
+    "usage: cli.ts <job-key|rank-state|verify-layout|verify-pdf|lint-skills|robots-check> [args]\n",
   );
   process.exit(2);
 }
