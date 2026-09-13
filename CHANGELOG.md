@@ -47,6 +47,27 @@ per-file diff commands.
 
 ### Fixed
 
+- **`verify_pdf.py --contains` now sees through LaTeX's typographic substitutions and
+  the pdflatex text layer keeps accents precomposed** (Discussions #385, #384) - the
+  comparison folded whitespace only, but LaTeX ligatures `'` into U+2019 and `--` into
+  U+2013, so on the stock CV compiled with the documented `lualatex` command
+  `--contains "Master's degree"` and `--contains "2016-2024"` both reported the keyword
+  missing from a document that plainly contains it (measured through both extractors;
+  `Six Sigma` and `Statistics` on the same page passed). The documented remedy for a
+  missing keyword is to add it, so the false negative nudged toward the one thing the ATS
+  section forbids. `normalize_text()` now folds both sides - NFC, then curly
+  apostrophes/quotes to ASCII, en/em dashes to `-`, no-break space to space - at
+  comparison time only; `--dump-text` still writes the raw layer, because that is what an
+  ATS parses and the date-range rule in `05-cv-templates.md` needs the raw en-dash visible
+  there. Separately, pdflatex without T1 font encoding stores accents decomposed
+  (`e` + U+0300; pypdf reads it as a stray spacing accent), which NFC cannot fully
+  repair - moderncv 2.5 loads T1 itself under pdflatex but the apt-packaged 2.3.1 does
+  not, so `cv/main_example.tex` and the guide's preamble gain
+  `\ifpdftex\usepackage[T1]{fontenc}\fi`, a no-op on the lualatex path. Pinned by
+  ten new `test_verify_pdf.py` cases (the fold-through ones fail on the whitespace-only
+  code) and a `test_latex_guidance.py` guard that the line exists and stays
+  pdflatex-only. Reported and diagnosed by 9scorp4.
+
 - **`jobindex-search detail` no longer fetches arbitrary URLs or invents posting-shaped
   output** (#447) - the command fetched any `http(s)` input verbatim (no host check) and,
   when the path didn't match its one pattern, silently used the whole input URL as the job
