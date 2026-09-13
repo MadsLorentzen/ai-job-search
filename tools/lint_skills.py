@@ -4,7 +4,7 @@
 Run from anywhere: python tools/lint_skills.py
 
 Checks:
-- Every SKILL.md (.claude/skills/*, .agents/skills/*) has YAML frontmatter that
+- Every SKILL.md (.claude/skills/*, .pi-agent/skills/*) has YAML frontmatter that
   parses, with non-empty `name` and `description` keys
 - `allowed-tools` entries of the form `Bash(bun run <path> *)` point at files
   that exist (skill paths resolve relative to the repo root and to .agents/)
@@ -59,7 +59,7 @@ def check_skill(path: Path) -> None:
             target = match.group(1).rstrip("*")
             if not target or target.endswith("/"):
                 continue
-            # Targets may contain globs (e.g. .agents/skills/*/cli/src/cli.ts);
+            # Targets may contain globs (e.g. .pi-agent/skills/*/cli/src/cli.ts);
             # require at least one existing file to match.
             if "*" in target:
                 if not list(ROOT.glob(target)) and not list((ROOT / ".agents").glob(target)):
@@ -96,7 +96,7 @@ def check_settings() -> None:
 
 
 def main() -> int:
-    skills = sorted(ROOT.glob(".claude/skills/*/SKILL.md")) + sorted(ROOT.glob(".agents/skills/*/SKILL.md"))
+    skills = sorted(ROOT.glob(".claude/skills/*/SKILL.md")) + sorted(ROOT.glob(".pi-agent/skills/*/SKILL.md"))
     commands = sorted((ROOT / ".claude" / "commands").glob("*.md"))
     if not skills:
         errors.append("no SKILL.md files found - glob roots are wrong or the tree moved")
