@@ -1,20 +1,20 @@
 /**
  * fetch-posting: archive a job posting as a markdown snapshot in postings/.
  *
- * Wraps `defuddle parse <url> --markdown --frontmatter`, then merges job
- * frontmatter (url, fetched_at, job_key, portal) and writes
- * postings/<job_key>.md. Robots are respected via a robots-check gate before
- * fetching. The snapshot is evidence: later stages read this file, never a
- * re-fetch.
+ * Pipeline: defuddle (extract) -> knap (render the _templates/posting.md
+ * record template). The snapshot is evidence: later stages read this file,
+ * never a re-fetch.
  */
 import { spawnSync } from "node:child_process";
-import { writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { writeFileSync, mkdirSync, existsSync, mkdtempSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { makeKey } from "./job_key.ts";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "../../..");
 const POSTINGS = join(REPO, "postings");
+const TEMPLATE = join(REPO, "_templates/posting.md");
 
 export interface FetchOptions {
   company: string;
@@ -24,16 +24,45 @@ export interface FetchOptions {
   out?: string;
 }
 
-export function frontmatterFor(o: FetchOptions, jobKey: string): string {
-  const lines = [
-    "---",
-    `url: ${o.url}`,
-    `fetched_at: ${new Date().toISOString()}`,
-    `job_key: ${jobKey}`,
-  ];
-  if (o.portal) lines.push(`portal: ${o.portal}`);
-  lines.push("---");
-  return lines.join("\n") + "\n\n";
+/** Run the defuddle→knap pipe. Returns rendered markdown or null on failure. */
+export function renderPosting(
+  o: FetchOptions,
+  jobKey: string,
+  deps: { defuddle?: typeof spawnSync; knap?: typeof spawnSync; template?: string } = {},
+): string | null {
+  const runDefuddle = deps.defuddle ?? spawnSync;
+  const runKnap = deps.knap ?? spawnSync;
+  const template = deps.template ?? TEMPLATE;
+  const tmp = mkdtempSync(join(tmpdir(), "fetch-posting-"));
+  try {
+    const json = runDefuddle("defuddle", ["parse", o.url, "--json"], {
+      encoding: "utf8",
+    });
+    if (json.status !== 0) return null;
+    const dataFile = join(tmp, "data.json");
+    writeFileSync(dataFile, json.stdout);
+
+    const sets = [
+      "--set",
+      `job_key=${jobKey}`,
+      "--set",
+      `fetched_at=${new Date().toISOString()}`,
+      "--set",
+      `company=${o.company}`,
+    ];
+    if (o.portal) sets.push("--set", `portal=${o.portal}`);
+    if (o.title) sets.push("--set", `title=${o.title}`);
+    const rendered = runKnap("knap", ["render", template, "--data", dataFile, ...sets], {
+      encoding: "utf8",
+    });
+    if (rendered.status !== 0) {
+      process.stderr.write((rendered.stderr || "") + "\n");
+      return null;
+    }
+    return rendered.stdout;
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
 }
 
 export function fetchPostingMain(argv: string[]): number {
@@ -66,22 +95,15 @@ export function fetchPostingMain(argv: string[]): number {
     return 1;
   }
 
-  const res = spawnSync(
-    "defuddle",
-    ["parse", url, "--markdown", "--frontmatter"],
-    { encoding: "utf8" },
-  );
-  if (res.error || res.status !== 0) {
+  const markdown = renderPosting(o, jobKey);
+  if (markdown === null) {
     process.stderr.write(
-      `error: defuddle failed (exit ${res.status ?? "?"}). For bot-blocked pages, paste the text by hand into postings/ (see postings/AGENTS.md).\n`,
+      `error: defuddle/knap failed. For bot-blocked pages, paste the text by hand into postings/ (see postings/AGENTS.md).\n`,
     );
     return 1;
   }
-
-  // Strip defuddle's own frontmatter; ours is authoritative for the pipeline.
-  const body = res.stdout.replace(/^---\n[\s\S]*?\n---\n/, "").trim() + "\n";
   mkdirSync(dirname(target), { recursive: true });
-  writeFileSync(target, frontmatterFor(o, jobKey) + body);
+  writeFileSync(target, markdown);
   process.stdout.write(`${target}\n`);
   return 0;
 }

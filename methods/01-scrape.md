@@ -11,8 +11,9 @@ Stage 1 of the pipeline: find postings and archive them as markdown.
      --company "<company>" --title "<title>"
    ```
 
-   → writes `postings/<job_key>.md` with frontmatter (`url`, `fetched_at`,
-   `job_key`, `portal`) via defuddle. The snapshot is the evidence every later
+   → defuddle extracts (JSON), knap renders `_templates/posting.md`, and the
+   tool writes `postings/<job_key>.md` with pipeline frontmatter (`url`,
+   `fetched_at`, `job_key`, `portal`). The snapshot is the evidence every later
    stage reads; never paste posting text into conversation when a snapshot
    can exist instead.
 3. Leave ranking to `02-rank.md`. This stage only acquires.

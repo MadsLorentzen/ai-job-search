@@ -17,6 +17,7 @@ This file is the catalog: it routes and holds nothing else.
 | `state/` | machine | `seen_jobs.json`, `job_search_tracker.csv` — tool-written only |
 | `factory/` | factory | LaTeX sources: master CV, cover class, OpenFonts |
 | `documents/` | static | Diplomas, references, LinkedIn exports (never edited, only read) |
+| `_templates/` | factory | Knap record templates: posting snapshot, application stub, outcome |
 | `packages/tools/` | system | Bun/TS tooling + tests |
 | `scripts/job.fish` | system | Launcher |
 
