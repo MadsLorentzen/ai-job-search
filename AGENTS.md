@@ -1,19 +1,35 @@
----
-framework_version: 1.0.0
----
+# AI Job Search
 
-# Agent Guidelines: AI Job Search
+A role-bound Pi agent workspace for job search and applications. The agent's
+identity lives in `.pi-agent/` — policy, skills, and extensions are all
+project-local and versioned.
 
-This workspace is structured to manage job search activities, scraper tools, CVs, cover letters, and interview preparation.
+## Layout
 
-## Thin-Pointer Design (Single Source of Truth)
+| Path | Purpose |
+| --- | --- |
+| `.pi-agent/` | The agent: `SYSTEM.md` (policy), `settings.json`, `skills/`, `extensions/` |
+| `profile/` | Candidate profile + workflow specifications (`workflows/*.md`) — read on demand |
+| `state/` | Dedup backlog (`seen_jobs.json`) and application tracker (`job_search_tracker.csv`) |
+| `documents/` | Postings, applications, CVs, references (candidate's real files) |
+| `cv/`, `cover_letters/`, `templates/` | LaTeX sources and templates |
+| `packages/` | Bun/TS workspace: tools and tests (tracker, rank, verification) |
 
-To prevent duplication and configuration drift across different AI agent frameworks (Claude Code, Google Antigravity, Codex, Cursor, Gemini CLI, etc.), this workspace uses a unified thin-pointer design. All agent runtimes should load the canonical specifications and candidate profiles from the files and directories below:
+## Launch the agent
 
-1. **Personal Candidate Profile:**
-   - The candidate profile, contact details, education, and target preferences are defined in [CLAUDE.md](CLAUDE.md) and the individual profile methodology files under [.claude/skills/job-application-assistant/](.claude/skills/job-application-assistant/) (specifically `01-*.md` etc.).
-2. **Canonical Workflow Specifications:**
-   - The step-by-step instructions and triggers for tasks (setup, scrape, rank, apply, upskill, interview) are defined in the [.claude/](.claude/) directory (specifically under `.claude/skills/` and `.claude/commands/`).
-   - Do not duplicate these rules or specifications. Treat `.claude/` files as the single source of truth.
-3. **Portal Search Skills:**
-   - Job-portal search CLIs live under [.agents/skills/](.agents/skills/) in the portable Agent Skills format (with a `SKILL.md` per portal). Codex and Antigravity discover these automatically; the `/scrape` workflow in [.claude/skills/job-scraper/](.claude/skills/job-scraper/) orchestrates them.
+```fish
+env PI_CODING_AGENT_DIR=(pwd)/.pi-agent pi --no-skills \
+  (for s in .pi-agent/skills/*/; echo --skill $s; end)
+```
+
+(Or via the `job` fish wrapper — see dotfiles.)
+
+Visiting coding agents: do not edit `.pi-agent/` or `profile/` methodology files;
+follow `AGENTS.md` routing instead.
+
+## Development
+
+```bash
+bun install
+bun test          # workspace tests (tools + portal CLIs)
+```
