@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 /** Dispatcher mapping the old python invocations onto the bun/TS tools. */
+import { frameworkVersionMain } from "./check_framework_version.ts";
+import { upstreamUpdatesMain } from "./check_upstream_updates.ts";
 import { jobKeyMain } from "./job_key.ts";
 import { lintSkillsMain } from "./lint_skills.ts";
 import { rankStateMain } from "./rank_state.ts";
@@ -20,9 +22,13 @@ if (command === "job-key") {
   process.exit(lintSkillsMain(rest));
 } else if (command === "robots-check") {
   process.exit(robotsCheckMain(rest));
+} else if (command === "framework-version") {
+  process.exit(frameworkVersionMain(rest));
+} else if (command === "upstream-updates") {
+  process.exit(upstreamUpdatesMain(rest));
 } else {
   process.stderr.write(
-    "usage: cli.ts <job-key|rank-state|verify-layout|verify-pdf|lint-skills|robots-check> [args]\n",
+    "usage: cli.ts <job-key|rank-state|verify-layout|verify-pdf|lint-skills|robots-check|framework-version|upstream-updates> [args]\n",
   );
   process.exit(2);
 }
