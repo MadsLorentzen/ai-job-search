@@ -47,6 +47,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **The template-placeholder guard in `test_setup_command.py` now skips on forks** -
+  `TemplatesStillCarryThePlaceholders` asserts that `05-cv-templates.md` and
+  `06-cover-letter-templates.md` still contain `[FIRST_NAME]`, `[LAST_NAME]`, `[YOUR_EMAIL]`,
+  `[YOUR_PHONE]`, `[YOUR_NAME]`, and `[YOUR_LINKEDIN_URL]`. Running `/setup` - the documented
+  path, and what Step 3.5/3.6 of that command exist to do - replaces exactly those tokens, so on
+  a personalized fork `python3 -m unittest discover -s tests` fails both checks permanently and
+  marks every push red. The class now uses the same `@unittest.skipIf` on `GITHUB_REPOSITORY`
+  (defaulting to upstream when unset, so local pristine-template runs still execute the guards)
+  that `test_placeholder_integrity.py` received in #407. The guard landed three days after that
+  fix and did not pick up the pattern; the `placeholder-integrity` CI job is upstream-gated and
+  does not cover the `05`/`06` tokens, so `python-tests` was their only check.
 - **`verify_pdf.py --contains` now sees through LaTeX's typographic substitutions and
   the pdflatex text layer keeps accents precomposed** (Discussions #385, #384) - the
   comparison folded whitespace only, but LaTeX ligatures `'` into U+2019 and `--` into
