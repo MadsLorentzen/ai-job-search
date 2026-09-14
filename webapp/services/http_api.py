@@ -31,6 +31,11 @@ from webapp.services.extension_registry import (
     list_installed_extensions,
     resolve_active_extensions,
 )
+from webapp.services.decision_policy import (
+    execute_application_intelligence_policy,
+    execute_job_fit_policy,
+    execute_understanding_policy,
+)
 from webapp.services.pipeline import (
     PipelineError,
     create_job_from_source_record,
@@ -122,10 +127,20 @@ def understand_job(
     account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     require_job_workspace(conn, workspace_id, account_id=account_id)
-    return _preserve_current_artifacts(
+    artifact = _preserve_current_artifacts(
         conn, workspace_id,
         lambda: run_job_understanding(conn, workspace_id, provider, request_id=request_id),
     )
+    # Policy execution runs only after the artifact is durably current --
+    # never from a GET path, never from workspace_view.py. A failure here
+    # must not silently swallow a real product exception, but it also must
+    # never be allowed to leave the newly-current artifact half-classified
+    # without a clear signal; see execute_understanding_policy's own
+    # docstring for why this currently persists nothing.
+    execute_understanding_policy(
+        conn, workspace_id=workspace_id, understanding_artifact=artifact,
+    )
+    return artifact
 
 
 def fit_job(
@@ -138,7 +153,7 @@ def fit_job(
         extensions = resolve_active_extensions(extensions_dir, extension_ids)
     except ExtensionRegistryError as exc:
         raise PipelineError(str(exc)) from exc
-    return _preserve_current_artifacts(
+    artifact = _preserve_current_artifacts(
         conn, workspace_id,
         lambda: run_job_fit(
             conn, workspace_id, semantic_adapter, request_id=request_id,
@@ -146,6 +161,8 @@ def fit_job(
             account_id=account_id,
         ),
     )
+    execute_job_fit_policy(conn, workspace_id=workspace_id, fit_artifact=artifact)
+    return artifact
 
 
 def generate_application_intelligence(
@@ -153,13 +170,17 @@ def generate_application_intelligence(
     account_id: str = DEFAULT_ACCOUNT_ID,
 ) -> dict[str, Any]:
     require_job_workspace(conn, workspace_id, account_id=account_id)
-    return _preserve_current_artifacts(
+    artifact = _preserve_current_artifacts(
         conn, workspace_id,
         lambda: run_application_intelligence(
             conn, workspace_id, provider, request_id=request_id,
             account_id=account_id,
         ),
     )
+    execute_application_intelligence_policy(
+        conn, workspace_id=workspace_id, intelligence_artifact=artifact,
+    )
+    return artifact
 
 
 def record_review_decision(

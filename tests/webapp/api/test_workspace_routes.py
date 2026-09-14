@@ -124,7 +124,14 @@ def test_fit_resolves_extension_ids_server_side(tmp_path, monkeypatch):
         captured["active_extensions"] = active_extensions
         captured["extension_paths"] = extension_paths
         captured["account_id"] = account_id
-        return {"id": "art_fit", "artifact_type": "job_fit_result"}
+        # fit_job now also runs policy execution against the returned
+        # artifact's payload (gate_assessments/dimension_assessments) --
+        # an empty-but-present payload keeps this fake's assertions about
+        # extension resolution focused while still satisfying that shape.
+        return {
+            "id": "art_fit", "artifact_type": "job_fit_result",
+            "payload": {"gate_assessments": [], "dimension_assessments": []},
+        }
 
     monkeypatch.setattr("webapp.services.http_api.run_job_fit", fake_run)
     app = create_app(_settings(tmp_path))
