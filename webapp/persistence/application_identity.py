@@ -123,6 +123,22 @@ def save_application_identity(
     )
 
 
+def get_search_workspace_for_application(
+    conn: sqlite3.Connection, application_workspace_id: str,
+) -> str | None:
+    """The search workspace this application belongs to, or None for a
+    manually-created application with no discovery/search-workspace
+    origin (e.g. one created via the Add Job form). Never fabricated --
+    a manual application simply has no row in application_workspace_origins."""
+
+    row = conn.execute(
+        "SELECT search_workspace_id FROM application_workspace_origins "
+        "WHERE application_workspace_id = ?",
+        (application_workspace_id,),
+    ).fetchone()
+    return row["search_workspace_id"] if row else None
+
+
 def record_application_origin(
     conn: sqlite3.Connection,
     *,

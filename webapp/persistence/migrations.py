@@ -24,6 +24,7 @@ HANDOFF_SESSIONS_MIGRATION_ID = "005_handoff_sessions"
 ONBOARDING_WALKTHROUGHS_MIGRATION_ID = "006_onboarding_walkthroughs"
 PAIRING_SECRETS_MIGRATION_ID = "007_pairing_secrets"
 POLICY_DECISIONS_MIGRATION_ID = "010_policy_decisions"
+APPLICATION_BLOCKERS_MIGRATION_ID = "011_application_blockers"
 
 
 def _now() -> str:
@@ -53,6 +54,7 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
         (ONBOARDING_WALKTHROUGHS_MIGRATION_ID, _migrate_onboarding_walkthroughs, False),
         (PAIRING_SECRETS_MIGRATION_ID, _migrate_pairing_secrets, False),
         (POLICY_DECISIONS_MIGRATION_ID, _migrate_policy_decisions, False),
+        (APPLICATION_BLOCKERS_MIGRATION_ID, _migrate_application_blockers, False),
     )
     for migration_id, operation, disable_foreign_keys in migrations:
         if conn.execute(
@@ -394,6 +396,102 @@ def _migrate_policy_decisions(conn: sqlite3.Connection) -> None:
     conn.execute(
         "ALTER TABLE review_decisions ADD COLUMN policy_decision_id "
         "TEXT REFERENCES policy_decisions(id)"
+    )
+
+
+def _migrate_application_blockers(conn: sqlite3.Connection) -> None:
+    # A REQUIRE_USER policy decision pauses an application; it is not a
+    # failure. Three separate, deliberately non-overlapping concepts:
+    #   policy_decisions (010)  -- immutable explanation of why policy
+    #                              stopped. Never mutated by this migration
+    #                              or anything built on top of it.
+    #   application_blockers    -- the current actionable question created
+    #                              from a governing REQUIRE_USER decision.
+    #   blocker_resolutions     -- what the user answered, with an explicit,
+    #                              never-silently-widened reuse scope.
+    #
+    # application_blockers.policy_decision_id is UNIQUE: this is the
+    # idempotency key. save_policy_decision is itself idempotent (a retry
+    # returns the same policy_decision id), so a blocker keyed 1:1 on that
+    # id is automatically idempotent too -- no separate applicability
+    # tuple needs reinventing here.
+    #
+    # "Superseded" is deliberately NOT a column value this migration
+    # writes. Whether a blocker still governs is derived at read time by
+    # comparing its source_artifact_id against the workspace's current
+    # artifact for that stage (see
+    # webapp/services/decision_policy.py::current_application_blockers) --
+    # re-running an upstream stage produces a new policy decision, and
+    # therefore a new, separate blocker row, while the old row is left
+    # completely alone as permanent audit history. status only ever
+    # transitions open -> resolved, driven by an actual user answer.
+    _execute_statements(
+        conn,
+        """
+        CREATE TABLE application_blockers (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT NOT NULL REFERENCES workspaces(id),
+            policy_decision_id TEXT NOT NULL UNIQUE REFERENCES policy_decisions(id),
+            source_artifact_id TEXT NOT NULL REFERENCES artifacts(id),
+            stage TEXT NOT NULL CHECK (
+                stage IN ('understanding', 'fit', 'application_intelligence', 'content')
+            ),
+            blocker_type TEXT NOT NULL,
+            subject_key TEXT NOT NULL,
+            question TEXT NOT NULL,
+            context TEXT NOT NULL,
+            resume_stage TEXT NOT NULL CHECK (
+                resume_stage IN ('understanding', 'fit', 'application_intelligence', 'content')
+            ),
+            allowed_scopes TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (status IN ('open', 'resolved', 'superseded')) DEFAULT 'open',
+            created_at TEXT NOT NULL,
+            resolved_at TEXT
+        );
+
+        CREATE INDEX idx_application_blockers_workspace
+            ON application_blockers(workspace_id, status);
+        CREATE INDEX idx_application_blockers_source_artifact
+            ON application_blockers(source_artifact_id);
+
+        CREATE TABLE blocker_resolutions (
+            id TEXT PRIMARY KEY,
+            blocker_id TEXT NOT NULL UNIQUE REFERENCES application_blockers(id),
+            workspace_id TEXT NOT NULL REFERENCES workspaces(id),
+            policy_decision_id TEXT NOT NULL REFERENCES policy_decisions(id),
+            answer_value TEXT NOT NULL,
+            answer_scope TEXT NOT NULL CHECK (
+                answer_scope IN ('APPLICATION_ONLY', 'SEARCH_WORKSPACE', 'CANDIDATE_FACT')
+            ),
+            resolved_by TEXT NOT NULL,
+            promoted_evidence_id TEXT,
+            created_at TEXT NOT NULL
+        );
+
+        CREATE INDEX idx_blocker_resolutions_workspace
+            ON blocker_resolutions(workspace_id);
+        """,
+    )
+    conn.execute(
+        "CREATE TRIGGER application_blockers_status_immutable_once_resolved "
+        "BEFORE UPDATE OF question, context, policy_decision_id, source_artifact_id, "
+        "created_at ON application_blockers "
+        "BEGIN SELECT RAISE(ABORT, 'application blocker identity fields are immutable'); END"
+    )
+    conn.execute(
+        "CREATE TRIGGER application_blockers_no_delete "
+        "BEFORE DELETE ON application_blockers "
+        "BEGIN SELECT RAISE(ABORT, 'application blockers are permanent audit history'); END"
+    )
+    conn.execute(
+        "CREATE TRIGGER blocker_resolutions_immutable_update "
+        "BEFORE UPDATE ON blocker_resolutions "
+        "BEGIN SELECT RAISE(ABORT, 'blocker resolutions are immutable, append-only audit history'); END"
+    )
+    conn.execute(
+        "CREATE TRIGGER blocker_resolutions_no_delete "
+        "BEFORE DELETE ON blocker_resolutions "
+        "BEGIN SELECT RAISE(ABORT, 'blocker resolutions are permanent audit history'); END"
     )
 
 

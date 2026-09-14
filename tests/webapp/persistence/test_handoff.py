@@ -5,6 +5,7 @@ import sqlite3
 from webapp.persistence.db import connect, init_db
 import webapp.persistence.migrations as migrations
 from webapp.persistence.migrations import (
+    APPLICATION_BLOCKERS_MIGRATION_ID,
     APPLICATION_DOCUMENTS_MIGRATION_ID,
     HANDOFF_SESSIONS_MIGRATION_ID,
     ONBOARDING_WALKTHROUGHS_MIGRATION_ID,
@@ -66,6 +67,12 @@ def test_exact_004_application_documents_upgrade_to_005_handoff(tmp_path):
         "1, ?, 'sha256/aa/existing.docx', NULL, 'now')",
         (workspace["id"], "a" * 64),
     )
+    conn.execute("DROP TRIGGER blocker_resolutions_no_delete")
+    conn.execute("DROP TRIGGER blocker_resolutions_immutable_update")
+    conn.execute("DROP TRIGGER application_blockers_no_delete")
+    conn.execute("DROP TRIGGER application_blockers_status_immutable_once_resolved")
+    conn.execute("DROP TABLE blocker_resolutions")
+    conn.execute("DROP TABLE application_blockers")
     conn.execute("DROP TRIGGER policy_decisions_immutable_update")
     conn.execute("DROP TRIGGER policy_decisions_immutable_delete")
     conn.execute("DROP TABLE policy_decisions")
@@ -78,12 +85,13 @@ def test_exact_004_application_documents_upgrade_to_005_handoff(tmp_path):
     conn.execute("DROP TABLE extension_credentials")
     conn.execute("DROP TABLE pairing_secrets")
     conn.execute(
-        "DELETE FROM schema_migrations WHERE id IN (?, ?, ?, ?)",
+        "DELETE FROM schema_migrations WHERE id IN (?, ?, ?, ?, ?)",
         (
             HANDOFF_SESSIONS_MIGRATION_ID,
             ONBOARDING_WALKTHROUGHS_MIGRATION_ID,
             PAIRING_SECRETS_MIGRATION_ID,
             POLICY_DECISIONS_MIGRATION_ID,
+            APPLICATION_BLOCKERS_MIGRATION_ID,
         ),
     )
     conn.commit()
