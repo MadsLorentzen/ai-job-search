@@ -20,8 +20,9 @@ Outcome semantics:
                                  requirement/responsibility IDs are recorded
                                  and must not be claimed as supported
                                  downstream.
-    AUTO_OMIT                -- no supporting evidence; safe to exclude,
-                                 nothing worth recording as a claim or gap.
+    AUTO_OMIT                -- no supporting evidence, and the gap is
+                                 genuinely non-material to this posting;
+                                 safe to exclude.
     AUTO_REJECT              -- gate FAIL with trustworthy, supported
                                  disqualifying evidence. Maps to the
                                  workflow-level DECLINED_BY_POLICY state
@@ -30,37 +31,67 @@ Outcome semantics:
                                  real-world post-submission outcome and is
                                  never touched by this module).
     REQUIRE_USER              -- material, ambiguous, or candidate-only;
-                                 policy cannot safely resolve it. This
-                                 includes every UNVERIFIED gate that
-                                 carries non-empty profile_evidence_ids:
-                                 see the Phase-1 contract gap note below.
-
-Known Phase-1 contract gap (see application-decision-policy.v0.json's
-description field for the full note): product/semantic_job_fit.py's
-_build_gate_assessments computes profile_evidence_ids (via
-_supportive_profile_claims) independently of, and before, the branch that
-decides the gate's final status. As a result a gate can reach UNVERIFIED
-with non-empty profile_evidence_ids purely because the job-side proposal
-was invalid, FAIL-without-support, NOT_APPLICABLE, or of an unrecognized
-status -- none of which means the profile evidence was ever validated
-against a PASS/FLAG verdict. The current record has no field that
-distinguishes "validated as supportive" from "present but unvetted." This
-module does not invent that distinction: it treats every UNVERIFIED gate
-with non-empty profile_evidence_ids as unvetted and escalates to
-REQUIRE_USER. Only a gate with an *empty* profile_evidence_ids list is
-classified AUTO_OMIT. Phase 2 should extend semantic_job_fit.py's gate
-assessment output with an explicit field (e.g. evidence_disposition:
-"validated_supportive" | "unvetted" | "none") so this module can safely
-distinguish affirmative support from ambiguous/conflicting evidence
-without guessing.
+                                 policy cannot safely resolve it.
     NOT_APPLICABLE             -- no evaluable job-side signal exists for
-                                 this dimension on this posting (for
+                                 this dimension/gate on this posting (for
                                  example behavioral_fit/career_alignment
                                  dimensions with no job_categories wired in
-                                 the semantic fit policy). Distinct from
+                                 the semantic fit policy, or a gate whose
+                                 category has zero job-evidence items on
+                                 this specific posting). Distinct from
                                  AUTO_PROCEED: there is nothing here to
                                  affirm, so recording a positive judgment
                                  would misrepresent an absence of signal.
+
+Gate classification (Phase 2): product/semantic_job_fit.py's
+_build_gate_assessments now exposes two explicit fields this module
+consumes directly, rather than inferring support from evidence-id
+presence alone (a Phase-1 limitation, since resolved here):
+
+    evidence_disposition -- SUPPORTIVE | CONFLICTING | ABSENT | INSUFFICIENT
+        Whether profile_evidence_ids on this assessment was actually
+        validated as supporting (or disqualifying) the gate's proposal
+        outcome, or merely present without ever being vetted toward one.
+
+    materiality -- MATERIAL | NON_MATERIAL | NOT_APPLICABLE
+        Derived per assessment from whether THIS posting's own resolved
+        job evidence contains an item in the gate's evidence category --
+        never a static default keyed only on gate type (a posting can
+        make "language" material just as easily as "eligibility").
+        NON_MATERIAL is defined in the enum but is not currently produced
+        by semantic_job_fit.py: there is no signal today distinguishing
+        "this posting states a requirement in this category but marks it
+        optional" from "this posting states nothing in this category at
+        all" (the latter is NOT_APPLICABLE). A future extraction-layer
+        change could add that distinction; until then NON_MATERIAL is
+        reachable only via a caller-supplied policy override, never from
+        semantic_job_fit.py's own output.
+
+Classification table:
+    materiality=MATERIAL,     evidence_disposition=SUPPORTIVE    -> AUTO_PROCEED
+    materiality=MATERIAL,     evidence_disposition=CONFLICTING   -> REQUIRE_USER
+    materiality=MATERIAL,     evidence_disposition=ABSENT        -> REQUIRE_USER
+    materiality=MATERIAL,     evidence_disposition=INSUFFICIENT  -> REQUIRE_USER
+    materiality=NON_MATERIAL, evidence_disposition=ABSENT        -> AUTO_OMIT
+    materiality=NON_MATERIAL, evidence_disposition=SUPPORTIVE    -> AUTO_PROCEED
+    materiality=NON_MATERIAL, evidence_disposition=CONFLICTING   -> REQUIRE_USER
+    materiality=NON_MATERIAL, evidence_disposition=INSUFFICIENT  -> REQUIRE_USER
+    materiality=NOT_APPLICABLE (any disposition)                -> NOT_APPLICABLE
+    gate status FLAG      (any materiality/disposition)          -> REQUIRE_USER
+    gate status FAIL      (trusted pre-supported, see below)     -> AUTO_REJECT
+
+A gate FAIL reaching this module is, by construction, already trustworthy
+and supported: semantic_job_fit.py's _build_gate_assessments downgrades an
+unsupported FAIL proposal to UNVERIFIED before this module ever sees it
+(its own "FAIL requires affirmative job and profile incompatibility
+evidence" rule). AUTO_REJECT is therefore the only outcome for a literal
+FAIL status; there is no ambiguous-FAIL case routed to REQUIRE_USER here.
+
+CONFLICTING is always REQUIRE_USER regardless of materiality: conflicting
+evidence is never safe to silently omit or proceed past, even for a
+non-material gate -- an unresolved contradiction in the candidate's own
+evidence is a data-quality problem worth a human's attention regardless of
+whether the gate itself would otherwise be optional.
 """
 
 from __future__ import annotations
@@ -84,7 +115,7 @@ DEFAULT_POLICY = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
 # JSON file cannot silently keep producing the same fingerprint as before
 # the change -- the JSON-only fingerprint used in an earlier draft of this
 # module could not detect that class of change.
-ENGINE_VERSION = "application-decision-engine.v0"
+ENGINE_VERSION = "application-decision-engine.v1"
 
 OUTCOMES = (
     "AUTO_PROCEED",
@@ -213,10 +244,17 @@ def application_decision_policy_fingerprint(
     return f"appdecpolicy_{digest}"
 
 
+GATE_EVIDENCE_DISPOSITIONS = {"SUPPORTIVE", "CONFLICTING", "ABSENT", "INSUFFICIENT"}
+GATE_MATERIALITY_VALUES = {"MATERIAL", "NON_MATERIAL", "NOT_APPLICABLE"}
+
+
 def _require_gate_shape(gate: Any) -> None:
     if not isinstance(gate, dict):
         raise ApplicationDecisionPolicyInputError("gate assessment must be an object")
-    required = {"gate_id", "status", "reason", "job_evidence_ids", "profile_evidence_ids"}
+    required = {
+        "gate_id", "status", "reason", "job_evidence_ids", "profile_evidence_ids",
+        "evidence_disposition", "materiality",
+    }
     missing = required - gate.keys()
     if missing:
         raise ApplicationDecisionPolicyInputError(
@@ -226,6 +264,15 @@ def _require_gate_shape(gate: Any) -> None:
         raise ApplicationDecisionPolicyInputError(
             f"gate assessment status {gate['status']!r} is not a known Job Fit gate status"
         )
+    if gate["evidence_disposition"] not in GATE_EVIDENCE_DISPOSITIONS:
+        raise ApplicationDecisionPolicyInputError(
+            f"gate assessment evidence_disposition {gate['evidence_disposition']!r} "
+            "is not a known disposition"
+        )
+    if gate["materiality"] not in GATE_MATERIALITY_VALUES:
+        raise ApplicationDecisionPolicyInputError(
+            f"gate assessment materiality {gate['materiality']!r} is not a known value"
+        )
 
 
 def evaluate_gate_assessment(
@@ -234,11 +281,15 @@ def evaluate_gate_assessment(
     """Classify one Job Fit gate_assessments[] record.
 
     `gate` is trusted to be exactly the shape semantic_job_fit.py's
-    _build_gate_assessments produces: gate_id, status, reason,
-    job_evidence_ids, profile_evidence_ids. profile_evidence_ids on the
-    incoming record is already filtered to supportive (non-placeholder,
-    non-conflicted) claims by semantic_job_fit.py -- this module does not
-    re-derive trustworthiness, it only reads whether that list is empty.
+    _build_gate_assessments produces (Phase 2 contract): gate_id, status,
+    reason, job_evidence_ids, profile_evidence_ids, evidence_disposition,
+    materiality. Classification is driven directly by evidence_disposition
+    and materiality -- both already resolved upstream by semantic_job_fit.py
+    from this specific posting's own job evidence and this specific
+    candidate's own profile evidence. This module does not re-derive either
+    value; it only maps the (materiality, evidence_disposition) pair (or the
+    gate's own status, for FAIL/FLAG) to an outcome. See the module
+    docstring's classification table for the full rule set.
     """
 
     _require_gate_shape(gate)
@@ -246,13 +297,10 @@ def evaluate_gate_assessment(
     reason_codes = active_policy["reason_codes"]
     gate_rules = active_policy["gate_rules"]
     status = gate["status"]
-    has_evidence = bool(gate["profile_evidence_ids"])
+    materiality = gate["materiality"]
+    disposition = gate["evidence_disposition"]
 
-    if status == "PASS":
-        outcome, reason_code = gate_rules["PASS"], "gate_pass"
-    elif status == "FLAG":
-        outcome, reason_code = gate_rules["FLAG"], "gate_flag"
-    elif status == "FAIL":
+    if status == "FAIL":
         # semantic_job_fit.py's _build_gate_assessments already downgrades
         # an unsupported FAIL proposal to UNVERIFIED before this module
         # ever sees it (see its "FAIL requires affirmative job and profile
@@ -262,20 +310,17 @@ def evaluate_gate_assessment(
         # this branch; there is no ambiguous-FAIL case to route to
         # REQUIRE_USER here.
         outcome, reason_code = gate_rules["FAIL"], "gate_fail_supported"
-    elif status == "NOT_APPLICABLE":
-        outcome, reason_code = gate_rules["NOT_APPLICABLE"], "gate_not_applicable"
-    else:  # UNVERIFIED
-        if has_evidence:
-            # profile_evidence_ids being non-empty does NOT prove the
-            # evidence was validated as supporting a proceed verdict --
-            # see the Phase-1 contract gap note in this module's
-            # docstring. Default conservatively rather than assume
-            # support the upstream artifact cannot actually confirm.
-            outcome = gate_rules["UNVERIFIED_WITH_UNVETTED_EVIDENCE"]
-            reason_code = "gate_unverified_with_unvetted_evidence"
-        else:
-            outcome = gate_rules["UNVERIFIED_WITHOUT_EVIDENCE"]
-            reason_code = "gate_unverified_without_evidence"
+    elif status == "FLAG":
+        outcome, reason_code = gate_rules["FLAG"], "gate_flag"
+    elif materiality == "NOT_APPLICABLE":
+        outcome = gate_rules["materiality_not_applicable"]
+        reason_code = "gate_not_applicable"
+    else:
+        materiality_key = "material" if materiality == "MATERIAL" else "non_material"
+        disposition_key = disposition.lower()
+        rule_key = f"{materiality_key}_{disposition_key}"
+        outcome = gate_rules[rule_key]
+        reason_code = f"gate_{rule_key}"
 
     return DecisionRecord(
         review_item_type="gate_flag",

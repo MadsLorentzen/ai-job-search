@@ -1,7 +1,7 @@
 {
   "schema_version": "application-decision-policy.v0",
   "id": "default_application_decision_policy",
-  "description": "Deterministic policy classifying Job Fit gate assessments and dimension assessments (human_judgment_questions) into automation outcomes: AUTO_PROCEED, AUTO_PROCEED_WITH_GAPS, AUTO_OMIT, AUTO_REJECT, REQUIRE_USER, NOT_APPLICABLE. Consumes Job Fit v1 results already produced by product/semantic_job_fit.py; does not recompute gate status, dimension coverage, or matches. Evidence trustworthiness (placeholder/conflicted exclusion) is decided upstream by semantic_job_fit.py and is trusted as given here. Known Phase-1 contract gap: the current gate_assessments record exposes no field distinguishing profile_evidence_ids that were validated as supporting a PASS/FLAG verdict from profile_evidence_ids that merely survived _supportive_profile_claims while the surrounding proposal was FAIL-without-support, NOT_APPLICABLE, or of unknown status. Until product/semantic_job_fit.py exposes that distinction explicitly (see Phase 2), this policy treats any UNVERIFIED gate carrying non-empty profile_evidence_ids as unvetted rather than supportive, and escalates it to REQUIRE_USER.",
+  "description": "Deterministic policy classifying Job Fit gate assessments and dimension assessments (human_judgment_questions) into automation outcomes: AUTO_PROCEED, AUTO_PROCEED_WITH_GAPS, AUTO_OMIT, AUTO_REJECT, REQUIRE_USER, NOT_APPLICABLE. Consumes Job Fit v1 results already produced by product/semantic_job_fit.py; does not recompute gate status, dimension coverage, matches, evidence_disposition, or materiality. Gate classification is driven directly by the assessment's own evidence_disposition (SUPPORTIVE | CONFLICTING | ABSENT | INSUFFICIENT) and materiality (MATERIAL | NON_MATERIAL | NOT_APPLICABLE) fields, both produced upstream by semantic_job_fit.py's _build_gate_assessments -- this policy does not infer support from evidence-id presence alone. materiality is resolved per assessment from whether the specific posting's own job evidence contains an item in the gate's category; it is never a static default keyed only on gate type, since any gate category (including language) can be material for one posting and inapplicable for another.",
   "outcomes": [
     "AUTO_PROCEED",
     "AUTO_PROCEED_WITH_GAPS",
@@ -11,12 +11,17 @@
     "NOT_APPLICABLE"
   ],
   "gate_rules": {
-    "PASS": "AUTO_PROCEED",
-    "FLAG": "REQUIRE_USER",
     "FAIL": "AUTO_REJECT",
-    "UNVERIFIED_WITHOUT_EVIDENCE": "AUTO_OMIT",
-    "UNVERIFIED_WITH_UNVETTED_EVIDENCE": "REQUIRE_USER",
-    "NOT_APPLICABLE": "NOT_APPLICABLE"
+    "FLAG": "REQUIRE_USER",
+    "materiality_not_applicable": "NOT_APPLICABLE",
+    "material_supportive": "AUTO_PROCEED",
+    "material_conflicting": "REQUIRE_USER",
+    "material_absent": "REQUIRE_USER",
+    "material_insufficient": "REQUIRE_USER",
+    "non_material_supportive": "AUTO_PROCEED",
+    "non_material_conflicting": "REQUIRE_USER",
+    "non_material_absent": "AUTO_OMIT",
+    "non_material_insufficient": "REQUIRE_USER"
   },
   "dimension_rules": {
     "READY": "AUTO_PROCEED",
@@ -25,12 +30,17 @@
     "NEEDS_REVIEW_ZERO_COVERAGE": "REQUIRE_USER"
   },
   "reason_codes": {
-    "gate_pass": "Gate passed with trustworthy evidence.",
-    "gate_flag": "Gate proposal raised an explicit caveat requiring human review.",
     "gate_fail_supported": "Gate failed with trustworthy, supported disqualifying evidence.",
-    "gate_unverified_without_evidence": "No affirmative candidate evidence exists for this gate category; omitting the unverified claim is safe.",
-    "gate_not_applicable": "Gate does not apply to this posting.",
-    "gate_unverified_with_unvetted_evidence": "Gate evidence is present but the current Job Fit contract cannot confirm it was validated as supporting a proceed verdict; the underlying proposal was not PASS/FLAG-with-support. Escalating rather than assuming support.",
+    "gate_flag": "Gate proposal raised an explicit caveat requiring human review.",
+    "gate_not_applicable": "This posting asserts no requirement in this gate's evidence category; there is nothing to evaluate for or against.",
+    "gate_material_supportive": "This posting asserts a material requirement in this gate's category, and validated, non-conflicted candidate evidence affirmatively supports it.",
+    "gate_material_conflicting": "This posting asserts a material requirement in this gate's category, and candidate evidence conflicts with it; never safe to silently resolve.",
+    "gate_material_absent": "This posting asserts a material requirement in this gate's category, and no candidate evidence addresses it; a missing answer to a material question requires the candidate.",
+    "gate_material_insufficient": "This posting asserts a material requirement in this gate's category, and the available evidence was never validated toward a verdict; escalating rather than assuming support.",
+    "gate_non_material_supportive": "This posting's requirement in this gate's category is non-material, and validated candidate evidence affirmatively supports it anyway.",
+    "gate_non_material_conflicting": "Candidate evidence conflicts with this gate's category; conflicting evidence is never safe to silently omit, even when the gate is non-material.",
+    "gate_non_material_absent": "This posting's requirement in this gate's category is non-material and no candidate evidence addresses it; omitting is safe.",
+    "gate_non_material_insufficient": "This posting's requirement in this gate's category is non-material, but the available evidence was never validated toward a verdict; escalating rather than assuming safety to omit.",
     "dimension_ready": "All relevant job requirements/responsibilities for this dimension were matched at or above the required coverage ratio.",
     "dimension_no_relevant_job_ids": "This dimension has no job-side requirements or responsibilities to evaluate against; there is no evaluable signal for or against it on this posting.",
     "dimension_partial_coverage": "Some relevant job requirements/responsibilities were matched with supported evidence; the remainder are recorded as gaps and must not be claimed as supported.",

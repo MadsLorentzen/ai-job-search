@@ -610,6 +610,10 @@ def _adjudicate_one_match(
     return base
 
 
+GATE_EVIDENCE_DISPOSITIONS = ("SUPPORTIVE", "CONFLICTING", "ABSENT", "INSUFFICIENT")
+GATE_MATERIALITY_VALUES = ("MATERIAL", "NON_MATERIAL", "NOT_APPLICABLE")
+
+
 def _build_gate_assessments(
     request: dict[str, Any],
     context: dict[str, Any],
@@ -626,6 +630,30 @@ def _build_gate_assessments(
         reason = "No affirmative candidate evidence was supplied for this gate."
         adjudicated_job_ids: list[str] = []
         profile_ids: list[str] = []
+        # evidence_disposition records, for downstream policy, whether the
+        # profile_evidence_ids on this assessment were actually validated
+        # as supporting (or disqualifying) a verdict, or merely survived
+        # _supportive_profile_claims while the surrounding proposal never
+        # reached a proceed/fail conclusion. profile_ids being non-empty
+        # is NOT sufficient evidence of support on its own -- see each
+        # branch below for the specific reason.
+        disposition = "ABSENT"
+        # materiality reflects whether THIS posting actually asserted a
+        # requirement in this gate's evidence category at all -- derived
+        # per assessment from the posting's own resolved job evidence,
+        # never from a static per-gate-type default. A posting with no
+        # job-evidence items in a category (e.g. no language requirement
+        # text anywhere in the posting) cannot make that gate material;
+        # a posting that does assert one (e.g. "German required") makes
+        # it material regardless of which gate type it is.
+        materiality = (
+            "MATERIAL"
+            if any(
+                item.get("category") == category
+                for item in context["job_evidence"].values()
+            )
+            else "NOT_APPLICABLE"
+        )
         if proposal is not None:
             adjudicated_job_ids, invalid_job_refs = _adjudicate_gate_job_refs(
                 proposal["job_evidence_ids"], category, context
@@ -638,26 +666,38 @@ def _build_gate_assessments(
                     "Gate evidence is missing, unknown, or outside the configured "
                     f"{category} category."
                 )
+                # The job-side link was never established, so any
+                # profile_ids present here were never vetted toward a
+                # verdict -- present-but-unvetted, not proof of support.
+                disposition = "INSUFFICIENT" if profile_ids else "ABSENT"
             elif proposal["status"] == "FAIL":
                 if supportive:
                     status = "FAIL"
                     reason = proposal["reason"]
+                    disposition = "CONFLICTING"
                 else:
                     status = "UNVERIFIED"
                     reason = "FAIL requires affirmative job and profile incompatibility evidence."
+                    disposition = "ABSENT"
             elif proposal["status"] in {"PASS", "FLAG"}:
                 if supportive:
                     status = proposal["status"]
                     reason = proposal["reason"]
+                    disposition = "SUPPORTIVE"
                 else:
                     status = "UNVERIFIED"
                     reason = f"{proposal['status']} requires non-placeholder, non-conflicted profile evidence."
+                    disposition = "ABSENT"
             elif proposal["status"] == "NOT_APPLICABLE":
                 status = "UNVERIFIED"
                 reason = "NOT_APPLICABLE is not inferred automatically in Ticket 7."
+                # The proposal explicitly declined to assert proceed/fail,
+                # so any profile_ids present were never vetted either way.
+                disposition = "INSUFFICIENT" if profile_ids else "ABSENT"
             else:
                 status = "UNVERIFIED"
                 reason = proposal["reason"]
+                disposition = "INSUFFICIENT" if profile_ids else "ABSENT"
             if rejected:
                 reason = f"{reason} Some supplied profile evidence is placeholder or conflicted."
         assessments.append(
@@ -667,6 +707,8 @@ def _build_gate_assessments(
                 "reason": reason,
                 "job_evidence_ids": adjudicated_job_ids,
                 "profile_evidence_ids": profile_ids,
+                "evidence_disposition": disposition,
+                "materiality": materiality,
             }
         )
     return assessments
@@ -679,12 +721,14 @@ def _build_dimension_assessments(
     gate_assessments: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], dict[str, float]]:
     positive_by_job: dict[str, str] = {}
+    profile_evidence_by_job: dict[str, list[str]] = {}
     for collection in ("direct_matches", "functionally_equivalent_matches", "transferable_matches"):
         for match in accepted[collection]:
             if match["status"] != "READY":
                 continue
             for job_id in match["job_requirement_ids"]:
                 positive_by_job[job_id] = match["classification"]
+                profile_evidence_by_job[job_id] = match["profile_evidence_ids"]
     assessments: list[dict[str, Any]] = []
     scores: dict[str, float] = {}
     for rule in request["semantic_fit_policy"]["dimension_rules"]:
@@ -706,10 +750,23 @@ def _build_dimension_assessments(
                     None,
                     [],
                     [],
+                    matched_job_ids=[],
+                    unmatched_job_ids=[],
+                    supporting_profile_evidence_ids=[],
                 )
             )
             continue
         matched_job_ids = [job_id for job_id in relevant_job_ids if job_id in positive_by_job]
+        unmatched_job_ids = [
+            job_id for job_id in relevant_job_ids if job_id not in positive_by_job
+        ]
+        supporting_profile_evidence_ids = sorted(
+            {
+                profile_id
+                for job_id in matched_job_ids
+                for profile_id in profile_evidence_by_job.get(job_id, [])
+            }
+        )
         coverage_ratio = Decimal(len(matched_job_ids)) / Decimal(len(relevant_job_ids))
         minimum_ratio = Decimal(str(coverage["minimum_ratio_for_ready"]))
         classifications = [positive_by_job[job_id] for job_id in matched_job_ids]
@@ -732,6 +789,9 @@ def _build_dimension_assessments(
                     None,
                     sorted(set(classifications), key=_precedence),
                     relevant_job_ids,
+                    matched_job_ids=matched_job_ids,
+                    unmatched_job_ids=unmatched_job_ids,
+                    supporting_profile_evidence_ids=supporting_profile_evidence_ids,
                 )
             )
             continue
@@ -746,6 +806,9 @@ def _build_dimension_assessments(
                 score,
                 sorted(set(classifications), key=_precedence),
                 relevant_job_ids,
+                matched_job_ids=matched_job_ids,
+                unmatched_job_ids=unmatched_job_ids,
+                supporting_profile_evidence_ids=supporting_profile_evidence_ids,
             )
         )
         scores[dimension_id] = score
@@ -992,7 +1055,17 @@ def _dimension(
     score: Any,
     classifications: list[str],
     job_ids: list[str],
+    *,
+    matched_job_ids: list[str],
+    unmatched_job_ids: list[str],
+    supporting_profile_evidence_ids: list[str],
 ) -> dict[str, Any]:
+    # job_evidence_ids keeps its existing, unchanged meaning: every
+    # relevant job requirement/responsibility id for this dimension,
+    # matched or not. Existing consumers must not see that meaning
+    # change. matched_job_requirement_ids / unmatched_job_requirement_ids
+    # / supporting_profile_evidence_ids are new, additive fields carrying
+    # the finer-grained split that job_evidence_ids alone cannot express.
     record = {
         "dimension_id": dimension_id,
         "status": status,
@@ -1000,6 +1073,9 @@ def _dimension(
         "score": None if score is None else float(score),
         "supporting_classifications": classifications,
         "job_evidence_ids": sorted(job_ids),
+        "matched_job_requirement_ids": sorted(matched_job_ids),
+        "unmatched_job_requirement_ids": sorted(unmatched_job_ids),
+        "supporting_profile_evidence_ids": sorted(supporting_profile_evidence_ids),
     }
     if status != "READY":
         record["reason"] = "Required semantic evidence remains unresolved."
@@ -1097,9 +1173,13 @@ def _validate_result_matches(result: dict[str, Any], context: dict[str, Any], er
 
 def _validate_gate_assessments(value: Any, context: dict[str, Any], errors: list[str]) -> None:
     seen: set[str] = set()
+    required_fields = {
+        "gate_id", "status", "reason", "job_evidence_ids", "profile_evidence_ids",
+        "evidence_disposition", "materiality",
+    }
     for index, assessment in enumerate(_list(value, "$.result.gate_assessments", errors)):
         path = f"$.result.gate_assessments[{index}]"
-        if not _object_shape(assessment, {"gate_id", "status", "reason", "job_evidence_ids", "profile_evidence_ids"}, {"gate_id", "status", "reason", "job_evidence_ids", "profile_evidence_ids"}, path, errors):
+        if not _object_shape(assessment, required_fields, required_fields, path, errors):
             continue
         gate_id = assessment.get("gate_id")
         _enum(gate_id, set(GATE_IDS), f"{path}.gate_id", errors)
@@ -1109,6 +1189,16 @@ def _validate_gate_assessments(value: Any, context: dict[str, Any], errors: list
             seen.add(gate_id)
         _enum(assessment.get("status"), GATE_STATUSES, f"{path}.status", errors)
         _nonempty_string(assessment.get("reason"), f"{path}.reason", errors)
+        _enum(
+            assessment.get("evidence_disposition"),
+            set(GATE_EVIDENCE_DISPOSITIONS),
+            f"{path}.evidence_disposition", errors,
+        )
+        _enum(
+            assessment.get("materiality"),
+            set(GATE_MATERIALITY_VALUES),
+            f"{path}.materiality", errors,
+        )
         job_ids = _string_list(assessment.get("job_evidence_ids"), f"{path}.job_evidence_ids", errors)
         profile_ids = _string_list(assessment.get("profile_evidence_ids"), f"{path}.profile_evidence_ids", errors)
         for job_id in job_ids:
@@ -1206,9 +1296,21 @@ def _validate_question_records(value: Any, context: dict[str, Any], errors: list
 def _validate_dimension_assessments(value: Any, request: dict[str, Any], errors: list[str]) -> None:
     expected = {dimension["id"] for dimension in request["evaluation_policy"]["dimensions"]}
     seen: set[str] = set()
+    # job_evidence_ids keeps its pre-existing meaning (all relevant job
+    # ids, matched or not) and stays required for backward compatibility.
+    # matched_job_requirement_ids / unmatched_job_requirement_ids /
+    # supporting_profile_evidence_ids are new, additive, and always
+    # present (as possibly-empty lists) rather than optional, so a
+    # consumer never has to distinguish "not computed" from "empty".
+    required_fields = {
+        "dimension_id", "status", "required", "score", "supporting_classifications",
+        "job_evidence_ids", "matched_job_requirement_ids", "unmatched_job_requirement_ids",
+        "supporting_profile_evidence_ids",
+    }
+    allowed_fields = required_fields | {"reason"}
     for index, item in enumerate(_list(value, "$.result.dimension_assessments", errors)):
         path = f"$.result.dimension_assessments[{index}]"
-        if not _object_shape(item, {"dimension_id", "status", "required", "score", "supporting_classifications", "job_evidence_ids"}, {"dimension_id", "status", "required", "score", "supporting_classifications", "job_evidence_ids", "reason"}, path, errors):
+        if not _object_shape(item, required_fields, allowed_fields, path, errors):
             continue
         dimension_id = item.get("dimension_id")
         _enum(dimension_id, expected, f"{path}.dimension_id", errors)
@@ -1219,6 +1321,29 @@ def _validate_dimension_assessments(value: Any, request: dict[str, Any], errors:
             _score_or_error(item.get("score"), f"{path}.score", errors)
         elif item.get("score") is not None:
             errors.append(f"{path}.score: unresolved dimensions must not have scores")
+        job_ids = _string_list(item.get("job_evidence_ids"), f"{path}.job_evidence_ids", errors)
+        matched_ids = _string_list(
+            item.get("matched_job_requirement_ids"),
+            f"{path}.matched_job_requirement_ids", errors,
+        )
+        unmatched_ids = _string_list(
+            item.get("unmatched_job_requirement_ids"),
+            f"{path}.unmatched_job_requirement_ids", errors,
+        )
+        _string_list(
+            item.get("supporting_profile_evidence_ids"),
+            f"{path}.supporting_profile_evidence_ids", errors,
+        )
+        if set(matched_ids) & set(unmatched_ids):
+            errors.append(
+                f"{path}: matched_job_requirement_ids and unmatched_job_requirement_ids "
+                "must not overlap"
+            )
+        if set(matched_ids) | set(unmatched_ids) != set(job_ids):
+            errors.append(
+                f"{path}: matched_job_requirement_ids plus unmatched_job_requirement_ids "
+                "must together equal job_evidence_ids"
+            )
     if seen != expected:
         errors.append("$.result.dimension_assessments: must cover every evaluation dimension")
 

@@ -1,8 +1,11 @@
 """Tests for the pure Application Decision Policy v0 domain classifier.
 
-Phase 1 of the review-by-exception design: product/application_decision_policy.py
-only. No persistence, no webapp wiring -- these tests exercise the module in
-isolation, exactly as it will later be called from a mutation boundary.
+Covers Phase 1 (product/application_decision_policy.py's outcome enum,
+dimension gap-id fields, fingerprint) and Phase 2 (consuming the
+evidence_disposition / materiality fields product/semantic_job_fit.py now
+exposes on each gate assessment). No persistence, no webapp wiring -- these
+tests exercise the module in isolation, exactly as it will later be called
+from a mutation boundary.
 """
 
 import copy
@@ -21,13 +24,22 @@ from product.application_decision_policy import (
 )
 
 
-def gate(status: str, *, job_ids=("jev_1",), profile_ids=("clm_1",)) -> dict:
+def gate(
+    status: str,
+    *,
+    evidence_disposition: str,
+    materiality: str,
+    job_ids=("jev_1",),
+    profile_ids=("clm_1",),
+) -> dict:
     return {
         "gate_id": "eligibility",
         "status": status,
         "reason": "test reason",
         "job_evidence_ids": list(job_ids),
         "profile_evidence_ids": list(profile_ids),
+        "evidence_disposition": evidence_disposition,
+        "materiality": materiality,
     }
 
 
@@ -41,87 +53,185 @@ def dimension(status: str, *, required: bool = True, job_ids=()) -> dict:
 
 
 class GateAssessmentTests(unittest.TestCase):
+    """Phase 2: classification is driven directly by evidence_disposition
+    and materiality, both produced upstream by semantic_job_fit.py's
+    _build_gate_assessments. These replace the conservative Phase-1
+    fallback (which had to assume the worst from evidence-id presence
+    alone) with a decision grounded in what the product layer actually
+    knows about this specific posting and this specific candidate."""
+
     def test_supported_fail_gate_auto_rejects(self):
         """A gate FAIL reaching this module is, by construction (per
         semantic_job_fit.py's own downgrade-to-UNVERIFIED rule for
         unsupported FAIL proposals), already trustworthy and supported.
-        It must resolve to AUTO_REJECT, never REQUIRE_USER."""
+        It must resolve to AUTO_REJECT, never REQUIRE_USER -- regardless
+        of materiality/disposition, which FAIL overrides."""
         decision = evaluate_gate_assessment(
-            gate("FAIL", profile_ids=("clm_conflict_evidence",))
+            gate(
+                "FAIL", evidence_disposition="CONFLICTING", materiality="MATERIAL",
+                profile_ids=("clm_conflict_evidence",),
+            )
         )
         self.assertEqual(decision.outcome, "AUTO_REJECT")
         self.assertEqual(decision.reason_code, "gate_fail_supported")
 
     def test_flag_gate_requires_user(self):
         """FLAG is an explicit, evidence-backed LLM-raised caveat -- this
-        is the genuinely material/ambiguous case and must stay REQUIRE_USER."""
-        decision = evaluate_gate_assessment(gate("FLAG"))
+        is the genuinely material/ambiguous case and must stay REQUIRE_USER
+        regardless of materiality/disposition."""
+        decision = evaluate_gate_assessment(
+            gate("FLAG", evidence_disposition="SUPPORTIVE", materiality="MATERIAL")
+        )
         self.assertEqual(decision.outcome, "REQUIRE_USER")
         self.assertEqual(decision.reason_code, "gate_flag")
 
-    def test_supportive_eligibility_evidence_requires_user_pending_phase_2_contract(self):
-        """This is the corrected, conservative behavior: the current Job
-        Fit gate-assessment contract cannot distinguish evidence that was
-        actually validated as supporting a proceed verdict from evidence
-        that merely survived _supportive_profile_claims while the
-        surrounding proposal was FAIL-without-support, NOT_APPLICABLE, or
-        unrecognized (see product/semantic_job_fit.py's
-        _build_gate_assessments: profile_ids is computed before, and
-        independently of, the status-deciding branch). Until Phase 2 adds
-        an explicit evidence_disposition field to that contract, any
-        UNVERIFIED gate carrying non-empty profile_evidence_ids must
-        escalate rather than assume support -- even when the evidence
-        looks affirmative from the outside (e.g. a real "British Citizen"
-        claim for an eligibility gate), because this module has no safe
-        way to confirm the upstream record actually validated it."""
+    def test_supportive_eligibility_evidence_auto_proceeds(self):
+        """Required fail-first case: affirmative, validated, non-conflicting
+        supportive evidence on a material gate -- AUTO_PROCEED."""
         decision = evaluate_gate_assessment(
-            gate("UNVERIFIED", profile_ids=("clm_british_citizen",))
+            gate(
+                "PASS", evidence_disposition="SUPPORTIVE", materiality="MATERIAL",
+                profile_ids=("clm_british_citizen",),
+            )
         )
-        self.assertEqual(decision.outcome, "REQUIRE_USER")
-        self.assertEqual(decision.reason_code, "gate_unverified_with_unvetted_evidence")
-
-    def test_no_eligibility_evidence_auto_omits(self):
-        decision = evaluate_gate_assessment(gate("UNVERIFIED", profile_ids=()))
-        self.assertEqual(decision.outcome, "AUTO_OMIT")
-        self.assertEqual(decision.reason_code, "gate_unverified_without_evidence")
-
-    def test_ambiguous_or_conflicting_eligibility_evidence_requires_user(self):
-        """Same code path as the supportive-evidence case above by
-        necessity -- the upstream contract genuinely cannot distinguish
-        the two today (see the Phase-1 contract gap note in
-        product/application_decision_policy.py's module docstring). This
-        test exists as its own explicit case to document the requirement
-        directly: an UNVERIFIED gate whose evidence is actually
-        conflicting or ambiguous must never be auto-resolved, and the
-        conservative default achieves that correctly even though it
-        cannot yet distinguish this case from the affirmative one."""
-        decision = evaluate_gate_assessment(
-            gate("UNVERIFIED", profile_ids=("clm_conflicting_residency_claim",))
-        )
-        self.assertEqual(decision.outcome, "REQUIRE_USER")
-
-    def test_pass_gate_auto_proceeds(self):
-        decision = evaluate_gate_assessment(gate("PASS"))
         self.assertEqual(decision.outcome, "AUTO_PROCEED")
+        self.assertEqual(decision.reason_code, "gate_material_supportive")
 
-    def test_not_applicable_gate_is_not_applicable(self):
-        decision = evaluate_gate_assessment(gate("NOT_APPLICABLE"))
+    def test_absent_eligibility_evidence_on_material_gate_requires_user(self):
+        """Required fail-first case: a genuinely material gate (this
+        posting states a real eligibility requirement) with no candidate
+        evidence at all must escalate -- a missing answer to a material
+        question is exactly the case that must never be auto-omitted."""
+        decision = evaluate_gate_assessment(
+            gate(
+                "UNVERIFIED", evidence_disposition="ABSENT", materiality="MATERIAL",
+                profile_ids=(),
+            )
+        )
+        self.assertEqual(decision.outcome, "REQUIRE_USER")
+        self.assertEqual(decision.reason_code, "gate_material_absent")
+
+    def test_conflicting_eligibility_evidence_requires_user(self):
+        """Required fail-first case: conflicting/ambiguous evidence on a
+        material gate must never be auto-resolved."""
+        decision = evaluate_gate_assessment(
+            gate(
+                "UNVERIFIED", evidence_disposition="CONFLICTING", materiality="MATERIAL",
+                profile_ids=("clm_conflicting_residency_claim",),
+            )
+        )
+        self.assertEqual(decision.outcome, "REQUIRE_USER")
+        self.assertEqual(decision.reason_code, "gate_material_conflicting")
+
+    def test_absent_optional_language_evidence_auto_omits(self):
+        """Required fail-first case: a NON_MATERIAL gate (this posting
+        states no language requirement, or the policy has explicitly
+        marked what evidence exists as non-material) with no candidate
+        evidence -- safe to AUTO_OMIT. This is the one case where absence
+        is genuinely safe to auto-resolve, and it requires NON_MATERIAL,
+        never a static "language is always optional" assumption."""
+        decision = evaluate_gate_assessment(
+            gate(
+                "UNVERIFIED", evidence_disposition="ABSENT", materiality="NON_MATERIAL",
+                job_ids=(), profile_ids=(),
+            )
+        )
+        self.assertEqual(decision.outcome, "AUTO_OMIT")
+        self.assertEqual(decision.reason_code, "gate_non_material_absent")
+
+    def test_conflicting_non_material_evidence_still_requires_user(self):
+        """Conflicting evidence is never safe to silently resolve, even on
+        a non-material gate -- an unresolved contradiction in the
+        candidate's own evidence is a data-quality problem regardless of
+        whether the gate itself is optional for this posting."""
+        decision = evaluate_gate_assessment(
+            gate(
+                "UNVERIFIED", evidence_disposition="CONFLICTING", materiality="NON_MATERIAL",
+            )
+        )
+        self.assertEqual(decision.outcome, "REQUIRE_USER")
+        self.assertEqual(decision.reason_code, "gate_non_material_conflicting")
+
+    def test_insufficient_evidence_on_material_gate_requires_user(self):
+        """INSUFFICIENT (present but never validated toward a verdict) on
+        a material gate must escalate, not be treated as either supportive
+        or safely omittable."""
+        decision = evaluate_gate_assessment(
+            gate(
+                "UNVERIFIED", evidence_disposition="INSUFFICIENT", materiality="MATERIAL",
+            )
+        )
+        self.assertEqual(decision.outcome, "REQUIRE_USER")
+        self.assertEqual(decision.reason_code, "gate_material_insufficient")
+
+    def test_insufficient_evidence_on_non_material_gate_requires_user(self):
+        """INSUFFICIENT must escalate even on a non-material gate -- unlike
+        ABSENT, there is genuinely something present that was never
+        vetted, which is not the same as confirmed nothing-to-omit."""
+        decision = evaluate_gate_assessment(
+            gate(
+                "UNVERIFIED", evidence_disposition="INSUFFICIENT", materiality="NON_MATERIAL",
+            )
+        )
+        self.assertEqual(decision.outcome, "REQUIRE_USER")
+        self.assertEqual(decision.reason_code, "gate_non_material_insufficient")
+
+    def test_not_applicable_materiality_is_not_applicable_outcome(self):
+        """A gate whose category this posting never mentions at all must
+        resolve NOT_APPLICABLE regardless of status/disposition -- there is
+        nothing on this posting to evaluate for or against."""
+        decision = evaluate_gate_assessment(
+            gate(
+                "UNVERIFIED", evidence_disposition="ABSENT", materiality="NOT_APPLICABLE",
+                job_ids=(), profile_ids=(),
+            )
+        )
         self.assertEqual(decision.outcome, "NOT_APPLICABLE")
+        self.assertEqual(decision.reason_code, "gate_not_applicable")
 
     def test_gate_evidence_ids_are_carried_through_verbatim(self):
         decision = evaluate_gate_assessment(
-            gate("PASS", job_ids=("jev_a", "jev_b"), profile_ids=("clm_x",))
+            gate(
+                "PASS", evidence_disposition="SUPPORTIVE", materiality="MATERIAL",
+                job_ids=("jev_a", "jev_b"), profile_ids=("clm_x",),
+            )
         )
         self.assertEqual(decision.job_evidence_ids, ("jev_a", "jev_b"))
         self.assertEqual(decision.profile_evidence_ids, ("clm_x",))
 
     def test_unknown_gate_status_rejected_as_input_error(self):
         with self.assertRaises(ApplicationDecisionPolicyInputError):
-            evaluate_gate_assessment(gate("BOGUS_STATUS"))
+            evaluate_gate_assessment(
+                gate("BOGUS_STATUS", evidence_disposition="ABSENT", materiality="MATERIAL")
+            )
+
+    def test_unknown_evidence_disposition_rejected_as_input_error(self):
+        with self.assertRaises(ApplicationDecisionPolicyInputError):
+            evaluate_gate_assessment(
+                gate("PASS", evidence_disposition="BOGUS", materiality="MATERIAL")
+            )
+
+    def test_unknown_materiality_rejected_as_input_error(self):
+        with self.assertRaises(ApplicationDecisionPolicyInputError):
+            evaluate_gate_assessment(
+                gate("PASS", evidence_disposition="SUPPORTIVE", materiality="BOGUS")
+            )
 
     def test_missing_gate_field_rejected_as_input_error(self):
-        malformed = gate("PASS")
+        malformed = gate("PASS", evidence_disposition="SUPPORTIVE", materiality="MATERIAL")
         del malformed["reason"]
+        with self.assertRaises(ApplicationDecisionPolicyInputError):
+            evaluate_gate_assessment(malformed)
+
+    def test_missing_evidence_disposition_field_rejected_as_input_error(self):
+        malformed = gate("PASS", evidence_disposition="SUPPORTIVE", materiality="MATERIAL")
+        del malformed["evidence_disposition"]
+        with self.assertRaises(ApplicationDecisionPolicyInputError):
+            evaluate_gate_assessment(malformed)
+
+    def test_missing_materiality_field_rejected_as_input_error(self):
+        malformed = gate("PASS", evidence_disposition="SUPPORTIVE", materiality="MATERIAL")
+        del malformed["materiality"]
         with self.assertRaises(ApplicationDecisionPolicyInputError):
             evaluate_gate_assessment(malformed)
 
@@ -258,13 +368,13 @@ class PolicyLoadingAndFingerprintTests(unittest.TestCase):
         behaviorally different engines could otherwise silently share the
         same audit fingerprint."""
         same_policy = DEFAULT_POLICY
-        fp_v0 = application_decision_policy_fingerprint(
-            same_policy, engine_version="application-decision-engine.v0"
-        )
-        fp_v1 = application_decision_policy_fingerprint(
+        fp_a = application_decision_policy_fingerprint(
             same_policy, engine_version="application-decision-engine.v1"
         )
-        self.assertNotEqual(fp_v0, fp_v1)
+        fp_b = application_decision_policy_fingerprint(
+            same_policy, engine_version="application-decision-engine.v2"
+        )
+        self.assertNotEqual(fp_a, fp_b)
 
     def test_fingerprint_defaults_to_current_engine_version(self):
         explicit = application_decision_policy_fingerprint(
