@@ -120,32 +120,49 @@ def resolve_application_blocker(
     conn: sqlite3.Connection,
     *,
     blocker_id: str,
+    request_id: str,
     answer_value: Any,
     answer_scope: str,
     resolved_by: str,
     promoted_evidence_id: str | None = None,
     commit: bool = True,
 ) -> dict[str, Any]:
-    """Resolve exactly one blocker: create its immutable resolution and
-    mark that blocker (and only that blocker) resolved.
+    """Answer (or correct a prior answer to) one blocker.
 
-    Never mutates the originating policy_decisions row, and never touches
-    any other blocker -- each resolution is scoped to blocker_id alone via
-    blocker_resolutions.blocker_id's UNIQUE constraint, so a blocker can be
-    resolved at most once.
+    Append-only history, one effective answer: every call creates a new
+    immutable blocker_resolutions row (never updates or deletes a prior
+    one), and the EFFECTIVE resolution for a blocker is simply the most
+    recently created row for that blocker_id (see
+    get_effective_resolution) -- there is no separate "is_current" flag to
+    keep in sync.
+
+    Idempotent on (blocker_id, request_id): a retried call with the same
+    request_id is a safe no-op that returns the already-persisted
+    resolution rather than creating a second row for what was actually
+    one logical answer. A genuinely new correction must supply a new
+    request_id -- that is what actually creates a new history row and
+    changes the effective answer.
+
+    Allowed while the blocker is 'open' (the first answer) or already
+    'resolved' (a correction) -- never while 'superseded', since a
+    superseded blocker no longer governs and accepting a new answer for
+    it would be meaningless. Never mutates the originating
+    policy_decisions row, and never touches any other blocker.
     """
 
     if answer_scope not in ANSWER_SCOPES:
         raise ValueError(f"unknown answer_scope: {answer_scope!r}")
     if not resolved_by:
         raise ValueError("resolved_by is required and must not be empty")
+    if not request_id:
+        raise ValueError("request_id is required and must not be empty")
 
     blocker = get_application_blocker(conn, blocker_id)
     if blocker is None:
         raise ValueError(f"unknown blocker_id: {blocker_id!r}")
-    if blocker["status"] != "open":
+    if blocker["status"] not in ("open", "resolved"):
         raise ValueError(
-            f"blocker {blocker_id!r} is not open (status={blocker['status']!r})"
+            f"blocker {blocker_id!r} cannot accept an answer (status={blocker['status']!r})"
         )
     if answer_scope not in blocker["allowed_scopes"]:
         raise ValueError(
@@ -156,22 +173,28 @@ def resolve_application_blocker(
     resolution_id = f"blockres_{uuid.uuid4().hex[:20]}"
     now = _now()
     conn.execute(
-        "INSERT INTO blocker_resolutions "
-        "(id, blocker_id, workspace_id, policy_decision_id, answer_value, "
+        "INSERT OR IGNORE INTO blocker_resolutions "
+        "(id, blocker_id, request_id, workspace_id, policy_decision_id, answer_value, "
         "answer_scope, resolved_by, promoted_evidence_id, created_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
-            resolution_id, blocker_id, blocker["workspace_id"], blocker["policy_decision_id"],
-            json.dumps(answer_value), answer_scope, resolved_by, promoted_evidence_id, now,
+            resolution_id, blocker_id, request_id, blocker["workspace_id"],
+            blocker["policy_decision_id"], json.dumps(answer_value), answer_scope,
+            resolved_by, promoted_evidence_id, now,
         ),
     )
-    conn.execute(
-        "UPDATE application_blockers SET status = 'resolved', resolved_at = ? WHERE id = ?",
-        (now, blocker_id),
-    )
+    if blocker["status"] == "open":
+        conn.execute(
+            "UPDATE application_blockers SET status = 'resolved', resolved_at = ? WHERE id = ?",
+            (now, blocker_id),
+        )
     if commit:
         conn.commit()
-    return get_blocker_resolution(conn, resolution_id)
+    existing = conn.execute(
+        "SELECT * FROM blocker_resolutions WHERE blocker_id = ? AND request_id = ?",
+        (blocker_id, request_id),
+    ).fetchone()
+    return _row_to_resolution(existing)
 
 
 def get_blocker_resolution(conn: sqlite3.Connection, resolution_id: str) -> dict[str, Any] | None:
@@ -181,11 +204,84 @@ def get_blocker_resolution(conn: sqlite3.Connection, resolution_id: str) -> dict
     return _row_to_resolution(row) if row else None
 
 
+def get_effective_resolution(
+    conn: sqlite3.Connection, blocker_id: str,
+) -> dict[str, Any] | None:
+    """The current answer for a blocker: the most recently created
+    blocker_resolutions row for it, or None if never answered. Derived,
+    not stored -- see resolve_application_blocker's docstring."""
+
+    row = conn.execute(
+        "SELECT * FROM blocker_resolutions WHERE blocker_id = ? "
+        "ORDER BY created_at DESC, id DESC LIMIT 1",
+        (blocker_id,),
+    ).fetchone()
+    return _row_to_resolution(row) if row else None
+
+
+def list_blocker_resolution_history(
+    conn: sqlite3.Connection, blocker_id: str,
+) -> list[dict[str, Any]]:
+    """Every answer ever given to this blocker, oldest first -- the full
+    corrected-answer audit trail, distinct from get_effective_resolution's
+    single current answer."""
+
+    rows = conn.execute(
+        "SELECT * FROM blocker_resolutions WHERE blocker_id = ? ORDER BY created_at",
+        (blocker_id,),
+    ).fetchall()
+    return [_row_to_resolution(row) for row in rows]
+
+
 def list_blocker_resolutions(
     conn: sqlite3.Connection, workspace_id: str,
 ) -> list[dict[str, Any]]:
+    """Every resolution row (all history, all blockers) for a workspace.
+    Use get_effective_resolution for "what is the current answer to this
+    one blocker" -- this function intentionally returns every historical
+    row, including superseded-by-correction ones."""
+
     rows = conn.execute(
         "SELECT * FROM blocker_resolutions WHERE workspace_id = ? ORDER BY created_at",
         (workspace_id,),
     ).fetchall()
     return [_row_to_resolution(row) for row in rows]
+
+
+def supersede_open_blockers(
+    conn: sqlite3.Connection,
+    *,
+    workspace_id: str,
+    stage: str,
+    current_source_artifact_id: str,
+    commit: bool = True,
+) -> list[dict[str, Any]]:
+    """Mark every OPEN blocker for this workspace/stage that is not tied
+    to current_source_artifact_id as 'superseded'.
+
+    Called only from the mutation boundary immediately after a new stage
+    artifact becomes current (never from workspace_view.py or a GET
+    path) -- see webapp.services.decision_policy.execute_job_fit_policy.
+    Only 'open' blockers are superseded; an already-'resolved' blocker
+    from a prior artifact is left exactly as it is (its answer remains
+    valid audit history, and it already correctly stopped governing via
+    the source_artifact_id comparison other governing queries use).
+    Superseding never touches blocker_resolutions, the originating
+    policy_decisions row, or any blocker belonging to a different stage
+    or workspace.
+    """
+
+    now = _now()
+    candidates = conn.execute(
+        "SELECT id FROM application_blockers WHERE workspace_id = ? AND stage = ? "
+        "AND status = 'open' AND source_artifact_id != ?",
+        (workspace_id, stage, current_source_artifact_id),
+    ).fetchall()
+    for row in candidates:
+        conn.execute(
+            "UPDATE application_blockers SET status = 'superseded', superseded_at = ? WHERE id = ?",
+            (now, row["id"]),
+        )
+    if commit:
+        conn.commit()
+    return [get_application_blocker(conn, row["id"]) for row in candidates]

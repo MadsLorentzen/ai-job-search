@@ -85,18 +85,26 @@ def _persist(
     )
 
 
-# Restricted to APPLICATION_ONLY: sensitive, legal, or eligibility-adjacent
-# subject keys where an answer for one application must never silently
-# apply to another job or be promoted to a reusable candidate fact without
-# a deliberate later workflow. Everything else defaults to the full scope
-# set (APPLICATION_ONLY, SEARCH_WORKSPACE, CANDIDATE_FACT) -- a stable
-# factual/preference gap the candidate can reasonably answer once and
-# reuse. Not exhaustive by design (see this module's docstring on not
-# hard-coding every future question type); extend as new blocker_type/
-# subject_key combinations are introduced.
-_APPLICATION_ONLY_SUBJECT_KEYS = frozenset({"gate:eligibility"})
+# Reuse-scope classification is keyed on the SEMANTICS of the actual
+# posting requirement text behind a gate blocker, never on blocker_type or
+# subject_key alone -- "gate:eligibility" covers both "are you a UK
+# citizen" (a stable candidate fact, safe to reuse) and "sign this
+# employer's specific right-to-work attestation" (application-specific,
+# never safe to reuse silently). Not a taxonomy engine: a small keyword
+# match over stable-fact patterns, checked against the requirement text
+# resolved from job_evidence_ids. Anything not positively recognized as a
+# stable fact defaults to the restrictive APPLICATION_ONLY-only scope --
+# the safe direction to fail in, consistent with "explicit applicable
+# requirement whose optionality cannot be established -> MATERIAL" from
+# the Phase 2 materiality design.
 _FULL_SCOPES = ("APPLICATION_ONLY", "SEARCH_WORKSPACE", "CANDIDATE_FACT")
 _RESTRICTED_SCOPES = ("APPLICATION_ONLY",)
+
+_STABLE_FACT_PATTERNS = (
+    "right to work", "citizenship", "citizen", "sponsorship", "visa",
+    "work permit", "driving licence", "driving license", "driver's licence",
+    "driver's license", "notice period",
+)
 
 
 def _blocker_question(decision: DecisionRecord) -> str:
@@ -107,12 +115,68 @@ def _blocker_question(decision: DecisionRecord) -> str:
     return f"{dimension_id.replace('_', ' ')} needs your input before scoring can continue. {decision.reason}"
 
 
-def _blocker_allowed_scopes(decision: DecisionRecord) -> list[str]:
-    return list(
-        _RESTRICTED_SCOPES
-        if decision.subject_key in _APPLICATION_ONLY_SUBJECT_KEYS
-        else _FULL_SCOPES
-    )
+# gate_id -> resolved_job_evidence category, mirroring
+# product/semantic_fit_policy.v0.json's gate_evidence_categories exactly
+# (semantic_job_fit.py's _build_gate_assessments uses the same mapping).
+_GATE_EVIDENCE_CATEGORIES = {
+    "eligibility": "eligibility_requirements",
+    "language": "language_requirements",
+    "location_logistics": "logistics_requirements",
+}
+
+
+def _requirement_texts(
+    conn: sqlite3.Connection, workspace_id: str, decision: DecisionRecord,
+) -> list[str]:
+    """The actual posting requirement text behind a gate_flag decision.
+
+    Prefers the specific job_evidence_ids the gate proposal adjudicated
+    (when one was submitted and matched the category). When no proposal
+    was submitted at all -- the common MATERIAL+ABSENT case, e.g. no
+    eligibility evidence supplied -- job_evidence_ids is empty even though
+    the posting genuinely states a requirement in that category (that is
+    exactly what materiality=MATERIAL already established). Falls back to
+    every job-evidence item in the gate's own category in that case,
+    rather than treating "no proposal" as "no text to classify"."""
+
+    from webapp.persistence.artifacts import get_current_artifact
+
+    bundle = get_current_artifact(conn, workspace_id, "resolved_job_evidence")
+    if bundle is None:
+        return []
+    evidence_items = bundle["payload"].get("evidence", [])
+    evidence_by_id = {item["id"]: item for item in evidence_items}
+
+    if decision.job_evidence_ids:
+        return [
+            evidence_by_id[evidence_id]["text"]
+            for evidence_id in decision.job_evidence_ids
+            if evidence_id in evidence_by_id
+        ]
+
+    gate_id = decision.subject_key.split(":", 1)[-1]
+    category = _GATE_EVIDENCE_CATEGORIES.get(gate_id)
+    if category is None:
+        return []
+    return [item["text"] for item in evidence_items if item.get("category") == category]
+
+
+def _is_stable_fact_requirement(texts: list[str]) -> bool:
+    combined = " ".join(texts).lower()
+    return any(pattern in combined for pattern in _STABLE_FACT_PATTERNS)
+
+
+def _blocker_allowed_scopes(
+    conn: sqlite3.Connection, workspace_id: str, decision: DecisionRecord,
+) -> list[str]:
+    if decision.review_item_type != "gate_flag":
+        # Dimension (skill/experience coverage) blockers are not
+        # legal/eligibility-adjacent by construction -- full scope set.
+        return list(_FULL_SCOPES)
+    texts = _requirement_texts(conn, workspace_id, decision)
+    if _is_stable_fact_requirement(texts):
+        return list(_FULL_SCOPES)
+    return list(_RESTRICTED_SCOPES)
 
 
 def _maybe_create_blocker(
@@ -143,7 +207,7 @@ def _maybe_create_blocker(
         subject_key=decision.subject_key,
         question=_blocker_question(decision),
         resume_stage=stage,
-        allowed_scopes=_blocker_allowed_scopes(decision),
+        allowed_scopes=_blocker_allowed_scopes(conn, workspace_id, decision),
         context={
             "reason_code": decision.reason_code,
             "reason": decision.reason,
@@ -166,7 +230,17 @@ def execute_job_fit_policy(
     rows -- both are keyed so a retry is a safe no-op enforced by the
     database itself (policy_decisions on its applicability tuple,
     application_blockers on policy_decision_id).
+
+    Also supersedes, at this mutation boundary, any OPEN blocker left over
+    from a prior fit-stage artifact for this workspace -- a stale blocker
+    must never remain physically 'open' forever just because it is
+    excluded from governing queries by artifact comparison alone (see
+    webapp.persistence.application_blockers.supersede_open_blockers). An
+    already-resolved prior blocker is left untouched: its answer remains
+    valid audit history and it was never claiming to still be open.
     """
+
+    from webapp.persistence.application_blockers import supersede_open_blockers
 
     payload = fit_artifact["payload"]
     source_artifact_id = fit_artifact["id"]
@@ -199,6 +273,10 @@ def execute_job_fit_policy(
             )
         )
 
+    supersede_open_blockers(
+        conn, workspace_id=workspace_id, stage="fit",
+        current_source_artifact_id=source_artifact_id, commit=False,
+    )
     conn.commit()
     return persisted
 
@@ -409,17 +487,21 @@ def resolve_blocker(
     *,
     workspace_id: str,
     blocker_id: str,
+    request_id: str,
     answer_value: Any,
     answer_scope: str,
     resolved_by: str,
 ) -> dict[str, Any]:
-    """Service entry point for resolving one blocker: validates the
-    requested scope is both valid for this workspace (validate_answer_scope)
-    and permitted by the blocker's own allowed_scopes (enforced inside
-    resolve_application_blocker), then creates the durable resolution.
+    """Service entry point for answering (or correcting an answer to) one
+    blocker: validates the requested scope is both valid for this
+    workspace (validate_answer_scope) and permitted by the blocker's own
+    allowed_scopes (enforced inside resolve_application_blocker), then
+    creates the durable resolution.
 
-    Resolving one blocker never resolves, mutates, or otherwise touches
-    any other blocker or the originating policy decision -- see
+    request_id is the idempotency key: a retried call with the same
+    request_id is a no-op; a genuinely new correction requires a new
+    request_id. Resolving/correcting one blocker never touches any other
+    blocker or the originating policy decision -- see
     webapp.persistence.application_blockers.resolve_application_blocker.
     """
 
@@ -429,6 +511,7 @@ def resolve_blocker(
     return resolve_application_blocker(
         conn,
         blocker_id=blocker_id,
+        request_id=request_id,
         answer_value=answer_value,
         answer_scope=answer_scope,
         resolved_by=resolved_by,

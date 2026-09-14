@@ -221,6 +221,7 @@ def test_post_002_upgrade_backfills_default_owner_without_data_loss(tmp_path):
         "007_pairing_secrets",
         "010_policy_decisions",
         "011_application_blockers",
+        "012_blocker_resolution_history",
     }
     assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
     create_account(

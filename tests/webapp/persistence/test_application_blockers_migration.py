@@ -135,9 +135,9 @@ def test_blocker_resolutions_are_append_only(tmp_path):
     )
     conn.execute(
         "INSERT INTO blocker_resolutions "
-        "(id, blocker_id, workspace_id, policy_decision_id, answer_value, answer_scope, "
+        "(id, blocker_id, request_id, workspace_id, policy_decision_id, answer_value, answer_scope, "
         "resolved_by, promoted_evidence_id, created_at) "
-        "VALUES ('blockres_1', 'block_1', ?, ?, '\"yes\"', 'APPLICATION_ONLY', 'human', NULL, 'now')",
+        "VALUES ('blockres_1', 'block_1', 'req_1', ?, ?, '\"yes\"', 'APPLICATION_ONLY', 'human', NULL, 'now')",
         (workspace["id"], decision["id"]),
     )
     with pytest.raises(sqlite3.IntegrityError, match="immutable"):

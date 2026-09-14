@@ -25,6 +25,7 @@ ONBOARDING_WALKTHROUGHS_MIGRATION_ID = "006_onboarding_walkthroughs"
 PAIRING_SECRETS_MIGRATION_ID = "007_pairing_secrets"
 POLICY_DECISIONS_MIGRATION_ID = "010_policy_decisions"
 APPLICATION_BLOCKERS_MIGRATION_ID = "011_application_blockers"
+BLOCKER_RESOLUTION_HISTORY_MIGRATION_ID = "012_blocker_resolution_history"
 
 
 def _now() -> str:
@@ -55,6 +56,7 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
         (PAIRING_SECRETS_MIGRATION_ID, _migrate_pairing_secrets, False),
         (POLICY_DECISIONS_MIGRATION_ID, _migrate_policy_decisions, False),
         (APPLICATION_BLOCKERS_MIGRATION_ID, _migrate_application_blockers, False),
+        (BLOCKER_RESOLUTION_HISTORY_MIGRATION_ID, _migrate_blocker_resolution_history, False),
     )
     for migration_id, operation, disable_foreign_keys in migrations:
         if conn.execute(
@@ -492,6 +494,83 @@ def _migrate_application_blockers(conn: sqlite3.Connection) -> None:
         "CREATE TRIGGER blocker_resolutions_no_delete "
         "BEFORE DELETE ON blocker_resolutions "
         "BEGIN SELECT RAISE(ABORT, 'blocker resolutions are permanent audit history'); END"
+    )
+
+
+def _migrate_blocker_resolution_history(conn: sqlite3.Connection) -> None:
+    # Corrective pass on 011: blocker_resolutions.blocker_id was UNIQUE,
+    # permitting exactly one lifetime answer per blocker. A user must be
+    # able to correct an answer (e.g. "$55,000" -> "$58,000") before
+    # resuming, without destroying the original answer's audit trail.
+    #
+    # Rebuilt without that UNIQUE constraint: multiple resolution rows may
+    # now exist for one blocker_id, each still fully immutable and
+    # append-only (the existing update/delete triggers are recreated
+    # as-is). A new request_id column plus UNIQUE(blocker_id, request_id)
+    # is the idempotency key instead -- a retried resolve request with the
+    # same request_id is a safe no-op; a genuinely new correction (a new
+    # request_id) always creates a new row. The EFFECTIVE resolution for a
+    # blocker is derived, not stored: the most recently created row for
+    # that blocker_id (see
+    # webapp.persistence.application_blockers.get_effective_resolution).
+    # This mirrors how "governing" is already derived elsewhere in this
+    # design (current_policy_decisions, current_application_blockers)
+    # rather than reinventing a second, stored notion of "current".
+    _execute_statements(
+        conn,
+        """
+        CREATE TABLE blocker_resolutions_new (
+            id TEXT PRIMARY KEY,
+            blocker_id TEXT NOT NULL REFERENCES application_blockers(id),
+            request_id TEXT NOT NULL,
+            workspace_id TEXT NOT NULL REFERENCES workspaces(id),
+            policy_decision_id TEXT NOT NULL REFERENCES policy_decisions(id),
+            answer_value TEXT NOT NULL,
+            answer_scope TEXT NOT NULL CHECK (
+                answer_scope IN ('APPLICATION_ONLY', 'SEARCH_WORKSPACE', 'CANDIDATE_FACT')
+            ),
+            resolved_by TEXT NOT NULL,
+            promoted_evidence_id TEXT,
+            created_at TEXT NOT NULL,
+            UNIQUE (blocker_id, request_id)
+        );
+
+        INSERT INTO blocker_resolutions_new
+            (id, blocker_id, request_id, workspace_id, policy_decision_id, answer_value,
+             answer_scope, resolved_by, promoted_evidence_id, created_at)
+        SELECT id, blocker_id, id, workspace_id, policy_decision_id, answer_value,
+               answer_scope, resolved_by, promoted_evidence_id, created_at
+        FROM blocker_resolutions;
+
+        DROP TABLE blocker_resolutions;
+        ALTER TABLE blocker_resolutions_new RENAME TO blocker_resolutions;
+
+        CREATE INDEX idx_blocker_resolutions_workspace
+            ON blocker_resolutions(workspace_id);
+        CREATE INDEX idx_blocker_resolutions_blocker_created
+            ON blocker_resolutions(blocker_id, created_at);
+        """,
+    )
+    conn.execute(
+        "CREATE TRIGGER blocker_resolutions_immutable_update "
+        "BEFORE UPDATE ON blocker_resolutions "
+        "BEGIN SELECT RAISE(ABORT, 'blocker resolutions are immutable, append-only audit history'); END"
+    )
+    conn.execute(
+        "CREATE TRIGGER blocker_resolutions_no_delete "
+        "BEFORE DELETE ON blocker_resolutions "
+        "BEGIN SELECT RAISE(ABORT, 'blocker resolutions are permanent audit history'); END"
+    )
+    # application_blockers.status already allows 'superseded' (011's
+    # CHECK constraint); this migration adds no new column there. What
+    # changes is behavioral, at the service layer: a successful upstream
+    # rerun now actively marks prior-artifact open blockers superseded at
+    # the mutation boundary (see
+    # webapp.services.decision_policy.execute_job_fit_policy), rather than
+    # leaving them physically 'open' forever while only being excluded
+    # from governing queries by artifact comparison.
+    conn.execute(
+        "ALTER TABLE application_blockers ADD COLUMN superseded_at TEXT"
     )
 
 

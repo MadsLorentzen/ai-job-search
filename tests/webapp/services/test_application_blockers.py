@@ -12,7 +12,9 @@ import pytest
 
 from webapp.persistence.artifacts import get_current_artifact, save_artifact
 from webapp.persistence.application_blockers import (
+    get_effective_resolution,
     list_application_blockers,
+    list_blocker_resolution_history,
     list_blocker_resolutions,
 )
 from webapp.persistence.application_identity import record_application_origin
@@ -56,14 +58,28 @@ TWO_MATERIAL_GATES_JOB_SNAPSHOT = {
     ],
 }
 
-# A dimension blocker (subject_key "dimension:*") is not in
-# _APPLICATION_ONLY_SUBJECT_KEYS, so it defaults to the full scope set --
-# used by tests exercising SEARCH_WORKSPACE/CANDIDATE_FACT, which the
-# eligibility gate blocker deliberately refuses.
+# A dimension blocker (subject_key "dimension:*") is not gate-adjacent,
+# so it defaults to the full scope set -- used by tests exercising
+# SEARCH_WORKSPACE/CANDIDATE_FACT against a non-restricted blocker.
 UNMATCHED_TECHNICAL_SKILL_JOB_SNAPSHOT = {
     **EMPTY_JOB_SNAPSHOT,
     "requirements": [
         {"id": "jobev_req_1", "text": "Python required.", "kind": "required"},
+    ],
+}
+
+# An eligibility requirement whose text does not match any stable-fact
+# keyword (right to work / citizenship / sponsorship / visa / driving
+# licence / notice period) -- an employer-specific legal attestation, the
+# case that must stay restricted to APPLICATION_ONLY.
+EMPLOYER_ATTESTATION_JOB_SNAPSHOT = {
+    **EMPTY_JOB_SNAPSHOT,
+    "eligibility_requirements": [
+        {
+            "id": "jobev_elig_attest_1",
+            "text": "Candidates must sign this employer's specific background disclosure form.",
+            "kind": "required",
+        },
     ],
 }
 
@@ -179,7 +195,7 @@ def test_resolve_blocker_creates_separate_immutable_resolution(tmp_path, webapp_
     blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
 
     resolution = resolve_blocker(
-        conn, workspace_id=workspace_id, blocker_id=blocker["id"],
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_answer_1",
         answer_value="Yes, I have the right to work in the UK.",
         answer_scope="APPLICATION_ONLY", resolved_by="human",
     )
@@ -205,7 +221,7 @@ def test_resolution_does_not_mutate_originating_policy_decision(tmp_path, webapp
     before = get_policy_decision(conn, blocker["policy_decision_id"])
 
     resolve_blocker(
-        conn, workspace_id=workspace_id, blocker_id=blocker["id"],
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_answer_1",
         answer_value="yes", answer_scope="APPLICATION_ONLY", resolved_by="human",
     )
 
@@ -226,6 +242,7 @@ def test_unresolved_second_blocker_keeps_workspace_blocked(tmp_path, webapp_prof
     }
     resolve_blocker(
         conn, workspace_id=workspace_id, blocker_id=blockers["gate:eligibility"]["id"],
+        request_id="req_answer_1",
         answer_value="yes", answer_scope="APPLICATION_ONLY", resolved_by="human",
     )
     # Only the eligibility blocker resolved -- language blocker untouched.
@@ -250,6 +267,7 @@ def test_resolving_one_blocker_does_not_resolve_unrelated_blocker(tmp_path, weba
     }
     resolve_blocker(
         conn, workspace_id=workspace_id, blocker_id=blockers["gate:eligibility"]["id"],
+        request_id="req_answer_1",
         answer_value="yes", answer_scope="APPLICATION_ONLY", resolved_by="human",
     )
     language_blocker = next(
@@ -332,7 +350,7 @@ def test_candidate_fact_scope_records_explicit_scope_without_modifying_evidence_
     profile_before = get_current_artifact(conn, "profile", "profile_snapshot")
 
     resolution = resolve_blocker(
-        conn, workspace_id=workspace_id, blocker_id=blocker["id"],
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_answer_1",
         answer_value="British Citizen, no restrictions.",
         answer_scope="CANDIDATE_FACT", resolved_by="human",
     )
@@ -345,11 +363,13 @@ def test_candidate_fact_scope_records_explicit_scope_without_modifying_evidence_
 
 
 def test_restricted_blocker_refuses_disallowed_broader_scope(tmp_path, webapp_profile_root):
-    """The eligibility gate is deliberately restricted to APPLICATION_ONLY
-    (sensitive/legal-adjacent) -- attempting CANDIDATE_FACT must be
-    refused by the blocker's own allowed_scopes, not silently accepted."""
+    """An employer-specific legal attestation (not a stable candidate
+    fact -- its posting text matches none of the stable-fact keywords)
+    is restricted to APPLICATION_ONLY -- attempting CANDIDATE_FACT must
+    be refused by the blocker's own allowed_scopes, not silently
+    accepted."""
     conn, workspace_id = _workspace(
-        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+        tmp_path, webapp_profile_root, job_snapshot=EMPLOYER_ATTESTATION_JOB_SNAPSHOT
     )
     artifact = _run_fit(conn, workspace_id, tmp_path)
     blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
@@ -357,10 +377,33 @@ def test_restricted_blocker_refuses_disallowed_broader_scope(tmp_path, webapp_pr
 
     with pytest.raises(ValueError, match="not permitted"):
         resolve_blocker(
-            conn, workspace_id=workspace_id, blocker_id=blocker["id"],
-            answer_value="British Citizen.", answer_scope="CANDIDATE_FACT",
+            conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_answer_1",
+            answer_value="I attest.", answer_scope="CANDIDATE_FACT",
             resolved_by="human",
         )
+    conn.close()
+
+
+def test_stable_work_authorization_fact_allows_candidate_fact_scope(tmp_path, webapp_profile_root):
+    """The instruction's own worked example: a stable, reusable fact
+    (right-to-work status) must allow CANDIDATE_FACT, distinguished from
+    the employer-specific attestation case above by the posting's own
+    requirement text -- not by blocker_type/subject_key alone."""
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+    assert blocker["allowed_scopes"] == [
+        "APPLICATION_ONLY", "SEARCH_WORKSPACE", "CANDIDATE_FACT",
+    ]
+
+    resolution = resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_answer_1",
+        answer_value="British Citizen, no restrictions.",
+        answer_scope="CANDIDATE_FACT", resolved_by="human",
+    )
+    assert resolution["answer_scope"] == "CANDIDATE_FACT"
     conn.close()
 
 
@@ -373,7 +416,7 @@ def test_answer_ordering_and_json_round_trip_is_stable(tmp_path, webapp_profile_
 
     structured_answer = {"eligible": True, "notes": ["right to work", "no restrictions"]}
     resolution = resolve_blocker(
-        conn, workspace_id=workspace_id, blocker_id=blocker["id"],
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_answer_1",
         answer_value=structured_answer, answer_scope="APPLICATION_ONLY", resolved_by="human",
     )
     assert resolution["answer_value"] == structured_answer
@@ -428,7 +471,7 @@ def test_find_reusable_answer_prefers_application_only_scope_first(tmp_path, web
     artifact = _run_fit(conn, workspace_id, tmp_path)
     blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
     resolve_blocker(
-        conn, workspace_id=workspace_id, blocker_id=blocker["id"],
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_answer_1",
         answer_value="yes", answer_scope="APPLICATION_ONLY", resolved_by="human",
     )
 
@@ -451,7 +494,7 @@ def test_finding_a_reusable_answer_never_auto_applies_it(tmp_path, webapp_profil
     first_artifact = _run_fit(conn, first_ws, tmp_path, request_id="req_1")
     first_blocker = current_application_blockers(conn, first_ws, first_artifact["id"])[0]
     resolve_blocker(
-        conn, workspace_id=first_ws, blocker_id=first_blocker["id"],
+        conn, workspace_id=first_ws, blocker_id=first_blocker["id"], request_id="req_answer_1",
         answer_value="yes", answer_scope="CANDIDATE_FACT", resolved_by="human",
     )
 
@@ -500,4 +543,241 @@ def test_no_blocker_created_for_auto_reject(tmp_path, webapp_profile_root):
     )
     blockers = list_application_blockers(conn, workspace_id, source_artifact_id=artifact["id"])
     assert blockers == []
+    conn.close()
+
+
+# --- Corrective pass: answer correction / history (issue #2) ---------------
+
+
+def test_first_answer_resolves_blocker(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+
+    resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_1",
+        answer_value="55000", answer_scope="APPLICATION_ONLY", resolved_by="human",
+    )
+    updated = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+    assert updated["status"] == "resolved"
+    conn.close()
+
+
+def test_correction_creates_a_second_immutable_resolution(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+
+    resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_1",
+        answer_value="55000", answer_scope="APPLICATION_ONLY", resolved_by="human",
+    )
+    resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_2",
+        answer_value="58000", answer_scope="APPLICATION_ONLY", resolved_by="human",
+    )
+
+    history = list_blocker_resolution_history(conn, blocker["id"])
+    assert len(history) == 2
+    assert [r["answer_value"] for r in history] == ["55000", "58000"]
+    conn.close()
+
+
+def test_first_answer_remains_audit_visible_after_correction(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+
+    first = resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_1",
+        answer_value="55000", answer_scope="APPLICATION_ONLY", resolved_by="human",
+    )
+    resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_2",
+        answer_value="58000", answer_scope="APPLICATION_ONLY", resolved_by="human",
+    )
+
+    history = list_blocker_resolution_history(conn, blocker["id"])
+    assert first["id"] in {r["id"] for r in history}
+    refetched_first = next(r for r in history if r["id"] == first["id"])
+    assert refetched_first["answer_value"] == "55000"
+    conn.close()
+
+
+def test_latest_valid_answer_governs(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+
+    resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_1",
+        answer_value="55000", answer_scope="APPLICATION_ONLY", resolved_by="human",
+    )
+    resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_2",
+        answer_value="58000", answer_scope="APPLICATION_ONLY", resolved_by="human",
+    )
+
+    effective = get_effective_resolution(conn, blocker["id"])
+    assert effective["answer_value"] == "58000"
+    conn.close()
+
+
+def test_retry_of_same_resolution_request_is_idempotent(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+
+    first = resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_1",
+        answer_value="55000", answer_scope="APPLICATION_ONLY", resolved_by="human",
+    )
+    second = resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_1",
+        answer_value="55000", answer_scope="APPLICATION_ONLY", resolved_by="human",
+    )
+    assert first["id"] == second["id"]
+    history = list_blocker_resolution_history(conn, blocker["id"])
+    assert len(history) == 1
+    conn.close()
+
+
+def test_correcting_scope_is_also_preserved_historically(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=UNMATCHED_TECHNICAL_SKILL_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+
+    resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_1",
+        answer_value="yes", answer_scope="APPLICATION_ONLY", resolved_by="human",
+    )
+    resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_2",
+        answer_value="yes", answer_scope="CANDIDATE_FACT", resolved_by="human",
+    )
+
+    history = list_blocker_resolution_history(conn, blocker["id"])
+    assert [r["answer_scope"] for r in history] == ["APPLICATION_ONLY", "CANDIDATE_FACT"]
+    effective = get_effective_resolution(conn, blocker["id"])
+    assert effective["answer_scope"] == "CANDIDATE_FACT"
+    conn.close()
+
+
+# --- Corrective pass: truthful supersession semantics (issue #3) -----------
+
+
+def test_rerun_supersedes_old_open_blocker(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+    )
+    first = _run_fit(conn, workspace_id, tmp_path, request_id="req_1")
+    first_blocker = current_application_blockers(conn, workspace_id, first["id"])[0]
+    assert first_blocker["status"] == "open"
+
+    save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_posting_snapshot",
+        payload=EMPTY_JOB_SNAPSHOT, content_id="jobsnap_rerun",
+    )
+    _run_fit(conn, workspace_id, tmp_path, request_id="req_2")
+
+    from webapp.persistence.application_blockers import get_application_blocker
+
+    refetched = get_application_blocker(conn, first_blocker["id"])
+    assert refetched["status"] == "superseded"
+    assert refetched["superseded_at"] is not None
+    conn.close()
+
+
+def test_superseded_blocker_remains_queryable(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+    )
+    first = _run_fit(conn, workspace_id, tmp_path, request_id="req_1")
+    first_blocker_id = current_application_blockers(conn, workspace_id, first["id"])[0]["id"]
+
+    save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_posting_snapshot",
+        payload=EMPTY_JOB_SNAPSHOT, content_id="jobsnap_rerun",
+    )
+    _run_fit(conn, workspace_id, tmp_path, request_id="req_2")
+
+    all_blockers = list_application_blockers(conn, workspace_id)
+    assert first_blocker_id in {b["id"] for b in all_blockers}
+    conn.close()
+
+
+def test_needs_attention_query_excludes_superseded_blocker(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+    )
+    _run_fit(conn, workspace_id, tmp_path, request_id="req_1")
+
+    save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_posting_snapshot",
+        payload=EMPTY_JOB_SNAPSHOT, content_id="jobsnap_rerun",
+    )
+    second = _run_fit(conn, workspace_id, tmp_path, request_id="req_2")
+
+    open_blockers = list_application_blockers(conn, workspace_id, status="open")
+    assert open_blockers == []
+    assert not has_unresolved_governing_blockers(conn, workspace_id, second["id"])
+    conn.close()
+
+
+def test_already_resolved_blocker_is_left_untouched_by_supersession(tmp_path, webapp_profile_root):
+    """A blocker the user already answered before the rerun keeps its
+    'resolved' status (and its answer) -- superseding only applies to
+    blockers still genuinely 'open'."""
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=TWO_MATERIAL_GATES_JOB_SNAPSHOT
+    )
+    first = _run_fit(conn, workspace_id, tmp_path, request_id="req_1")
+    blockers = {
+        b["subject_key"]: b
+        for b in current_application_blockers(conn, workspace_id, first["id"])
+    }
+    resolve_blocker(
+        conn, workspace_id=workspace_id, blocker_id=blockers["gate:eligibility"]["id"],
+        request_id="req_answer_1", answer_value="yes", answer_scope="APPLICATION_ONLY",
+        resolved_by="human",
+    )
+
+    save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="job_posting_snapshot",
+        payload=EMPTY_JOB_SNAPSHOT, content_id="jobsnap_rerun",
+    )
+    _run_fit(conn, workspace_id, tmp_path, request_id="req_2")
+
+    from webapp.persistence.application_blockers import get_application_blocker
+
+    resolved_blocker = get_application_blocker(conn, blockers["gate:eligibility"]["id"])
+    assert resolved_blocker["status"] == "resolved"
+    assert resolved_blocker["superseded_at"] is None
+    conn.close()
+
+
+def test_get_causes_no_blocker_state_change(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=MATERIAL_ELIGIBILITY_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    before = list_application_blockers(conn, workspace_id)
+
+    get_current_artifact(conn, workspace_id, "job_fit_result")
+    get_current_artifact(conn, workspace_id, "job_fit_result")
+
+    after = list_application_blockers(conn, workspace_id)
+    assert before == after
     conn.close()
