@@ -40,14 +40,30 @@ def _current_or_error(
     return artifact
 
 
+# The exact field set application_pack_contract.py's closed v1
+# review_record.decisions_consulted[] schema expects. list_review_decisions
+# returns every column review_decisions currently has (a general-purpose
+# accessor correctly does that); the pack contract is a versioned, closed
+# schema that must not silently grow just because the table gained columns
+# (e.g. resolved_by/policy_decision_id) that Phase 4 orchestration will
+# eventually populate. Projecting here, once, keeps that contract stable
+# without needing every future additive review_decisions column to also
+# bump the pack's own schema version.
+_PACK_V1_DECISION_FIELDS = (
+    "id", "workspace_id", "review_item_type", "source_artifact_id",
+    "domain_item_id", "disposition", "note", "created_at",
+)
+
+
 def _decision_index(
     conn: sqlite3.Connection, workspace_id: str, source_artifact_id: str
 ) -> dict[tuple[str, str | None], dict[str, Any]]:
     """Return the newest exact-type decision for each domain item."""
     indexed: dict[tuple[str, str | None], dict[str, Any]] = {}
     for decision in list_review_decisions(conn, workspace_id, source_artifact_id):
+        projected = {field: decision[field] for field in _PACK_V1_DECISION_FIELDS}
         indexed.setdefault(
-            (decision["review_item_type"], decision["domain_item_id"]), decision
+            (decision["review_item_type"], decision["domain_item_id"]), projected
         )
     return indexed
 

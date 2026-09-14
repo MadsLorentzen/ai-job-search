@@ -9,6 +9,7 @@ from webapp.persistence.migrations import (
     HANDOFF_SESSIONS_MIGRATION_ID,
     ONBOARDING_WALKTHROUGHS_MIGRATION_ID,
     PAIRING_SECRETS_MIGRATION_ID,
+    POLICY_DECISIONS_MIGRATION_ID,
 )
 
 
@@ -65,6 +66,11 @@ def test_exact_004_application_documents_upgrade_to_005_handoff(tmp_path):
         "1, ?, 'sha256/aa/existing.docx', NULL, 'now')",
         (workspace["id"], "a" * 64),
     )
+    conn.execute("DROP TRIGGER policy_decisions_immutable_update")
+    conn.execute("DROP TRIGGER policy_decisions_immutable_delete")
+    conn.execute("DROP TABLE policy_decisions")
+    conn.execute("ALTER TABLE review_decisions DROP COLUMN policy_decision_id")
+    conn.execute("ALTER TABLE review_decisions DROP COLUMN resolved_by")
     conn.execute("DROP TABLE onboarding_progress")
     conn.execute("DROP TABLE submission_confirmations")
     conn.execute("DROP TABLE handoff_events")
@@ -72,11 +78,12 @@ def test_exact_004_application_documents_upgrade_to_005_handoff(tmp_path):
     conn.execute("DROP TABLE extension_credentials")
     conn.execute("DROP TABLE pairing_secrets")
     conn.execute(
-        "DELETE FROM schema_migrations WHERE id IN (?, ?, ?)",
+        "DELETE FROM schema_migrations WHERE id IN (?, ?, ?, ?)",
         (
             HANDOFF_SESSIONS_MIGRATION_ID,
             ONBOARDING_WALKTHROUGHS_MIGRATION_ID,
             PAIRING_SECRETS_MIGRATION_ID,
+            POLICY_DECISIONS_MIGRATION_ID,
         ),
     )
     conn.commit()

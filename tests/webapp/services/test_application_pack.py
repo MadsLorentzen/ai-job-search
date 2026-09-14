@@ -485,7 +485,14 @@ def test_explicit_omission_is_excluded_and_preserved_in_audit(tmp_path):
     ]
     assert pack["review_record"]["exclusions"][0]["domain_item_id"] == "cv_1"
     assert pack["review_record"]["exclusions"][0]["source_artifact_id"] == intelligence["id"]
-    assert decision in pack["review_record"]["decisions_consulted"]
+    # The pack's decisions_consulted[] entries are projected to the closed
+    # v1 review-decision field set (application_pack_contract.py); a raw
+    # review_decisions row may carry additional columns (e.g. Phase 3's
+    # resolved_by/policy_decision_id) that never appear in the pack, so
+    # compare by id rather than exact dict equality.
+    assert decision["id"] in {
+        entry["id"] for entry in pack["review_record"]["decisions_consulted"]
+    }
 
 
 def test_gate4_does_not_persist_or_draft_an_incomplete_pack(tmp_path):
