@@ -21,6 +21,7 @@ yet to classify, not a silent placeholder pretending otherwise.
 
 from __future__ import annotations
 
+import re
 import sqlite3
 from typing import Any
 
@@ -87,23 +88,50 @@ def _persist(
 
 # Reuse-scope classification is keyed on the SEMANTICS of the actual
 # posting requirement text behind a gate blocker, never on blocker_type or
-# subject_key alone -- "gate:eligibility" covers both "are you a UK
-# citizen" (a stable candidate fact, safe to reuse) and "sign this
-# employer's specific right-to-work attestation" (application-specific,
-# never safe to reuse silently). Not a taxonomy engine: a small keyword
-# match over stable-fact patterns, checked against the requirement text
+# subject_key alone -- "gate:eligibility" covers both "must have the
+# right to work in the UK" (a stable candidate fact, safe to reuse) and
+# "sign this employer's specific right-to-work attestation"
+# (application-specific, never safe to reuse silently). Not a taxonomy
+# engine: a small deterministic pattern match over requirement text
 # resolved from job_evidence_ids. Anything not positively recognized as a
-# stable fact defaults to the restrictive APPLICATION_ONLY-only scope --
-# the safe direction to fail in, consistent with "explicit applicable
-# requirement whose optionality cannot be established -> MATERIAL" from
-# the Phase 2 materiality design.
+# stable fact requirement defaults to the restrictive APPLICATION_ONLY
+# -only scope -- the safe direction to fail in, consistent with "explicit
+# applicable requirement whose optionality cannot be established ->
+# MATERIAL" from the Phase 2 materiality design.
+#
+# Keyword presence alone is not sufficient: "please disclose any prior
+# visa violations for our compliance review" mentions "visa" but is an
+# employer-specific attestation, not a statement that the candidate must
+# hold a durable, reusable visa/sponsorship status. Before a stable-fact
+# keyword is allowed to widen scope, the same text is checked against
+# _ATTESTATION_ACTION_PATTERN -- action verbs (sign/disclose/complete/
+# submit) paired with a one-off employer document (form/declaration/
+# disclosure/pledge/attestation), or any mention of "violation(s)". A
+# match there means the sentence is asking the candidate to perform an
+# employer-specific action, not declaring a durable attribute, so that
+# text is excluded from the stable-fact check regardless of which
+# keywords it also contains.
 _FULL_SCOPES = ("APPLICATION_ONLY", "SEARCH_WORKSPACE", "CANDIDATE_FACT")
 _RESTRICTED_SCOPES = ("APPLICATION_ONLY",)
 
-_STABLE_FACT_PATTERNS = (
-    "right to work", "citizenship", "citizen", "sponsorship", "visa",
-    "work permit", "driving licence", "driving license", "driver's licence",
-    "driver's license", "notice period",
+_ATTESTATION_ACTION_PATTERN = re.compile(
+    r"\b(?:sign|disclose|complete|submit)\b.*\b(?:form|declaration|disclosure|pledge|attestation)\b"
+    r"|\b(?:form|declaration|disclosure|pledge|attestation)\b.*\b(?:sign|disclose|complete|submit)\b"
+    r"|\bviolations?\b",
+    re.IGNORECASE,
+)
+
+_STABLE_FACT_PATTERNS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\bright to work\b",
+        r"\bcitizen(?:ship)?\b",
+        r"\bsponsorship\b",
+        r"\bvisa\b",
+        r"\bwork permit\b",
+        r"\bdriv(?:ing|er'?s) licen[sc]e\b",
+        r"\bnotice period\b",
+    )
 )
 
 
@@ -162,8 +190,12 @@ def _requirement_texts(
 
 
 def _is_stable_fact_requirement(texts: list[str]) -> bool:
-    combined = " ".join(texts).lower()
-    return any(pattern in combined for pattern in _STABLE_FACT_PATTERNS)
+    for text in texts:
+        if _ATTESTATION_ACTION_PATTERN.search(text):
+            continue
+        if any(pattern.search(text) for pattern in _STABLE_FACT_PATTERNS):
+            return True
+    return False
 
 
 def _blocker_allowed_scopes(

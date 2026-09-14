@@ -83,6 +83,55 @@ EMPLOYER_ATTESTATION_JOB_SNAPSHOT = {
     ],
 }
 
+SPONSORSHIP_STATUS_JOB_SNAPSHOT = {
+    **EMPTY_JOB_SNAPSHOT,
+    "eligibility_requirements": [
+        {"id": "jobev_elig_spons_1", "text": "Visa sponsorship is not available for this role.", "kind": "required"},
+    ],
+}
+
+NOTICE_PERIOD_JOB_SNAPSHOT = {
+    **EMPTY_JOB_SNAPSHOT,
+    "eligibility_requirements": [
+        {"id": "jobev_elig_notice_1", "text": "A maximum notice period of one month is required.", "kind": "required"},
+    ],
+}
+
+DRIVING_LICENCE_JOB_SNAPSHOT = {
+    **EMPTY_JOB_SNAPSHOT,
+    "eligibility_requirements": [
+        {"id": "jobev_elig_licence_1", "text": "A full clean UK driving licence is required.", "kind": "required"},
+    ],
+}
+
+# A stable-fact keyword ("visa") appears, but the sentence is asking the
+# candidate to disclose past violations, not to state a durable
+# visa/sponsorship status -- keyword presence must not be sufficient.
+VISA_VIOLATIONS_ATTESTATION_JOB_SNAPSHOT = {
+    **EMPTY_JOB_SNAPSHOT,
+    "eligibility_requirements": [
+        {
+            "id": "jobev_elig_violation_1",
+            "text": "Please disclose any previous visa violations for our compliance review.",
+            "kind": "required",
+        },
+    ],
+}
+
+# A stable-fact keyword ("citizenship") appears inside an employer-specific
+# pledge/attestation, not a statement of the candidate's own citizenship
+# status -- must remain restricted despite the keyword match.
+CITIZENSHIP_PLEDGE_ATTESTATION_JOB_SNAPSHOT = {
+    **EMPTY_JOB_SNAPSHOT,
+    "eligibility_requirements": [
+        {
+            "id": "jobev_elig_pledge_1",
+            "text": "Candidates must sign this employer-specific citizenship pledge.",
+            "kind": "required",
+        },
+    ],
+}
+
 
 def _workspace(tmp_path, profile_root, *, job_snapshot=None):
     db_path = tmp_path / "jobsearch.sqlite3"
@@ -404,6 +453,78 @@ def test_stable_work_authorization_fact_allows_candidate_fact_scope(tmp_path, we
         answer_scope="CANDIDATE_FACT", resolved_by="human",
     )
     assert resolution["answer_scope"] == "CANDIDATE_FACT"
+    conn.close()
+
+
+def test_sponsorship_status_requirement_allows_broader_scope(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=SPONSORSHIP_STATUS_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+    assert blocker["allowed_scopes"] == [
+        "APPLICATION_ONLY", "SEARCH_WORKSPACE", "CANDIDATE_FACT",
+    ]
+    conn.close()
+
+
+def test_notice_period_requirement_allows_broader_scope(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=NOTICE_PERIOD_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+    assert blocker["allowed_scopes"] == [
+        "APPLICATION_ONLY", "SEARCH_WORKSPACE", "CANDIDATE_FACT",
+    ]
+    conn.close()
+
+
+def test_driving_licence_requirement_allows_broader_scope(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=DRIVING_LICENCE_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+    assert blocker["allowed_scopes"] == [
+        "APPLICATION_ONLY", "SEARCH_WORKSPACE", "CANDIDATE_FACT",
+    ]
+    conn.close()
+
+
+def test_visa_violations_disclosure_stays_application_only(tmp_path, webapp_profile_root):
+    """Keyword presence is not sufficient: "visa" appears in the posting
+    text, but the sentence demands disclosure of past violations, not a
+    statement of the candidate's own durable visa/sponsorship status --
+    scope must stay restricted despite the keyword match."""
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=VISA_VIOLATIONS_ATTESTATION_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+    assert blocker["allowed_scopes"] == ["APPLICATION_ONLY"]
+
+    with pytest.raises(ValueError, match="not permitted"):
+        resolve_blocker(
+            conn, workspace_id=workspace_id, blocker_id=blocker["id"], request_id="req_answer_1",
+            answer_value="No violations.", answer_scope="CANDIDATE_FACT",
+            resolved_by="human",
+        )
+    conn.close()
+
+
+def test_citizenship_pledge_attestation_stays_application_only(tmp_path, webapp_profile_root):
+    """Keyword presence is not sufficient: "citizenship" appears in the
+    posting text, but the sentence is an employer-specific pledge to sign,
+    not a statement of the candidate's own citizenship status -- scope
+    must stay restricted despite the keyword match. Also confirms a
+    superficial keyword occurrence cannot widen scope on its own."""
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=CITIZENSHIP_PLEDGE_ATTESTATION_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blocker = current_application_blockers(conn, workspace_id, artifact["id"])[0]
+    assert blocker["allowed_scopes"] == ["APPLICATION_ONLY"]
     conn.close()
 
 
