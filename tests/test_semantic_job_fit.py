@@ -5,6 +5,7 @@ import json
 import unittest
 from pathlib import Path
 
+from product.application_decision_policy import evaluate_gate_assessment
 from product.job_understanding import build_job_understanding_request, extract_job_understanding
 from product.job_understanding_providers import DeterministicFakeProvider
 from product.semantic_job_fit import (
@@ -491,20 +492,78 @@ class SemanticJobFitTests(unittest.TestCase):
         self.assertEqual(eligibility["status"], "PASS")
         self.assertEqual(eligibility["evidence_disposition"], "SUPPORTIVE")
 
-    def test_gate_materiality_reflects_this_postings_evidence_not_a_static_default(self):
-        """materiality is derived per assessment from whether THIS
-        posting's resolved job evidence actually contains an item in the
-        gate's category -- never a static per-gate-type default. The
-        default fixture's job posting asserts real requirements in every
-        gate category, so every gate must resolve MATERIAL here."""
+    def test_gate_materiality_reflects_this_postings_evidence_kind_not_mere_category_presence(self):
+        """materiality is derived from THIS posting's own resolved job
+        evidence -- specifically from each item's kind (required/preferred/
+        informational/unknown), never from mere category presence and
+        never from a static per-gate-type default. The default fixture's
+        job posting states eligibility ("must already have the right to
+        work", kind=required) and location_logistics ("Hybrid role...",
+        kind=required) as MATERIAL, but its language requirement is
+        literally "German would be an advantage" with kind=preferred --
+        an explicitly optional/nice-to-have requirement, which must
+        resolve NON_MATERIAL. Category presence alone (the pre-fix
+        behavior) would have wrongly marked all three MATERIAL, silently
+        collapsing "required" and "preferred" into the same outcome."""
         result = analyze_semantic_job_fit(semantic_request())
 
         materialities = {
             item["gate_id"]: item["materiality"] for item in result["gate_assessments"]
         }
         self.assertEqual(materialities["eligibility"], "MATERIAL")
-        self.assertEqual(materialities["language"], "MATERIAL")
+        self.assertEqual(materialities["language"], "NON_MATERIAL")
         self.assertEqual(materialities["location_logistics"], "MATERIAL")
+
+    def test_required_language_requirement_is_material_not_the_gate_type(self):
+        """Proves materiality is not secretly keyed off gate_id=="language":
+        when the posting's own extracted language-requirement item has its
+        kind changed from "preferred" to "required" (same quote text,
+        "German would be an advantage" -- only the extracted kind
+        differs), the language gate must resolve MATERIAL. If the
+        implementation depended on gate_id rather than the item's own
+        kind, this would incorrectly still read NON_MATERIAL regardless
+        of what kind Understanding actually extracted."""
+        job = job_snapshot()
+        candidate = ready_candidate()
+        for item in candidate["items"]:
+            if item["category"] == "language_requirements":
+                item["kind"] = "required"
+        understanding_request, understanding_result = understanding_pair(job, candidate)
+        bundle = build_resolved_job_evidence_bundle(job, understanding_request, understanding_result)
+        proposals = proposals_for_full_fit(bundle)
+
+        result = analyze_semantic_job_fit(
+            semantic_request(job=job, bundle=bundle, proposals=proposals)
+        )
+
+        language = next(
+            item for item in result["gate_assessments"] if item["gate_id"] == "language"
+        )
+        self.assertEqual(language["materiality"], "MATERIAL")
+
+    def test_preferred_language_with_no_candidate_evidence_auto_omits_end_to_end(self):
+        """Closes the loop the materiality audit was concerned about:
+        semantic_job_fit.py's real (kind=preferred) language requirement,
+        with no candidate language evidence supplied at all, must flow
+        through application_decision_policy.evaluate_gate_assessment to
+        AUTO_OMIT -- proving the full pipeline, not just each module in
+        isolation, treats a genuinely optional posting requirement as safe
+        to omit rather than escalating it needlessly to the candidate."""
+        req = semantic_request()
+        for gate in req["semantic_proposals"]["gates"]:
+            if gate["gate_id"] == "language":
+                gate["profile_evidence_ids"] = []
+
+        result = analyze_semantic_job_fit(req)
+
+        language = next(
+            item for item in result["gate_assessments"] if item["gate_id"] == "language"
+        )
+        self.assertEqual(language["materiality"], "NON_MATERIAL")
+        self.assertEqual(language["evidence_disposition"], "ABSENT")
+
+        decision = evaluate_gate_assessment(language)
+        self.assertEqual(decision.outcome, "AUTO_OMIT")
 
     def test_gate_materiality_is_not_applicable_when_posting_has_no_category_evidence(self):
         """A posting whose resolved job evidence never mentions a given

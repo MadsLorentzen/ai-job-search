@@ -638,22 +638,43 @@ def _build_gate_assessments(
         # is NOT sufficient evidence of support on its own -- see each
         # branch below for the specific reason.
         disposition = "ABSENT"
-        # materiality reflects whether THIS posting actually asserted a
-        # requirement in this gate's evidence category at all -- derived
-        # per assessment from the posting's own resolved job evidence,
-        # never from a static per-gate-type default. A posting with no
-        # job-evidence items in a category (e.g. no language requirement
-        # text anywhere in the posting) cannot make that gate material;
-        # a posting that does assert one (e.g. "German required") makes
-        # it material regardless of which gate type it is.
-        materiality = (
-            "MATERIAL"
-            if any(
-                item.get("category") == category
-                for item in context["job_evidence"].values()
-            )
-            else "NOT_APPLICABLE"
-        )
+        # materiality distinguishes three states this posting can be in
+        # for this gate's evidence category -- derived per assessment from
+        # the posting's own resolved job evidence, never from a static
+        # per-gate-type default (a posting can make "language" material
+        # just as easily as "eligibility", and vice versa):
+        #
+        #   MATERIAL      -- an item in this category has kind "required"
+        #                     (e.g. "German required"), OR the category
+        #                     has items but none with kind "required" or
+        #                     "preferred" (e.g. only "informational"/
+        #                     "unknown" -- an explicit applicable mention
+        #                     whose optionality cannot be established).
+        #                     Conservative per design: never assume
+        #                     something applicable is safe to treat as
+        #                     optional without an explicit signal.
+        #   NON_MATERIAL  -- every item in this category has kind
+        #                     "preferred" and none has kind "required"
+        #                     (e.g. "French preferred") -- upstream data
+        #                     explicitly establishes optional status.
+        #   NOT_APPLICABLE -- zero items in this category at all (e.g. no
+        #                     language requirement anywhere in the posting).
+        category_items = [
+            item for item in context["job_evidence"].values()
+            if item.get("category") == category
+        ]
+        category_kinds = {item.get("kind") for item in category_items}
+        if not category_items:
+            materiality = "NOT_APPLICABLE"
+        elif "required" in category_kinds:
+            materiality = "MATERIAL"
+        elif category_kinds and category_kinds <= {"preferred"}:
+            materiality = "NON_MATERIAL"
+        else:
+            # Only "informational"/"unknown" kinds present (or a mix that
+            # never includes "required") -- applicable, but optionality is
+            # not established. Conservative default: MATERIAL.
+            materiality = "MATERIAL"
         if proposal is not None:
             adjudicated_job_ids, invalid_job_refs = _adjudicate_gate_job_refs(
                 proposal["job_evidence_ids"], category, context

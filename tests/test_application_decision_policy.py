@@ -124,12 +124,18 @@ class GateAssessmentTests(unittest.TestCase):
         self.assertEqual(decision.reason_code, "gate_material_conflicting")
 
     def test_absent_optional_language_evidence_auto_omits(self):
-        """Required fail-first case: a NON_MATERIAL gate (this posting
-        states no language requirement, or the policy has explicitly
-        marked what evidence exists as non-material) with no candidate
-        evidence -- safe to AUTO_OMIT. This is the one case where absence
-        is genuinely safe to auto-resolve, and it requires NON_MATERIAL,
-        never a static "language is always optional" assumption."""
+        """Required fail-first case: a genuinely NON_MATERIAL gate -- e.g.
+        the posting states "French preferred" (kind=preferred, not
+        required), which semantic_job_fit.py's _build_gate_assessments
+        resolves to materiality=NON_MATERIAL (see
+        test_gate_materiality_reflects_this_postings_evidence_kind_not_mere_category_presence
+        in test_semantic_job_fit.py for the upstream derivation, fixed to
+        key off each item's extracted kind rather than mere category
+        presence) -- with no candidate evidence addressing it, is safe to
+        AUTO_OMIT. This is the one case where absence is genuinely safe to
+        auto-resolve, and it requires an upstream-established
+        NON_MATERIAL, never a static "language is always optional"
+        assumption keyed on gate_id."""
         decision = evaluate_gate_assessment(
             gate(
                 "UNVERIFIED", evidence_disposition="ABSENT", materiality="NON_MATERIAL",
