@@ -84,6 +84,7 @@ REQUIRED_IGNORE_RULES = [
     "documents/linkedin/**",
     "documents/diplomas/**",
     "documents/references/**",
+    "documents/projects/**",
     "documents/applications/**",
     "documents/postings/**",
     # Belt-and-braces, not the primary guard: nothing writes here.

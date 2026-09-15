@@ -15,6 +15,13 @@ per-file diff commands.
 
 ### Added
 
+- **`documents/projects/` portfolio ingestion in `/setup` (Path A)** (`documents/README.md`,
+  `.claude/commands/setup.md`, `.claude/commands/reset.md`, `tests/test_setup_command.py`) -
+  onboards project writeups, case studies, and documentation (`.md`, `.txt`, `.pdf`)
+  from `documents/projects/`, extracting structured summaries (problem domain, tech stack,
+  technical challenges, and measurable outcomes) to populate `## Independent Projects`
+  in `01-candidate-profile.md`.
+
 - **Source host verification in `/apply` Step 1** (#431, `.claude/commands/apply.md`,
   `tests/test_apply_host_check.py`) - before proceeding to draft CV and cover letters,
   Step 1 verifies the posting URL's provenance against installed portal boards and the
