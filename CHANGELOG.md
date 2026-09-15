@@ -55,6 +55,24 @@ per-file diff commands.
 
 ### Fixed
 
+- **`convert_salary_excel.py` pairs a bare `Count`/`Index` column pair instead of
+  splitting it, so `salary_lookup.py` no longer labels a published headcount as
+  privacy-suppressed** - the pairing loop required a non-empty derived category name on
+  both sides, but a header with no category word (`Count` + `Index`, Danish `Antal` +
+  `Lønindeks`) strips to an empty name, so the simplest layout the README advertises
+  ("auto-pairs count/index columns") came out as two unrelated standalone categories:
+  `{"count": {"count": 500}, "index": {"index": 108.5}}`. `salary_lookup` then rendered
+  a `Count  500  N/A*` row above an `Index  -  108.5` row, and the footnote read the
+  `N/A*` as "too few employees to publish (privacy)" - a false statement about a company
+  whose headcount is in the file, shown during `/apply`'s salary step. Demonstrated
+  through the documented Excel -> JSON -> lookup path with `openpyxl`; adding any suffix
+  (`Antal alle`) made pairing work, which is why the shipped tests, all suffixed, never
+  saw it. Bare pairs now pair under the README's top-level category name
+  (`all_employees`); a bare `Antal` with no bare index column still stays a standalone
+  count, and named pairs alongside are untouched. Four new cases in
+  `test_convert_salary_excel.py`, including one that renders the converter's output
+  through `salary_lookup.format_entry`; all four fail on the old pairing rule.
+
 - **`tools/verify_layout.py`'s `skipped:` message named only one cause of a broken
   extractor when there are two** (#451) - it blamed the xpdf-based `pdftotext` Git for
   Windows puts ahead of Poppler in PATH (no `-bbox` flag, exits 99), but a real Poppler

@@ -52,6 +52,9 @@ COMPOUND_PATTERNS = {"antal", "indeks", "løn", "gennemsnit", "medarbejdere"}
 # data. They are dropped at classification so they are not mistaken for a salary
 # category. Matched as whole tokens only, like other pattern sets.
 ID_PATTERNS = {"id", "personnummer"}
+# Category name for a count/index pair whose headers carry no category word at
+# all ("Count" + "Index"). Matches the top-level category in README_SALARY_TOOL.md.
+DEFAULT_CATEGORY = "all_employees"
 
 
 def parse_numeric_cell(value):
@@ -216,7 +219,14 @@ def parse_sheet(ws, sheet_label=None):
         else:
             untyped_cols.append((col_idx, col_header))
 
-    # Pair count/index columns by matching category name
+    # Pair count/index columns by matching category name. A bare "Count" /
+    # "Index" pair (Danish "Antal" / "Lønindeks") strips to an empty name on
+    # both sides - the single-category layout the README's "auto-pairs
+    # count/index columns" line describes. It is still one pair, so it gets
+    # the README's default category name instead of being emitted as two
+    # unrelated standalone columns: salary_lookup renders that split as a
+    # count row whose index reads "N/A*", i.e. "too few employees to publish
+    # (privacy)", about a company with a published headcount.
     categories = []
     used_counts = set()
     used_indexes = set()
@@ -225,8 +235,8 @@ def parse_sheet(ws, sheet_label=None):
         for ii, (i_idx, i_header, i_cat) in enumerate(index_cols):
             if ii in used_indexes:
                 continue
-            if c_cat and i_cat and c_cat == i_cat:
-                cat_name = c_cat.replace(" ", "_").replace("-", "_")
+            if c_cat == i_cat:
+                cat_name = (c_cat or DEFAULT_CATEGORY).replace(" ", "_").replace("-", "_")
                 categories.append({
                     "name": cat_name,
                     "count_col": c_idx,

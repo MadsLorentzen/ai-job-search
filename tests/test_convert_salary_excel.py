@@ -3,6 +3,7 @@ import unittest
 from contextlib import redirect_stderr
 from types import SimpleNamespace
 
+from salary_lookup import format_entry
 from tools.convert_salary_excel import (
     INDEX_PATTERNS,
     detect_column_type,
@@ -389,6 +390,84 @@ class ParseNumericCellLocaleTests(unittest.TestCase):
 
     def test_european_multiple_thousands_groups(self):
         self.assertEqual(parse_numeric_cell("1.234.567,89"), 1234567.89)
+
+
+class BareCountIndexPairingTests(unittest.TestCase):
+    """A count/index pair whose headers carry no category word is still a pair.
+
+    "Count" + "Index" (Danish "Antal" + "Lønindeks") both strip to an empty
+    category name, and the pairing loop used to require a non-empty name on
+    both sides, so the single-category layout the README describes as
+    "auto-pairs count/index columns" came out as two unrelated standalone
+    columns. salary_lookup then rendered the count row with "N/A*" for the
+    index - "too few employees to publish (privacy)" - about a company whose
+    headcount was right there in the file. The literal name is asserted (not
+    the module constant) so the cases run, and fail, against the old converter.
+    """
+
+    DEFAULT_CATEGORY = "all_employees"
+
+    def test_bare_english_pair_is_paired_under_the_default_category(self):
+        ws = FakeWorksheet([
+            ("Company", "City", "Count", "Index"),
+            ("Acme Corp", "Copenhagen", 500, 108.5),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(
+            companies[0]["categories"],
+            {self.DEFAULT_CATEGORY: {"count": 500, "index": 108.5}},
+        )
+
+    def test_bare_danish_pair_is_paired_under_the_default_category(self):
+        ws = FakeWorksheet([
+            ("Firma", "By", "Antal", "Lønindeks"),
+            ("Acme Corp", "Aarhus", 500, 108.5),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(
+            companies[0]["categories"],
+            {self.DEFAULT_CATEGORY: {"count": 500, "index": 108.5}},
+        )
+
+    def test_bare_pair_does_not_cross_pair_with_a_named_category(self):
+        # The bare pair and the named pair coexist; neither steals the other's
+        # column, and a lone "Antal" with no bare index column stays standalone
+        # (pinned separately by test_standalone_count_column_is_stored_as_count_not_index).
+        ws = FakeWorksheet([
+            ("Company", "Antal", "IT Count", "IT Index", "Lønindeks"),
+            ("Acme Corp", 500, 30, 112.0, 108.5),
+        ])
+
+        companies = parse_sheet(ws)
+
+        self.assertEqual(
+            companies[0]["categories"],
+            {
+                self.DEFAULT_CATEGORY: {"count": 500, "index": 108.5},
+                "it": {"count": 30, "index": 112.0},
+            },
+        )
+
+    def test_lookup_renders_the_bare_pair_as_one_row_without_the_privacy_footnote_firing(self):
+        # End to end through the documented path: converter output is what
+        # salary_lookup.format_entry displays during /apply. Before the fix the
+        # same sheet produced a "Count  500  N/A*" row plus an "Index  -  108.5"
+        # row - the N/A* asserting a privacy suppression that never happened.
+        ws = FakeWorksheet([
+            ("Company", "City", "Count", "Index"),
+            ("Acme Corp", "Copenhagen", 500, 108.5),
+        ])
+        entry = parse_sheet(ws)[0]
+
+        rendered = format_entry(entry, {"index_baseline": 100, "index_label": "Index"})
+
+        self.assertNotIn("N/A*", rendered.split("* N/A =")[0])
+        self.assertRegex(rendered, r"All Employees\s+500\s+108\.5\s+\+8\.5%")
+        self.assertNotRegex(rendered, r"^\s*Count\s+500", )
 
 
 class CompoundCategoryPairingTests(unittest.TestCase):
