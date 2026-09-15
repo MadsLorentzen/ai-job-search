@@ -66,7 +66,8 @@ def test_run_job_fit_persists_request_result_and_resolved_evidence(tmp_path, web
         ).fetchall()
     }
     assert request_fingerprints == {
-        "profile_snapshot", "resolved_job_evidence", "server:active_extensions",
+        "profile_snapshot", "resolved_job_evidence", "resolved_blocker_answers",
+        "server:active_extensions",
         "server:evaluation_policy", "server:semantic_fit_policy",
         "server:semantic_proposer_policy",
         "server:semantic_proposals",

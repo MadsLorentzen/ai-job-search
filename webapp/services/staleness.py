@@ -17,7 +17,8 @@ DEPENDENCY_TYPES: dict[str, tuple[str, ...]] = {
     "job_understanding_result": ("job_posting_snapshot", "job_understanding_request"),
     "resolved_job_evidence": ("job_posting_snapshot", "job_understanding_request", "job_understanding_result"),
     "job_fit_request": (
-        "profile_snapshot", "resolved_job_evidence", "server:active_extensions",
+        "profile_snapshot", "resolved_job_evidence", "resolved_blocker_answers",
+        "server:active_extensions",
         "server:evaluation_policy", "server:semantic_fit_policy", "server:semantic_proposer_policy",
         "server:semantic_proposals",
     ),

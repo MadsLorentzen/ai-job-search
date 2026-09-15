@@ -30,6 +30,7 @@ from product.semantic_job_fit import (
     build_semantic_job_fit_request,
     load_semantic_fit_policy,
 )
+from webapp.services.resolved_blocker_answers import build_resolved_blocker_answers_payload
 
 from webapp.persistence.artifacts import get_current_artifact, save_artifact
 from webapp.persistence.application_identity import (
@@ -291,6 +292,21 @@ def run_job_fit(
         _persist_semantic_provider_audit(conn, workspace_id, semantic_adapter)
         raise PipelineError(f"semantic proposer failed: {exc}") from exc
 
+    # Materialize and persist the resolved_blocker_answers.v1 bundle exactly
+    # once. This SAME saved artifact's payload is threaded into
+    # build_semantic_job_fit_request below, and its SAME content_id is what
+    # the dependency fingerprint on job_fit_request references -- there must
+    # never be two independently-built bundles (one "for the request," a
+    # different one "for the fingerprint"); see webapp/services/
+    # resolved_blocker_answers.py's own docstring for why (Phase 4C spec §4,
+    # §6, §10).
+    resolved_blocker_answers = build_resolved_blocker_answers_payload(conn, workspace_id)
+    resolved_blocker_answers_saved = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="resolved_blocker_answers",
+        payload=resolved_blocker_answers,
+        content_id=_hash_artifact("blockeranswers_", resolved_blocker_answers),
+    )
+
     evaluation_policy = load_evaluation_policy()
     semantic_fit_policy = load_semantic_fit_policy()
     try:
@@ -299,6 +315,7 @@ def run_job_fit(
             job_snapshot=job_artifact["payload"], resolved_job_evidence=bundle,
             active_extensions=active_extensions, evaluation_policy=evaluation_policy,
             semantic_fit_policy=semantic_fit_policy, semantic_proposals=proposals,
+            resolved_blocker_answers=resolved_blocker_answers_saved["payload"],
         )
     except Exception as exc:
         raise PipelineError(f"job fit request construction failed: {exc}") from exc
@@ -314,6 +331,8 @@ def run_job_fit(
                                    upstream_content_id=profile_artifact["content_id"])
     record_dependency_fingerprint(conn, artifact_id=request_saved["id"], upstream_artifact_type="resolved_job_evidence",
                                    upstream_content_id=bundle_saved["content_id"])
+    record_dependency_fingerprint(conn, artifact_id=request_saved["id"], upstream_artifact_type="resolved_blocker_answers",
+                                   upstream_content_id=resolved_blocker_answers_saved["content_id"])
     for input_type, identity in (
         ("server:active_extensions", active_extensions_identity(active_extensions)),
         ("server:evaluation_policy", content_identity("evalpolicy_", evaluation_policy)),
