@@ -44,13 +44,29 @@ python salary_lookup.py "<Company Name>" --json
 
 If the posting specifies a city, add `--city "<City>"` to narrow results. Parse the JSON output and include the salary benchmark in the evaluation. If the tool is not configured or returns an error, skip the salary benchmark.
 
+### Source Host Verification (when input is a URL)
+
+Before proceeding to drafting, inspect the posting URL's hostname to verify provenance (#431). Classify the host into one of three categories:
+
+1. **Installed portal board:** the host matches any configured job portal in `.agents/skills/` (e.g. `jobindex.dk`, `linkedin.com`, `jobnet.dk`, `jobbank.dk`, `jobdanmark.dk`, `freehire.me`, or any portal added by `/add-portal`).
+2. **Known official ATS apex:** the host matches or is a valid subdomain of one of the six standard ATS domains:
+   - `greenhouse.io`
+   - `lever.co`
+   - `myworkdayjobs.com` (or `workday.com`)
+   - `ashbyhq.com`
+   - `smartrecruiters.com`
+   - `workable.com`
+   *Look-alike parsing:* the host must match the apex exactly or end with `.<apex>`. Look-alike prefix tricks (e.g. `evil-greenhouse.io`), suffix spoofing (e.g. `job-boards.greenhouse.io.evil.com`), userinfo tricks (`https://greenhouse.io@evil.com/`), and unfamiliar subdomains fail closed and must not be classified as an official ATS.
+3. **Neither (Unverified host):** name the host plainly in the evaluation output as unverified (`⚠ Unverified source host: <hostname> - not an installed portal board or known ATS apex`). Alert the user to verify the employer and link legitimacy before committing time and tokens to drafting.
+
 Present the evaluation to the user with:
 
-1. **Skills match** - which required/preferred skills match vs. gaps
-2. **Experience match** - how work history maps to the role
-3. **Behavioral/culture match** - how behavioral profile fits the role/company culture
-4. **Salary benchmark** - salary index for the company (if available)
-5. **Overall fit score** and recommendation (strong fit / moderate fit / weak fit)
+1. **Source host verification** - installed portal board, official ATS, or ⚠ unverified source host (named plainly)
+2. **Skills match** - which required/preferred skills match vs. gaps
+3. **Experience match** - how work history maps to the role
+4. **Behavioral/culture match** - how behavioral profile fits the role/company culture
+5. **Salary benchmark** - salary index for the company (if available)
+6. **Overall fit score** and recommendation (strong fit / moderate fit / weak fit)
 
 After presenting the evaluation, ask the user:
 > "Should I proceed with drafting the CV and cover letter for this role?"

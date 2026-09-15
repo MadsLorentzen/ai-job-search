@@ -15,6 +15,14 @@ per-file diff commands.
 
 ### Added
 
+- **Source host verification in `/apply` Step 1** (#431, `.claude/commands/apply.md`,
+  `tests/test_apply_host_check.py`) - before proceeding to draft CV and cover letters,
+  Step 1 verifies the posting URL's provenance against installed portal boards and the
+  six standard ATS apex domains (`greenhouse.io`, `lever.co`, `myworkdayjobs.com`/`workday.com`,
+  `ashbyhq.com`, `smartrecruiters.com`, `workable.com`). Look-alike prefix/suffix spoofing
+  fails closed, and unrecognized hosts are plainly flagged as unverified in the evaluation
+  output (`⚠ Unverified source host: <hostname>`) before drafting tokens are spent.
+
 - **`/expand` project and portfolio expansion** (`.claude/commands/expand.md`,
   `tests/test_expand_command.py`) - expands candidate discovery
   to technical projects from public GitHub repositories, extracting structured summaries
@@ -171,6 +179,7 @@ per-file diff commands.
   Existing state files need no migration: Step 2's candidate filter matches a posting to a stored
   entry by URL regardless of that entry's key, so a workspace whose entries predate the helper does
   not see its still-live postings re-presented as new.
+
 ## [1.7.1] - 2026-09-06
 
 ### Added
