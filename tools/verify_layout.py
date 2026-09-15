@@ -26,9 +26,14 @@ that, and CI runs it. Two implementations of one rule drift.
 Geometry comes from Poppler word bounding boxes (`pdftotext -bbox`). Poppler is optional
 repo-wide - since #369 `verify_pdf.py` prefers pypdf and falls back to Poppler - but word
 bounding boxes have no pypdf equivalent, so this is the one step that still wants it.
-Without it, or with an extractor that cannot do `-bbox` (Git-for-Windows ships an
-xpdf-based `pdftotext` that shadows Poppler in PATH and rejects the flag), the check
-reports `skipped:` and exits 2 rather than inventing a layout failure. Line height serves
+Without it, or with a broken extractor, the check reports `skipped:` and exits 2 rather
+than inventing a layout failure. A broken extractor has two distinct causes: an xpdf-based
+`pdftotext` (Git for Windows ships one ahead of Poppler in PATH) has no `-bbox` flag at
+all, and Poppler 26.0x before 26.05 aborts `-bbox`/`-bbox-layout`/`-htmlmeta` on a PDF
+whose Info dictionary carries an empty string in any field - which `hyperref` writes for
+every field it does not set, so any `lualatex`/`pdflatex` document built with `hyperref`
+and no `\hypersetup{pdftitle=...}` triggers a real Poppler crashing on a legal PDF (#451).
+Line height serves
 as a font-size proxy to spot section headings; left edge (xMin) separates bullet lines
 from entry headers.
 
@@ -166,14 +171,22 @@ def parse_pdf(path: Path) -> list[Page]:
             check=True,
         ).stdout
     except subprocess.CalledProcessError as exc:
-        # An xpdf-based pdftotext has no -bbox and exits 99. That is a broken extractor,
-        # not a broken document, so it degrades to the skip path instead of exit 1.
+        # A broken extractor has two distinct causes, not one: an xpdf-based pdftotext
+        # has no -bbox at all and exits 99 (Git for Windows puts one ahead of Poppler
+        # in PATH); a real Poppler before 26.05 aborts -bbox on a PDF whose Info dict
+        # has an empty string in any field - which hyperref writes for every field it
+        # does not set, so a lualatex/pdflatex document with hyperref and no pdftitle
+        # triggers this even with a working Poppler (#451). Either way this is a
+        # broken extractor, not a broken document, so it degrades to the skip path
+        # instead of exit 1.
         stderr_lines = (exc.stderr or "").strip().splitlines()
         detail = stderr_lines[0] if stderr_lines else f"exit {exc.returncode}"
         raise RuntimeError(
             f"pdftotext could not produce bounding boxes for {path} ({detail}); "
-            "a pdftotext without -bbox is usually the xpdf build that Git for Windows "
-            "puts ahead of Poppler in PATH"
+            "either the pdftotext first in PATH is an xpdf build with no -bbox flag "
+            "(Git for Windows ships one ahead of Poppler), or Poppler aborted on this "
+            "document - Poppler 26.0x before 26.05 aborts on a PDF whose Info "
+            "dictionary carries an empty string, as hyperref writes when pdftitle is unset"
         ) from exc
     pages = []
     for _w, h, body in PAGE_RE.findall(out):
