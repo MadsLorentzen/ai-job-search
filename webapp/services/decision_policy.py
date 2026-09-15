@@ -553,6 +553,49 @@ def find_reusable_answer(
     return None
 
 
+def find_semantic_subject_match(
+    conn: sqlite3.Connection, *, workspace_id: str, semantic_subject_key: str | None,
+) -> dict[str, Any] | None:
+    """The ONLY cross-application answer lookup Phase 4C performs: a
+    SEARCH_WORKSPACE-scoped resolution from a sibling workspace sharing
+    workspace_id's real search workspace, keyed on semantic_subject_key
+    equality, never subject_key string equality (Phase 4C spec §5) --
+    subject_key is artifact-instance-scoped and essentially never matches
+    verbatim across two different applications' own Job Fit artifacts.
+
+    Deliberately does NOT look up CANDIDATE_FACT-scoped resolutions
+    across workspaces (spec §5 point 3, §17's amended Candidate Fact
+    boundary): doing so would rebuild the shadow candidate-evidence
+    store the design explicitly rules out. A CANDIDATE_FACT-scoped
+    answer is visible only within its own originating workspace, via
+    Task 6's tier-1 lookup in build_resolved_blocker_answers_payload --
+    never via this function.
+    """
+
+    if semantic_subject_key is None:
+        return None
+
+    from webapp.persistence.application_identity import get_search_workspace_for_application
+
+    search_workspace_id = get_search_workspace_for_application(conn, workspace_id)
+    if search_workspace_id is None:
+        return None
+
+    rows = conn.execute(
+        "SELECT r.* FROM blocker_resolutions r "
+        "JOIN application_blockers b ON b.id = r.blocker_id "
+        "JOIN application_workspace_origins o ON o.application_workspace_id = r.workspace_id "
+        "WHERE o.search_workspace_id = ? AND b.semantic_subject_key = ? "
+        "AND r.answer_scope = 'SEARCH_WORKSPACE' "
+        "ORDER BY r.created_at DESC LIMIT 1",
+        (search_workspace_id, semantic_subject_key),
+    ).fetchall()
+    if rows:
+        return _row_to_resolution_with_scope_source(rows[0], "SEARCH_WORKSPACE")
+
+    return None
+
+
 def _row_to_resolution_with_scope_source(row: sqlite3.Row, scope_source: str) -> dict[str, Any]:
     from webapp.persistence.application_blockers import _row_to_resolution
 
