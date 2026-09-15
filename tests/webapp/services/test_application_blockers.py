@@ -901,4 +901,41 @@ def test_get_causes_no_blocker_state_change(tmp_path, webapp_profile_root):
 
     after = list_application_blockers(conn, workspace_id)
     assert before == after
+
+
+def test_sponsorship_gate_blocker_gets_semantic_subject_key(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=SPONSORSHIP_STATUS_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blockers = current_application_blockers(conn, workspace_id, artifact["id"])
+    sponsorship_blocker = next(b for b in blockers if b["subject_key"] == "gate:eligibility")
+    assert sponsorship_blocker["semantic_subject_key"] == "work_authorization.sponsorship_required"
+
+
+def test_employer_attestation_gate_blocker_has_no_semantic_subject_key(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=EMPLOYER_ATTESTATION_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blockers = current_application_blockers(conn, workspace_id, artifact["id"])
+    attestation_blocker = next(b for b in blockers if b["subject_key"] == "gate:eligibility")
+    assert attestation_blocker["semantic_subject_key"] is None
+
+
+def test_dimension_blocker_never_has_semantic_subject_key(tmp_path, webapp_profile_root):
+    conn, workspace_id = _workspace(
+        tmp_path, webapp_profile_root, job_snapshot=UNMATCHED_TECHNICAL_SKILL_JOB_SNAPSHOT
+    )
+    artifact = _run_fit(conn, workspace_id, tmp_path)
+    blockers = current_application_blockers(conn, workspace_id, artifact["id"])
+    # Dimension assessments carry review_item_type/blocker_type
+    # "human_judgment_question" in this codebase (product/
+    # application_decision_policy.py's evaluate_dimension_assessment),
+    # not the literal string "dimension" -- subject_key is what actually
+    # encodes "dimension:<id>" vs "gate:<id>".
+    dimension_blockers = [b for b in blockers if b["blocker_type"] == "human_judgment_question"]
+    assert dimension_blockers  # sanity: at least one dimension blocker exists
+    assert all(b["subject_key"].startswith("dimension:") for b in dimension_blockers)
+    assert all(b["semantic_subject_key"] is None for b in dimension_blockers)
     conn.close()

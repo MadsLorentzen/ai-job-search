@@ -33,6 +33,7 @@ from product.application_decision_policy import (
     evaluate_dimension_assessment,
     evaluate_gate_assessment,
 )
+from product.semantic_subject_registry import SEMANTIC_SUBJECTS
 from webapp.persistence.application_blockers import save_application_blocker
 from webapp.persistence.policy_decisions import save_policy_decision
 
@@ -198,6 +199,50 @@ def _is_stable_fact_requirement(texts: list[str]) -> bool:
     return False
 
 
+# Each family maps to exactly one product/semantic_subject_registry.py
+# key. This mapping lives here, in the classifier, deliberately separate
+# from the registry itself (spec §3): changing or adding a pattern here
+# never redefines what a registry key means, and the registry's four
+# initial keys are the authority on which values classify_semantic_subject
+# may ever return.
+_SEMANTIC_SUBJECT_PATTERNS: tuple[tuple[re.Pattern, str], ...] = (
+    (re.compile(r"\bright to work\b", re.IGNORECASE), "work_authorization.right_to_work"),
+    (re.compile(r"\bcitizen(?:ship)?\b", re.IGNORECASE), "work_authorization.right_to_work"),
+    (re.compile(r"\bsponsorship\b", re.IGNORECASE), "work_authorization.sponsorship_required"),
+    (re.compile(r"\bvisa\b", re.IGNORECASE), "work_authorization.sponsorship_required"),
+    (re.compile(r"\bwork permit\b", re.IGNORECASE), "work_authorization.sponsorship_required"),
+    (re.compile(r"\bdriv(?:ing|er'?s) licen[sc]e\b", re.IGNORECASE), "licence.driving"),
+    (re.compile(r"\bnotice period\b", re.IGNORECASE), "employment.notice_period"),
+)
+
+
+def classify_semantic_subject(blocker_type: str, requirement_texts: list[str]) -> str | None:
+    """Map gate requirement text to a product/semantic_subject_registry.py
+    key, or None (Phase 4C spec §3). Dimension blockers never classify
+    (rule 1). Attestation-action text is excluded before matching (rule
+    4, mirrors _is_stable_fact_requirement's own exclusion). Text matching
+    more than one registry family classifies to None (rule 3) -- Phase 4C
+    has no per-fact decomposition of a single gate's evidence.
+    """
+
+    if blocker_type != "gate_flag":
+        return None
+
+    matched_keys: set[str] = set()
+    for text in requirement_texts:
+        if _ATTESTATION_ACTION_PATTERN.search(text):
+            continue
+        for pattern, registry_key in _SEMANTIC_SUBJECT_PATTERNS:
+            if pattern.search(text):
+                matched_keys.add(registry_key)
+
+    if len(matched_keys) != 1:
+        return None
+    (key,) = matched_keys
+    assert key in SEMANTIC_SUBJECTS  # registry is the authority; classifier must never invent a key
+    return key
+
+
 def _blocker_allowed_scopes(
     conn: sqlite3.Connection, workspace_id: str, decision: DecisionRecord,
 ) -> list[str]:
@@ -229,6 +274,7 @@ def _maybe_create_blocker(
 
     if decision.outcome != "REQUIRE_USER":
         return None
+    requirement_texts = _requirement_texts(conn, workspace_id, decision)
     return save_application_blocker(
         conn,
         workspace_id=workspace_id,
@@ -240,6 +286,7 @@ def _maybe_create_blocker(
         question=_blocker_question(decision),
         resume_stage=stage,
         allowed_scopes=_blocker_allowed_scopes(conn, workspace_id, decision),
+        semantic_subject_key=classify_semantic_subject(decision.review_item_type, requirement_texts),
         context={
             "reason_code": decision.reason_code,
             "reason": decision.reason,

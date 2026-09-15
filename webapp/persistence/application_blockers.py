@@ -41,6 +41,7 @@ def save_application_blocker(
     resume_stage: str,
     allowed_scopes: list[str],
     context: dict[str, Any] | None = None,
+    semantic_subject_key: str | None = None,
     commit: bool = True,
 ) -> dict[str, Any]:
     """Create the (at most one) durable blocker for a governing REQUIRE_USER
@@ -51,6 +52,13 @@ def save_application_blocker(
     idempotent, since save_policy_decision always returns the same id for a
     retried applicability key) is a safe no-op that returns the
     already-persisted blocker rather than raising or duplicating a row.
+
+    semantic_subject_key (Phase 4C spec §3) is a nullable classification
+    drawn only from product/semantic_subject_registry.py's closed
+    vocabulary -- validated here the same way ANSWER_SCOPES/
+    BLOCKER_STATUSES are already enforced as closed sets, so an unknown
+    value is a programming error, never silently accepted as a new
+    subject.
     """
 
     if stage not in STAGES:
@@ -66,18 +74,23 @@ def save_application_blocker(
     invalid_scopes = set(allowed_scopes) - set(ANSWER_SCOPES)
     if not allowed_scopes or invalid_scopes:
         raise ValueError(f"allowed_scopes contains unknown values: {invalid_scopes or 'empty'}")
+    if semantic_subject_key is not None:
+        from product.semantic_subject_registry import is_valid_semantic_subject
+
+        if not is_valid_semantic_subject(semantic_subject_key):
+            raise ValueError(f"unknown semantic_subject_key: {semantic_subject_key!r}")
 
     blocker_id = f"block_{uuid.uuid4().hex[:20]}"
     conn.execute(
         "INSERT OR IGNORE INTO application_blockers "
         "(id, workspace_id, policy_decision_id, source_artifact_id, stage, "
         "blocker_type, subject_key, question, context, resume_stage, "
-        "allowed_scopes, status, created_at, resolved_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, NULL)",
+        "allowed_scopes, status, created_at, resolved_at, semantic_subject_key) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, NULL, ?)",
         (
             blocker_id, workspace_id, policy_decision_id, source_artifact_id, stage,
             blocker_type, subject_key, question, json.dumps(context or {}), resume_stage,
-            json.dumps(allowed_scopes), _now(),
+            json.dumps(allowed_scopes), _now(), semantic_subject_key,
         ),
     )
     if commit:
