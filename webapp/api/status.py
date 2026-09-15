@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import sqlite3
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
 
-from webapp.api.dependencies import get_account_scope, get_conn
+from webapp.api.dependencies import get_account_scope, get_conn, get_extensions_dir
 from webapp.services.ownership import AccountScope
 from webapp.services.http_api import JobWorkspaceNotFound, change_job_status
 from webapp.services.pipeline import PipelineError
@@ -32,12 +33,14 @@ def _translate(exc: Exception) -> HTTPException:
 def patch_status(
     workspace_id: str, body: StatusBody,
     conn: sqlite3.Connection = Depends(get_conn),
+    extensions_dir: Path = Depends(get_extensions_dir),
     scope: AccountScope = Depends(get_account_scope),
 ):
     try:
         return change_job_status(
             conn, workspace_id, new_status=body.new_status,
             effective_date=body.effective_date, note=body.note,
+            extensions_dir=extensions_dir,
             account_id=scope.account_id,
         )
     except (PipelineError, JobWorkspaceNotFound) as exc:

@@ -1,12 +1,14 @@
 from fastapi.testclient import TestClient
 
 from tests.webapp.fixtures.application_material import completion_ready_pack_payload
+from tests.webapp.services.test_application_pack import _seed
 from webapp.app import create_app
 from webapp.config import Settings
 from webapp.persistence.artifacts import save_artifact
 from webapp.persistence.db import connect
 from webapp.persistence.workflow import record_status_change
 from webapp.persistence.workspaces import create_workspace, ensure_profile_workspace
+from webapp.services.staleness import record_dependency_fingerprint
 
 
 def _client_workspace(tmp_path):
@@ -32,22 +34,52 @@ def test_generic_status_rejects_drafted_and_unknown_status(tmp_path):
         }).status_code == 400
 
 
+def _seed_non_stale_pack(conn, workspace_id, *, marker):
+    """Give a hand-built application_pack a real, fully-fingerprinted
+    job_fit_result/application_intelligence_result dependency chain (via
+    test_application_pack.py's own _seed, which builds a real, matching
+    profile_snapshot -> job_posting_snapshot -> ... -> job_fit_result /
+    application_intelligence_result chain with fingerprints throughout) so
+    check_staleness (Phase 4C spec §15's applied-transition gate added to
+    webapp.services.http_api.change_job_status) does not treat it as stale
+    merely for lacking fingerprints entirely -- distinct from this test's
+    actual subject (pack-id binding), which predates that gate. _seed's own
+    content_ids ("profilesnap_A" etc.) are fixed strings, so calling it a
+    second time (for the "current" pack) would collide on those ids; give
+    each call a distinct marker via job/profile payload variation instead
+    by seeding into a fresh workspace-scoped set of artifact rows each time
+    -- _seed always uses save_artifact, which supersedes rather than
+    errors, so a second _seed call simply makes its own artifacts current,
+    which is exactly the "old pack, then a newer current pack" shape this
+    test needs.
+    """
+    _, _, fit_artifact, intelligence_artifact = _seed(conn, workspace_id)
+    pack = save_artifact(
+        conn, workspace_id=workspace_id, artifact_type="application_pack",
+        payload={"pack": marker, **completion_ready_pack_payload(marker)},
+    )
+    record_dependency_fingerprint(
+        conn, artifact_id=pack["id"], upstream_artifact_type="job_fit_result",
+        upstream_content_id=fit_artifact["content_id"],
+    )
+    record_dependency_fingerprint(
+        conn, artifact_id=pack["id"], upstream_artifact_type="application_intelligence_result",
+        upstream_content_id=intelligence_artifact["content_id"],
+    )
+    return pack
+
+
 def test_applied_ignores_client_pack_id_and_binds_current_pack_server_side(tmp_path):
     client, settings, workspace_id = _client_workspace(tmp_path)
     with client:
         conn = connect(settings.db_path)
-        old_pack = save_artifact(
-            conn, workspace_id=workspace_id, artifact_type="application_pack",
-            payload={"pack": "A", **completion_ready_pack_payload("old")},
-        )
+        ensure_profile_workspace(conn)
+        old_pack = _seed_non_stale_pack(conn, workspace_id, marker="old")
         record_status_change(
             conn, workspace_id=workspace_id, new_status="drafted", effective_date="2026-08-18",
             submitted_pack_artifact_id=old_pack["id"], _allow_drafted=True,
         )
-        current_pack = save_artifact(
-            conn, workspace_id=workspace_id, artifact_type="application_pack",
-            payload={"pack": "B", **completion_ready_pack_payload("current")},
-        )
+        current_pack = _seed_non_stale_pack(conn, workspace_id, marker="current")
         conn.close()
         response = client.patch(f"/api/workspaces/{workspace_id}/status", json={
             "new_status": "applied", "effective_date": "2026-08-20"
