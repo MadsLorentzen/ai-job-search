@@ -26,6 +26,7 @@ PAIRING_SECRETS_MIGRATION_ID = "007_pairing_secrets"
 POLICY_DECISIONS_MIGRATION_ID = "010_policy_decisions"
 APPLICATION_BLOCKERS_MIGRATION_ID = "011_application_blockers"
 BLOCKER_RESOLUTION_HISTORY_MIGRATION_ID = "012_blocker_resolution_history"
+SEMANTIC_SUBJECT_KEY_MIGRATION_ID = "013_semantic_subject_key"
 
 
 def _now() -> str:
@@ -57,6 +58,7 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
         (POLICY_DECISIONS_MIGRATION_ID, _migrate_policy_decisions, False),
         (APPLICATION_BLOCKERS_MIGRATION_ID, _migrate_application_blockers, False),
         (BLOCKER_RESOLUTION_HISTORY_MIGRATION_ID, _migrate_blocker_resolution_history, False),
+        (SEMANTIC_SUBJECT_KEY_MIGRATION_ID, _migrate_semantic_subject_key, False),
     )
     for migration_id, operation, disable_foreign_keys in migrations:
         if conn.execute(
@@ -571,6 +573,20 @@ def _migrate_blocker_resolution_history(conn: sqlite3.Connection) -> None:
     # from governing queries by artifact comparison.
     conn.execute(
         "ALTER TABLE application_blockers ADD COLUMN superseded_at TEXT"
+    )
+
+
+def _migrate_semantic_subject_key(conn: sqlite3.Connection) -> None:
+    # Phase 4C spec §3: a nullable classification of WHICH stable,
+    # cross-application-reusable candidate fact a gate blocker is about
+    # (drawn from product/semantic_subject_registry.py's closed
+    # vocabulary), distinct from the existing subject_key (which is
+    # artifact-instance-scoped and never meaningfully comparable across
+    # two different applications' own Job Fit artifacts). NULL means
+    # "never eligible for cross-application reuse via this mechanism" --
+    # legacy rows stay NULL forever; there is no backfill.
+    conn.execute(
+        "ALTER TABLE application_blockers ADD COLUMN semantic_subject_key TEXT"
     )
 
 
