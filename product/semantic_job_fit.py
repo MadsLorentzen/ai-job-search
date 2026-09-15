@@ -651,17 +651,20 @@ def _target_semantic_subject_key(category_items: list[dict[str, Any]]) -> str | 
     list _build_gate_assessments already computes for materiality -- reused
     here rather than re-derived, so this helper adds no new resolution path.
 
-    The only function-local import of webapp.services.decision_policy in
-    this module: product/semantic_job_fit.py must never import webapp/ at
-    module load time (webapp depends on product, not vice versa), but a
-    call-time-only import here reuses classify_semantic_subject's existing
-    pattern-matching logic exactly rather than duplicating the regex table
-    a second time. webapp/services/decision_policy.py does not import
-    product/semantic_job_fit.py anywhere, so this does not create a
-    circular import in practice.
+    Imports product.semantic_subject_registry.classify_semantic_subject --
+    a same-layer, product-to-product import. product/semantic_job_fit.py
+    must never import webapp/ (product/ is the domain layer, webapp/ is
+    the orchestration layer; dependencies flow only webapp -> product,
+    never the reverse) -- classify_semantic_subject previously lived in
+    webapp/services/decision_policy.py and was reached via a
+    function-local import, which avoided a circular *import error* but
+    was still an architectural layering violation. It now lives in
+    product/semantic_subject_registry.py (a corrective follow-up fix),
+    the shared product-level module both this module and
+    webapp/services/decision_policy.py depend on.
     """
 
-    from webapp.services.decision_policy import classify_semantic_subject
+    from product.semantic_subject_registry import classify_semantic_subject
 
     texts = [item["text"] for item in category_items]
     return classify_semantic_subject("gate_flag", texts)
@@ -1054,28 +1057,43 @@ def validate_resolved_answer_citation(
     is discarded by the caller (_build_gate_assessments), not a validation
     error that fails the run.
 
-    Rules (Task 8's authoritative refinement of the plan text):
+    Rules (corrective refinement -- see the note on matched_scope_source
+    below for why this no longer branches on that field alone):
       1. resolution_id must be present in bundle["answers"]. Presence IS
          the effectiveness/applicability guarantee -- Task 6's bundle
          builder already only ever includes the single effective,
          applicable resolution per subject, so there is no separate
          staleness/effectiveness check to perform here.
-      2. Own-workspace answers (matched_scope_source APPLICATION_ONLY or
-         CANDIDATE_FACT -- both mean "this workspace's own effective
-         resolution," validated identically) are valid only if the bundle
-         entry's subject_key exactly string-equals the citing gate's own
+      2. Own-workspace answers are valid only if the bundle entry's
+         subject_key exactly string-equals the citing gate's own
          subject_key. No semantic-subject check is needed or performed.
-      3. Cross-workspace answers (matched_scope_source SEARCH_WORKSPACE,
-         the only cross-workspace source Task 5/6 ever produce) are valid
-         only if the bundle entry's semantic_subject_key is non-None, the
-         target's own classified semantic_subject_key is non-None, and the
-         two are exactly equal. No fallback if the citing gate itself
-         doesn't classify to any semantic subject.
-      4. matched_scope_source == "CANDIDATE_FACT" is handled entirely by
-         rule 2, never rule 3 -- Task 6 guarantees a CANDIDATE_FACT-sourced
-         bundle entry is always this workspace's own tier-1 answer, never
-         a cross-workspace one, so it never reaches the semantic-subject
-         branch.
+         An entry is "own-workspace" when entry["source_workspace_id"]
+         equals bundle["workspace_id"] -- NOT when matched_scope_source is
+         APPLICATION_ONLY/CANDIDATE_FACT. matched_scope_source alone is an
+         unreliable discriminator: webapp/services/resolved_blocker_answers
+         .py's tier 1 (this workspace's own effective answer, spec §5
+         point 3's correction) echoes the resolution's own answer_scope
+         verbatim into matched_scope_source, and answer_scope legitimately
+         can be "SEARCH_WORKSPACE" for an own-workspace answer (the user is
+         free to choose that scope even though tier 1, not tier 2,
+         supplies it for this workspace's own bundle). So
+         matched_scope_source == "SEARCH_WORKSPACE" does NOT reliably mean
+         "a genuine sibling's answer" -- source_workspace_id vs.
+         bundle["workspace_id"] is the only unambiguous signal.
+      3. Cross-workspace answers (source_workspace_id != bundle's own
+         workspace_id -- in practice always tier 2's SEARCH_WORKSPACE
+         lookup, the only cross-workspace source Task 5/6 ever produce)
+         are valid only if the bundle entry's semantic_subject_key is
+         non-None, the target's own classified semantic_subject_key is
+         non-None, and the two are exactly equal. No fallback if the
+         citing gate itself doesn't classify to any semantic subject.
+      4. A CANDIDATE_FACT- or SEARCH_WORKSPACE-scoped answer_scope on an
+         own-workspace (tier-1) entry is handled entirely by rule 2, never
+         rule 3 -- find_semantic_subject_match's own workspace-exclusion
+         guard (webapp/services/decision_policy.py) guarantees a
+         cross-workspace entry is always a genuine sibling's row, never
+         this workspace's own, so only a genuinely different
+         source_workspace_id ever reaches the semantic-subject branch.
       5. target_job_evidence_ids is accepted for interface completeness
          (spec §8 point 4's "cited job evidence carries the same semantic
          subject" requirement); the caller is responsible for deriving
@@ -1083,6 +1101,12 @@ def validate_resolved_answer_citation(
          calling this function, so this function's own check is purely
          the subject-key/semantic-subject comparison above, not a second
          independent re-derivation from target_job_evidence_ids.
+
+    Backward compatibility: a bundle entry lacking "source_workspace_id"
+    (e.g. a hand-built test fixture, or in principle an old bundle payload
+    predating this field) falls back to the pre-existing matched_scope_source
+    heuristic (APPLICATION_ONLY/CANDIDATE_FACT => own-workspace), preserving
+    prior behavior for callers that don't supply the new field.
     """
 
     entry = next(
@@ -1092,7 +1116,13 @@ def validate_resolved_answer_citation(
     if entry is None:
         return False  # not in the supplied bundle at all -- rule 1
 
-    if entry.get("matched_scope_source") in ("APPLICATION_ONLY", "CANDIDATE_FACT"):
+    if "source_workspace_id" in entry:
+        is_own_workspace = entry.get("source_workspace_id") == bundle.get("workspace_id")
+    else:
+        # Backward-compat fallback for bundles/fixtures without the field.
+        is_own_workspace = entry.get("matched_scope_source") in ("APPLICATION_ONLY", "CANDIDATE_FACT")
+
+    if is_own_workspace:
         # Own-application answers: strict, exact subject_key match only.
         return entry.get("subject_key") == subject_key
 

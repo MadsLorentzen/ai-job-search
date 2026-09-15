@@ -9,12 +9,13 @@ webapp.services.input_identity.content_identity("blockeranswers_", payload).
 Implements spec §5's 2-tier precedence per subject (amended: CANDIDATE_FACT
 is not a third cross-application tier -- see spec §5 point 3 / §17):
   1. This exact workspace's own most recent effective answer to this
-     exact subject_key, REGARDLESS of answer_scope -- APPLICATION_ONLY
-     and CANDIDATE_FACT are both resolved identically here, since both
-     mean "usable in the application that actually answered it." Only
-     the resolution's own answer_scope value is carried into
-     matched_scope_source for audit purposes; it plays no role in
-     whether tier 1 matches.
+     exact subject_key, REGARDLESS of answer_scope -- APPLICATION_ONLY,
+     SEARCH_WORKSPACE, and CANDIDATE_FACT are all resolved identically
+     here, since answer_scope governs how far an answer may travel
+     BEYOND its originating application, never whether the originating
+     application may use its own answer. Only the resolution's own
+     answer_scope value is carried into matched_scope_source for audit
+     purposes; it plays no role in whether tier 1 matches.
   2. SEARCH_WORKSPACE only -- via
      webapp.services.decision_policy.find_semantic_subject_match, keyed on
      semantic_subject_key, never subject_key (spec §5). A CANDIDATE_FACT
@@ -51,6 +52,20 @@ def _bundle_entry(
         "value": resolution["answer_value"],
         "resolved_by": resolution["resolved_by"],
         "matched_scope_source": matched_scope_source,
+        # The workspace that actually owns the underlying blocker_resolutions
+        # row -- NOT redundant with matched_scope_source. matched_scope_source
+        # echoes the resolution's own answer_scope at tier 1 (spec §5 point
+        # 3's correction folds APPLICATION_ONLY, SEARCH_WORKSPACE, and
+        # CANDIDATE_FACT all into tier 1 for this workspace's own answer), so
+        # a tier-1 entry can legitimately carry matched_scope_source ==
+        # "SEARCH_WORKSPACE" while still being this workspace's own answer --
+        # matched_scope_source alone cannot distinguish "own workspace, user
+        # happened to choose SEARCH_WORKSPACE scope" from "genuine sibling via
+        # tier 2's cross-application lookup." source_workspace_id is the
+        # unambiguous signal consumers (validate_resolved_answer_citation)
+        # need for that distinction: compare it against the bundle's own
+        # top-level workspace_id.
+        "source_workspace_id": resolution["workspace_id"],
     }
 
 
@@ -70,15 +85,27 @@ def build_resolved_blocker_answers_payload(
         seen_subject_keys.add(subject_key)
 
         # Tier 1: this workspace's own effective answer for this exact
-        # blocker instance, regardless of answer_scope (APPLICATION_ONLY
-        # and CANDIDATE_FACT are both "usable in the application that
-        # answered it" -- spec §5 point 3's correction). There may be
-        # several blocker rows historically sharing a subject_key across
-        # reruns -- take the newest blocker for this subject_key first.
+        # blocker instance, regardless of answer_scope. answer_scope
+        # controls how far an answer may travel BEYOND its originating
+        # application -- it must never prevent the originating application
+        # from using its own answer. same_subject_blockers/newest_blocker
+        # are already derived from all_blockers = list_application_blockers
+        # (conn, workspace_id), i.e. already scoped to THIS workspace, so
+        # "resolution is not None" alone is the correct and sufficient
+        # condition here: tier 1 is ALREADY exclusively "this workspace's
+        # own answer," regardless of which of the three scope values it
+        # carries. (Fix, corrective commit: the prior version gratuitously
+        # excluded SEARCH_WORKSPACE-scoped answers from tier 1, which sent
+        # a workspace's own SEARCH_WORKSPACE-scoped answer to tier 2's
+        # cross-application lookup instead -- see
+        # find_semantic_subject_match's own workspace-exclusion fix for
+        # the other half of this correction.) There may be several blocker
+        # rows historically sharing a subject_key across reruns -- take
+        # the newest blocker for this subject_key first.
         same_subject_blockers = [b for b in all_blockers if b["subject_key"] == subject_key]
         newest_blocker = max(same_subject_blockers, key=lambda b: b["created_at"])
         resolution = get_effective_resolution(conn, newest_blocker["id"])
-        if resolution is not None and resolution["answer_scope"] in ("APPLICATION_ONLY", "CANDIDATE_FACT"):
+        if resolution is not None:
             entries.append(
                 _bundle_entry(
                     resolution=resolution, blocker=newest_blocker,

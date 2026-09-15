@@ -33,7 +33,20 @@ from product.application_decision_policy import (
     evaluate_dimension_assessment,
     evaluate_gate_assessment,
 )
-from product.semantic_subject_registry import SEMANTIC_SUBJECTS
+from product.semantic_subject_registry import classify_semantic_subject
+
+# classify_semantic_subject is re-exported (imported, not redefined) for
+# backward compatibility: it now lives in product/semantic_subject_
+# registry.py (a corrective follow-up fix -- product/ must never depend
+# on webapp/, and product/semantic_job_fit.py needs this exact classifier
+# too, so it was moved to a shared product-level module).
+# `from webapp.services.decision_policy import classify_semantic_subject`
+# continues to work for any existing caller that imports it from here --
+# it is the literal same function object as
+# product.semantic_subject_registry.classify_semantic_subject, not a
+# second implementation (see
+# tests/product/test_semantic_subject_registry.py's
+# test_classify_semantic_subject_is_same_object_from_both_import_paths).
 from webapp.persistence.application_blockers import save_application_blocker
 from webapp.persistence.policy_decisions import save_policy_decision
 
@@ -199,48 +212,9 @@ def _is_stable_fact_requirement(texts: list[str]) -> bool:
     return False
 
 
-# Each family maps to exactly one product/semantic_subject_registry.py
-# key. This mapping lives here, in the classifier, deliberately separate
-# from the registry itself (spec §3): changing or adding a pattern here
-# never redefines what a registry key means, and the registry's four
-# initial keys are the authority on which values classify_semantic_subject
-# may ever return.
-_SEMANTIC_SUBJECT_PATTERNS: tuple[tuple[re.Pattern, str], ...] = (
-    (re.compile(r"\bright to work\b", re.IGNORECASE), "work_authorization.right_to_work"),
-    (re.compile(r"\bcitizen(?:ship)?\b", re.IGNORECASE), "work_authorization.right_to_work"),
-    (re.compile(r"\bsponsorship\b", re.IGNORECASE), "work_authorization.sponsorship_required"),
-    (re.compile(r"\bvisa\b", re.IGNORECASE), "work_authorization.sponsorship_required"),
-    (re.compile(r"\bwork permit\b", re.IGNORECASE), "work_authorization.sponsorship_required"),
-    (re.compile(r"\bdriv(?:ing|er'?s) licen[sc]e\b", re.IGNORECASE), "licence.driving"),
-    (re.compile(r"\bnotice period\b", re.IGNORECASE), "employment.notice_period"),
-)
-
-
-def classify_semantic_subject(blocker_type: str, requirement_texts: list[str]) -> str | None:
-    """Map gate requirement text to a product/semantic_subject_registry.py
-    key, or None (Phase 4C spec §3). Dimension blockers never classify
-    (rule 1). Attestation-action text is excluded before matching (rule
-    4, mirrors _is_stable_fact_requirement's own exclusion). Text matching
-    more than one registry family classifies to None (rule 3) -- Phase 4C
-    has no per-fact decomposition of a single gate's evidence.
-    """
-
-    if blocker_type != "gate_flag":
-        return None
-
-    matched_keys: set[str] = set()
-    for text in requirement_texts:
-        if _ATTESTATION_ACTION_PATTERN.search(text):
-            continue
-        for pattern, registry_key in _SEMANTIC_SUBJECT_PATTERNS:
-            if pattern.search(text):
-                matched_keys.add(registry_key)
-
-    if len(matched_keys) != 1:
-        return None
-    (key,) = matched_keys
-    assert key in SEMANTIC_SUBJECTS  # registry is the authority; classifier must never invent a key
-    return key
+# classify_semantic_subject moved to product/semantic_subject_registry.py
+# (corrective follow-up fix -- see this module's import of it above, and
+# that module's own docstring for why). Imported, not redefined, here.
 
 
 def _blocker_allowed_scopes(
@@ -570,6 +544,16 @@ def find_semantic_subject_match(
     answer is visible only within its own originating workspace, via
     Task 6's tier-1 lookup in build_resolved_blocker_answers_payload --
     never via this function.
+
+    Structurally excludes workspace_id's OWN resolutions (the SQL's own
+    "AND r.workspace_id != ?" guard), as defense-in-depth: this function
+    must be incapable of returning the current workspace's own row, not
+    merely incidentally prevented from doing so by tier-1 ordering in its
+    one current caller (build_resolved_blocker_answers_payload). Without
+    this guard, a workspace's own SEARCH_WORKSPACE-scoped answer -- were
+    it ever to reach this function, e.g. via a future caller or a change
+    to tier-1's own logic -- could be mismatched back to itself and
+    mislabeled as a genuine sibling's answer.
     """
 
     if semantic_subject_key is None:
@@ -586,9 +570,9 @@ def find_semantic_subject_match(
         "JOIN application_blockers b ON b.id = r.blocker_id "
         "JOIN application_workspace_origins o ON o.application_workspace_id = r.workspace_id "
         "WHERE o.search_workspace_id = ? AND b.semantic_subject_key = ? "
-        "AND r.answer_scope = 'SEARCH_WORKSPACE' "
+        "AND r.answer_scope = 'SEARCH_WORKSPACE' AND r.workspace_id != ? "
         "ORDER BY r.created_at DESC LIMIT 1",
-        (search_workspace_id, semantic_subject_key),
+        (search_workspace_id, semantic_subject_key, workspace_id),
     ).fetchall()
     if rows:
         return _row_to_resolution_with_scope_source(rows[0], "SEARCH_WORKSPACE")
