@@ -75,9 +75,11 @@ def _seed_evidence(conn, workspace_id):
         ("job_understanding_result", understanding),
     ):
         record_dependency_fingerprint(conn, artifact_id=bundle["id"], upstream_artifact_type=upstream_type, upstream_content_id=upstream["content_id"])
+    resolved_blocker_answers = save_artifact(conn, workspace_id=workspace_id, artifact_type="resolved_blocker_answers", content_id="blockeranswers_A", payload={"schema_version": "resolved_blocker_answers.v1", "workspace_id": workspace_id, "answers": []})
     fit_request = save_artifact(conn, workspace_id=workspace_id, artifact_type="job_fit_request", content_id="fit_request_A", payload={"active_extensions": [], "semantic_proposals": {}})
     for upstream_type, upstream_id in (
         ("profile_snapshot", profile["content_id"]), ("resolved_job_evidence", bundle["content_id"]),
+        ("resolved_blocker_answers", resolved_blocker_answers["content_id"]),
         ("server:active_extensions", active_extensions_identity([])),
         ("server:evaluation_policy", evaluation_policy_identity()),
         ("server:semantic_fit_policy", semantic_fit_policy_identity()),

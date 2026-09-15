@@ -62,6 +62,7 @@ _ARTIFACT_TYPE_NOUNS: dict[str, str] = {
     "job_understanding_request": "the Understanding request",
     "job_understanding_result": "the Understanding result",
     "resolved_job_evidence": "the accepted job evidence",
+    "resolved_blocker_answers": "your answers to Job Fit's questions",
     "profile_snapshot": "your Evidence Profile",
     "job_fit_request": "the Job Fit request",
     "job_fit_result": "Job Fit",
