@@ -47,6 +47,18 @@ per-file diff commands.
 
 ### Fixed
 
+- **`tools/verify_layout.py`'s `skipped:` message named only one cause of a broken
+  extractor when there are two** (#451) - it blamed the xpdf-based `pdftotext` Git for
+  Windows puts ahead of Poppler in PATH (no `-bbox` flag, exits 99), but a real Poppler
+  can abort `-bbox`/`-bbox-layout`/`-htmlmeta` too: Poppler 26.0x before 26.05 crashes on
+  any PDF whose Info dictionary carries an empty string in any field, and `hyperref`
+  writes exactly that for every field it does not set. A `lualatex`/`pdflatex` document
+  built with `hyperref` and no `\hypersetup{pdftitle=...}` - an ordinary `/add-template`
+  CV template, not a malformed one - hits this with a working Poppler installed, and the
+  old message sent the reader to check their PATH when nothing was wrong with it. The
+  message now names both causes; behavior is unchanged, degrading to `skipped:` exit 2
+  either way, since a broken extractor is still not a broken document.
+
 - **The template-placeholder guard in `test_setup_command.py` now skips on forks** (#463) -
   `TemplatesStillCarryThePlaceholders` asserts that `05-cv-templates.md` and
   `06-cover-letter-templates.md` still contain `[FIRST_NAME]`, `[LAST_NAME]`, `[YOUR_EMAIL]`,

@@ -126,6 +126,28 @@ class TestExtractorFailure(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "bounding boxes"):
                 parse_pdf(Path("cv/main_example.pdf"))
 
+    def test_poppler_abort_on_empty_info_string_names_that_cause_too(self):
+        """Poppler 26.0x before 26.05 aborts -bbox on an empty Info-dict string, e.g.
+        the empty /Title hyperref writes when pdftitle is unset (#451). That crash is
+        not the xpdf-shadowing case - it has no -bbox flag and exits 99 - so the
+        message must name both, not just the one the exit code happens to match.
+        """
+        failure = subprocess.CalledProcessError(
+            1,
+            "pdftotext",
+            stderr="libc++abi: terminating due to uncaught exception of type "
+            "std::out_of_range: basic_string",
+        )
+        with patch("tools.verify_layout.shutil.which", return_value="/usr/bin/pdftotext"), patch(
+            "tools.verify_layout.subprocess.run", side_effect=failure
+        ):
+            with self.assertRaisesRegex(RuntimeError, "bounding boxes") as ctx:
+                parse_pdf(Path("cv/main_example.pdf"))
+        message = str(ctx.exception)
+        self.assertIn("xpdf", message)
+        self.assertIn("Poppler aborted", message)
+        self.assertIn("hyperref", message)
+
     def test_missing_poppler_raises_a_skippable_error(self):
         with patch("tools.verify_layout.shutil.which", return_value=None):
             with self.assertRaisesRegex(RuntimeError, "not found"):
