@@ -47,8 +47,10 @@ from product.profile_snapshot import SnapshotValidationError, validate_snapshot
 
 MODULE_DIR = Path(__file__).parent
 SCHEMA_PATH = MODULE_DIR / "schemas" / "job-fit-contract.v1.schema.json"
+SCHEMA_V2_PATH = MODULE_DIR / "schemas" / "job-fit-contract.v2.schema.json"
 POLICY_PATH = MODULE_DIR / "semantic_fit_policy.v0.json"
 SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+SCHEMA_V2 = json.loads(SCHEMA_V2_PATH.read_text(encoding="utf-8"))
 DEFAULT_SEMANTIC_POLICY = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
 
 RESOLVED_JOB_EVIDENCE_BUNDLE_VERSION = SCHEMA["$defs"][
@@ -56,6 +58,8 @@ RESOLVED_JOB_EVIDENCE_BUNDLE_VERSION = SCHEMA["$defs"][
 ]["const"]
 JOB_FIT_REQUEST_VERSION_V1 = SCHEMA["$defs"]["jobFitRequestVersion"]["const"]
 JOB_FIT_RESULT_VERSION_V1 = SCHEMA["$defs"]["jobFitResultVersion"]["const"]
+JOB_FIT_REQUEST_VERSION_V2 = SCHEMA_V2["$defs"]["jobFitRequestVersionV2"]["const"]
+JOB_FIT_RESULT_VERSION_V2 = SCHEMA_V2["$defs"]["jobFitResultVersionV2"]["const"]
 SEMANTIC_FIT_POLICY_VERSION = SCHEMA["$defs"]["semanticFitPolicyVersion"]["const"]
 ID_RE = re.compile(SCHEMA["$defs"]["id"]["pattern"])
 MATCH_CLASSIFICATIONS = tuple(SCHEMA["$defs"]["matchClassification"]["enum"])
@@ -317,11 +321,22 @@ def build_semantic_job_fit_request(
     semantic_fit_policy: dict[str, Any] | None = None,
     user_intent: dict[str, Any] | None = None,
     semantic_proposals: dict[str, Any] | None = None,
+    resolved_blocker_answers: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Build and validate one Job Fit v1 request."""
+    """Build and validate one Job Fit request. job-fit-contract.v2 is used
+    whenever resolved_blocker_answers is supplied; v1 (job-fit-request.v1)
+    otherwise, byte-for-byte unchanged from before Phase 4C (Phase 4C spec
+    §6). All NEW callers (webapp/services/pipeline.py's run_job_fit)
+    always pass resolved_blocker_answers, even an empty bundle -- v1
+    remains reachable only for historical-artifact reading, never for a
+    newly constructed request.
+    """
 
     request = {
-        "schema_version": JOB_FIT_REQUEST_VERSION_V1,
+        "schema_version": (
+            JOB_FIT_REQUEST_VERSION_V2 if resolved_blocker_answers is not None
+            else JOB_FIT_REQUEST_VERSION_V1
+        ),
         "request_id": request_id,
         "profile_snapshot": copy.deepcopy(profile_snapshot),
         "job_snapshot": copy.deepcopy(job_snapshot),
@@ -332,12 +347,16 @@ def build_semantic_job_fit_request(
         "user_intent": copy.deepcopy(user_intent or {"intent": "evaluate_with_transferability"}),
         "semantic_proposals": copy.deepcopy(semantic_proposals or {"matches": [], "gates": []}),
     }
+    if resolved_blocker_answers is not None:
+        request["resolved_blocker_answers"] = copy.deepcopy(resolved_blocker_answers)
     validate_semantic_job_fit_request(request)
     return request
 
 
 def validate_semantic_job_fit_request(request: Any) -> None:
     errors: list[str] = []
+    schema_version = request.get("schema_version") if isinstance(request, dict) else None
+    is_v2 = schema_version == JOB_FIT_REQUEST_VERSION_V2
     required = {
         "schema_version",
         "request_id",
@@ -350,14 +369,18 @@ def validate_semantic_job_fit_request(request: Any) -> None:
         "user_intent",
         "semantic_proposals",
     }
+    if is_v2:
+        required = required | {"resolved_blocker_answers"}
     if not _object_shape(request, required, required, "$", errors):
         raise SemanticJobFitValidationError(errors)
-    if request.get("schema_version") != JOB_FIT_REQUEST_VERSION_V1:
+    if request.get("schema_version") not in (JOB_FIT_REQUEST_VERSION_V1, JOB_FIT_REQUEST_VERSION_V2):
         errors.append("$.schema_version: unsupported job fit request version")
     _id(request.get("request_id"), "$.request_id", errors)
     _validate_embedded_contracts(request, errors)
     _validate_user_intent(request.get("user_intent"), errors)
     _validate_semantic_proposals_shape(request.get("semantic_proposals"), errors)
+    if is_v2:
+        _validate_resolved_blocker_answers_shape(request.get("resolved_blocker_answers"), errors)
     if errors:
         raise SemanticJobFitValidationError(errors)
 
@@ -412,7 +435,10 @@ def analyze_semantic_job_fit(request: dict[str, Any]) -> dict[str, Any]:
             ) from exc
 
     result = {
-        "schema_version": JOB_FIT_RESULT_VERSION_V1,
+        "schema_version": (
+            JOB_FIT_RESULT_VERSION_V2 if request["schema_version"] == JOB_FIT_REQUEST_VERSION_V2
+            else JOB_FIT_RESULT_VERSION_V1
+        ),
         "request_id": request["request_id"],
         "profile_snapshot": _profile_identity(request["profile_snapshot"]),
         "job_snapshot": _job_identity(request["job_snapshot"]),
@@ -474,7 +500,11 @@ def validate_semantic_job_fit_result(request: dict[str, Any], result: Any) -> No
     }
     if not _object_shape(result, required, required, "$.result", errors):
         raise SemanticJobFitValidationError(errors)
-    if result.get("schema_version") != JOB_FIT_RESULT_VERSION_V1:
+    expected_result_version = (
+        JOB_FIT_RESULT_VERSION_V2 if request["schema_version"] == JOB_FIT_REQUEST_VERSION_V2
+        else JOB_FIT_RESULT_VERSION_V1
+    )
+    if result.get("schema_version") != expected_result_version:
         errors.append("$.result.schema_version: unsupported job fit result version")
     if result.get("request_id") != request["request_id"]:
         errors.append("$.result.request_id: must match request")
@@ -902,13 +932,36 @@ def _validate_semantic_proposals_shape(value: Any, errors: list[str]) -> None:
             _validate_extension_ref_shape(match.get("extension_ref"), f"{path}.extension_ref", errors)
     for index, gate in enumerate(_list(value.get("gates"), "$.semantic_proposals.gates", errors)):
         path = f"$.semantic_proposals.gates[{index}]"
-        if not _object_shape(gate, {"gate_id", "status", "reason", "job_evidence_ids", "profile_evidence_ids"}, {"gate_id", "status", "reason", "job_evidence_ids", "profile_evidence_ids"}, path, errors):
+        required_gate_fields = {"gate_id", "status", "reason", "job_evidence_ids", "profile_evidence_ids"}
+        allowed_gate_fields = required_gate_fields | {"resolved_answer_ids"}
+        if not _object_shape(gate, required_gate_fields, allowed_gate_fields, path, errors):
             continue
         _enum(gate.get("gate_id"), set(GATE_IDS), f"{path}.gate_id", errors)
         _enum(gate.get("status"), GATE_STATUSES, f"{path}.status", errors)
         _nonempty_string(gate.get("reason"), f"{path}.reason", errors)
         _string_list(gate.get("job_evidence_ids"), f"{path}.job_evidence_ids", errors)
         _string_list(gate.get("profile_evidence_ids"), f"{path}.profile_evidence_ids", errors)
+        if "resolved_answer_ids" in gate:
+            _string_list(gate.get("resolved_answer_ids"), f"{path}.resolved_answer_ids", errors)
+
+
+def _validate_resolved_blocker_answers_shape(value: Any, errors: list[str]) -> None:
+    # Phase 4C spec §6/§18: strict-shape validation of the
+    # resolved_blocker_answers.v1 payload embedded inline in a v2 request,
+    # analogous to the existing request-shape validators. This checks
+    # shape only (the three required keys) -- it is not a re-derivation of
+    # webapp/services/resolved_blocker_answers.py's bundle-construction
+    # rules, which remain the sole authority on bundle *content*.
+    if not _object_shape(
+        value,
+        {"schema_version", "workspace_id", "answers"},
+        {"schema_version", "workspace_id", "answers"},
+        "$.resolved_blocker_answers",
+        errors,
+    ):
+        return
+    _nonempty_string(value.get("workspace_id"), "$.resolved_blocker_answers.workspace_id", errors)
+    _list(value.get("answers"), "$.resolved_blocker_answers.answers", errors)
 
 
 def _context(request: dict[str, Any]) -> dict[str, Any]:

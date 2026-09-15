@@ -12,6 +12,7 @@ ARTIFACT_TYPES = (
     "job_understanding_request",
     "job_understanding_result",
     "resolved_job_evidence",
+    "resolved_blocker_answers",
     "job_fit_request",
     "job_fit_result",
     "application_intelligence_request",

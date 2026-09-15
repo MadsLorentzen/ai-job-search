@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/smbabalola/ai-job-search/product/schemas/job-fit-contract.v2.schema.json",
+  "title": "Semantic Job Fit Contract v2",
+  "description": "Versioned Phase 4C contract constants for semantic job-fit analysis, additive to job-fit-contract.v1.schema.json. Adds job-fit-contract.v2 request/result schema_version consts for the resolved_blocker_answers-bearing contract (Phase 4C spec §6). The Python validator owns relational checks across Profile Snapshot, Job Understanding, Extension Package, Evaluation Policy, Semantic Fit Policy, and (v2 only) the resolved_blocker_answers bundle contracts.",
+  "type": "object",
+  "$defs": {
+    "resolvedJobEvidenceBundleVersion": {
+      "type": "string",
+      "const": "resolved-job-evidence-bundle.v0"
+    },
+    "jobFitRequestVersion": {
+      "type": "string",
+      "const": "job-fit-request.v1"
+    },
+    "jobFitResultVersion": {
+      "type": "string",
+      "const": "job-fit-result.v1"
+    },
+    "jobFitRequestVersionV2": {
+      "type": "string",
+      "const": "job-fit-contract.v2"
+    },
+    "jobFitResultVersionV2": {
+      "type": "string",
+      "const": "job-fit-contract.v2"
+    },
+    "resolvedBlockerAnswersVersion": {
+      "type": "string",
+      "const": "resolved_blocker_answers.v1"
+    },
+    "semanticFitPolicyVersion": {
+      "type": "string",
+      "const": "semantic-fit-policy.v0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "matchClassification": {
+      "enum": [
+        "direct",
+        "functionally_equivalent",
+        "transferable",
+        "adjacent",
+        "unsupported"
+      ]
+    },
+    "dimensionStatus": {
+      "enum": ["READY", "NEEDS_REVIEW", "UNAVAILABLE"]
+    },
+    "semanticStatus": {
+      "enum": ["READY", "NEEDS_REVIEW", "UNAVAILABLE", "UNSUPPORTED"]
+    },
+    "gapType": {
+      "enum": [
+        "missing_evidence",
+        "partial_match",
+        "unsupported",
+        "qualification_gap",
+        "unknown"
+      ]
+    },
+    "resolvedAnswerIds": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/id"
+      }
+    }
+  }
+}
