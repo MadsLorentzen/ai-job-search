@@ -90,5 +90,28 @@ class TemplatesStillCarryThePlaceholders(unittest.TestCase):
         self.assertIn("\\signature{[YOUR_NAME]}", text)
 
 
+class SetupPathAProjectsIngestion(unittest.TestCase):
+    """Guards for /setup Path A document ingestion of documents/projects/."""
+
+    def setUp(self):
+        self.text = COMMAND.read_text(encoding="utf-8")
+        self.sections = _sections(self.text)
+
+    def test_step0_scan_includes_projects(self):
+        step0 = self.sections["Step 0: Welcome & Choose Path"]
+        self.assertIn("projects/", step0)
+
+    def test_step_a1_inventory_includes_projects(self):
+        self.assertIn("**projects/**:", self.text)
+
+    def test_step_a3_parsing_includes_projects_spec(self):
+        self.assertIn("`projects/` documents:", self.text)
+        self.assertIn("measurable outcomes", self.text)
+
+    def test_step_a5_and_a6_map_to_independent_projects(self):
+        self.assertIn("## Independent Projects", self.text)
+        self.assertIn("New independent project:", self.text)
+
+
 if __name__ == "__main__":
     unittest.main()

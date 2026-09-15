@@ -29,7 +29,7 @@ visibility cannot be determined — warn now and wait:
 Wait for the user's confirmation before showing the path prompt. A private origin, no
 origin, or a non-fork remote needs no warning — continue silently.
 
-Then, before greeting the user, scan the `documents/` folder. Use Glob with `documents/**/*` and count files per subfolder (`cv/`, `linkedin/`, `diplomas/`, `references/`, `applications/`).
+Then, before greeting the user, scan the `documents/` folder. Use Glob with `documents/**/*` and count files per subfolder (`cv/`, `linkedin/`, `diplomas/`, `references/`, `projects/`, `applications/`).
 
 Then welcome the user with a single message that lists three paths. The wording changes based on what was found.
 
@@ -57,7 +57,7 @@ Then welcome the user with a single message that lists three paths. The wording 
 >
 > Three ways to start:
 >
-> **Path A: Documents folder** (best signal if you have several materials) - Drop your CV / LinkedIn export / diplomas / reference letters in the `documents/` folder, then say "go". I'll read everything and build your profile from it. See `documents/README.md` for the folder layout.
+> **Path A: Documents folder** (best signal if you have several materials) - Drop your CV / LinkedIn export / diplomas / reference letters / project summaries in the `documents/` folder, then say "go". I'll read everything and build your profile from it. See `documents/README.md` for the folder layout.
 >
 > **Path B: Single CV import** - Paste or @-mention a single CV/resume here. I'll extract it and ask follow-up questions for what's missing.
 >
@@ -86,6 +86,7 @@ Use Glob with `documents/**/*` to scan the full tree. Print:
 **linkedin/**: [list files, or "(empty)"]
 **diplomas/**: [list files, or "(empty)"]
 **references/**: [list files, or "(empty)"]
+**projects/**: [list files, or "(empty)"]
 **applications/**: [list subfolders with their files, or "(empty)"]
 
 I will read these and cross-reference before proposing any changes.
@@ -109,7 +110,7 @@ Hold this content in context throughout Path A. Do not re-read.
 
 ### Step A3: Parse Documents
 
-Read each document found in Step A1. Process subfolders in this order: `cv/`, `linkedin/`, `diplomas/`, `references/`, `applications/`.
+Read each document found in Step A1. Process subfolders in this order: `cv/`, `linkedin/`, `diplomas/`, `references/`, `projects/`, `applications/`.
 
 **`cv/` documents:** name, contact (email, phone, LinkedIn, GitHub), education (degree, institution, dates, thesis), work experience (title, company, dates, location, bullets), skills, languages (with any stated proficiency), publications, awards, profile/summary.
 
@@ -118,6 +119,8 @@ Read each document found in Step A1. Process subfolders in this order: `cv/`, `l
 **`diplomas/` documents:** official degree title and level, institution name (official spelling), graduation date, grade or distinction or GPA if visible.
 
 **`references/` documents:** referee name, title, organization; full text of the letter (extract specific quotes); competency language used.
+
+**`projects/` documents:** project name, summary/description, problem domain, tech stack (languages, frameworks, tools), key technical challenges and architectural decisions, measurable outcomes/metrics (e.g. users, performance, stars, impact).
 
 **`applications/<company>_<role>/` subfolders:**
 - `job_posting.md`: role title, company, required skills, experience level, sector, role type
@@ -157,12 +160,13 @@ If no inconsistencies, state "No cross-reference issues found." and continue.
 
 For each skill file, compare extracted document content against the current file content from Step A2. Build two buckets.
 
-**Additive changes:** entirely new content not in the skill file in any form. Examples: a certification not in `01-candidate-profile.md`, a new endorsement skill, a referee not yet listed, a new behavioral quote from a reference letter, a new award.
+**Additive changes:** entirely new content not in the skill file in any form. Examples: a certification not in `01-candidate-profile.md`, a new independent project not in `01-candidate-profile.md`, a new endorsement skill, a referee not yet listed, a new behavioral quote from a reference letter, a new award.
 
 **Conflicting changes:** content that touches something already in a skill file but disagrees. Examples: a different date range for an existing job, a different job title for the same role, a different graduation date than what is recorded.
 
 **Inference rules** (apply when populating from inferred sources):
 
+- **`01-candidate-profile.md` (`## Independent Projects`):** Source is `projects/` documents. Extract structured project entries formatted as `- **[PROJECT_NAME]**: [DESCRIPTION with tech stack and measurable outcome]`. Ground all claims in the document text.
 - **`02-behavioral-profile.md`:** Source is LinkedIn About + recommendation letters. Extract recurring themes, adjectives, phrases about how the candidate works. Add only to "Strongest Behavioral Traits", "How [Candidate] Works Best", or "Management Style Preferences" sections. Do not overwrite existing scored assessments. Always label inferred additions: *[Inferred from LinkedIn About / Reference letter - review before relying on this]*
 - **`03-writing-style.md`:** Source is `cover_letter.tex` files. Extract recurring patterns. Add as observations under "## Patterns Observed in Past Applications". Do not modify existing rules. Only add if 2+ cover letters show a genuine pattern.
 - **`04-job-evaluation.md`:** Source is `job_posting.md` + `outcome.md` pairs. If an application reached interview or offer: note role type and sector as a confirmed strong-fit signal. If 2+ applications repeat a no-response or rejection pattern: note it. Add findings under "## Calibration from Past Applications". Do not modify the existing scoring framework.
@@ -193,6 +197,7 @@ Present the full change set before writing anything.
 
 ### 01-candidate-profile.md
 - [ ] New certification: [title], [issuer], [date] - extracted from LinkedIn
+- [ ] New independent project: [PROJECT_NAME] - [description, tech stack, key outcome]
 - [ ] New reference: [name, title, company]
   Quote: "[relevant quote]"
 
