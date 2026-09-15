@@ -644,6 +644,29 @@ GATE_EVIDENCE_DISPOSITIONS = ("SUPPORTIVE", "CONFLICTING", "ABSENT", "INSUFFICIE
 GATE_MATERIALITY_VALUES = ("MATERIAL", "NON_MATERIAL", "NOT_APPLICABLE")
 
 
+def _target_semantic_subject_key(category_items: list[dict[str, Any]]) -> str | None:
+    """Classify THIS gate's own requirement text into a
+    product/semantic_subject_registry.py key, or None (Phase 4C spec §8
+    point 4). category_items is the same job-evidence-filtered-by-category
+    list _build_gate_assessments already computes for materiality -- reused
+    here rather than re-derived, so this helper adds no new resolution path.
+
+    The only function-local import of webapp.services.decision_policy in
+    this module: product/semantic_job_fit.py must never import webapp/ at
+    module load time (webapp depends on product, not vice versa), but a
+    call-time-only import here reuses classify_semantic_subject's existing
+    pattern-matching logic exactly rather than duplicating the regex table
+    a second time. webapp/services/decision_policy.py does not import
+    product/semantic_job_fit.py anywhere, so this does not create a
+    circular import in practice.
+    """
+
+    from webapp.services.decision_policy import classify_semantic_subject
+
+    texts = [item["text"] for item in category_items]
+    return classify_semantic_subject("gate_flag", texts)
+
+
 def _build_gate_assessments(
     request: dict[str, Any],
     context: dict[str, Any],
@@ -660,6 +683,7 @@ def _build_gate_assessments(
         reason = "No affirmative candidate evidence was supplied for this gate."
         adjudicated_job_ids: list[str] = []
         profile_ids: list[str] = []
+        validated_resolved_answer_ids: list[str] = []
         # evidence_disposition records, for downstream policy, whether the
         # profile_evidence_ids on this assessment were actually validated
         # as supporting (or disqualifying) a verdict, or merely survived
@@ -711,6 +735,29 @@ def _build_gate_assessments(
             )
             supportive, rejected = _supportive_profile_claims(proposal.get("profile_evidence_ids", []), context)
             profile_ids = [claim["id"] for claim in supportive]
+            # Resolved-answer citations are a NEW SOURCE of supporting
+            # evidence, validated independently of profile_evidence_ids
+            # (Phase 4C spec §7/§8) -- never merged into profile_ids, never
+            # a new evidence_disposition value. `has_supporting_evidence`
+            # extends the existing supportive-profile-claims check
+            # additively: a validated resolved answer is sufficient on its
+            # own to support a PASS/FAIL/FLAG conclusion, exactly like
+            # spec §9's table requires, without needing corroborating
+            # profile evidence.
+            target_semantic_subject_key = _target_semantic_subject_key(category_items)
+            raw_resolved_answer_ids = proposal.get("resolved_answer_ids", [])
+            validated_resolved_answer_ids = [
+                resolution_id for resolution_id in raw_resolved_answer_ids
+                if validate_resolved_answer_citation(
+                    resolution_id,
+                    request.get("resolved_blocker_answers") or {"answers": []},
+                    blocker_type="gate_flag",
+                    subject_key=f"gate:{gate_id}",
+                    target_semantic_subject_key=target_semantic_subject_key,
+                    target_job_evidence_ids=proposal["job_evidence_ids"],
+                )
+            ]
+            has_supporting_evidence = bool(supportive) or bool(validated_resolved_answer_ids)
             if invalid_job_refs or not adjudicated_job_ids:
                 status = "UNVERIFIED"
                 reason = (
@@ -722,7 +769,7 @@ def _build_gate_assessments(
                 # verdict -- present-but-unvetted, not proof of support.
                 disposition = "INSUFFICIENT" if profile_ids else "ABSENT"
             elif proposal["status"] == "FAIL":
-                if supportive:
+                if has_supporting_evidence:
                     status = "FAIL"
                     reason = proposal["reason"]
                     disposition = "CONFLICTING"
@@ -731,7 +778,7 @@ def _build_gate_assessments(
                     reason = "FAIL requires affirmative job and profile incompatibility evidence."
                     disposition = "ABSENT"
             elif proposal["status"] in {"PASS", "FLAG"}:
-                if supportive:
+                if has_supporting_evidence:
                     status = proposal["status"]
                     reason = proposal["reason"]
                     disposition = "SUPPORTIVE"
@@ -758,6 +805,7 @@ def _build_gate_assessments(
                 "reason": reason,
                 "job_evidence_ids": adjudicated_job_ids,
                 "profile_evidence_ids": profile_ids,
+                "resolved_answer_ids": validated_resolved_answer_ids,
                 "evidence_disposition": disposition,
                 "materiality": materiality,
             }
@@ -989,6 +1037,73 @@ def _context(request: dict[str, Any]) -> dict[str, Any]:
         ),
         "user_intent": request["user_intent"]["intent"],
     }
+
+
+def validate_resolved_answer_citation(
+    resolution_id: str,
+    bundle: dict[str, Any],
+    *,
+    blocker_type: str,
+    subject_key: str,
+    target_semantic_subject_key: str | None,
+    target_job_evidence_ids: list[str],
+) -> bool:
+    """Whether a proposal's cited resolved_answer_ids entry is trustworthy
+    for THIS gate assessment (Phase 4C spec §8). Pure dict/string logic --
+    no I/O, no sqlite, no webapp import. Never raises; an invalid citation
+    is discarded by the caller (_build_gate_assessments), not a validation
+    error that fails the run.
+
+    Rules (Task 8's authoritative refinement of the plan text):
+      1. resolution_id must be present in bundle["answers"]. Presence IS
+         the effectiveness/applicability guarantee -- Task 6's bundle
+         builder already only ever includes the single effective,
+         applicable resolution per subject, so there is no separate
+         staleness/effectiveness check to perform here.
+      2. Own-workspace answers (matched_scope_source APPLICATION_ONLY or
+         CANDIDATE_FACT -- both mean "this workspace's own effective
+         resolution," validated identically) are valid only if the bundle
+         entry's subject_key exactly string-equals the citing gate's own
+         subject_key. No semantic-subject check is needed or performed.
+      3. Cross-workspace answers (matched_scope_source SEARCH_WORKSPACE,
+         the only cross-workspace source Task 5/6 ever produce) are valid
+         only if the bundle entry's semantic_subject_key is non-None, the
+         target's own classified semantic_subject_key is non-None, and the
+         two are exactly equal. No fallback if the citing gate itself
+         doesn't classify to any semantic subject.
+      4. matched_scope_source == "CANDIDATE_FACT" is handled entirely by
+         rule 2, never rule 3 -- Task 6 guarantees a CANDIDATE_FACT-sourced
+         bundle entry is always this workspace's own tier-1 answer, never
+         a cross-workspace one, so it never reaches the semantic-subject
+         branch.
+      5. target_job_evidence_ids is accepted for interface completeness
+         (spec §8 point 4's "cited job evidence carries the same semantic
+         subject" requirement); the caller is responsible for deriving
+         target_semantic_subject_key from that same job evidence before
+         calling this function, so this function's own check is purely
+         the subject-key/semantic-subject comparison above, not a second
+         independent re-derivation from target_job_evidence_ids.
+    """
+
+    entry = next(
+        (answer for answer in bundle.get("answers", []) if answer.get("resolution_id") == resolution_id),
+        None,
+    )
+    if entry is None:
+        return False  # not in the supplied bundle at all -- rule 1
+
+    if entry.get("matched_scope_source") in ("APPLICATION_ONLY", "CANDIDATE_FACT"):
+        # Own-application answers: strict, exact subject_key match only.
+        return entry.get("subject_key") == subject_key
+
+    # Cross-application: SEARCH_WORKSPACE only in Phase 4C. Semantic-subject
+    # equality only -- subject_key is not meaningful across applications.
+    if target_semantic_subject_key is None:
+        return False
+    entry_semantic_subject_key = entry.get("semantic_subject_key")
+    if entry_semantic_subject_key is None:
+        return False
+    return entry_semantic_subject_key == target_semantic_subject_key
 
 
 def _supportive_profile_claims(
@@ -1249,7 +1364,7 @@ def _validate_gate_assessments(value: Any, context: dict[str, Any], errors: list
     seen: set[str] = set()
     required_fields = {
         "gate_id", "status", "reason", "job_evidence_ids", "profile_evidence_ids",
-        "evidence_disposition", "materiality",
+        "resolved_answer_ids", "evidence_disposition", "materiality",
     }
     for index, assessment in enumerate(_list(value, "$.result.gate_assessments", errors)):
         path = f"$.result.gate_assessments[{index}]"
@@ -1275,6 +1390,9 @@ def _validate_gate_assessments(value: Any, context: dict[str, Any], errors: list
         )
         job_ids = _string_list(assessment.get("job_evidence_ids"), f"{path}.job_evidence_ids", errors)
         profile_ids = _string_list(assessment.get("profile_evidence_ids"), f"{path}.profile_evidence_ids", errors)
+        resolved_answer_ids = _string_list(
+            assessment.get("resolved_answer_ids"), f"{path}.resolved_answer_ids", errors,
+        )
         for job_id in job_ids:
             evidence = context["job_evidence"].get(job_id)
             if evidence is None:
@@ -1287,7 +1405,14 @@ def _validate_gate_assessments(value: Any, context: dict[str, Any], errors: list
                 errors.append(f"{path}.profile_evidence_ids: unknown profile evidence id {profile_id!r}")
             elif claim.get("placeholder") or claim.get("concept_id") in context["conflicted_concepts"]:
                 errors.append(f"{path}.profile_evidence_ids: cannot use placeholder or conflicted profile evidence")
-        if assessment.get("status") == "FAIL" and (not job_ids or not profile_ids):
+        # FAIL requires affirmative job evidence plus SOME affirmative
+        # candidate-side evidence of incompatibility -- profile evidence OR
+        # a validated resolved-answer citation (Phase 4C spec §9: a
+        # validated resolved answer is sufficient on its own, exactly like
+        # profile evidence already is). This is additive to the pre-4C
+        # check, never a relaxation of it: a FAIL with neither is still
+        # rejected.
+        if assessment.get("status") == "FAIL" and (not job_ids or not (profile_ids or resolved_answer_ids)):
             errors.append(f"{path}: FAIL requires affirmative job and profile evidence")
     if seen != set(GATE_IDS):
         errors.append("$.result.gate_assessments: must contain every required gate")
