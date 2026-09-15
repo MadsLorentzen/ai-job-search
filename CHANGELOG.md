@@ -98,6 +98,26 @@ per-file diff commands.
   wrappers, plus a new `detail-backoff.test.ts` that exercises the handler path itself -
   its retry cases fail against the bare `fetch()`.
 
+- **Free-form tracker notes no longer break the CSV row** (#454) (`.claude/commands/gmail-sync.md`,
+  `.claude/commands/outcome.md`, `tests/test_tracker_notes_csv_safe.py`) - two writers put
+  free-form text into the `notes` column of `job_search_tracker.csv`: `/gmail-sync` Step 7a
+  copied the raw subject of a received email, and `/outcome` Step 4 appended "a short dated
+  note" with no constraint on its content. No writer in the framework emits a quoted tracker
+  field, so an unescaped comma splits the row for a naive split and for `csv.DictReader` alike -
+  the latter being what the repo's only machine reader of the tracker uses
+  (`tools/rank_state.py`). `notes` is column 10 of 14, so a subject as ordinary as
+  `Re: Your application, Data Scientist`, or a note as natural as `rejected, no feedback given`,
+  shifted `cv_file`, `cover_letter_file` and `source` a column left. A line break is worse: it
+  ends the row and starts a second one. Nothing validated the row afterwards, and the
+  `/gmail-sync` half was written unattended, so the corruption was silent. Both append
+  instructions now carry the rule themselves - `/gmail-sync` deletes commas, double quotes and
+  line breaks from the subject, `/outcome` writes its note without them - rather than a general
+  note a writer can miss. Nothing is lost on the `/gmail-sync` side: Step 7a item 2 still
+  records the subject verbatim in the archive's `outcome.md`, which is Markdown and carries no
+  such constraint. The fixed-format writers (`followed up YYYY-MM-DD`,
+  `stale resolved no_response (YYYY-MM-DD)`, `redrafted`) could never contain these characters
+  and are unchanged.
+
 - **`jobindex-search detail` no longer fetches arbitrary URLs or invents posting-shaped
   output** (#447) - the command fetched any `http(s)` input verbatim (no host check) and,
   when the path didn't match its one pattern, silently used the whole input URL as the job
