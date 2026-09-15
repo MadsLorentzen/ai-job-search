@@ -12,7 +12,7 @@ Follow these steps **in order**.
 
 ## Step 0: Parse Arguments
 
-- If `$ARGUMENTS` contains `--list`: use Glob with `.agents/skills/*/SKILL.md`, print a table of installed portal skills (name, market from the description, data source from `url-reference.md`), and stop.
+- If `$ARGUMENTS` contains `--list`: run `python tools/codex_setup.py --portals` and read each returned `skill` path. If Python is unavailable, find `.agents/skills/*/cli/package.json` and read each sibling `SKILL.md`. Print a table of installed portal skills (name, market from the description, data source from `url-reference.md`), and stop. Workflow skills without a CLI are not portals.
 - If `$ARGUMENTS` contains a URL: treat it as the portal URL and carry it into Step 1.
 - Otherwise: start the interview at Step 1.
 
@@ -122,7 +122,7 @@ Do not proceed to Step 5 until search, detail, and tests all pass.
 ## Step 5: Register
 
 1. Ask whether the user wants the new portal added to their `/scrape` search strategy. If yes:
-   - The portal CLI itself is already picked up automatically by `/scrape` (it discovers `.agents/skills/*/SKILL.md`) — no further wiring is needed for CLI search/detail.
+   - The portal CLI itself is already picked up automatically by `/scrape` (it discovers `.agents/skills/*/cli/package.json` and reads each sibling `SKILL.md`) — no further wiring is needed for CLI search/detail.
    - Optionally add WebSearch/`site:` placeholder queries for that board in `.claude/skills/job-scraper/search-queries.md` (use the `[YOUR_JOB_BOARD]` style placeholders already there) so the fallback path still covers the board if the CLI is unavailable.
 2. Remind the user to add the install line for their own records if they maintain a fork README:
    ```bash

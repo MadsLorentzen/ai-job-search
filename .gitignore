@@ -116,3 +116,7 @@ company_research/*.json
 
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/
+
+# Codex job-search runs and local reports
+**/job_scraper/run-*.json
+/outputs/

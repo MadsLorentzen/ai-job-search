@@ -1,5 +1,11 @@
 # Contributing
 
+## This Codex fork
+
+Send Codex setup, adapter, and compatibility changes to `Havocx01/ai-job-search-codex`. Keep candidate profiles and generated applications out of commits. Run the existing checks below plus `python tools/codex_setup.py` and the Codex compatibility tests. New code should use simple control flow and descriptive camelCase names unless an existing interface requires otherwise.
+
+The policy below belongs to the original project. Upstream remains Claude Code-native; runtime support belongs here. Report general framework bugs upstream with a reproduction, and respect its contribution policy.
+
 Thanks for considering a contribution! This repo has a deliberate, narrow philosophy, and most declined PRs are well-executed work that simply didn't know about it. Read this first; it will save you effort and tell you where your work will land best.
 
 ## The one rule everything follows from
