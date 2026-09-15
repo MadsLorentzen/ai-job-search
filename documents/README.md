@@ -12,6 +12,7 @@ documents/
 ├── linkedin/                    # LinkedIn profile export (PDF)
 ├── diplomas/                    # Degree certificates and transcripts
 ├── references/                  # Reference letters
+├── projects/                    # Independent project summaries, case studies, or portfolio docs
 ├── postings/                    # Raw job posting text, pasted manually for pages Claude can't fetch
 │   └── <Company> - <Job Title>.txt  # Filename = company + job title, content = full posting text
 ├── applications/                # Past job applications
@@ -94,6 +95,25 @@ Reference letters from former managers, supervisors, or collaborators.
 - Competency language used by referees (adds behavioral signal to `02-behavioral-profile.md`)
 
 **Naming:** Use the referee's name, e.g. `reference_ole_frandsen.pdf`.
+
+---
+
+## projects/
+
+Summaries, case studies, READMEs, writeups, or documentation for independent, open-source, freelance, or personal portfolio projects.
+
+**Supported formats:** `.md`, `.txt`, `.pdf`
+
+**What `/setup` extracts:**
+- Project name and description
+- Problem domain and target audience
+- Tech stack, tools, and libraries used
+- Key technical challenges and architectural decisions
+- Measurable outcomes, metrics, or performance improvements (added to `01-candidate-profile.md` under `## Independent Projects`)
+
+**Naming:** Use descriptive project names, e.g. `project_realtime_chat.md`, `portfolio_compiler.txt`, `open_source_etl.pdf`.
+
+**Tip:** These feed into the `## Independent Projects` section of `01-candidate-profile.md` and provide concrete technical evidence that `/apply` can weave into tailored CVs and cover letters.
 
 ---
 
