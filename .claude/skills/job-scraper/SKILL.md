@@ -60,6 +60,17 @@ Before the Bun source pass, run the read-only Python sources from search-queries
 Their `results` arrays join the same result pool. They do not require Bun. On source
 failure, retain other results and report the unavailable source; do not retry in a loop.
 
+#### Remote fork: Gmail alert source
+
+LinkedIn Job Alert digests reach the same pool through `/gmail-jobs`, which reads them via
+the read-only Gmail API and `tools/gmail_job_alerts.py`. That tool does this step's work for
+its source - it parses every card in a digest, canonicalizes each link to
+`https://www.linkedin.com/jobs/view/<id>/`, and deduplicates against this file and the
+tracker - and writes through Step 4's rules below, so treat its output as scraped jobs and
+never as a second queue. It records `source: gmail` and `portal: linkedin_email_alert`; the
+extra fields it stores are documented in Step 4. Full workflow:
+`.claude/commands/gmail-jobs.md`.
+
 #### 1a. Check bun availability
 
 ```bash
@@ -168,6 +179,7 @@ It prints one line: the canonical key for that posting. The key must be a pure f
     "<key from tools/job_key.py>": {
       "title": "...",
       "company": "...",
+      "location": "...",
       "url": "...",
       "first_seen": "YYYY-MM-DD",
       "posted_date": "YYYY-MM-DD" | null,
@@ -183,7 +195,18 @@ It prints one line: the canonical key for that posting. The key must be a pure f
 
 The `portal` field records which CLI skill produced the job (results are already tagged per portal in Step 1b - persist that tag here). Entries written before this field existed lack it; the health check (Step 4.75) attributes those by matching the URL's domain against each portal's base URL, so do not backfill.
 
-The `source` field records which mechanism produced the entry: `cli` for Step 1b portal-CLI output, `websearch` for the Step 1c fallback. This is what keeps a ghost-job report diagnosable after the run's summary is gone: a stored entry whose URL later resolves to nothing (or to a different job) reads very differently depending on whether it came from live CLI output or from a search index that can be weeks stale - and a presented job with no entry here at all points at fabrication, which Rule 1 forbids. Entries written before this field existed lack it; never backfill it - the mechanism was not recorded.
+The `source` field records which mechanism produced the entry: `cli` for Step 1b portal-CLI output, `websearch` for the Step 1c fallback, `gmail` for the `/gmail-jobs` alert source. This is what keeps a ghost-job report diagnosable after the run's summary is gone: a stored entry whose URL later resolves to nothing (or to a different job) reads very differently depending on whether it came from live CLI output or from a search index that can be weeks stale - and a presented job with no entry here at all points at fabrication, which Rule 1 forbids. Entries written before this field existed lack it; never backfill it - the mechanism was not recorded.
+
+`location` is a base field, not a `/rank` extension: every portal CLI's search output carries a `location` (Step 2's contract), and the alert source stores the location line its card states, so this is the posting's own location as its source gave it. In fresh entries it is always a place - the legacy PASS/FAIL/FLAG verdict that pre-rename `/rank` runs stored under this same key is read as `location_verdict` (see the `/rank` note below), never as a place. A missing key means the entry predates the field; **never infer a location** from a portal's URL or a company's name, and never backfill by guessing.
+
+The Gmail alert source (`/gmail-jobs`) adds the fields an alert can support and a portal CLI does not carry. They are additive in the same sense as `source` - read them when present, never backfill them onto older entries:
+
+- `linkedin_job_id` - the LinkedIn posting's numeric id. Provenance and dedup identity only (`linkedin:<id>`), never an application target: the alert's own URL is a recipient-tied redirect, and `/gmail-jobs` Step 7 resolves the employer's canonical posting instead.
+- `source_key` - that `linkedin:<id>` identity, or a hash of the normalized company/title/location when a digest carried no id. It is what makes the same job arriving in two digests one entry.
+- `eligibility` / `eligibility_note` - PASS/FLAG/FAIL for the **location** half of the Remote Brazil gate and the reason, as the alert's location line supports. Compensation, work authorization and language stay unresolved until `/rank` reads the posting; do not read a PASS here as a confirmed match.
+- `source_type` and `discovered_at` - `gmail_alert` and the source message's own timestamp, so a `source: gmail` entry is attributable to a specific alert rather than to the run that happened to read it.
+
+The alert source writes under the **same key rule** as step 1 above. The job id never becomes the key: `/rank`, `/apply` and `/outcome` derive the archive folder from the same company+role pair, and `tools/job_key.py --audit` reads a colon as a malformed key.
 
 `/rank` extends this schema additively: ranked entries also carry `rank_score` (0–100 overall score), `rank_verdict` (fit band, e.g. "strong fit"), `rank_date` (ISO date of ranking), the veto fields `location_verdict` and `language_gate` (both PASS/FAIL/FLAG) with `language_note` (the quoted requirement explaining a non-PASS), and `strengths`/`gaps` (1-3 verbatim bullets each, copied from the scoring agent's findings). The `status` field is set to `"ranked"`. Do not drop any of these fields when re-writing entries. Entries ranked before `strengths`/`gaps` existed simply lack them; readers tolerate their absence and never backfill by guessing. Entries ranked before the verdict rename may carry a legacy PASS/FAIL/FLAG string in `location` - read that as the verdict when `location_verdict` is absent; in fresh entries `location` is always a place, never a verdict.
 

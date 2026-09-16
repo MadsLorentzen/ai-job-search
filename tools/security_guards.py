@@ -55,6 +55,11 @@ ALLOWED_PERMISSIONS = {
     "Bash(python3 tools/rank_state.py:*)",
     "Bash(python tools/job_key.py:*)",
     "Bash(python3 tools/job_key.py:*)",
+    # /gmail-jobs reads LinkedIn Job Alert digests out of Gmail (read-only) and
+    # feeds the same seen_jobs.json the scraper writes. Credentials come from
+    # the environment; the tool never touches a file under the repository.
+    "Bash(python tools/gmail_job_alerts.py:*)",
+    "Bash(python3 tools/gmail_job_alerts.py:*)",
     "Bash(python tools/verify_pdf.py:*)",
     "Bash(python3 tools/verify_pdf.py:*)",
     "Bash(python tools/verify_layout.py:*)",

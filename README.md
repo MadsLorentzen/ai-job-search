@@ -162,12 +162,13 @@ Postings are treated as untrusted input (the workflow follows no instructions em
 
 ## Other commands
 
-`/setup`, `/scrape`, and `/apply` form the core workflow. Ten more commands extend it once your profile is in place:
+`/setup`, `/scrape`, and `/apply` form the core workflow. Eleven more commands extend it once your profile is in place:
 
 - **`/interview`** preps you for a scheduled interview on a tracked application. It builds a stage-specific prep pack from the application's archive (the exact posting, the CV and cover letter the interviewer actually read, feedback recorded from earlier rounds), researches the company and interviewers with a verify-before-use rule, maps likely questions to your STAR examples, and offers a mock interview following the roleplay protocol in `07-interview-prep.md`. Gaps get honest bridge answers, never invented experience.
 - **`/outcome`** records what happened to an application - interview stages, offers, rejections, silence. It archives the submitted CV, cover letter, and posting text into `documents/applications/<company>_<role>/`, keeps `outcome.md` in the format `/setup` Path A parses, and updates the tracker. It also owns the stretch before there is an outcome to record: `/outcome followup` surfaces open applications that have gone quiet (default 10 days), drafts a short channel-appropriate follow-up in your writing style using only claims from the materials you already submitted (drafts only, never sends; at most twice per application), and offers a thank-you note in the same turn an interview stage is recorded. Once a few applications resolve, it points you back to `/setup` to calibrate the fit framework from what actually got interviews.
 - **`/notion-sync`** publishes a one-way, read-only view of the pipeline into a Notion database via the official Notion MCP server (OAuth, no API keys) - one row per ranked job plus every tracked application, with a write-once briefing page per row. The repo files stay the system of record: nothing syncs back, and documents sync as filenames only. Complements `/html-report`: that is the deep offline dashboard you regenerate at your desk; this is the glanceable live view from anywhere Notion runs (desktop, web, phone).
 - **`/gmail-sync`** reads your Gmail (via the Gmail connector) for status signals on your open applications - interview invites, assessment links, offers, rejections - and proposes them as a batch for you to approve before anything is written to the tracker or `outcome.md`, citing the source email on every proposed change. Offers stop short of proposing `hired`/`offer_declined` since that's your call; conflicting or unmatched signals get flagged for a manual `/outcome` pass instead of guessed.
+- **`/gmail-jobs`** turns the LinkedIn Job Alert digests already in your Gmail into another discovery source for the *same* queue: it reads them through the read-only Gmail API, parses every job in each digest (not just the subject-line one), canonicalizes each link so no recipient tracking parameter is ever stored or logged, and deduplicates against `seen_jobs.json` and the tracker before handing the new jobs to `/rank`. Only the location half of the Brazil/remote gate can be judged from an alert, so that is all it applies; the employer's own careers posting is resolved before applying, and LinkedIn-only or Easy Apply jobs go to a manual-review queue rather than automating the signed-in site.
 - **`/rank`** bridges `/scrape` and `/apply`: it batch-scores all newly scraped postings against the fit framework (parallel agents fetch each posting and score the five evaluation dimensions) and returns a ranked shortlist with honest per-job strengths and gaps. Deal-breakers veto, deadlines get urgency flags, dead postings get marked expired. Pick a number and it hands off to the full `/apply` workflow.
 - **`/expand`** enriches your profile by scanning public sources you've already linked in it (GitHub repos, portfolio site, Kaggle, Google Scholar) and looking up syllabi for named courses and certifications. Discovered competencies are added to your profile with a source tag. Useful right after `/setup` to surface skills that documents alone don't make explicit.
 - **`/upskill`** analyzes the gap between your profile, your tracked job postings, and your ranked-but-untracked postings (`/rank`'s recorded gaps in `seen_jobs.json`) — or a single posting via `/upskill <URL>`. Produces a prioritized heatmap of skill gaps and a learning plan with web-searched study resources and time estimates. Useful for career planning between applications.
@@ -192,6 +193,7 @@ ai-job-search/
 │   │   ├── rank.md                    # /rank triage scraped jobs into a ranked shortlist
 │   │   ├── outcome.md                 # /outcome record application results, archive materials
 │   │   ├── gmail-sync.md              # /gmail-sync auto-detect application status from Gmail
+│   │   ├── gmail-jobs.md              # /gmail-jobs ingest LinkedIn Job Alerts from Gmail as a discovery source
 │   │   ├── interview.md               # /interview stage-specific prep pack + mock interview
 │   │   ├── html-report.md             # /html-report generate application tracker dashboard
 │   │   ├── notion-sync.md             # /notion-sync one-way pipeline view in a Notion database
@@ -245,7 +247,7 @@ ai-job-search/
 │   ├── verify_pdf.py                  # Verify a compiled PDF's page count and extractable text
 │   └── README_SALARY_TOOL.md          # Salary tool setup instructions
 ├── job_scraper/                       # Scraper state (seen jobs, results)
-├── gmail_sync/                        # /gmail-sync state (processed message IDs, last sync date)
+├── gmail_sync/                        # Gmail state: /gmail-sync status sync + /gmail-jobs alert ingestion (processed message IDs, last sync date)
 ├── upskill/                           # /upskill report output (markdown reports per run)
 ├── job_search_tracker.csv             # Application tracking spreadsheet
 └── SETUP.md                           # Detailed setup guide

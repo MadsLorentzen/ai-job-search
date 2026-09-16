@@ -15,6 +15,28 @@ per-file diff commands.
 
 ### Added
 
+- **`/gmail-jobs` - LinkedIn Job Alert ingestion** (`.claude/commands/gmail-jobs.md`,
+  `tools/gmail_job_alerts.py`, `tests/test_gmail_job_alerts.py`) - treats LinkedIn Job Alert
+  digests as a discovery source and feeds them into the **existing** scrape → rank → apply
+  pipeline: same `job_scraper/seen_jobs.json`, same `/rank`, no second queue. The tool reads
+  messages through the read-only Gmail REST API (`gmail.readonly`, credentials from the
+  environment only), validates each message against the alert sender and LinkedIn's own
+  `X-LinkedIn-Class`/`X-LinkedIn-Template` headers before parsing, prefers `text/plain` with an
+  HTML fallback, parses **every** card in a digest, and canonicalizes each link to
+  `https://www.linkedin.com/jobs/view/<id>/` so no recipient parameter (`midToken`, `midSig`,
+  `otpToken`, `eid`, `trackingId`) is ever stored or logged. Dedup is by LinkedIn job id
+  (`linkedin:<id>`, kept as `source_key`) while the stored entry key stays `tools/job_key.py`'s
+  company+title key, so `/scrape`, `/rank`, `/apply` and `--audit` keep agreeing. The alert can
+  only support the **location** half of the Remote Brazil gate, so that is all this source
+  applies (PASS/FLAG/FAIL, recorded as `eligibility`/`eligibility_note`); compensation, work
+  authorization, language and fit stay with `/rank`. Only recognized LinkedIn job URLs are
+  accepted, a posting already in the tracker is recorded as `skipped`, a card marked closed is
+  stored `expired`, and instruction-like text in an email body has no path into the queue
+  because only title/company/location/ids are extracted. Authenticated LinkedIn and Easy Apply
+  stay out of scope - LinkedIn-only jobs go to a manual-review queue. `gmail_sync/` is reused
+  for the processed-message state (already gitignored as personal data). Anonymized digests:
+  `tests/fixtures/linkedin_job_alerts.json`.
+
 - **`/expand` project and portfolio expansion** (`.claude/commands/expand.md`,
   `tests/test_expand_command.py`) - expands candidate discovery
   to technical projects from public GitHub repositories, extracting structured summaries
