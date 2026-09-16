@@ -171,8 +171,51 @@ def _is_semantic_claim(item: dict[str, Any]) -> bool:
 
 
 class FakeSemanticProposalAdapter(SemanticProposalAdapter):
-    def __init__(self, canned_response: dict[str, Any]) -> None:
-        super().__init__(client=_CannedClient(canned_response))
+    """Test double. Supports two construction modes:
+
+    - ``canned_response`` (the original, still-default mode): a fixed
+      matches/gates dict returned for every call, regardless of input.
+    - ``propose_fn`` (test-support extension, Phase 4C Task 11): a callable
+      ``(context) -> dict`` invoked fresh on every ``propose()`` call,
+      given the exact same ``context`` shape ``build_prompt_context``
+      already builds for the canned-response path (profile_evidence,
+      job_evidence, active_extensions).
+
+    Why this exists: webapp/services/pipeline.py's run_job_fit calls
+    semantic_adapter.propose(profile_evidence=..., resolved_job_evidence=...,
+    active_extensions=...) BEFORE it materializes the resolved_blocker_
+    answers bundle (the bundle is only computed afterward, at line ~305, so
+    it could never be threaded into propose()'s own parameters without
+    reordering run_job_fit itself -- out of scope here). A fixed
+    canned_response therefore cannot vary its gate proposal (PASS vs. FAIL,
+    which resolved_answer_ids to cite) depending on a blocker answer's
+    *current* value, because that value is not visible to it at all. A
+    caller that needs the proposal to react to the live, correctable
+    answer (Phase 4C's correction-scenario acceptance test: the SAME
+    eligibility question must propose PASS before a correction and FAIL
+    after it, over the real resume path) supplies propose_fn as a closure
+    over its own conn/workspace_id and reads the actual current effective
+    resolution itself (e.g. via
+    webapp.persistence.application_blockers.get_effective_resolution),
+    deciding what to propose from that live value. This is still just a
+    test double choosing its own canned-ish answer -- it is not a second
+    semantic reasoning engine: it does no adjudication, citation
+    validation, or policy classification of its own; it only decides what
+    proposal to hand to the real, unmodified _build_gate_assessments/
+    validate_resolved_answer_citation/execute_job_fit_policy pipeline,
+    exactly as the fixed canned_response mode already does.
+    """
+
+    def __init__(
+        self,
+        canned_response: dict[str, Any] | None = None,
+        *,
+        propose_fn: Any = None,
+    ) -> None:
+        if (canned_response is None) == (propose_fn is None):
+            raise ValueError("supply exactly one of canned_response or propose_fn")
+        client: Any = _CannedClient(canned_response) if propose_fn is None else _CallableClient(propose_fn)
+        super().__init__(client=client)
 
 
 class _CannedClient:
@@ -181,3 +224,11 @@ class _CannedClient:
 
     def complete(self, context: dict[str, Any]) -> dict[str, Any]:
         return copy.deepcopy(self._canned_response)
+
+
+class _CallableClient:
+    def __init__(self, propose_fn: Any) -> None:
+        self._propose_fn = propose_fn
+
+    def complete(self, context: dict[str, Any]) -> dict[str, Any]:
+        return copy.deepcopy(self._propose_fn(context))

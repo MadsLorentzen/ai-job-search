@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import re
 import sqlite3
+from pathlib import Path
 from typing import Any
 
 from product.application_decision_policy import (
@@ -47,6 +48,7 @@ from product.semantic_subject_registry import classify_semantic_subject
 # second implementation (see
 # tests/product/test_semantic_subject_registry.py's
 # test_classify_semantic_subject_is_same_object_from_both_import_paths).
+from webapp.persistence.accounts import DEFAULT_ACCOUNT_ID
 from webapp.persistence.application_blockers import save_application_blocker
 from webapp.persistence.policy_decisions import save_policy_decision
 
@@ -622,3 +624,69 @@ def resolve_blocker(
         answer_scope=answer_scope,
         resolved_by=resolved_by,
     )
+
+
+def resume_job_fit_after_resolution(
+    conn: sqlite3.Connection,
+    workspace_id: str,
+    semantic_adapter: Any,
+    *,
+    request_id: str,
+    extension_ids: list[str],
+    extensions_dir: Path,
+    account_id: str = DEFAULT_ACCOUNT_ID,
+) -> dict[str, Any]:
+    """Orchestration entry point implementing spec Sec 11 steps 4-9: after a
+    blocker answer has already been saved (steps 1-3, via resolve_blocker --
+    called separately, BEFORE this function, and never from inside it),
+    recompute the resolved-answer bundle, rerun Job Fit, re-execute policy,
+    and re-derive workflow state.
+
+    This function does not call resolve_blocker/resolve_application_blocker
+    itself -- saving an answer and resuming are separate actions (spec Sec 11
+    step 3: "answer persisted does NOT itself unblock the application"). A
+    caller that never invokes this function after an answer is saved simply
+    leaves the workspace exactly as blocked as before (spec Sec 11 step 10) --
+    there is no failure mode, because nothing here is required for
+    correctness, only for progress.
+
+    Composes webapp.services.http_api.fit_job (not a bare
+    webapp.services.pipeline.run_job_fit + execute_job_fit_policy pair)
+    because this workspace already went through fit_job's own
+    require_job_workspace/resolve_active_extensions validation once, when
+    the blocker was first raised, and a resume rerun is exactly the same
+    kind of Job Fit invocation on the exact same (still-existing) job
+    workspace -- there is no reason for it to skip the validation an
+    ordinary Job Fit run always gets, and doing so would risk a second,
+    parallel, slightly-different Job Fit entry point. Reusing fit_job also
+    means execute_job_fit_policy is invoked exactly once per rerun, at
+    fit_job's own single call site -- this function never calls it a
+    second time. webapp/services/handoff.py, webapp/services/review_view.py,
+    webapp/services/workspace_view.py, and webapp/services/workflow_events.py
+    already import from webapp.services.http_api (require_job_workspace,
+    render_job_application_pack_document, JobWorkspaceNotFound), so a
+    services/* -> services/http_api import is an established pattern in
+    this codebase, not a layering violation despite the module's name --
+    http_api.py's own docstring describes it as "Service boundary used by
+    thin HTTP routers", i.e. a webapp/services/* module like this one, not
+    an HTTP-transport module itself.
+
+    The returned workflow_state is always a fresh read
+    (derive_workspace_policy_state) over the NEW job_fit_result artifact's
+    governing decisions (spec Sec 11 step 9) -- never asserted directly.
+    """
+
+    from webapp.services.http_api import fit_job
+
+    fit_result_artifact = fit_job(
+        conn, workspace_id, semantic_adapter, request_id=request_id,
+        extension_ids=extension_ids, extensions_dir=extensions_dir,
+        account_id=account_id,
+    )
+    new_decisions = current_policy_decisions(conn, workspace_id, fit_result_artifact["id"])
+    workflow_state = derive_workspace_policy_state(new_decisions)
+    return {
+        "job_fit_result": fit_result_artifact,
+        "policy_decisions": new_decisions,
+        "workflow_state": workflow_state,
+    }
