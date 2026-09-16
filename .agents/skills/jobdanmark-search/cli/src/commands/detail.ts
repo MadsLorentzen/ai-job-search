@@ -1,7 +1,7 @@
 import { defineCommand, option } from "@bunli/core"
 import { z } from "zod"
 import { parse } from "node-html-parser"
-import { BASE_URL, normalizeSlug, writeError } from "../helpers.js"
+import { BASE_URL, htmlFetch, normalizeSlug, writeError } from "../helpers.js"
 import { extractCity, toContractDate } from "./search.js"
 
 interface JsonLdJobPosting {
@@ -241,25 +241,14 @@ export const detail = defineCommand({
     const url = `${BASE_URL}/job/${slug}`
 
     try {
-      const response = await fetch(url, {
-        headers: {
-          "Accept": "text/html,application/xhtml+xml",
-          "User-Agent": "Mozilla/5.0 (compatible; jobdanmark-cli/1.0)",
-        },
-        signal: AbortSignal.timeout(15000),
-      })
+      // htmlFetch carries the portal contract's 429/5xx backoff, the request
+      // timeout, and the shared User-Agent; a bare fetch() here had none.
+      const html = await htmlFetch(url)
 
-      if (response.status === 404) {
+      if (html === null) {
         writeError("Job not found", "NOT_FOUND")
         process.exit(1)
       }
-
-      if (!response.ok) {
-        writeError(`API request failed: ${response.status} ${response.statusText}`, "API_ERROR")
-        process.exit(1)
-      }
-
-      const html = await response.text()
 
       if (signal.aborted) return
 

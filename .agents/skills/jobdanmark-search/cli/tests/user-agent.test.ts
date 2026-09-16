@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { apiFetch, apiPost, USER_AGENT } from "../src/helpers";
+import { apiFetch, apiPost, htmlFetch, USER_AGENT } from "../src/helpers";
 
 // Bun's fetch injects an anonymous default User-Agent (Bun/1.3.10) when code
 // sets none. This CLI should say who is asking, in the honest style jobindex
@@ -44,5 +44,19 @@ describe("apiPost user agent", () => {
     await apiPost("/api/jobsearch/search/1", { q: "it" });
     expect(headerValue(init?.headers, "User-Agent")).toBe(USER_AGENT);
     expect(headerValue(init?.headers, "Content-Type")).toBe("application/json");
+  });
+});
+
+describe("htmlFetch user agent", () => {
+  test("sends the shared User-Agent and asks for HTML", async () => {
+    let init: RequestInit | undefined;
+    globalThis.fetch = (async (_url: string | URL | Request, i?: RequestInit) => {
+      init = i;
+      return new Response("<html></html>", { status: 200 });
+    }) as unknown as typeof fetch;
+
+    await htmlFetch("https://jobdanmark.dk/job/x");
+    expect(headerValue(init?.headers, "User-Agent")).toBe(USER_AGENT);
+    expect(headerValue(init?.headers, "Accept")).toContain("text/html");
   });
 });

@@ -47,6 +47,57 @@ per-file diff commands.
 
 ### Fixed
 
+- **The template-placeholder guard in `test_setup_command.py` now skips on forks** (#463) -
+  `TemplatesStillCarryThePlaceholders` asserts that `05-cv-templates.md` and
+  `06-cover-letter-templates.md` still contain `[FIRST_NAME]`, `[LAST_NAME]`, `[YOUR_EMAIL]`,
+  `[YOUR_PHONE]`, `[YOUR_NAME]`, and `[YOUR_LINKEDIN_URL]`. Running `/setup` - the documented
+  path, and what Step 3.5/3.6 of that command exist to do - replaces exactly those tokens, so on
+  a personalized fork `python3 -m unittest discover -s tests` fails both checks permanently and
+  marks every push red. The class now uses the same `@unittest.skipIf` on `GITHUB_REPOSITORY`
+  (defaulting to upstream when unset, so local pristine-template runs still execute the guards)
+  that `test_placeholder_integrity.py` received in #407. The guard landed three days after that
+  fix and did not pick up the pattern; the `placeholder-integrity` CI job is upstream-gated and
+  does not cover the `05`/`06` tokens, so `python-tests` was their only check.
+- **`verify_pdf.py --contains` now sees through LaTeX's typographic substitutions and
+  the pdflatex text layer keeps accents precomposed** (Discussions #385, #384) - the
+  comparison folded whitespace only, but LaTeX ligatures `'` into U+2019 and `--` into
+  U+2013, so on the stock CV compiled with the documented `lualatex` command
+  `--contains "Master's degree"` and `--contains "2016-2024"` both reported the keyword
+  missing from a document that plainly contains it (measured through both extractors;
+  `Six Sigma` and `Statistics` on the same page passed). The documented remedy for a
+  missing keyword is to add it, so the false negative nudged toward the one thing the ATS
+  section forbids. `normalize_text()` now folds both sides - NFC, then curly
+  apostrophes/quotes to ASCII, en/em dashes to `-`, no-break space to space - at
+  comparison time only; `--dump-text` still writes the raw layer, because that is what an
+  ATS parses and the date-range rule in `05-cv-templates.md` needs the raw en-dash visible
+  there. Separately, pdflatex without T1 font encoding stores accents decomposed
+  (`e` + U+0300; pypdf reads it as a stray spacing accent), which NFC cannot fully
+  repair - moderncv 2.5 loads T1 itself under pdflatex but the apt-packaged 2.3.1 does
+  not, so `cv/main_example.tex` and the guide's preamble gain
+  `\ifpdftex\usepackage[T1]{fontenc}\fi`, a no-op on the lualatex path. Pinned by
+  ten new `test_verify_pdf.py` cases (the fold-through ones fail on the whitespace-only
+  code) and a `test_latex_guidance.py` guard that the line exists and stays
+  pdflatex-only. Reported and diagnosed by 9scorp4. Fork users: your
+  personalized `cv/main_example.tex` gains the one guarded preamble line on rebase (a clean
+  3-way merge unless you edited the preamble); tailored CVs compiled with lualatex need nothing.
+- **`jobdanmark-search detail` now backs off on 429/5xx like every other portal's detail
+  command** - the handler called `fetch()` directly instead of going through the CLI's own
+  request wrappers, so it carried none of the three things `apiFetch`/`apiPost` guarantee:
+  no 429/5xx retry loop (a rate-limited detail page wrote `API_ERROR` and exited after one
+  attempt, where jobnet, jobbank, jobindex, linkedin, and freehire all retry up to six
+  times), a hand-inlined User-Agent string that would drift from the exported `USER_AGENT`,
+  and a timeout the wrappers' tests never saw. `/scrape` calls `detail` once per
+  shortlisted posting, so a burst that tripped jobdanmark's rate limiter dropped those
+  postings outright - no description, no deadline - while the same burst on any other
+  portal rode it out. Demonstrated by driving the real command handler with a stubbed 429:
+  1 fetch attempt and exit 1 before, 7 attempts after (the contract's initial try plus six
+  retries). Fixed by adding `htmlFetch` to `helpers.ts` with the same backoff schedule,
+  timeout, and shared User-Agent as the JSON wrappers (404 returns `null` so `detail` keeps
+  its `NOT_FOUND` contract) and routing `detail` through it. Pinned in the existing
+  `retry-backoff`, `user-agent`, and `request-timeout` suites, which now cover all three
+  wrappers, plus a new `detail-backoff.test.ts` that exercises the handler path itself -
+  its retry cases fail against the bare `fetch()`.
+
 - **`jobindex-search detail` no longer fetches arbitrary URLs or invents posting-shaped
   output** (#447) - the command fetched any `http(s)` input verbatim (no host check) and,
   when the path didn't match its one pattern, silently used the whole input URL as the job

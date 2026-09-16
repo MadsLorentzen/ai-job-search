@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { apiFetch, apiPost } from "../src/helpers";
+import { apiFetch, apiPost, htmlFetch } from "../src/helpers";
 
 // A stalled upstream connection (accepted socket, no response) would otherwise
 // hang the CLI forever - fetch has no default timeout. Assert both request
@@ -18,6 +18,17 @@ describe("request timeout", () => {
     }) as unknown as typeof fetch;
 
     await apiFetch("/search");
+    expect(init?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  test("htmlFetch passes an AbortSignal timeout to fetch", async () => {
+    let init: RequestInit | undefined;
+    globalThis.fetch = (async (_url: string | URL | Request, i?: RequestInit) => {
+      init = i;
+      return new Response("<html></html>", { status: 200 });
+    }) as unknown as typeof fetch;
+
+    await htmlFetch("https://jobdanmark.dk/job/x");
     expect(init?.signal).toBeInstanceOf(AbortSignal);
   });
 

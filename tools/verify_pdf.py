@@ -4,12 +4,18 @@
 Text-layer extraction tries pypdf (BSD, optional `pip install pypdf`) first,
 then Poppler `pdftotext` if pypdf is missing, raises, or returns zero
 extractable characters. Poppler remains the fallback.
+
+`--contains` compares after `normalize_text()` has folded both sides: whitespace,
+Unicode normalization form (NFC), and the typographic substitutions LaTeX makes to
+the source text. The fold is comparison-time only - the `--dump-text` output stays
+the raw text layer an ATS parser actually sees.
 """
 
 import argparse
 import re
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 
@@ -47,7 +53,34 @@ def parse_page_count(pdfinfo_output):
     return int(match.group(1))
 
 
+# Typographic substitutions the moderncv/cover.cls templates produce from plain
+# source text, mapped back to what a user types into --contains. LaTeX ligatures
+# ' into U+2019 and -- into U+2013, so "Master's degree" and "2016-2024" are
+# absent from the text layer of a CV that plainly contains them (#385). Applied
+# to both sides of the comparison; the extracted dump is never rewritten.
+TYPOGRAPHIC_FOLDS = str.maketrans(
+    {
+        "\u2018": "'",  # ` -> quoteleft
+        "\u2019": "'",  # ' -> quoteright (the possessive apostrophe)
+        "\u201c": '"',  # `` -> quotedblleft
+        "\u201d": '"',  # '' -> quotedblright
+        "\u2013": "-",  # -- -> endash (the \cventry date-range case)
+        "\u2014": "-",  # --- -> emdash
+        "\u00a0": " ",  # ~ -> no-break space
+    }
+)
+
+
 def normalize_text(text):
+    """Fold a string for comparison: NFC, typographic punctuation, whitespace.
+
+    NFC covers the pdflatex text layer, which without T1 font encoding stores
+    accented letters decomposed (`e` + U+0300) while a user types them
+    precomposed (U+00E8); both forms fold to the same string (#384). The fold
+    applies to what is compared, never to what is dumped: the date-range rule in
+    `05-cv-templates.md` still needs the raw en-dash visible in `--dump-text`.
+    """
+    text = unicodedata.normalize("NFC", text).translate(TYPOGRAPHIC_FOLDS)
     return " ".join(text.split())
 
 
@@ -144,7 +177,11 @@ def build_parser():
         "--contains",
         action="append",
         default=[],
-        help="text that must appear after whitespace normalization; repeatable",
+        help=(
+            "text that must appear in the text layer; both sides are folded for "
+            "whitespace, NFC, and LaTeX's typographic substitutions (curly "
+            "apostrophes/quotes, en/em dashes, no-break spaces); repeatable"
+        ),
     )
     parser.add_argument(
         "--dump-text",
