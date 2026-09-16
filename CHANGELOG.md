@@ -47,6 +47,21 @@ per-file diff commands.
 
 ### Fixed
 
+- **`Upstream watch` degrades to a report-only run when Issues are disabled** - the scheduled
+  triage built its digest successfully and then failed at the last step, because writing the
+  rolling issue needs the repository's Issues feature and a fork with Issues turned off got a
+  red run for a write it never could have made. The job now probes `has_issues` through the
+  API, publishes the report to the run summary unconditionally (so the digest is never lost),
+  writes the rolling issue only when Issues exist, and says so plainly in a notice instead of
+  failing. Pinned by `tests/test_upstream_triage.py`.
+
+- **Fork synced with upstream `master`** (8 fork commits ahead / 5 behind at `c7bd494`) -
+  merges upstream's JobDanmark 429/5xx detail backoff, the PDF typographic-substitution and
+  accented-character normalization in `tools/verify_pdf.py`, the fork-safe pristine-template
+  guard in `test_setup_command.py`, and the README note on Claude Code plans/API credits,
+  keeping the Remote Brazil / USD workflow and the fork's application automation intact. No
+  force-push, no history rewrite; rollback is a revert of the merge commit.
+
 - **The template-placeholder guard in `test_setup_command.py` now skips on forks** (#463) -
   `TemplatesStillCarryThePlaceholders` asserts that `05-cv-templates.md` and
   `06-cover-letter-templates.md` still contain `[FIRST_NAME]`, `[LAST_NAME]`, `[YOUR_EMAIL]`,

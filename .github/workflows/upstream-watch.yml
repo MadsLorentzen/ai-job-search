@@ -16,6 +16,14 @@
 # This is the commit-level companion to tools/check_upstream_updates.py, which
 # tracks personalized-file version stamps. Two tools, two questions.
 #
+# Degrades instead of failing: Issues are a repository permission, not a
+# workflow precondition, and a fork with them turned off used to fail this job
+# AFTER the report had already been built - a red run whose only problem was
+# where the digest could be written. The job now probes `has_issues` first and
+# falls back to the run summary (always written, so the report is never
+# lost) plus the step log, which is where a triage report belongs anyway.
+# Pinned by tests/test_upstream_triage.py.
+#
 # Runs only on forks (guarded below), so the upstream template never triggers
 # it against itself - GitHub also leaves inherited workflows disabled on a fork
 # until the owner enables Actions, so the guard is a second fence, not the only
@@ -63,7 +71,36 @@ jobs:
           } > report.md
           cat report.md
 
+      # Published unconditionally, before anything tries to open an issue:
+      # this is the copy that survives a repo where Issues are disabled, and
+      # the run page is the first place anyone looks for a scheduled job's
+      # output. Never a hard failure - an inconclusive probe falls back to
+      # report-only rather than assuming permission it may not have.
+      - name: Publish the report to the run summary
+        run: cat report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Probe whether Issues are enabled
+        id: issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          payload=$(curl -s -w '\n%{http_code}' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GH_REPO")
+          code=$(printf '%s' "$payload" | tail -n1)
+          body=$(printf '%s' "$payload" | sed '$d')
+          if [ "$code" = "200" ] && [ "$(printf '%s' "$body" | jq -r '(.has_issues // false)')" = "true" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "Issues are enabled on $GH_REPO; the digest goes to the rolling issue."
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Issues are unavailable on $GH_REPO (HTTP $code, has_issues != true). The digest was published to this run's summary only."
+          fi
+
       - name: Open or update the rolling issue
+        if: steps.issues.outputs.enabled == 'true'
         env:
           # Built-in token is scoped to this repo only, so the digest can never
           # be written outside the fork.
@@ -83,3 +120,8 @@ jobs:
             gh issue create --title "$title" --body-file report.md
             echo "Created a new rolling issue"
           fi
+
+      - name: Note the report-only run when Issues are off
+        if: steps.issues.outputs.enabled != 'true'
+        run: |
+          echo "::notice::No rolling issue was written because Issues are disabled on this repository. The triage report is in this run's summary and in the job log above; enable Issues (Settings -> General -> Features) to have it written to an issue again."

@@ -188,5 +188,63 @@ class WorkflowGuardTests(unittest.TestCase):
                                  f"action not SHA-pinned: {ref}")
 
 
+class IssuesUnavailableFallbackTests(unittest.TestCase):
+    """A fork with Issues disabled must get the digest, not a red run.
+
+    Issues are a repository permission, not a workflow precondition. The
+    scheduled run used to build its report and then fail while writing it - the
+    one failure mode that is pure noise, because the triage work had already
+    succeeded and the output was only one `gh issue create` away from being
+    readable. The workflow now probes `has_issues` first and falls back to the
+    run summary, which is written unconditionally.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.text = WORKFLOW.read_text(encoding="utf-8")
+        # Start at the job's step list: the file's header comment explains the
+        # fallback too, and a comment is not a step.
+        steps_text = cls.text[cls.text.index("    steps:"):]
+        cls.steps = [chunk for chunk in steps_text.split("\n      - ") if chunk.strip()]
+
+    def step(self, needle: str) -> str:
+        matches = [chunk for chunk in self.steps if needle in chunk]
+        self.assertEqual(1, len(matches),
+                         f"expected exactly one step containing {needle!r}, found {len(matches)}")
+        return matches[0]
+
+    def test_the_workflow_probes_whether_issues_are_enabled(self):
+        probe = self.step("has_issues")
+        self.assertIn("id: issues", probe)
+        self.assertIn("api.github.com/repos/$GH_REPO", probe)
+        self.assertIn("enabled=false", probe,
+                      "an unavailable or inconclusive probe must fall back, not assume permission")
+
+    def test_the_report_is_published_to_the_run_summary_unconditionally(self):
+        summary = self.step("GITHUB_STEP_SUMMARY")
+        self.assertIn("report.md", summary)
+        self.assertNotIn("if:", summary,
+                         "the summary is the fallback destination, so it cannot be conditional")
+
+    def test_the_issue_write_is_guarded_by_the_probe(self):
+        issue_step = self.step("gh issue create")
+        self.assertIn("if: steps.issues.outputs.enabled == 'true'", issue_step,
+                      "the digest may only be written to an issue when Issues exist")
+        self.assertIn("GH_REPO: ${{ github.repository }}", issue_step)
+
+    def test_nothing_else_touches_issues(self):
+        for chunk in self.steps:
+            if chunk is not self.step("gh issue create"):
+                self.assertNotIn("gh issue ", chunk,
+                                 "every issue write must sit behind the has_issues probe")
+
+    def test_a_disabled_issues_repo_does_not_fail_the_job(self):
+        self.assertNotIn("exit 1", self.text,
+                         "the workflow reports; it has no gate that can fail a run")
+        fallback = self.step("Issues are off")
+        self.assertIn("::notice::", fallback,
+                      "the report-only run must say so on the run page, not fail silently")
+
+
 if __name__ == "__main__":
     unittest.main()
