@@ -68,6 +68,9 @@ presence alone (a Phase-1 limitation, since resolved here):
         semantic_job_fit.py's own output.
 
 Classification table:
+    gate status FAIL,      evidence_disposition=CONFLICTING      -> REQUIRE_USER (checked FIRST)
+    gate status FAIL,      evidence_disposition != CONFLICTING   -> AUTO_REJECT (trusted pre-supported, see below)
+    gate status FLAG      (any materiality/disposition)          -> REQUIRE_USER
     materiality=MATERIAL,     evidence_disposition=SUPPORTIVE    -> AUTO_PROCEED
     materiality=MATERIAL,     evidence_disposition=CONFLICTING   -> REQUIRE_USER
     materiality=MATERIAL,     evidence_disposition=ABSENT        -> REQUIRE_USER
@@ -77,21 +80,35 @@ Classification table:
     materiality=NON_MATERIAL, evidence_disposition=CONFLICTING   -> REQUIRE_USER
     materiality=NON_MATERIAL, evidence_disposition=INSUFFICIENT  -> REQUIRE_USER
     materiality=NOT_APPLICABLE (any disposition)                -> NOT_APPLICABLE
-    gate status FLAG      (any materiality/disposition)          -> REQUIRE_USER
-    gate status FAIL      (trusted pre-supported, see below)     -> AUTO_REJECT
 
-A gate FAIL reaching this module is, by construction, already trustworthy
-and supported: semantic_job_fit.py's _build_gate_assessments downgrades an
-unsupported FAIL proposal to UNVERIFIED before this module ever sees it
-(its own "FAIL requires affirmative job and profile incompatibility
-evidence" rule). AUTO_REJECT is therefore the only outcome for a literal
-FAIL status; there is no ambiguous-FAIL case routed to REQUIRE_USER here.
+CONFLICTING always takes precedence over a literal FAIL status and is
+always REQUIRE_USER regardless of materiality (ENGINE_VERSION v2). This
+module still only ever consumes evidence_disposition/materiality exactly
+as before -- CONFLICTING is not a new value, only its precedence over a
+literal FAIL status is new. As of Phase 4C's semantic_job_fit.py fix
+(same ENGINE_VERSION v2 change), evidence_disposition=CONFLICTING is
+produced ONLY for a genuine cross-source disagreement the semantic
+adapter itself explicitly asserted (cross_source_relation="CONFLICTING")
+-- never merely because both a profile claim and a resolved blocker
+answer happened to be cited together, and never inferred by this module
+or by semantic_job_fit.py from citation-list shape alone. A gate FAIL
+reaching this module with a non-CONFLICTING disposition is, by
+construction, already trustworthy and supported: semantic_job_fit.py's
+_build_gate_assessments downgrades an unsupported FAIL proposal to
+UNVERIFIED before this module ever sees it (its own "FAIL requires
+affirmative job and profile incompatibility evidence" rule). AUTO_REJECT
+is therefore the outcome for a literal FAIL status whose disposition is
+not CONFLICTING; there is no other ambiguous-FAIL case routed to
+REQUIRE_USER here.
 
-CONFLICTING is always REQUIRE_USER regardless of materiality: conflicting
-evidence is never safe to silently omit or proceed past, even for a
-non-material gate -- an unresolved contradiction in the candidate's own
-evidence is a data-quality problem worth a human's attention regardless of
-whether the gate itself would otherwise be optional.
+CONFLICTING evidence is never safe to silently omit, proceed past, or
+auto-reject on, even for a non-material gate or a gate whose proposal
+status is a literal FAIL -- an unresolved contradiction between two
+independently trustworthy sources of the candidate's own evidence (for
+example, supportive profile evidence and a validated resolved blocker
+answer genuinely disagreeing about the same gate, Phase 4C spec Sec9) is
+a data-quality problem worth a human's attention, never grounds for an
+automatic rejection.
 """
 
 from __future__ import annotations
@@ -115,7 +132,7 @@ DEFAULT_POLICY = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
 # JSON file cannot silently keep producing the same fingerprint as before
 # the change -- the JSON-only fingerprint used in an earlier draft of this
 # module could not detect that class of change.
-ENGINE_VERSION = "application-decision-engine.v1"
+ENGINE_VERSION = "application-decision-engine.v2"
 
 OUTCOMES = (
     "AUTO_PROCEED",
@@ -300,15 +317,37 @@ def evaluate_gate_assessment(
     materiality = gate["materiality"]
     disposition = gate["evidence_disposition"]
 
-    if status == "FAIL":
+    if status == "FAIL" and disposition == "CONFLICTING":
+        # CONFLICTING takes precedence over the ordinary supported-FAIL
+        # AUTO_REJECT rule below (ENGINE_VERSION v2 fix). Since Phase 4C's
+        # semantic_job_fit.py fix, evidence_disposition=CONFLICTING is
+        # produced ONLY for a genuine cross-source disagreement -- the
+        # semantic adapter's own explicit cross_source_relation="CONFLICTING"
+        # judgment about cited profile evidence and a cited resolved
+        # blocker answer pointing in opposite directions (Phase 4C spec
+        # Sec9's table). This module trusts evidence_disposition exactly as
+        # it always has, unchanged -- CONFLICTING is not a new value here,
+        # only its correct precedence over a literal FAIL status is new: a
+        # data-quality contradiction in the candidate's own evidence must
+        # never be silently auto-rejected. Routed through the SAME
+        # materiality/disposition rule table as every other disposition
+        # (material_conflicting/non_material_conflicting, both
+        # REQUIRE_USER in the policy JSON) rather than a bespoke branch, so
+        # there is exactly one place that maps
+        # (materiality, disposition) -> outcome.
+        materiality_key = "material" if materiality == "MATERIAL" else "non_material"
+        rule_key = f"{materiality_key}_conflicting"
+        outcome, reason_code = gate_rules[rule_key], f"gate_{rule_key}"
+    elif status == "FAIL":
         # semantic_job_fit.py's _build_gate_assessments already downgrades
         # an unsupported FAIL proposal to UNVERIFIED before this module
         # ever sees it (see its "FAIL requires affirmative job and profile
         # incompatibility evidence" rule). A literal FAIL status reaching
-        # this module is therefore, by construction, already trustworthy
-        # and evidence-supported -- AUTO_REJECT is the only outcome for
-        # this branch; there is no ambiguous-FAIL case to route to
-        # REQUIRE_USER here.
+        # this module with a non-CONFLICTING disposition is therefore, by
+        # construction, already trustworthy and evidence-supported --
+        # AUTO_REJECT is the outcome for this branch; the one ambiguous
+        # case (a genuine cross-source disagreement) is handled by the
+        # branch above, before this one is ever reached.
         outcome, reason_code = gate_rules["FAIL"], "gate_fail_supported"
     elif status == "FLAG":
         outcome, reason_code = gate_rules["FLAG"], "gate_flag"

@@ -61,19 +61,65 @@ class GateAssessmentTests(unittest.TestCase):
     knows about this specific posting and this specific candidate."""
 
     def test_supported_fail_gate_auto_rejects(self):
-        """A gate FAIL reaching this module is, by construction (per
-        semantic_job_fit.py's own downgrade-to-UNVERIFIED rule for
-        unsupported FAIL proposals), already trustworthy and supported.
-        It must resolve to AUTO_REJECT, never REQUIRE_USER -- regardless
-        of materiality/disposition, which FAIL overrides."""
+        """A gate FAIL reaching this module with a non-CONFLICTING
+        disposition is, by construction (per semantic_job_fit.py's own
+        downgrade-to-UNVERIFIED rule for unsupported FAIL proposals),
+        already trustworthy and supported. It must resolve to AUTO_REJECT,
+        never REQUIRE_USER -- regardless of materiality. Since Phase 4C's
+        ENGINE_VERSION v2 fix, evidence_disposition=SUPPORTIVE (not
+        CONFLICTING) is what semantic_job_fit.py now produces for an
+        ordinary supported FAIL, including a FAIL supported by profile
+        evidence alone, resolved-answer evidence alone, or both sources
+        explicitly ALIGNED -- see
+        test_fail_gate_with_conflicting_disposition_requires_user below for
+        the one case that IS CONFLICTING."""
+        decision = evaluate_gate_assessment(
+            gate(
+                "FAIL", evidence_disposition="SUPPORTIVE", materiality="MATERIAL",
+                profile_ids=("clm_supported_disqualifying_evidence",),
+            )
+        )
+        self.assertEqual(decision.outcome, "AUTO_REJECT")
+        self.assertEqual(decision.reason_code, "gate_fail_supported")
+
+    def test_fail_gate_with_conflicting_disposition_requires_user(self):
+        """ENGINE_VERSION v2 fix: evidence_disposition=CONFLICTING takes
+        precedence over the ordinary supported-FAIL AUTO_REJECT rule. Since
+        the companion semantic_job_fit.py fix, CONFLICTING is produced ONLY
+        when the semantic adapter's own proposal explicitly asserted
+        cross_source_relation="CONFLICTING" about its cited profile
+        evidence and resolved blocker answer (Phase 4C spec Sec9) -- this
+        module trusts evidence_disposition exactly as before; only its
+        precedence over FAIL is new. Before this fix, the classifier's
+        status=="FAIL" check short-circuited before evidence_disposition
+        was ever consulted, so this case was unreachable and silently
+        misclassified as AUTO_REJECT -- exactly the regression Phase 4C
+        Task 13's acceptance-matrix closeout test surfaced against the
+        real production adjudication path
+        (tests/webapp/services/test_job_fit_resume_acceptance_closeout.py
+        ::test_conflicting_profile_and_resolved_answer_evidence_stays_
+        require_user)."""
         decision = evaluate_gate_assessment(
             gate(
                 "FAIL", evidence_disposition="CONFLICTING", materiality="MATERIAL",
                 profile_ids=("clm_conflict_evidence",),
             )
         )
-        self.assertEqual(decision.outcome, "AUTO_REJECT")
-        self.assertEqual(decision.reason_code, "gate_fail_supported")
+        self.assertEqual(decision.outcome, "REQUIRE_USER")
+        self.assertEqual(decision.reason_code, "gate_material_conflicting")
+
+    def test_fail_gate_with_conflicting_disposition_non_material_still_requires_user(self):
+        """The CONFLICTING-over-FAIL precedence holds regardless of
+        materiality, mirroring test_conflicting_non_material_evidence_
+        still_requires_user's existing non-FAIL case."""
+        decision = evaluate_gate_assessment(
+            gate(
+                "FAIL", evidence_disposition="CONFLICTING", materiality="NON_MATERIAL",
+                profile_ids=("clm_conflict_evidence",),
+            )
+        )
+        self.assertEqual(decision.outcome, "REQUIRE_USER")
+        self.assertEqual(decision.reason_code, "gate_non_material_conflicting")
 
     def test_flag_gate_requires_user(self):
         """FLAG is an explicit, evidence-backed LLM-raised caveat -- this
@@ -388,6 +434,20 @@ class PolicyLoadingAndFingerprintTests(unittest.TestCase):
         )
         default = application_decision_policy_fingerprint(DEFAULT_POLICY)
         self.assertEqual(explicit, default)
+
+    def test_current_engine_version_is_v2_and_differs_from_v1_fingerprint(self):
+        """Concrete proof, not just a general mechanism test, that THIS
+        specific fix (CONFLICTING-over-FAIL precedence, ENGINE_VERSION
+        v1 -> v2) actually changed the default fingerprint every new
+        job_fit_result's policy_decisions row will be recorded against.
+        The JSON policy file itself is unchanged by this fix -- the
+        fingerprint delta is driven purely by engine_version."""
+        self.assertEqual(ENGINE_VERSION, "application-decision-engine.v2")
+        v1_fp = application_decision_policy_fingerprint(
+            DEFAULT_POLICY, engine_version="application-decision-engine.v1"
+        )
+        current_fp = application_decision_policy_fingerprint(DEFAULT_POLICY)
+        self.assertNotEqual(v1_fp, current_fp)
 
     def test_missing_field_invalidates_policy(self):
         broken = copy.deepcopy(DEFAULT_POLICY)

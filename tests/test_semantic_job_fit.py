@@ -680,7 +680,16 @@ class SemanticJobFitTests(unittest.TestCase):
         eligibility = next(item for item in result["gate_assessments"] if item["gate_id"] == "eligibility")
         self.assertEqual(eligibility["status"], "FAIL")
         self.assertEqual(eligibility["profile_evidence_ids"], ["clm_4444444444444444"])
-        self.assertEqual(eligibility["evidence_disposition"], "CONFLICTING")
+        # Phase 4C ENGINE_VERSION v2 fix: a FAIL supported by profile
+        # evidence ALONE (no resolved-answer citation) is SUPPORTIVE, not
+        # CONFLICTING -- CONFLICTING is reserved for a genuine cross-
+        # source disagreement the semantic adapter explicitly asserts via
+        # cross_source_relation="CONFLICTING" (see
+        # tests/product/test_cross_source_relation_integration.py). This
+        # test predates that field entirely and never cites a resolved
+        # answer, so there is nothing here for profile evidence to
+        # disagree with.
+        self.assertEqual(eligibility["evidence_disposition"], "SUPPORTIVE")
         self.assertTrue(result["blocked"])
         self.assertEqual(result["blocking_gate_ids"], ["eligibility"])
         self.assertIsNone(result["overall_score"])

@@ -643,6 +643,18 @@ def _adjudicate_one_match(
 GATE_EVIDENCE_DISPOSITIONS = ("SUPPORTIVE", "CONFLICTING", "ABSENT", "INSUFFICIENT")
 GATE_MATERIALITY_VALUES = ("MATERIAL", "NON_MATERIAL", "NOT_APPLICABLE")
 
+# Phase 4C: the explicit semantic judgment a gate proposal supplies about
+# whether its cited profile_evidence_ids and resolved_answer_ids agree or
+# disagree. This is the semantic adapter's OWN call (spec Sec9: "the actual
+# agree/disagree call... is made by the semantic adapter's proposal") --
+# the deterministic layer (_build_gate_assessments) only reads this value,
+# never infers it from citation-list shape, evidence_disposition, or reason
+# text. ALIGNED/CONFLICTING apply only when both source types are cited;
+# NOT_APPLICABLE is the correct value whenever at most one source type is
+# cited (nothing to compare), and is also the field's absence-equivalent
+# for a proposal that predates this field entirely.
+CROSS_SOURCE_RELATIONS = ("ALIGNED", "CONFLICTING", "NOT_APPLICABLE")
+
 
 def _target_semantic_subject_key(category_items: list[dict[str, Any]]) -> str | None:
     """Classify THIS gate's own requirement text into a
@@ -775,7 +787,26 @@ def _build_gate_assessments(
                 if has_supporting_evidence:
                     status = "FAIL"
                     reason = proposal["reason"]
-                    disposition = "CONFLICTING"
+                    # Phase 4C (ENGINE_VERSION v2 fix): CONFLICTING is set
+                    # ONLY when the adapter's own cross_source_relation
+                    # explicitly says the two source types disagree -- read
+                    # verbatim, never inferred from which citation lists
+                    # happen to be non-empty (spec Sec9: the agree/disagree
+                    # call belongs to the adapter). A FAIL supported by
+                    # resolved-answer evidence alone, profile evidence
+                    # alone, or both sources explicitly ALIGNED is an
+                    # ordinary trustworthy FAIL -- SUPPORTIVE, same as
+                    # before Phase 4C touched this branch at all. Only a
+                    # proposal that explicitly asserts CONFLICTING (which
+                    # _validate_semantic_proposals_shape only accepts
+                    # alongside both citation types actually being present)
+                    # produces the genuine cross-source-disagreement
+                    # disposition.
+                    disposition = (
+                        "CONFLICTING"
+                        if proposal.get("cross_source_relation") == "CONFLICTING"
+                        else "SUPPORTIVE"
+                    )
                 else:
                     status = "UNVERIFIED"
                     reason = "FAIL requires affirmative job and profile incompatibility evidence."
@@ -984,16 +1015,41 @@ def _validate_semantic_proposals_shape(value: Any, errors: list[str]) -> None:
     for index, gate in enumerate(_list(value.get("gates"), "$.semantic_proposals.gates", errors)):
         path = f"$.semantic_proposals.gates[{index}]"
         required_gate_fields = {"gate_id", "status", "reason", "job_evidence_ids", "profile_evidence_ids"}
-        allowed_gate_fields = required_gate_fields | {"resolved_answer_ids"}
+        allowed_gate_fields = required_gate_fields | {"resolved_answer_ids", "cross_source_relation"}
         if not _object_shape(gate, required_gate_fields, allowed_gate_fields, path, errors):
             continue
         _enum(gate.get("gate_id"), set(GATE_IDS), f"{path}.gate_id", errors)
         _enum(gate.get("status"), GATE_STATUSES, f"{path}.status", errors)
         _nonempty_string(gate.get("reason"), f"{path}.reason", errors)
         _string_list(gate.get("job_evidence_ids"), f"{path}.job_evidence_ids", errors)
-        _string_list(gate.get("profile_evidence_ids"), f"{path}.profile_evidence_ids", errors)
+        profile_evidence_ids = _string_list(gate.get("profile_evidence_ids"), f"{path}.profile_evidence_ids", errors)
+        resolved_answer_ids = []
         if "resolved_answer_ids" in gate:
-            _string_list(gate.get("resolved_answer_ids"), f"{path}.resolved_answer_ids", errors)
+            resolved_answer_ids = _string_list(gate.get("resolved_answer_ids"), f"{path}.resolved_answer_ids", errors)
+        if "cross_source_relation" in gate:
+            _enum(gate.get("cross_source_relation"), set(CROSS_SOURCE_RELATIONS), f"{path}.cross_source_relation", errors)
+        # Phase 4C: when a FAIL proposal cites evidence from BOTH sources,
+        # it must explicitly state whether they agree or disagree --
+        # cross_source_relation may not be silently absent in that case.
+        # Fails safely here, before _build_gate_assessments ever runs,
+        # rather than letting the deterministic layer guess from citation
+        # shape alone (spec Sec9's agree/disagree call belongs to the
+        # adapter, not to an inferred default). Scoped to status=="FAIL"
+        # only: _build_gate_assessments' PASS/FLAG branch never consults
+        # cross_source_relation at all (a PASS/FLAG proposal citing both
+        # sources has nothing ambiguous to resolve -- both are simply
+        # additional supporting evidence for the same non-FAIL verdict),
+        # so requiring the field there would reject long-standing,
+        # pre-Phase-4C-fix proposal shapes for no behavioral reason.
+        if (
+            gate.get("status") == "FAIL"
+            and profile_evidence_ids and resolved_answer_ids
+            and "cross_source_relation" not in gate
+        ):
+            errors.append(
+                f"{path}.cross_source_relation: required on a FAIL proposal when both "
+                "profile_evidence_ids and resolved_answer_ids are cited"
+            )
 
 
 def _validate_resolved_blocker_answers_shape(value: Any, errors: list[str]) -> None:
