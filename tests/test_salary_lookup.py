@@ -25,6 +25,39 @@ from salary_lookup import (
 # ---------------------------------------------------------------------------
 
 class FormatEntryTests(unittest.TestCase):
+    PRIVACY_FOOTNOTE = "* N/A = Too few employees to publish (privacy)"
+
+    def test_privacy_footnote_is_omitted_when_no_row_is_suppressed(self):
+        # The footnote explains the N/A* marker. Printed under a table where
+        # every row has an index, it asserts a privacy suppression that never
+        # happened (residual noted on #470).
+        entry = {
+            "company": "Example Corp",
+            "city": "",
+            "categories": {"all_employees": {"count": 500, "index": 108.5}},
+        }
+
+        rendered = format_entry(entry, {"index_baseline": 100, "index_label": "Index"})
+
+        self.assertNotIn("N/A", rendered)
+        self.assertNotIn(self.PRIVACY_FOOTNOTE, rendered)
+        self.assertRegex(rendered, r"All Employees\s+500\s+108\.5\s+\+8\.5%")
+
+    def test_privacy_footnote_is_printed_when_a_row_is_suppressed(self):
+        entry = {
+            "company": "Example Corp",
+            "city": "",
+            "categories": {
+                "all_employees": {"count": 500, "index": 108.5},
+                "small_team": {"count": 3, "index": None},
+            },
+        }
+
+        rendered = format_entry(entry, {"index_baseline": 100, "index_label": "Index"})
+
+        self.assertRegex(rendered, r"Small Team\s+3\s+N/A\*")
+        self.assertIn(self.PRIVACY_FOOTNOTE, rendered)
+
     def test_zero_count_is_displayed_as_zero(self):
         entry = {
             "company": "Example Corp",

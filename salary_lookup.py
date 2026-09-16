@@ -319,6 +319,7 @@ def format_entry(entry, metadata):
         lines.append(f"  {'Category':<22} {'Count':>6} {index_label:>8}  {'vs Baseline':>10}")
         lines.append(f"  {'-'*50}")
 
+        suppressed = False  # did any row render its index as N/A*?
         for label, data in categories.items():
             display_label = label.replace("_", " ").title()
             count = data.get("count")
@@ -339,9 +340,14 @@ def format_entry(entry, metadata):
                 else:
                     index_str = "N/A*"
                     diff_str = ""
+                    suppressed = True
                 lines.append(f"  {display_label:<22} {count_str:>6} {index_str:>8}  {diff_str:>10}")
 
-        lines.append(f"\n  * N/A = Too few employees to publish (privacy)")
+        # The footnote explains the N/A* marker; printing it under a table with
+        # no such row asserts a privacy suppression that did not happen.
+        lines.append("")
+        if suppressed:
+            lines.append("  * N/A = Too few employees to publish (privacy)")
         if metadata.get("baseline_description"):
             lines.append(f"  {metadata['baseline_description']}")
         else:

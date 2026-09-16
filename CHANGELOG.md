@@ -62,6 +62,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`salary_lookup.py` prints the privacy footnote only when a row actually carries `N/A*`**
+  - the `* N/A = Too few employees to publish (privacy)` line was appended under every
+  category table, including one where every row has an index, so the output asserted a
+  suppression that never happened (the residual noted on #470). The footnote now follows a
+  flag set by the `N/A*` branch; a table with a suppressed row renders exactly as before.
+  Two `FormatEntryTests` cases pin both directions; the "omitted" one fails on master.
+
 - **`convert_salary_excel.py` pairs a bare `Count`/`Index` column pair instead of
   splitting it, so `salary_lookup.py` no longer labels a published headcount as
   privacy-suppressed** - the pairing loop required a non-empty derived category name on
