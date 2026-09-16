@@ -62,6 +62,20 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/apply` Step 5b now actually runs the page-count check it claimed Step 5d ran**
+  (`.claude/commands/apply.md`, `tests/test_apply_page_count.py`) - the 5b prose said
+  "Page count is not checked here - that is `verify_pdf.py --pages`'s job, and Step 5d already
+  runs it", and `verify_layout.py`'s docstring declines to measure page count for the same
+  reason. Step 5d's only `verify_pdf.py` call is `--dump-text`, and no step in the workflow
+  passed `--pages` at all (only the upstream-only CI assertion on the stock examples does),
+  so the hard 2-page CV and 1-page cover letter limits were enforced by nothing but the
+  visual PDF read - the "measure first, then look" failure 5b was written to stop. 5b now
+  runs `verify_pdf.py --pages 2` on the CV and `--pages 1` on the cover letter ahead of
+  `verify_layout.py`, names the `ACTIVE-TEMPLATE` page limit as the substitute for a custom
+  template, and the deferral sentence points at those lines. Four spec tests pin the
+  invocations, their counts, their order relative to the layout measurement, and that no
+  prose defers the check to a step that does not run it; all four fail on master.
+
 - **`salary_lookup.py` prints the privacy footnote only when a row actually carries `N/A*`**
   - the `* N/A = Too few employees to publish (privacy)` line was appended under every
   category table, including one where every row has an index, so the output asserted a
