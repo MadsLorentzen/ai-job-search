@@ -60,6 +60,18 @@ per-file diff commands.
   geometry. Tests use synthetic page geometry, so they need neither Poppler nor a
   LaTeX toolchain.
 
+### Changed
+
+- **`/add-template` keeps a registered template's intermediates in `build/`**
+  (#473, `.claude/commands/add-template.md`, `.gitignore`) - the elicited compile command
+  now redirects intermediates (`.aux`, `.log`, ...) to a `build/` folder beside the source
+  and moves the PDF back, so Step 4's test-compile cleanup deletes one folder instead of
+  enumerating LaTeX extensions. The LaTeX command deletes the previous PDF first, so a
+  failed compile leaves no stale PDF for `/apply` to inspect. Toolchains with nothing to
+  redirect (`typst compile`) keep their command unchanged. The `ACTIVE-TEMPLATE` block now
+  tells `/apply` to run the command from the output directory and to delete `build/` in
+  its Step 5e cleanup. Stock templates are unchanged.
+
 ### Fixed
 
 - **`/apply` Step 5b now actually runs the page-count check it claimed Step 5d ran**

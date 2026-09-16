@@ -75,9 +75,11 @@ Collect:
 1. **Name** - short kebab-case identifier (e.g. `awesome-cv`, `classic-serif`). Must not collide with an existing folder in `templates/`.
 2. **Source extension** - the main file's extension (`.tex`, `.typ`, ...), inferred from the provided source file.
 3. **Compile command** - the full command `/apply` and Step 4's test compile will run, using `<file>` (no extension) as the placeholder for the output basename:
-   - **`.tex` source**: infer the engine the same way as before - if the source uses `fontspec` or loads font files by path, it requires `xelatex` or `lualatex`; tell the user this rather than letting them pick `pdflatex`. Render as `lualatex -interaction=nonstopmode <file>.tex` (or the appropriate engine).
+   - **`.tex` source**: infer the engine the same way as before - if the source uses `fontspec` or loads font files by path, it requires `xelatex` or `lualatex`; tell the user this rather than letting them pick `pdflatex`. Render as `rm -f <file>.pdf && mkdir -p build && lualatex -interaction=nonstopmode -output-directory=build <file>.tex && mv build/<file>.pdf ./` (or the appropriate engine).
    - **`.typ` source**: default to `typst compile <file>.typ <file>.pdf` - Typst has a single binary, no engine choice.
    - **Anything else**: no built-in guidance; ask the user for the exact compile command.
+
+   **Build directory rule:** if the toolchain can redirect its intermediate files, the declared command sends them to a `build/` folder beside the source, and still leaves the PDF next to the source, where `/apply` reads it. For LaTeX, use `-output-directory=build`, not `-aux-directory`, which only MiKTeX supports. `-output-directory` also moves the PDF, hence the `mv`. TeX Live does not create the directory, hence the `mkdir -p`. A failed compile skips the `mv`, hence the leading `rm -f`, so a failed LaTeX compile never leaves a stale PDF where `/apply` inspects it. After a failed compile, read the log in `build/`. If Step 4 fails only because of the redirect (e.g. `\include` from a subfolder), drop the redirect but keep the leading `rm -f`, and record why under "Known pitfalls". If the toolchain writes nothing but the PDF (`typst compile`) or has no redirect option, keep the command as it is - never block registration on this rule.
 4. **Fonts** - which font(s) the template uses and where they come from:
    - **Bundled font files** (`.ttf`/`.otf` shipped with the template): copy them into the template folder in Step 3 and record the relative path used to load them (LaTeX `\fontspec` `Path`, Typst `#import`/font path, or equivalent).
    - **System / distribution fonts**: record the font name and note that the user's machine must have it installed.
@@ -113,7 +115,7 @@ Write into it:
 
 ## Compile command
 
-    cd <output dir> && <the full declared command, e.g. lualatex -interaction=nonstopmode <file>.tex or typst compile <file>.typ <file>.pdf>
+    cd <output dir> && <the full declared command, e.g. rm -f <file>.pdf && mkdir -p build && lualatex -interaction=nonstopmode -output-directory=build <file>.tex && mv build/<file>.pdf ./ or typst compile <file>.typ <file>.pdf>
 
 ## Style rules
 
@@ -138,7 +140,7 @@ Never register a template without a successful test compile. Templates that "loo
    ```
 3. If the compile fails: show the user the relevant error lines, diagnose (missing font file, wrong engine/command, missing class or package), fix what you can (e.g. font path values), and re-compile. If the fix needs input only the user has (a missing font file, a license-restricted class), ask for it and wait.
 4. On success, confirm a PDF was produced and Read it to check the layout renders sensibly (no overlapping text, fonts loaded, page count matches the declared page limit for the dummy content). Record any surprises in the manifest's "Known pitfalls".
-5. Delete the scratch source file, the scratch PDF, and any other intermediate files the compile command produced (LaTeX toolchains typically leave `_compile_test.aux`/`.log`/`.out`/`.fls`/`.fdb_latexmk`/`.synctex.gz`; other toolchains may leave nothing beyond the PDF — check what actually landed in the folder and remove all `_compile_test.*` byproducts).
+5. Delete the scratch source file, the scratch PDF, any `build/` folder a test compile created, and any other `_compile_test.*` byproduct left in the template folder.
 
 Do not proceed to Step 5 until the test compile passes.
 
@@ -161,7 +163,7 @@ Insert (or replace, if one exists) this block immediately after the file's H1 ti
 > - **Template skeleton:** `templates/<type>/<name>/template<source-extension>` — use this as the structural reference instead of the stock template
 > - **Manifest:** `templates/<type>/<name>/TEMPLATE.md` — read this for style rules and known pitfalls before drafting
 > - **Source extension:** `<source-extension>` (not `.tex` unless the template's own toolchain is LaTeX)
-> - **Compile command:** `<the full declared command>` (not the command named in the stock guidance below — `/apply`'s compile step must use this instead)
+> - **Compile command:** `<the full declared command>` (not the command named in the stock guidance below — `/apply`'s compile step must use this instead). Run it from the output directory. If it redirects to `build/`, the log is in `build/`, and `/apply`'s Step 5e cleanup must delete that `build/` folder too
 > - **Fonts:** <font summary, including any path note for bundled fonts>
 > - **Page limit:** exactly <N> page(s)
 > - **Output file:** `cv/main_<company>_<role><source-extension>` / `cover_letters/cover_<company>_<role><source-extension>`; copy any class/package/font files the template needs into the output directory, or reference them by relative path
