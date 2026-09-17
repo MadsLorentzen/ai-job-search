@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cover Letter - {{ profile.name }}</title>
+<style>
+  @page { size: letter; margin: 0.9in; }
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+  }
+  .header { margin-bottom: 18pt; }
+  .header .name { font-size: 14pt; font-weight: bold; }
+  .contact { font-size: 9.5pt; color: #333; }
+  .date { margin-bottom: 14pt; }
+  p { margin: 0 0 10pt 0; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="name">{{ profile.name }}</div>
+    <div class="contact">{{ profile.email }} &middot; {{ profile.phone }}{% if profile.linkedin_url %} &middot; {{ profile.linkedin_url }}{% endif %}</div>
+  </div>
+  <div class="date">{{ date }}</div>
+
+  <p>{{ greeting }},</p>
+
+  <p>
+    I'm writing to apply for the {{ role }} position at {{ company }}. Given my background in
+    {{ background_summary }}, I believe I'd contribute quickly to your team.
+  </p>
+
+  {% for bullet in highlighted_bullets %}
+  <p>{{ bullet }}</p>
+  {% endfor %}
+
+  <p>
+    I'd welcome the chance to discuss how my experience could support {{ company }}'s goals.
+    Thank you for your consideration.
+  </p>
+
+  <p>Sincerely,<br>{{ profile.name }}</p>
+</body>
+</html>

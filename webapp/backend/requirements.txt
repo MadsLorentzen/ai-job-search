@@ -1,0 +1,14 @@
+fastapi>=0.115
+uvicorn[standard]>=0.32
+sqlalchemy>=2.0
+alembic>=1.14
+pydantic>=2.9
+python-multipart>=0.0.12
+keyring>=25.5
+rapidfuzz>=3.10
+jinja2>=3.1
+playwright>=1.48
+apscheduler>=3.10
+pytest>=8.3
+httpx>=0.27
+bcrypt>=4.2
