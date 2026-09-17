@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ profile.name }} - Resume</title>
+<style>
+  /* Single-column, semantic-order layout -- ATS parsers read the PDF's text
+     layer in DOM order, so no multi-column/absolute-position tricks here.
+     Contact details are printed as plain text, never icon-only, so they
+     survive text extraction (see app/services/ats_validator.py). */
+  @page { size: letter; margin: 0.6in; }
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.35;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  h1 { font-size: 18pt; margin: 0 0 2pt 0; }
+  .contact { font-size: 9.5pt; color: #333; margin-bottom: 10pt; }
+  .contact span::after { content: " \00b7 "; }
+  .contact span:last-child::after { content: ""; }
+  h2 {
+    font-size: 11pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+    border-bottom: 1pt solid #999;
+    margin: 12pt 0 6pt 0;
+    padding-bottom: 2pt;
+  }
+  .summary { margin: 0 0 4pt 0; }
+  .skills { margin: 0; }
+  .role { margin-bottom: 8pt; break-inside: avoid; }
+  .role-header { display: flex; justify-content: space-between; font-weight: bold; }
+  .role-sub { font-style: italic; color: #444; font-size: 9.5pt; margin-bottom: 2pt; }
+  ul { margin: 2pt 0 0 0; padding-left: 14pt; }
+  li { margin-bottom: 2pt; }
+  .education-entry { margin-bottom: 4pt; }
+</style>
+</head>
+<body>
+  <h1>{{ profile.name }}</h1>
+  <p class="contact">
+    <span>{{ profile.email }}</span>
+    <span>{{ profile.phone }}</span>
+    {% if profile.linkedin_url %}<span>{{ profile.linkedin_url }}</span>{% endif %}
+    <span>{{ profile.location }}</span>
+  </p>
+
+  {% if profile.summary %}
+  <h2>Summary</h2>
+  <p class="summary">{{ profile.summary }}</p>
+  {% endif %}
+
+  <h2>Skills</h2>
+  <p class="skills">{{ skills | join(", ") }}</p>
+
+  <h2>Experience</h2>
+  {% for role in experience %}
+  <div class="role">
+    <div class="role-header">
+      <span>{{ role.title }}</span>
+      <span>{{ role.start_date }} - {{ role.end_date }}</span>
+    </div>
+    <div class="role-sub">{{ role.company }}{% if role.location %} &middot; {{ role.location }}{% endif %}</div>
+    <ul>
+      {% for bullet in role.bullets %}
+      <li>{{ bullet }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+
+  <h2>Education</h2>
+  {% for entry in education %}
+  <div class="education-entry">
+    <strong>{{ entry.degree }}</strong> &middot; {{ entry.institution }} ({{ entry.period }})
+  </div>
+  {% endfor %}
+</body>
+</html>
