@@ -63,7 +63,8 @@ per-file diff commands.
 ### Changed
 
 - **`/add-template` keeps a registered template's intermediates in `build/`**
-  (#473, `.claude/commands/add-template.md`, `.gitignore`) - the elicited compile command
+  (#473, `.claude/commands/add-template.md`, `.gitignore`,
+  `tests/test_add_template_build_dir.py`) - the elicited compile command
   now redirects intermediates (`.aux`, `.log`, ...) to a `build/` folder beside the source
   and moves the PDF back, so Step 4's test-compile cleanup deletes one folder instead of
   enumerating LaTeX extensions. The LaTeX command deletes the previous PDF first, so a
