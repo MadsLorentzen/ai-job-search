@@ -131,7 +131,14 @@ If two or more results in this run's pool (from the same company, or sharing the
 
 ### Step 3: Quick Fit Assessment
 
-For each new job, do a rapid fit check (NOT the full evaluation from `04-job-evaluation.md` - just a quick signal):
+**First, apply the title filter.** Before scoring anything, check the job title (and, if already fetched, the description) against the PROCEED/SKIP role list in `04-job-evaluation.md` (mirrored in `01-candidate-profile.md` under "Role Targeting"). This is a hard filter, not a judgment call:
+
+- Title matches a **SKIP** entry (Environment Artist, Material Artist/procedural, Character Artist, Technical Artist, Lighting Artist, Generalist unless 70%+ props, any Senior/Lead title, VFX Artist, Concept Artist, Rigging Artist, Animation Artist) → **fit = low**, regardless of how skill-adjacent the role otherwise looks. Do not let "it's still a 3D art job" override this — the user has explicitly ruled these titles out.
+- Title matches a **PROCEED** entry (3D Prop/Props Artist, Props and Texturing Artist, 3D Artist with props/texturing as primary responsibility, Hard Surface Artist, Texture/Texturing Artist, Asset Artist with props focus, 3D Hard Surface and Prop Artist) → proceed to the fit check below.
+- Title hits an **edge case** (e.g. "Environment Artist" title but the description's primary work is clearly props; "3D Generalist" title but description is primarily props/texturing) → do not silently include or exclude. Present it in the table with an explicit flag (e.g. "titled Environment Artist — description is props-primary, verify") so the user decides, and only fetch full detail to make this call when the title alone is ambiguous.
+- Title doesn't clearly match either list (e.g. a specialist title like "Scanning Specialist" adjacent to the candidate's photogrammetry work, or a bare "3D Artist"/"3D Modeler" posting with no visible focus) → note it as unverified/adjacent rather than presenting it with the same confidence as a PROCEED-list title.
+
+**Then** do a rapid fit check (NOT the full scored evaluation from `04-job-evaluation.md` - just a quick signal) on whatever survives the filter:
 
 - **High match**: Role directly involves your core skills
 - **Medium match**: Role is adjacent to your experience
