@@ -17,6 +17,7 @@ venv/
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+build/
 
 # Personal data (never commit these)
 salary_data.json
