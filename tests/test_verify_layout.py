@@ -16,6 +16,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
+from tools import verify_layout
 from tools.verify_layout import Line, Page, find_orphans, main, parse_pdf, report
 
 A4_HEIGHT = 842.0
@@ -162,6 +163,33 @@ class TestExtractorFailure(unittest.TestCase):
             with redirect_stdout(io.StringIO()), patch("sys.stderr", err):
                 self.assertEqual(main(), 2)
             self.assertIn("skipped:", err.getvalue())
+
+
+class ModuleCompilesWithoutWarnings(unittest.TestCase):
+    """The tool's own source must compile clean.
+
+    Its docstring documents LaTeX macros, and a bare `\\h` in a non-raw
+    docstring is an invalid escape sequence: Python 3.12+ emits a
+    SyntaxWarning, and 3.15 turns it into a SyntaxError. The tool is run
+    per-document from `/apply`, so the warning lands in the middle of a
+    verification report - and the deprecation means it becomes a hard failure
+    on a future interpreter.
+    """
+
+    def test_source_has_no_invalid_escape_sequences(self):
+        import py_compile
+        import tempfile
+        import warnings
+
+        source = Path(verify_layout.__file__)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            with tempfile.NamedTemporaryFile(suffix=".pyc") as out:
+                py_compile.compile(str(source), cfile=out.name, doraise=True)
+        syntax = [w for w in caught if issubclass(w.category, SyntaxWarning)]
+        self.assertEqual(
+            [], [str(w.message) for w in syntax], "verify_layout.py emits SyntaxWarning"
+        )
 
 
 if __name__ == "__main__":

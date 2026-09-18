@@ -62,6 +62,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **`verify_layout.py` no longer emits a `SyntaxWarning` on every run** (`tools/verify_layout.py`,
+  `tests/test_verify_layout.py`) - the module docstring names the macro whose absence triggers the
+  Poppler `-bbox` crash, `\hypersetup{pdftitle=...}`, and a bare `\h` in a non-raw docstring is an
+  invalid escape sequence. Python 3.12+ prints `SyntaxWarning: "\h" is an invalid escape sequence`
+  the first time the module is compiled - it shows up in this repo's own CI log, and in the middle
+  of `/apply` Step 5b's layout report - and Python 3.15 turns the same sequence into a
+  `SyntaxError`. Escaped in the docstring; the new `ModuleCompilesWithoutWarnings` case compiles
+  the tool's own source with warnings captured and fails on the unescaped version.
+
 - **`/apply` Step 5b now actually runs the page-count check it claimed Step 5d ran**
   (`.claude/commands/apply.md`, `tests/test_apply_page_count.py`) - the 5b prose said
   "Page count is not checked here - that is `verify_pdf.py --pages`'s job, and Step 5d already
