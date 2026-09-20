@@ -15,6 +15,15 @@ per-file diff commands.
 
 ### Added
 
+- **Real Excel workbook integration tests for the salary converter**
+  (`tests/test_convert_salary_excel_integration.py`, `.github/workflows/ci.yml`) -
+  generate temporary `.xlsx` files and invoke the documented converter CLI,
+  checking multiple worksheets, metadata options, Unicode text, localized
+  numbers, and compatibility with salary lookup. A workbook without salary
+  headers must fail without creating an output file. CI installs `openpyxl`
+  across the Python matrix; local runs without this optional dependency skip
+  the two integration cases while retaining the existing dependency-free tests.
+
 - **`documents/projects/` portfolio ingestion in `/setup` (Path A)** (`documents/README.md`,
   `.claude/commands/setup.md`, `.claude/commands/reset.md`, `tests/test_setup_command.py`) -
   onboards project writeups, case studies, and documentation (`.md`, `.txt`, `.pdf`)
