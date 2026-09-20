@@ -42,6 +42,7 @@ import os
 import re
 import sys
 import tempfile
+import unicodedata
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -97,7 +98,13 @@ def parse_iso(value) -> date | None:
 
 
 def norm(text) -> str:
-    return re.sub(r"[^a-z0-9]", "", str(text or "").lower())
+    """Ignore case and separators without discarding non-Latin identity."""
+    text = unicodedata.normalize("NFC", str(text or "").casefold())
+    # Combining marks can distinguish names even after NFC (e.g. Indic vowels).
+    return "".join(
+        char for char in text
+        if char.isalnum() or unicodedata.category(char).startswith("M")
+    )
 
 
 def tracker_pairs(path: Path) -> set[tuple[str, str]]:

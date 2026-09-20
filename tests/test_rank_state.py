@@ -10,6 +10,7 @@ matches Step 4's existing rules exactly - the location_verdict legacy
 migration, the deadline null-is-not-a-correction rule, and verbatim
 strengths/gaps persistence.
 """
+import csv
 import json
 import subprocess
 import sys
@@ -121,6 +122,42 @@ class Candidates(RankStateCase):
                     out = self.run_tool("candidates", "--tracker", str(tracker))
                     self.assertEqual([row["key"] for row in out["selected"]], ["b"])
                     self.assertEqual(out["excluded_by_tracker"], 1)
+
+    def test_tracker_exclusion_preserves_unicode_identity(self):
+        # Use the standard /outcome header and the real candidates CLI.
+        header = (
+            "date,company,sector,role,role_type,channel,status,contact_person,"
+            "fit_rating,notes,cv_file,cover_letter_file,source,deadline"
+        ).split(",")
+        cases = (
+            # Tracked company/role, candidate company/title, expected exclusion.
+            ("Acme", "设计师", "Acme", "工程师", False),
+            ("Acme", "工程师", "Acme", "工程师", True),
+            ("腾讯", "Engineer", "腾讯", "Engineer", True),
+            ("腾讯", "Engineer", "阿里巴巴", "Engineer", False),
+            ("Компания", "Инженер", "КОМПАНИЯ", "ИНЖЕНЕР", True),
+            ("Café", "Engineer", "Cafe\u0301", "Engineer", True),
+            ("Straße", "Engineer", "STRASSE", "Engineer", True),
+            ("कला Labs", "Engineer", "कल Labs", "Engineer", False),
+            ("Acme, Inc.", "SOC Analyst", "ACME_INC", "soc-analyst", True),
+        )
+        tracker = self.tmp / "tracker.csv"
+        for company, role, candidate_company, title, excluded in cases:
+            with self.subTest(tracked=(company, role), candidate=(candidate_company, title)):
+                self.write_state({
+                    "candidate": entry(company=candidate_company, title=title),
+                    "other": entry(company="Other", title="Untracked role"),
+                })
+                with tracker.open("w", encoding="utf-8", newline="") as fh:
+                    writer = csv.DictWriter(fh, fieldnames=header)
+                    writer.writeheader()
+                    writer.writerow({"date": TODAY, "company": company, "role": role, "status": "applied"})
+                out = self.run_tool("candidates", "--tracker", str(tracker))
+                self.assertEqual(
+                    [row["key"] for row in out["selected"]],
+                    ["other"] if excluded else ["candidate", "other"],
+                )
+                self.assertEqual(out["excluded_by_tracker"], int(excluded))
 
     def test_focus_filters_on_title_company_and_stored_fit_notes(self):
         self.write_state(

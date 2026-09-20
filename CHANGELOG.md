@@ -84,6 +84,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/rank` tracker matching preserves Unicode company and role names**
+  (`tools/rank_state.py`, `tests/test_rank_state.py`) - ASCII-only normalization
+  collapsed distinct non-Latin roles to the same empty value and dropped
+  entirely non-Latin companies from tracker exclusions. Match using Unicode
+  case folding and NFC normalization, retaining letters, numbers, and combining
+  marks while continuing to ignore punctuation and spacing. CLI regressions
+  use the standard tracker header and cover distinct names, tracked matches,
+  equivalent accent encodings, and the existing ASCII matching behavior.
+
 - **The Python tools no longer crash on Windows when a posting, company, CV line or file
   name falls outside the ANSI code page** (`tools/rank_state.py`, `tools/job_key.py`,
   `tools/verify_pdf.py`, `tools/verify_layout.py`, `tools/convert_salary_excel.py`,
