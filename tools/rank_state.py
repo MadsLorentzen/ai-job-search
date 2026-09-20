@@ -107,7 +107,7 @@ def tracker_pairs(path: Path) -> set[tuple[str, str]]:
     import csv
 
     pairs = set()
-    with path.open(encoding="utf-8", newline="") as fh:
+    with path.open(encoding="utf-8-sig", newline="") as fh:
         for row in csv.DictReader(fh):
             company, role = norm(row.get("company")), norm(row.get("role"))
             if company:

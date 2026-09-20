@@ -62,6 +62,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/rank` tracker exclusion handles UTF-8 BOMs on reordered CSV headers**
+  (`tools/rank_state.py`, `tests/test_rank_state.py`) - when `company` or `role`
+  is the first column, a leading BOM becomes part of the header name and an
+  already-tracked application is selected for ranking again. Read with
+  `utf-8-sig` so both BOM-prefixed and plain UTF-8 trackers match correctly.
+  The standard `date`-first header already worked; regression coverage checks
+  all three column orders with and without a BOM.
+
 - **`/apply` Step 5b now actually runs the page-count check it claimed Step 5d ran**
   (`.claude/commands/apply.md`, `tests/test_apply_page_count.py`) - the 5b prose said
   "Page count is not checked here - that is `verify_pdf.py --pages`'s job, and Step 5d already

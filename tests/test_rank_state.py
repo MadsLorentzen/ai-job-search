@@ -105,6 +105,22 @@ class Candidates(RankStateCase):
         self.assertEqual([row["key"] for row in out["selected"]], ["b"])
         self.assertEqual(out["excluded_by_tracker"], 1)
 
+    def test_tracker_exclusion_handles_utf8_bom_and_reordered_columns(self):
+        self.write_state({"a": entry(company="Acme", title="SOC Analyst"), "b": entry(company="Other")})
+        tracker = self.tmp / "tracker.csv"
+        # A spreadsheet export can prepend a BOM to either matching column.
+        for encoding in ("utf-8", "utf-8-sig"):
+            for csv_text in (
+                "date,company,role\r\n2026-08-01,ACME,soc analyst\r\n",
+                "company,role,date\r\nACME,soc analyst,2026-08-01\r\n",
+                "role,company,date\r\nsoc analyst,ACME,2026-08-01\r\n",
+            ):
+                with self.subTest(encoding=encoding, header=csv_text.splitlines()[0]):
+                    tracker.write_bytes(csv_text.encode(encoding))
+                    out = self.run_tool("candidates", "--tracker", str(tracker))
+                    self.assertEqual([row["key"] for row in out["selected"]], ["b"])
+                    self.assertEqual(out["excluded_by_tracker"], 1)
+
     def test_focus_filters_on_title_company_and_stored_fit_notes(self):
         self.write_state(
             {
