@@ -431,6 +431,40 @@ class Apply(RankStateCase):
         )
         self.assertEqual(self.read_state()["a"]["status"], "new")
 
+    def test_invalid_scores_report_errors_without_changing_the_entry(self):
+        dimensions = ("technical", "experience", "behavioral", "career")
+        invalid = (-1, 101, True, False, float("nan"), float("inf"), -float("inf"), 10**400)
+        for dimension in dimensions:
+            for value in invalid:
+                with self.subTest(dimension=dimension, value=value):
+                    original = entry(status="ranked", rank_score=70, strengths=["keep"])
+                    self.write_state({"a": original, "b": entry()})
+                    scores = dict.fromkeys(dimensions, 50)
+                    scores[dimension] = value
+                    out = self.run_tool(
+                        "apply", "--results", self.results([
+                            {"key": "a", "status": "scored", "scores": scores},
+                            {"key": "b", "status": "scored", "scores": dict.fromkeys(dimensions, 80)},
+                        ]), expect=1,
+                    )
+                    self.assertEqual(len(out["errors"]), 1)
+                    self.assertEqual(out["errors"][0]["key"], "a")
+                    self.assertIn(dimension, out["errors"][0]["error"])
+                    self.assertEqual(self.read_state()["a"], original)
+                    self.assertEqual([row["key"] for row in out["ranked"]], ["b"])
+                    self.assertEqual(self.read_state()["b"]["rank_score"], 80)
+
+    def test_score_boundaries_and_fractional_scores_remain_valid(self):
+        for value, expected in ((0, 0), (100, 100), (72.5, 73)):
+            with self.subTest(value=value):
+                self.write_state({"a": entry()})
+                out = self.run_tool("apply", "--results", self.results([
+                    {"key": "a", "status": "scored", "scores": dict.fromkeys(
+                        ("technical", "experience", "behavioral", "career"), value)},
+                ]))
+                self.assertEqual(out["errors"], [])
+                self.assertEqual(self.read_state()["a"]["rank_score"], expected)
+
     def test_re_scoring_an_already_ranked_job_is_idempotent(self):
         """Re-running /rank never re-scores an already-ranked job unless --all
         says so (Step 4), but if it does score one again, apply must produce

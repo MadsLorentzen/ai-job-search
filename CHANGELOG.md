@@ -84,6 +84,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/rank` rejects invalid score dimensions before updating an entry**
+  (`tools/rank_state.py`, `tests/test_rank_state.py`) - enforce the rubric's
+  inclusive 0-100 range and reject booleans, NaN, and infinities. Invalid results
+  now use the existing per-job error report, leaving the rejected entry intact
+  while valid results in the same batch are saved. CLI tests cover every score
+  dimension, oversized integers, boundary values, and fractional-score rounding.
+
 - **Distinct non-Latin company names no longer share the unknown-company job key**
   (`tools/job_key.py`, `tests/test_job_key.py`) - when a non-empty company name
   has no ASCII slug, derive its fallback from a hash of the normalized name.

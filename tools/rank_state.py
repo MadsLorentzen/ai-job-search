@@ -234,8 +234,10 @@ def overall_score(scores: dict) -> int:
     total = 0.0
     for dim, weight in WEIGHTS.items():
         value = scores.get(dim)
-        if not isinstance(value, (int, float)):
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
             raise ValueError(f"missing or non-numeric score '{dim}'")
+        if not 0 <= value <= 100:
+            raise ValueError(f"score '{dim}' must be finite and between 0 and 100")
         total += float(value) * weight
     return int(total + 0.5)
 
