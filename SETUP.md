@@ -187,7 +187,7 @@ Run these from the repository root.
 ```powershell
 $tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
 foreach ($tool in $tools) {
-  Push-Location ".agents/skills/$tool/cli"
+  Push-Location "./.agents/skills/$tool/cli"
   bun install
   Pop-Location
 }
