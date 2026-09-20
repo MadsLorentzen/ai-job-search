@@ -71,6 +71,34 @@ class MakeKey(unittest.TestCase):
         self.assertFalse(key.startswith("_"))
 
 
+class CompanyFallbackCLI(unittest.TestCase):
+    def key_for(self, company, url="https://example.com/jobs/123456"):
+        proc = subprocess.run(
+            [sys.executable, str(TOOL), "--company", company,
+             "--title", "Software Engineer", "--url", url],
+            capture_output=True, text=True, check=True,
+        )
+        return proc.stdout.strip()
+
+    def test_distinct_non_latin_companies_have_distinct_keys(self):
+        keys = [self.key_for(company) for company in ("腾讯", "阿里巴巴", "")]
+        self.assertEqual(len(set(keys)), 3)
+        self.assertTrue(all(is_canonical(key) for key in keys))
+
+    def test_company_fallback_is_stable_across_case_normalization_and_urls(self):
+        for first, second in (("КОМПАНИЯ", "компания"), ("ガンホー", "カ\u3099ンホー")):
+            with self.subTest(first=first, second=second):
+                self.assertEqual(
+                    self.key_for(first),
+                    self.key_for(second, "https://example.com/jobs/654321"),
+                )
+
+    def test_missing_company_and_existing_ascii_keys_are_unchanged(self):
+        self.assertEqual(self.key_for(""), "unknown-company_software-engineer")
+        self.assertEqual(self.key_for("  "), "unknown-company_software-engineer")
+        self.assertEqual(self.key_for("Acme Corp"), "acme-corp_software-engineer")
+
+
 class CanonicalAndLegacyShape(unittest.TestCase):
     def test_canonical_accepts_company_underscore_title(self):
         self.assertTrue(is_canonical("acme-corp_soc-analyst"))

@@ -84,7 +84,12 @@ def _cap(slug: str, limit: int) -> str:
 
 def make_key(company: str, title: str, url: str = "") -> str:
     """The canonical seen_jobs.json key for one posting."""
-    company_slug = _cap(slugify(company), COMPANY_MAX) or "unknown-company"
+    company_slug = _cap(slugify(company), COMPANY_MAX)
+    if not company_slug:
+        name = unicodedata.normalize("NFC", str(company or "").strip().casefold())
+        # An absent name stays unknown; a non-Latin name still has an identity.
+        digest = hashlib.sha1(name.encode("utf-8")).hexdigest()[:HASH_LEN]
+        company_slug = f"company-{digest}" if name else "unknown-company"
     title_slug = _cap(slugify(title), TITLE_MAX)
     if not title_slug:
         # No Latin characters in the title. The portal's own numeric id is the

@@ -84,6 +84,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **Distinct non-Latin company names no longer share the unknown-company job key**
+  (`tools/job_key.py`, `tests/test_job_key.py`) - when a non-empty company name
+  has no ASCII slug, derive its fallback from a hash of the normalized name.
+  Missing names retain `unknown-company`, and existing ASCII keys are unchanged.
+  CLI tests cover distinct companies, case and canonical Unicode equivalence,
+  and stable keys across posting URLs. Existing state is not rewritten; `/scrape`
+  already recognizes stored postings by URL regardless of their previous key.
+
 - **`/rank` tracker exclusion handles UTF-8 BOMs on reordered CSV headers**
   (`tools/rank_state.py`, `tests/test_rank_state.py`) - when `company` or `role`
   is the first column, a leading BOM becomes part of the header name and an
