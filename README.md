@@ -199,7 +199,8 @@ ai-job-search/
 │   ├── jobindex-search/               # Jobindex.dk (Denmark)
 │   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
 │   ├── linkedin-search/               # LinkedIn public job listings (country-agnostic)
-│   └── freehire-search/               # freehire.me tech job aggregator (multi-market, REST API)
+│   ├── freehire-search/               # freehire.me tech job aggregator (multi-market, REST API)
+│   └── entra-search/                  # ENTRA verified AI & tech jobs, ATS-sourced (multi-market, REST API)
 ├── cv/
 │   └── main_example.tex               # moderncv LaTeX template
 ├── cover_letters/
@@ -314,10 +315,11 @@ Give it your local job board's URL. The command investigates the portal (search-
 
 Maintaining a fork adapted to your market or language? Add it to the [Community forks & adaptations](https://github.com/MadsLorentzen/ai-job-search/discussions/78) thread so others can find it.
 
-For **country-agnostic** starting points outside Denmark, the repo ships two portal skills alongside the Danish demos:
+For **country-agnostic** starting points outside Denmark, the repo ships three portal skills alongside the Danish demos:
 
 - **`linkedin-search`** — built on LinkedIn's public, unauthenticated `jobs-guest` endpoints. Field-agnostic, **zero runtime dependencies** (runs with just `bun`), and takes the search location as an explicit flag, so it works for any market out of the box (`-l "Berlin, Germany"`, `-l "Mumbai, Maharashtra, India"`, `-l "Remote"`, …). Intended for **personal use only** — automated access is against LinkedIn's Terms of Service, so keep volume low. See `.agents/skills/linkedin-search/SKILL.md`.
 - **`freehire-search`** — queries the [freehire.me](https://freehire.me) aggregator's public REST API (JSON, no API key). Tech-focused (software, data, engineering, DevOps, remote), multi-market via facet flags (`--region`, `--country`, `--remote`), and **zero runtime dependencies**. Unlike the HTML-scraping Danish portals, results come back structured (skills, seniority, category). The backend is MIT-licensed and [self-hostable](https://github.com/strelov1/freehire) — point `FREEHIRE_API_URL` at your own instance if you prefer. See `.agents/skills/freehire-search/SKILL.md`.
+- **`entra-search`** — queries [ENTRA](https://entracareers.com)'s public REST API (JSON, no API key). Postings are ingested straight from employers' ATSs (Greenhouse, Lever, Ashby), so each result carries the employer's own apply link plus structured work mode / experience / employment fields; AI & tech-leaning, multi-market via `--location` / `--remote`, and **zero runtime dependencies**. See `.agents/skills/entra-search/SKILL.md`.
 
 ### Extending the framework: portals, templates, criteria - and borrowing from other forks
 
