@@ -76,7 +76,7 @@ class CompanyFallbackCLI(unittest.TestCase):
         proc = subprocess.run(
             [sys.executable, str(TOOL), "--company", company,
              "--title", "Software Engineer", "--url", url],
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, encoding="utf-8", check=True,
         )
         return proc.stdout.strip()
 
@@ -126,7 +126,7 @@ class AuditCLI(unittest.TestCase):
             json.dump({"seen": seen}, fh)
             path = fh.name
         proc = subprocess.run(
-            [sys.executable, str(TOOL), "--audit", path], capture_output=True, text=True
+            [sys.executable, str(TOOL), "--audit", path], capture_output=True, text=True, encoding="utf-8"
         )
         return json.loads(proc.stdout), proc.returncode
 

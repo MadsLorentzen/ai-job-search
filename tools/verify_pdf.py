@@ -191,7 +191,21 @@ def build_parser():
     return parser
 
 
+def _force_utf8_output() -> None:
+    """Write UTF-8 whatever the host's default encoding is.
+
+    A piped stdout on Windows defaults to the ANSI code page (cp1252 on most
+    Western installs), so printing a company, title or file name outside it
+    raised UnicodeEncodeError before the workflow saw any output.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)  # absent on a StringIO under test
+        if reconfigure:
+            reconfigure(encoding="utf-8")
+
+
 def main(argv=None):
+    _force_utf8_output()
     args = build_parser().parse_args(argv)
     try:
         extractor, text, pages = verify_pdf(

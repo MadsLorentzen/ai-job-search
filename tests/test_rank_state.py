@@ -52,6 +52,7 @@ class RankStateCase(unittest.TestCase):
             [sys.executable, str(TOOL), *args, "--state", str(self.state), "--today", TODAY],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
         self.assertEqual(proc.returncode, expect, proc.stderr)
         return json.loads(proc.stdout)
@@ -148,7 +149,7 @@ class Candidates(RankStateCase):
         proc = subprocess.run(
             [sys.executable, str(TOOL), "candidates", "--state", str(self.tmp / "nope.json"),
              "--tracker", str(self.tmp / "n.csv")],
-            capture_output=True, text=True,
+            capture_output=True, text=True, encoding="utf-8",
         )
         self.assertNotEqual(proc.returncode, 0)
         self.assertIn("not found", proc.stderr + proc.stdout)

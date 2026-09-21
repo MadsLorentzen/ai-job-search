@@ -84,6 +84,22 @@ per-file diff commands.
 
 ### Fixed
 
+- **The Python tools no longer crash on Windows when a posting, company, CV line or file
+  name falls outside the ANSI code page** (`tools/rank_state.py`, `tools/job_key.py`,
+  `tools/verify_pdf.py`, `tools/verify_layout.py`, `tools/convert_salary_excel.py`,
+  `salary_lookup.py`, `tests/test_tools_utf8_output.py`) - a piped stdout on Windows
+  defaults to the ANSI code page (cp1252 on most Western installs), and that is how Claude
+  Code runs every tool. `/rank`'s candidate listing printed titles and companies with
+  `ensure_ascii=False`, so a single Cyrillic, CJK, Devanagari, Polish or Turkish posting
+  ended the run with `UnicodeEncodeError` before any output reached the workflow; the key
+  audit, the salary lookup, the salary converter and the layout report failed the same way.
+  Each tool now switches stdout and stderr to UTF-8 at entry, which also stops Danish and
+  other Western accents from arriving as cp1252 bytes. The regression tests run every
+  tool in a child process with a cp1252 stdout forced through `PYTHONIOENCODING`, so the
+  Linux CI job reproduces the Windows failure; all seven fail without the fix. The
+  subprocess helpers in `tests/test_rank_state.py` and `tests/test_job_key.py` now decode
+  child output as UTF-8 to match.
+
 - **`/rank` rejects invalid score dimensions before updating an entry**
   (`tools/rank_state.py`, `tests/test_rank_state.py`) - enforce the rubric's
   inclusive 0-100 range and reject booleans, NaN, and infinities. Invalid results
