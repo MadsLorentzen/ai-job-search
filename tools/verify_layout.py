@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure a compiled CV or cover letter's page layout, instead of eyeballing it.
+r"""Measure a compiled CV or cover letter's page layout, instead of eyeballing it.
 
 The compile-and-inspect loop in `05-cv-templates.md` and the verification checklist in
 CLAUDE.md already require the layout properties below. Nothing executes them: they are
