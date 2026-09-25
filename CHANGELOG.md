@@ -15,6 +15,24 @@ per-file diff commands.
 
 ### Added
 
+- **`verify_pdf.py --ascii-dates` makes the documented date-range rule executable**
+  (`tools/verify_pdf.py`, `/apply` Step 5d, `05-cv-templates.md`, CI) - "Date fields must be
+  ASCII ranges" records a real Workday import that dropped a role's end date because
+  `2016--2024` reaches the text layer as `2016<U+2013>2024`, and told Step 5d to confirm every
+  entry's years are joined by an ASCII hyphen. Nothing executed that: the natural probe,
+  `--contains "2016-2024"`, failed identically for "en-dashed" and "absent" before #458 and
+  passes on both since, because the fold maps the en-dash back to `-` on purpose. The new flag
+  reads the raw layer (never the fold), fails on a year joined to any Unicode dash or the
+  minus sign, and names each hit with its line and code point. A year on either side is
+  enough (`Mar 2016 – Jul 2016`, `2016 – Present`); a numeric range with no year is not a
+  date. Step 5d's extraction command now carries the flag (the dump is still written before
+  the check fails), the "Dates recognizable" checklist item points at it and keeps the bare
+  single-year half as a read-through, the guide's "add this to the step 5d checks" paragraph
+  names the command, and the upstream-only CI assertion runs it on the stock CV. Demonstrated
+  on the stock template: a `\cventry{2016--2024}` build fails with `U+2013`, the
+  `\cventry{2016-2024}` build passes, and `--contains "2016-2024"` passes on both. Ten new
+  `test_verify_pdf.py` cases. Proposed by 9scorp4 in Discussion #385.
+
 - **Real Excel workbook integration tests for the salary converter**
   (`tests/test_convert_salary_excel_integration.py`, `.github/workflows/ci.yml`) -
   generate temporary `.xlsx` files and invoke the documented converter CLI,
