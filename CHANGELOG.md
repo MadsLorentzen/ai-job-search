@@ -84,6 +84,23 @@ per-file diff commands.
 
 ### Fixed
 
+- **`linkedin-search detail` no longer fetches an unrelated posting for a URL on another
+  host** - `normalizeId` took the first 6+-digit path segment from *any* URL, so a
+  Greenhouse or Lever apply link (the kind a posting's own page hands out, and what a user
+  pastes back into `detail`) was reduced to that number and the handler fetched
+  `jobPosting/<number>` from LinkedIn: whatever job carried that id came back, printed with
+  exit 0, or `NOT_FOUND` if none did - never an error about the input. Demonstrated by driving
+  the real handler with a stubbed fetch: `https://boards.greenhouse.io/acme/jobs/4567890`
+  requested `.../jobPosting/4567890`. Every other portal CLI rejects an off-host detail URL
+  with `BAD_ID` (the #447 shape); linkedin was the one still trusting the digits. URLs are
+  now parsed for real: a `linkedin.com` host (apex or any subdomain, scheme optional) plus a
+  `/jobs/view/<slug-><id>` path yields the id, and anything else - other hosts, look-alike and
+  userinfo hosts, a linkedin.com profile or search URL - exits 1 with the stderr-JSON
+  `BAD_ID` contract before any request. Bare ids, URNs, and slash-free title slugs are
+  unchanged. Pinned by four new `normalizeId` cases and a new `detail-input.test.ts` that
+  drives `runDetail` and the CLI with fetch stubbed; the off-host cases fail on the old
+  pattern.
+
 - **`/rank` tracker matching preserves Unicode company and role names**
   (`tools/rank_state.py`, `tests/test_rank_state.py`) - ASCII-only normalization
   collapsed distinct non-Latin roles to the same empty value and dropped
