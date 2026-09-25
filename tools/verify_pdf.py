@@ -9,6 +9,11 @@ extractable characters. Poppler remains the fallback.
 Unicode normalization form (NFC), and the typographic substitutions LaTeX makes to
 the source text. The fold is comparison-time only - the `--dump-text` output stays
 the raw text layer an ATS parser actually sees.
+
+`--ascii-dates` is the one check that deliberately does NOT fold: it scans the raw
+layer for a year joined to a Unicode dash - the en-dash LaTeX makes from `--`, which
+a Workday import dropped along with the date (`05-cv-templates.md`, "Date fields
+must be ASCII ranges") - and fails naming each hit with its code point.
 """
 
 import argparse
@@ -84,6 +89,37 @@ def normalize_text(text):
     return " ".join(text.split())
 
 
+# Dash-like code points a year must never be joined to in a date range. U+2013 is
+# what LaTeX makes from `--` and what the documented Workday import dropped; the
+# rest are the other Unicode dashes and the minus sign, which a parser that splits
+# a range only on U+002D treats the same way.
+NON_ASCII_DASHES = "\u2010\u2011\u2012\u2013\u2014\u2015\u2212"
+_YEAR = r"(?:19|20)\d{2}"
+NON_ASCII_DATE_RANGE = re.compile(
+    rf"{_YEAR}\s*[{NON_ASCII_DASHES}]|[{NON_ASCII_DASHES}]\s*{_YEAR}"
+)
+
+
+def find_non_ascii_date_ranges(text):
+    """Return (line, dash) for every year joined to a non-ASCII dash in raw text.
+
+    Works on the raw text layer, never on `normalize_text()` output: the fold
+    maps U+2013 back to `-` so `--contains "2016-2024"` can match what the
+    template renders, which is exactly why `--contains` cannot see this defect.
+    A year on either side of the dash is enough ("Mar 2016 - Jul 2016",
+    "2016 - Present"), so the check is locale-agnostic; a numeric range with
+    no year ("EUR 600k-1M") is not a date and is left alone.
+    """
+    hits = []
+    for match in NON_ASCII_DATE_RANGE.finditer(text):
+        dash = next(c for c in match.group(0) if c in NON_ASCII_DASHES)
+        line_start = text.rfind("\n", 0, match.start()) + 1
+        line_end = text.find("\n", match.end())
+        line = text[line_start : line_end if line_end != -1 else len(text)]
+        hits.append((" ".join(line.split()), dash))
+    return hits
+
+
 def _extract_pypdf(pdf_path):
     """Return (text, pages) or None if pypdf is unavailable, raises, or yields no text."""
     try:
@@ -120,7 +156,14 @@ def extract_text_layer(pdf_path):
     return text, pages, "pdftotext"
 
 
-def verify_pdf(pdf_path, expected_pages=None, min_chars=1, required_text=(), dump_text=None):
+def verify_pdf(
+    pdf_path,
+    expected_pages=None,
+    min_chars=1,
+    required_text=(),
+    dump_text=None,
+    ascii_dates=False,
+):
     pdf_path = Path(pdf_path)
     if not pdf_path.is_file():
         raise VerificationError(f"PDF does not exist: {pdf_path}")
@@ -158,6 +201,17 @@ def verify_pdf(pdf_path, expected_pages=None, min_chars=1, required_text=(), dum
             raise VerificationError(
                 f"text layer is missing required text: {required!r} (extractor: {extractor})"
             )
+
+    if ascii_dates:
+        hits = find_non_ascii_date_ranges(extracted_text)
+        if hits:
+            listed = "; ".join(f"U+{ord(dash):04X} in {line[:80]!r}" for line, dash in hits)
+            raise VerificationError(
+                f"{len(hits)} date range(s) joined by a non-ASCII dash - an ATS that splits "
+                f"ranges on U+002D drops the date; write the date argument with a single "
+                f"ASCII hyphen (05-cv-templates.md, 'Date fields must be ASCII ranges'): "
+                f"{listed} (extractor: {extractor})"
+            )
     return extractor, extracted_text, actual_pages
 
 
@@ -188,6 +242,15 @@ def build_parser():
         type=Path,
         help="write the extracted text layer to this path (UTF-8)",
     )
+    parser.add_argument(
+        "--ascii-dates",
+        action="store_true",
+        help=(
+            "fail if the raw text layer has a year joined to a Unicode dash (the "
+            "en-dash LaTeX makes from --), which ATS date parsers drop; this check "
+            "never folds, unlike --contains"
+        ),
+    )
     return parser
 
 
@@ -214,6 +277,7 @@ def main(argv=None):
             args.min_chars,
             args.contains,
             dump_text=args.dump_text,
+            ascii_dates=args.ascii_dates,
         )
     except VerificationError as exc:
         print(f"Error: {args.pdf}: {exc}", file=sys.stderr)

@@ -6,7 +6,9 @@ from unittest.mock import patch
 
 from tools.verify_pdf import (
     VerificationError,
+    build_parser,
     extract_text_layer,
+    find_non_ascii_date_ranges,
     normalize_text,
     parse_page_count,
     run_tool,
@@ -59,6 +61,46 @@ class NormalizeTextTests(unittest.TestCase):
     def test_fold_is_symmetric(self):
         # A user who pastes the curly form from a posting must match an ASCII layer too.
         self.assertEqual(normalize_text("Master\u2019s"), normalize_text("Master's"))
+
+
+class FindNonAsciiDateRangesTests(unittest.TestCase):
+    """The date-range rule reads the raw layer; `--contains` folds and cannot.
+
+    `05-cv-templates.md` documents a Workday import that dropped a role's end
+    date because `2016--2024` reaches the text layer as `2016<U+2013>2024`, and
+    asks Step 5d to confirm every entry's years are joined by an ASCII hyphen.
+    The fold that makes `--contains "2016-2024"` pass on that layer (#458) is
+    what makes `--contains` unable to detect it - so this check never folds.
+    """
+
+    def test_en_dash_between_years_is_reported_with_its_code_point(self):
+        hits = find_non_ascii_date_ranges("Six Sigma Green Belt, 2016\u20132024.\n")
+        self.assertEqual(hits, [("Six Sigma Green Belt, 2016\u20132024.", "\u2013")])
+
+    def test_ascii_hyphen_range_is_clean(self):
+        self.assertEqual(find_non_ascii_date_ranges("2016-2024\nMar 2016 - Jul 2016\n"), [])
+
+    def test_a_year_on_either_side_of_the_dash_is_enough(self):
+        # Month-qualified and open-ended ranges: the year is only on one side.
+        for text in ("Mar 2016 \u2013 Jul 2016", "2016 \u2013 Present", "\u2013 2024"):
+            with self.subTest(text=text):
+                self.assertEqual(len(find_non_ascii_date_ranges(text)), 1)
+
+    def test_other_unicode_dashes_and_the_minus_sign_are_caught(self):
+        for dash in ("\u2010", "\u2011", "\u2012", "\u2014", "\u2015", "\u2212"):
+            with self.subTest(dash=dash):
+                self.assertEqual(find_non_ascii_date_ranges(f"2016{dash}2024")[0][1], dash)
+
+    def test_numeric_range_without_a_year_is_not_a_date(self):
+        # 05-cv-templates.md keeps `--` in prose ranges like EUR 600k--1M.
+        self.assertEqual(find_non_ascii_date_ranges("EUR 600k\u20131M, 12\u201315 people"), [])
+
+    def test_hits_are_reported_in_document_order_one_per_range(self):
+        text = "2016\u20132024 role\nmore text\nJan 2010 \u2013 Dec 2012 degree\n"
+        self.assertEqual(
+            [line for line, _ in find_non_ascii_date_ranges(text)],
+            ["2016\u20132024 role", "Jan 2010 \u2013 Dec 2012 degree"],
+        )
 
 
 class VerifyPdfTests(unittest.TestCase):
@@ -146,6 +188,41 @@ class VerifyPdfTests(unittest.TestCase):
         verify_pdf(self.pdf, required_text=("2016-2024",), dump_text=dump)
 
         self.assertEqual(dump.read_text(encoding="utf-8"), "2016\u20132024\n")
+
+    @patch("tools.verify_pdf._extract_pypdf", return_value=None)
+    @patch("tools.verify_pdf.run_tool")
+    def test_ascii_dates_rejects_the_en_dash_range_that_contains_accepts(self, mock_run_tool, _pypdf):
+        # The same layer, two verdicts: --contains folds U+2013 to "-" and passes;
+        # --ascii-dates reads the raw layer and fails, naming the code point.
+        layer = "Role Title 2016\u20132024\n"
+        mock_run_tool.side_effect = [layer, "Pages:          1\n", layer, "Pages:          1\n"]
+
+        verify_pdf(self.pdf, required_text=("2016-2024",))
+
+        with self.assertRaisesRegex(VerificationError, r"U\+2013.*2016\u20132024"):
+            verify_pdf(self.pdf, required_text=("2016-2024",), ascii_dates=True)
+
+    @patch("tools.verify_pdf._extract_pypdf", return_value=None)
+    @patch("tools.verify_pdf.run_tool")
+    def test_ascii_dates_accepts_hyphen_ranges(self, mock_run_tool, _pypdf):
+        mock_run_tool.side_effect = ["Role Title 2016-2024\nMar 2016 - Jul 2016\n", "Pages:          1\n"]
+
+        verify_pdf(self.pdf, ascii_dates=True)
+
+    @patch("tools.verify_pdf._extract_pypdf", return_value=None)
+    @patch("tools.verify_pdf.run_tool")
+    def test_ascii_dates_still_writes_the_dump_before_failing(self, mock_run_tool, _pypdf):
+        mock_run_tool.side_effect = ["2016\u20132024\n", "Pages:          1\n"]
+        dump = Path(self.temp_dir.name) / "dump.txt"
+
+        with self.assertRaises(VerificationError):
+            verify_pdf(self.pdf, dump_text=dump, ascii_dates=True)
+
+        self.assertEqual(dump.read_text(encoding="utf-8"), "2016\u20132024\n")
+
+    def test_ascii_dates_flag_is_off_by_default_and_parses(self):
+        self.assertFalse(build_parser().parse_args(["x.pdf"]).ascii_dates)
+        self.assertTrue(build_parser().parse_args(["x.pdf", "--ascii-dates"]).ascii_dates)
 
     def test_rejects_missing_pdf(self):
         with self.assertRaisesRegex(VerificationError, "PDF does not exist"):
