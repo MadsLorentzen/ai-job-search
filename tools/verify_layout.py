@@ -32,7 +32,7 @@ than inventing a layout failure. A broken extractor has two distinct causes: an 
 all, and Poppler 26.0x before 26.05 aborts `-bbox`/`-bbox-layout`/`-htmlmeta` on a PDF
 whose Info dictionary carries an empty string in any field - which `hyperref` writes for
 every field it does not set, so any `lualatex`/`pdflatex` document built with `hyperref`
-and no `\hypersetup{pdftitle=...}` triggers a real Poppler crashing on a legal PDF (#451).
+and no `\\hypersetup{pdftitle=...}` triggers a real Poppler crashing on a legal PDF (#451).
 Line height serves
 as a font-size proxy to spot section headings; left edge (xMin) separates bullet lines
 from entry headers.

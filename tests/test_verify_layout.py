@@ -16,6 +16,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
+from tools import verify_layout
 from tools.verify_layout import Line, Page, find_orphans, main, parse_pdf, report
 
 A4_HEIGHT = 842.0
@@ -162,6 +163,42 @@ class TestExtractorFailure(unittest.TestCase):
             with redirect_stdout(io.StringIO()), patch("sys.stderr", err):
                 self.assertEqual(main(), 2)
             self.assertIn("skipped:", err.getvalue())
+
+
+class ToolsCompileWithoutWarnings(unittest.TestCase):
+    """Every tool's source must compile clean.
+
+    `verify_layout.py`'s docstring documents LaTeX macros, and a bare `\\h` in a
+    non-raw docstring is an invalid escape sequence: Python 3.12+ emits a
+    SyntaxWarning when the module is compiled (CPython gh-98401), 3.10 and 3.11
+    a DeprecationWarning, so the test records both; the language
+    reference still documents it as a warning in 3.15, with a SyntaxError only
+    in a future Python version. The tool is run per-document from `/apply`, so
+    the warning lands in the middle of a verification report. Compiling is a
+    pure `compile()` over the source text - no cache file, no temp file - so the
+    check costs nothing and covers every `tools/*.py`, guarding the next
+    docstring that quotes a macro too.
+    """
+
+    def test_sources_have_no_invalid_escape_sequences(self):
+        import warnings
+
+        tools_dir = Path(verify_layout.__file__).resolve().parent
+        sources = sorted(tools_dir.glob("*.py"))
+        self.assertIn(Path(verify_layout.__file__).resolve(), sources)
+        offenders: dict[str, list[str]] = {}
+        for source in sources:
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                compile(source.read_text(encoding="utf-8"), str(source), "exec")
+            syntax = [
+                str(w.message)
+                for w in caught
+                if issubclass(w.category, (SyntaxWarning, DeprecationWarning))
+            ]
+            if syntax:
+                offenders[source.name] = syntax
+        self.assertEqual({}, offenders, "tools/*.py warn about invalid escapes when compiled")
 
 
 if __name__ == "__main__":
