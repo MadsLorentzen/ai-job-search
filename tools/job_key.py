@@ -99,7 +99,18 @@ def make_key(company: str, title: str, url: str = "") -> str:
             title_slug = match.group(1)
         else:
             basis = slugify(unicodedata.normalize("NFKD", str(title or url or "")))
-            digest = hashlib.sha1((str(title) + str(url)).encode("utf-8")).hexdigest()[:HASH_LEN]
+            # Hash the URL alone when there is one. The URL is the posting's
+            # identity; the title is not. Including the title made the key
+            # change whenever a portal re-listed the same posting with the
+            # title altered, which stores one job twice - the failure this
+            # whole helper exists to prevent. Portals whose ids carry no run
+            # of six digits never reach the branch above, so for them this
+            # hash is the only key half there is: freehire's real slugs look
+            # like "inzhener-ooo-chen-hlk3qjfg", and its Cyrillic and Greek
+            # titles slugify to nothing. With no URL, the title is all that
+            # is left to key on.
+            digest_basis = str(url) if url else str(title)
+            digest = hashlib.sha1(digest_basis.encode("utf-8")).hexdigest()[:HASH_LEN]
             title_slug = basis or f"untitled-{digest}"
     return f"{company_slug}_{title_slug}"
 
