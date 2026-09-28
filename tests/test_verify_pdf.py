@@ -71,6 +71,10 @@ class FindNonAsciiDateRangesTests(unittest.TestCase):
     asks Step 5d to confirm every entry's years are joined by an ASCII hyphen.
     The fold that makes `--contains "2016-2024"` pass on that layer (#458) is
     what makes `--contains` unable to detect it - so this check never folds.
+
+    The newline cases are yang2632's finding on the PR: `\s*` between year and
+    dash also matched a line break, so a heading ending in an ASCII date joined
+    a dash that merely opened the next line.
     """
 
     def test_en_dash_between_years_is_reported_with_its_code_point(self):
@@ -94,6 +98,17 @@ class FindNonAsciiDateRangesTests(unittest.TestCase):
     def test_numeric_range_without_a_year_is_not_a_date(self):
         # 05-cv-templates.md keeps `--` in prose ranges like EUR 600k--1M.
         self.assertEqual(find_non_ascii_date_ranges("EUR 600k\u20131M, 12\u201315 people"), [])
+
+    def test_year_ending_a_line_is_not_joined_to_the_next_lines_dash(self):
+        text = "Heading 1988-1994\n\u2013 note\n"
+        self.assertEqual(find_non_ascii_date_ranges(text), [])
+
+    def test_dash_ending_a_line_is_not_joined_to_the_next_lines_year(self):
+        text = "Six Sigma \u2013\n2016 onwards\n"
+        self.assertEqual(find_non_ascii_date_ranges(text), [])
+
+    def test_same_line_spaces_around_the_dash_are_still_caught(self):
+        self.assertEqual(len(find_non_ascii_date_ranges("1988 \u2013 1994")), 1)
 
     def test_hits_are_reported_in_document_order_one_per_range(self):
         text = "2016\u20132024 role\nmore text\nJan 2010 \u2013 Dec 2012 degree\n"

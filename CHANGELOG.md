@@ -30,8 +30,11 @@ per-file diff commands.
   single-year half as a read-through, the guide's "add this to the step 5d checks" paragraph
   names the command, and the upstream-only CI assertion runs it on the stock CV. Demonstrated
   on the stock template: a `\cventry{2016--2024}` build fails with `U+2013`, the
-  `\cventry{2016-2024}` build passes, and `--contains "2016-2024"` passes on both. Ten new
-  `test_verify_pdf.py` cases. Proposed by 9scorp4 in Discussion #385.
+  `\cventry{2016-2024}` build passes, and `--contains "2016-2024"` passes on both. Only
+  horizontal whitespace may sit between the year and the dash, so a year ending one line is
+  not joined to a dash that opens the next (a bullet, a wrapped prose line) - yang2632's
+  catch in review, with the regex and fixture. Thirteen new `test_verify_pdf.py` cases.
+  Proposed by 9scorp4 in Discussion #385.
 
 - **Real Excel workbook integration tests for the salary converter**
   (`tests/test_convert_salary_excel_integration.py`, `.github/workflows/ci.yml`) -

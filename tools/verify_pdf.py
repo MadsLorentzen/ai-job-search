@@ -95,8 +95,11 @@ def normalize_text(text):
 # a range only on U+002D treats the same way.
 NON_ASCII_DASHES = "\u2010\u2011\u2012\u2013\u2014\u2015\u2212"
 _YEAR = r"(?:19|20)\d{2}"
+# Horizontal whitespace only between the year and the dash: `\s*` also matched
+# a newline, so a year ending one line joined a dash opening the next (a bullet,
+# a wrapped prose line) and an ASCII date was reported as U+2013.
 NON_ASCII_DATE_RANGE = re.compile(
-    rf"{_YEAR}\s*[{NON_ASCII_DASHES}]|[{NON_ASCII_DASHES}]\s*{_YEAR}"
+    rf"{_YEAR}[^\S\n]*[{NON_ASCII_DASHES}]|[{NON_ASCII_DASHES}][^\S\n]*{_YEAR}"
 )
 
 
