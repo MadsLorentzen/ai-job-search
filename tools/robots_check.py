@@ -37,7 +37,10 @@ def _fetch(url, ua):
     r = subprocess.run(
         ['curl', '-sS', '-L', '--max-redirs', '5', '--max-time', '12', '-A', ua,
          '-H', 'Accept: text/plain,*/*', '-w', '\n%{http_code}', '--', url],
-        capture_output=True, text=True, timeout=20)
+        # robots.txt is UTF-8 (RFC 9309). Unpinned, Turkish Windows decoded it as
+        # cp1254, where bytes like 0x81 are undefined: the pipe reader thread died,
+        # stdout came back None, and tr.indeed.com read as UNCONFIRMED.
+        capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=20)
     if r.returncode != 0:
         raise RuntimeError('curl exit %d' % r.returncode)
     body, _, code = r.stdout.rpartition('\n')

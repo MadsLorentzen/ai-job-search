@@ -259,6 +259,60 @@ class TestArgumentHardening(unittest.TestCase):
         self.assertEqual(seen[0], "https://x.example/robots.txt")
 
 
+class TestNonAsciiCurlOutput(unittest.TestCase):
+    """curl's output is decoded as UTF-8, never the locale's code page.
+
+    With text=True and no encoding, Windows decoded with the locale's code page.
+    Under cp1254 (Turkish) the bytes 0x81 and 0x9e are undefined, so the pipe
+    reader thread died, stdout came back None, and the gate printed
+    "UNCONFIRMED (AttributeError)" for policies it never read - blocking a
+    retry those policies allow (reproduced 2026-09-29).
+    """
+
+    def _gate_with_curl_output(self, url, body, status):
+        """gate(url) with curl swapped for a process that prints `body` and the
+        status the way curl's -w does, decoded however _fetch asks."""
+        import robots_check
+
+        # A fixture cp1254 can decode would pass without the fix.
+        self.assertRaises(UnicodeDecodeError, body.decode, "cp1254")
+        raw = body + b"\n" + str(status).encode()
+        real_run = subprocess.run
+
+        def fake_curl(argv, **kwargs):
+            # Unpinned text mode takes the host locale's code page. Pin the
+            # reporter's, so a UTF-8 host (CI) cannot pass the bug by luck.
+            if kwargs.get("text") and not kwargs.get("encoding"):
+                kwargs["encoding"] = "cp1254"
+            write = "import sys; sys.stdout.buffer.write(bytes.fromhex(sys.argv[1]))"
+            return real_run([sys.executable, "-c", write, raw.hex()], **kwargs)
+
+        robots_check.subprocess.run = fake_curl
+        try:
+            return robots_check.gate(url)
+        finally:
+            robots_check.subprocess.run = real_run
+
+    def test_rule_holding_a_cp1254_undefined_byte_is_read_and_obeyed(self):
+        """The rule is verbatim from tr.indeed.com/robots.txt: 職 is e8 81 b7.
+        DISALLOWED on its path proves it was decoded, not merely survived."""
+        body = "User-agent: *\nDisallow: /職涯貼士/\n".encode("utf-8")
+        rc, msg = self._gate_with_curl_output("https://tr.indeed.example/cmp/x/reviews", body, 200)
+        self.assertEqual(rc, 0, msg)
+        self.assertIn("robots.txt permits this path", msg)
+        rc, msg = self._gate_with_curl_output("https://tr.indeed.example/職涯貼士/x", body, 200)
+        self.assertEqual(rc, 1, msg)
+        self.assertIn("DISALLOWED", msg)
+
+    def test_404_page_holding_a_cp1254_undefined_byte_still_means_no_policy(self):
+        """kap.org.tr answers /robots.txt with a UTF-8 HTML 404 that names
+        "Merkezi Kayıt Kuruluşu A.Ş." - Ş is c5 9e."""
+        body = '<html lang="tr"><body>Merkezi Kayıt Kuruluşu A.Ş.</body></html>'.encode("utf-8")
+        rc, msg = self._gate_with_curl_output("https://kap.example/tr/sirket-bilgileri", body, 404)
+        self.assertEqual(rc, 0, msg)
+        self.assertIn("no robots.txt published", msg)
+
+
 
 if __name__ == "__main__":
     unittest.main()

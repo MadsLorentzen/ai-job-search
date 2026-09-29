@@ -105,6 +105,23 @@ per-file diff commands.
 
 ### Fixed
 
+- **`robots_check` decodes curl output as UTF-8, so a non-ASCII response no longer reads as
+  UNCONFIRMED on Windows** (`tools/robots_check.py`, `tests/test_robots_check.py`) -
+  `_fetch()` ran curl with `text=True` and no encoding, so Python decoded the response with
+  the ANSI code page. On a byte that code page leaves undefined (0x81 in cp1252 and cp1254,
+  0x9e in cp1254) subprocess's pipe reader thread died, `stdout` came back `None`, and the
+  gate printed `UNCONFIRMED (AttributeError)` - failing closed, but blocking the
+  browser-header retry `09-web-research.md` permits. Reproduced through the CLI on real
+  hosts: tr.indeed.com's robots.txt carries `Disallow: /職涯貼士/` (職 is `e8 81 b7`), and
+  kap.org.tr answers `/robots.txt` with a UTF-8 HTML 404 whose "A.Ş." carries `c5 9e`. The
+  call now pins `encoding='utf-8', errors='replace'` (RFC 9309: robots.txt is UTF-8), as
+  `verify_pdf.py` and `verify_layout.py` already do. That also closes a silent fail-open: a
+  UTF-8 rule whose bytes the code page does define (`Disallow: /şirket/` under cp1254)
+  decoded as `/ÅŸirket/`, never matched, and read as allowed. Decision rules are unchanged.
+  Two new tests swap curl for a child process that prints those bytes and pin cp1254 when no
+  encoding is passed, so the failure does not depend on the host's locale; both fail without
+  the fix.
+
 - **The compile-warning check covers `tests/*.py` too** (`tests/test_verify_pdf.py`,
   `tests/test_verify_layout.py`) - `FindNonAsciiDateRangesTests`' docstring quotes the regex
   `\s*` unescaped, so Python 3.12+ prints a `SyntaxWarning` for the invalid escape `\s` when
