@@ -105,6 +105,19 @@ per-file diff commands.
 
 ### Fixed
 
+- **`freehire-search` titles no longer carry HTML entities or stray whitespace**
+  (`.agents/skills/freehire-search/cli/src/helpers.ts`) - titles are indexed as the source ATS
+  wrote them and `toResult` passed them through untouched, so `detail
+  intern-fullstack-amp-ai-innovation-noise-edaawqq2` printed `Intern - Fullstack &amp; AI
+  Innovation ` (trailing space included), and the same title reached `search` output. In a
+  93-result `/scrape` batch (`--country IN --seniority intern`), 1 title carried `&amp;` and 3
+  ended in whitespace. `/scrape` Step 4.75 reads undecoded entities in titles as a
+  half-working parser, so by that rule a single such posting marks a healthy portal
+  degraded. The title now goes through the CLI's existing `decodeHtmlEntities` (already used
+  for `detail` descriptions) and is trimmed; an empty or whitespace-only title still falls
+  back to `(untitled)`. Pinned by three new `parsing.test.ts` cases, which fail on the old
+  pass-through.
+
 - **`freehire-search detail` keeps the salary period, so a yearly figure no longer reads as
   monthly** (`.agents/skills/freehire-search/cli/src/helpers.ts`, `SKILL.md`) - `formatSalary`
   printed only the currency and amounts, although freehire's enrichment records the period:

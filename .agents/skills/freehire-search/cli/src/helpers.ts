@@ -145,11 +145,15 @@ export interface JobDetailResult extends JobResult {
   description: string | null
 }
 
-/** Reshape a freehire job into the contract search-result fields. */
+/**
+ * Reshape a freehire job into the contract search-result fields. The title comes
+ * from the source ATS as indexed, which can carry HTML entities and stray
+ * whitespace ("Intern - Fullstack &amp; AI Innovation "), so it is decoded and trimmed.
+ */
 export function toResult(j: FreehireJob): JobResult {
   return {
     id: j.public_slug,
-    title: j.title || "(untitled)",
+    title: decodeHtmlEntities(j.title || "").trim() || "(untitled)",
     company: j.company || null,
     company_slug: j.company_slug || null,
     location: j.location || null,
