@@ -15,6 +15,25 @@ per-file diff commands.
 
 ### Fixed
 
+- **`verify_layout.py` finds an orphaned entry header by where the text starts**
+  (`tools/verify_layout.py`, `tests/test_verify_layout.py`) - the orphan rule compared line
+  left edges against the document margin, and a list marker moves a line's left edge without
+  moving its text. A template that merges each bullet's marker into its first line (#481) got
+  a bullet wrapping across the page break reported as an orphaned header, and a real orphaned
+  header followed by such bullets not reported at all. On the stock CV, when the outer marker
+  extracts as a line of its own, a `[Job Title]` header left at the foot of a page with its
+  bullets overleaf was not reported (its text at x70.4 counted as indented), and a list item
+  whose outer marker is set 1.3pt below its line was reported as a split bullet. The rule now
+  compares where the text of the page's last printed line starts - after any leading bullet
+  glyph from `• ‣ ▪ ● ·` (ASCII, dashes and other glyphs are text) - with where the text of
+  the next page's first printed line starts, and reports an orphaned header when the latter
+  is set further in. Bbox lines whose tops are within 3pt count as one printed line, and a
+  line whose text starts more than 60pt past the margin (a running header, a right-set date)
+  is not where the next page resumes. A lone marker with no text beside it keeps the
+  split-bullet report. On 304 builds of the stock CV (`\vspace*` 0-600pt before four
+  entries) this adds 15 reports, each a `[Job Title]` header at the foot of a page with its
+  bullets overleaf, and the other 289 builds give the same output as before.
+
 - **One posting on a portal without a numeric id no longer gets a second key when its
   title is re-listed with different casing** (#501, `tools/job_key.py`,
   `tests/test_job_key.py`) - the key hashed a slugified title alongside the URL whenever

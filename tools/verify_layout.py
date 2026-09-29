@@ -34,8 +34,9 @@ whose Info dictionary carries an empty string in any field - which `hyperref` wr
 every field it does not set, so any `lualatex`/`pdflatex` document built with `hyperref`
 and no `\\hypersetup{pdftitle=...}` triggers a real Poppler crashing on a legal PDF (#451).
 Line height serves
-as a font-size proxy to spot section headings; left edge (xMin) separates bullet lines
-from entry headers.
+as a font-size proxy to spot section headings. An orphaned entry header is found by where
+each line's TEXT starts, after any list marker merged into it, not by its left edge (see
+`find_orphans`).
 
 The thresholds below are calibrated for the stock moderncv (`cv/`) and cover.cls
 (`cover_letters/`) geometry. A template registered via `/add-template` may need them
@@ -84,6 +85,24 @@ FOOTER_BAND_PT = 90.0
 # continuation, not an entry header or a section heading.
 INDENT_PT = 8.0
 
+# Glyphs that label a list item when a template merges them into the item's first line.
+# Unicode only: ASCII `-` and `*`, and the dashes, also open real text (the continuation
+# of a bullet may start with an em dash), so a line opening with one is read as text.
+LIST_MARKERS = frozenset("\u2022\u2023\u25aa\u25cf\u00b7")
+
+# Lines whose tops are this close are parts of one printed line. pdftotext -bbox output
+# is grouped by rounded yMin, which splits a printed line wherever words in another
+# font sit a fraction of a point off and a .5 boundary falls between them (a bold word
+# 0.2pt off; a list marker set 1.3pt below its item's first line on the stock CV).
+# Consecutive printed lines are ~12pt apart.
+SAME_PRINTED_LINE_PT = 3.0
+
+# A list sets its text in by a label's width: 11-25pt past the margin on the stock CV
+# and cover letter. A line whose text starts further in than this is set right or
+# centred (a running header, a date on a line of its own), not where a page's body
+# resumes.
+SET_IN_LIMIT_PT = 60.0
+
 # A line this much taller than the body median is a section heading.
 HEADING_HEIGHT_RATIO = 1.25
 
@@ -91,6 +110,7 @@ PAGE_RE = re.compile(r'<page width="([\d.]+)" height="([\d.]+)">(.*?)</page>', r
 WORD_RE = re.compile(
     r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="[\d.]+" yMax="([\d.]+)">([^<]*)</word>'
 )
+TEXT_RE = re.compile(r"\w")
 
 
 @dataclass
@@ -100,6 +120,13 @@ class Line:
     left: float
     height: float
     text: str
+    # Where the text starts once leading LIST_MARKERS words are set aside; None when the
+    # line has no such marker, so a Line built from `left` alone behaves as before.
+    text_left: float | None = None
+
+    @property
+    def text_x(self) -> float:
+        return self.left if self.text_left is None else self.text_left
 
 
 class Page:
@@ -201,6 +228,7 @@ def parse_pdf(path: Path) -> list[Page]:
                 left=min(w[0] for w in words),
                 height=max(w[2] - w[1] for w in words),
                 text=" ".join(w[3] for w in sorted(words)),
+                text_left=text_start(sorted(words)),
             )
             for words in buckets.values()
         ]
@@ -208,13 +236,44 @@ def parse_pdf(path: Path) -> list[Page]:
     return pages
 
 
+def text_start(words: list[tuple[float, float, float, str]]) -> float | None:
+    """xMin of the first word after leading LIST_MARKERS words, if there were any."""
+    lead = 0
+    while lead < len(words) and words[lead][3] and set(words[lead][3]) <= LIST_MARKERS:
+        lead += 1
+    return words[lead][0] if 0 < lead < len(words) else None
+
+
+def printed_text_x(lines: list[Line]) -> float | None:
+    """Where the text of one printed line starts, from the bbox lines that make it up."""
+    xs = [l.text_x for l in lines if TEXT_RE.search(l.text)]
+    return min(xs) if xs else None
+
+
 def find_orphans(pages: list[Page]) -> list[str]:
     """A page ending on an entry header or section heading whose content resumes overleaf.
 
     Two shapes, both documented failures:
       * the last body line of a page is a section heading (stranded heading)
-      * the last body lines are un-indented (an entry header) while the next page opens
-        with indented bullet lines, i.e. the entry was split across the break
+      * the next page's text starts further in than the text of the page's last printed
+        line (an entry header), i.e. the entry was split across the break
+
+    The second compares where the TEXT starts, not where the line starts. A template may
+    merge a list marker into the line it labels, which moves the line's left edge but not
+    its text: in the #481 repro a bullet's first line starts at x58.9 (the marker), level
+    with the entry headers at x59.5, while its text and its continuation start at x72.1.
+    Read by left edge, a bullet wrapping across the break looked like a header followed by
+    indented text, and a real header followed by such a bullet looked level. On the stock
+    CV the outer marker may extract as a line of its own; then the header's text (x70.4)
+    counted as indented and a header orphaned from its bullets (x81.3) went unreported.
+
+    Only LIST_MARKERS glyphs are set aside. Where a marker is not among them - the stock
+    CV's outer marker extracts as `○` on some font setups and as an emoji on others - the
+    line keeps the marker's x, which is exactly what the left-edge rule read. That is how
+    a stock `[Degree]` line and its description (both text at x70.4) stay reported when
+    that marker merges into the header line (header x59.0), as they were. When the marker
+    extracts as its own line, the two are level and nothing tells them from a wrapped
+    line without font information, so neither this rule nor the left-edge one reports it.
     """
     problems = []
     # Indentation must be judged against the document's left margin, not each page's own
@@ -240,23 +299,43 @@ def find_orphans(pages: list[Page]) -> list[str]:
                 f"on p{i + 2}. Shorten the entry that follows it, or let the heading and its "
                 "first entry move to the next page together"
             )
-        elif not indented(last) and indented(first):
+            continue
+        # The last printed line: the bbox lines within SAME_PRINTED_LINE_PT of the last one.
+        tail = [l for l in here.body if l.top >= last.top - SAME_PRINTED_LINE_PT]
+        last_x = printed_text_x(tail)
+        if last_x is None:
             # moderncv puts an itemize marker in its own bbox line at the list's left
             # edge, so a list item split across the break looks like an un-indented
             # header followed by indented text. Different defect, different fix.
-            if not re.search(r"\w", last.text):
+            if not indented(last) and indented(first):
                 problems.append(
                     f"p{i + 1} ends on a lone list marker whose text continues on p{i + 2} "
                     f"({first.text.strip()[:60]!r}): a bullet is split across the page break. "
                     "Shorten the preceding content so the whole item fits on one page"
                 )
-            else:
-                problems.append(
-                    f"p{i + 1} ends on the un-indented line {last.text.strip()[:60]!r} while "
-                    f"p{i + 2} opens with the indented line {first.text.strip()[:60]!r}: an entry "
-                    "header is orphaned from its bullets. Add \\needspace before that "
-                    "\\cventry, or shorten it"
-                )
+            continue
+        # The next page's first printed line with text, skipping a marker in its own line
+        # and a line set right or centred.
+        opener = next(
+            (
+                l
+                for l in nxt.body
+                if TEXT_RE.search(l.text) and l.text_x <= doc_left + SET_IN_LIMIT_PT
+            ),
+            None,
+        )
+        if opener is None:
+            continue
+        head = [l for l in nxt.body if abs(l.top - opener.top) <= SAME_PRINTED_LINE_PT]
+        next_x = printed_text_x(head)
+        if next_x is not None and next_x > last_x + INDENT_PT:
+            shown = max((l for l in tail if TEXT_RE.search(l.text)), key=lambda l: len(l.text))
+            problems.append(
+                f"p{i + 1} ends on {shown.text.strip()[:60]!r} while the text on p{i + 2} "
+                f"starts further in ({opener.text.strip()[:60]!r}): an entry header is "
+                "orphaned from its bullets. Add \\needspace before that \\cventry, "
+                "or shorten it"
+            )
     return problems
 
 
