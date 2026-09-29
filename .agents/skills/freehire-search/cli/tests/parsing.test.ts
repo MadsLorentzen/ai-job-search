@@ -68,6 +68,18 @@ describe("toDetail — adds cleaned description + enrichment", () => {
     expect(d.salary).toBe("EUR 90000–120000");
   });
 
+  test("keeps the salary period, so a yearly figure is not read as monthly", () => {
+    const d = toDetail(
+      job({ enrichment: { salary_min: 300000, salary_max: 300000, salary_currency: "INR", salary_period: "year" } }),
+    );
+    expect(d.salary).toBe("INR 300000–300000/year");
+  });
+
+  test("a single-bound salary keeps its period too", () => {
+    const d = toDetail(job({ enrichment: { salary_min: 12000, salary_currency: "INR", salary_period: "month" } }));
+    expect(d.salary).toBe("INR 12000/month");
+  });
+
   test("null enrichment fields when the enrichment object is empty", () => {
     const d = toDetail(job({ enrichment: {} }));
     expect(d.seniority).toBeNull();

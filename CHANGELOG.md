@@ -105,6 +105,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **`freehire-search detail` keeps the salary period, so a yearly figure no longer reads as
+  monthly** (`.agents/skills/freehire-search/cli/src/helpers.ts`, `SKILL.md`) - `formatSalary`
+  printed only the currency and amounts, although freehire's enrichment records the period:
+  `detail software-developer-trainee-codifi-fra635ux` printed `INR 300000–300000` while the
+  API returns `salary_period: "year"` for that posting, so anyone screening pay against a
+  monthly figure read a yearly salary as a monthly one, twelve times its real monthly value.
+  The period is now appended when freehire records one (`INR 300000–300000/year`,
+  `INR 12000/month`); a record without a period prints exactly as before. Pinned by two new
+  `parsing.test.ts` cases, both failing on the old formatter.
+
 - **`robots_check` decodes curl output as UTF-8, so a non-ASCII response no longer reads as
   UNCONFIRMED on Windows** (`tools/robots_check.py`, `tests/test_robots_check.py`) -
   `_fetch()` ran curl with `text=True` and no encoding, so Python decoded the response with
