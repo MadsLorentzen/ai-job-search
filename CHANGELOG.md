@@ -105,6 +105,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **The compile-warning check covers `tests/*.py` too** (`tests/test_verify_pdf.py`,
+  `tests/test_verify_layout.py`) - `FindNonAsciiDateRangesTests`' docstring quotes the regex
+  `\s*` unescaped, so Python 3.12+ prints a `SyntaxWarning` for the invalid escape `\s` when
+  the test module is compiled. It shows up in this repo's own CI log on 3.12, 3.13 and 3.14 while
+  the run stays green, and under `-W error::SyntaxWarning` the module fails to import. Escaped
+  in the docstring; `ToolsCompileWithoutWarnings` now compiles `tests/*.py` as well as
+  `tools/*.py` and fails on the unescaped version.
+
 - **`linkedin-search detail` no longer fetches an unrelated posting for a URL on another
   host** - `normalizeId` took the first 6+-digit path segment from *any* URL, so a
   Greenhouse or Lever apply link (the kind a posting's own page hands out, and what a user

@@ -177,15 +177,19 @@ class ToolsCompileWithoutWarnings(unittest.TestCase):
     the warning lands in the middle of a verification report. Compiling is a
     pure `compile()` over the source text - no cache file, no temp file - so the
     check costs nothing and covers every `tools/*.py`, guarding the next
-    docstring that quotes a macro too.
+    docstring that quotes a macro too. It covers `tests/*.py` as well: a test
+    docstring that quotes a regex (`\\s*` in `test_verify_pdf.py`) warned in CI
+    on every matrix Python while the run stayed green.
     """
 
     def test_sources_have_no_invalid_escape_sequences(self):
         import warnings
 
         tools_dir = Path(verify_layout.__file__).resolve().parent
-        sources = sorted(tools_dir.glob("*.py"))
+        tests_dir = Path(__file__).resolve().parent
+        sources = sorted(tools_dir.glob("*.py")) + sorted(tests_dir.glob("*.py"))
         self.assertIn(Path(verify_layout.__file__).resolve(), sources)
+        self.assertIn(Path(__file__).resolve(), sources)
         offenders: dict[str, list[str]] = {}
         for source in sources:
             with warnings.catch_warnings(record=True) as caught:
@@ -197,8 +201,8 @@ class ToolsCompileWithoutWarnings(unittest.TestCase):
                 if issubclass(w.category, (SyntaxWarning, DeprecationWarning))
             ]
             if syntax:
-                offenders[source.name] = syntax
-        self.assertEqual({}, offenders, "tools/*.py warn about invalid escapes when compiled")
+                offenders[f"{source.parent.name}/{source.name}"] = syntax
+        self.assertEqual({}, offenders, "tools/*.py or tests/*.py warn about invalid escapes when compiled")
 
 
 if __name__ == "__main__":

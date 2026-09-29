@@ -72,7 +72,7 @@ class FindNonAsciiDateRangesTests(unittest.TestCase):
     The fold that makes `--contains "2016-2024"` pass on that layer (#458) is
     what makes `--contains` unable to detect it - so this check never folds.
 
-    The newline cases are yang2632's finding on the PR: `\s*` between year and
+    The newline cases are yang2632's finding on the PR: `\\s*` between year and
     dash also matched a line break, so a heading ending in an ASCII date joined
     a dash that merely opened the next line.
     """
