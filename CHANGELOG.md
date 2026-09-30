@@ -15,6 +15,25 @@ per-file diff commands.
 
 ### Fixed
 
+- **`robots_check` no longer reads a leading BOM or an undecodable rule as permission**
+  (`tools/robots_check.py`, `tests/test_robots_check.py`) - two decoding edge cases failed
+  open, both flagged as follow-ups in #506. A robots.txt saved with a UTF-8 byte-order mark
+  decodes to a body that starts with U+FEFF, so its first field was not `user-agent`: a
+  leading `User-agent: *` went unseen, every rule in that group was dropped for want of an
+  agent, and the gate read the file as allow-all. Reproduced through the CLI on real hosts:
+  cnnturk.com and sakarya.edu.tr serve `EF BB BF` + `User-agent: *`, and master printed
+  `ALLOWED` for their disallowed `/hesap/` and `/bin/`. `_groups()` and `is_robots_body()`
+  now skip one leading U+FEFF, as Google's reference parser does, so every caller of
+  `allowed()` is covered (a BOM-only body is now the empty file it is, allow-all, rather than
+  a soft 200). Separately, #506's `errors='replace'` turns raw non-ASCII bytes in a
+  non-conformant robots.txt saved in a legacy code page (cp1254, ISO-8859-9) into U+FFFD, so
+  a rule such as `Disallow: /şirket/` could never match and was silently skipped. A
+  User-agent, Allow or Disallow line holding U+FFFD now makes the body unreadable, and the
+  gate prints `UNCONFIRMED`. The field is named with U+FFFD removed, so a stray byte before
+  `Disallow` cannot hide the line either; U+FFFD in a comment or another field stays
+  harmless, and valid UTF-8 rules decide as before. Nine new tests; the seven that pin the
+  fail-opens fail on master.
+
 - **`verify_layout.py` finds an orphaned entry header by where the text starts**
   (`tools/verify_layout.py`, `tests/test_verify_layout.py`) - the orphan rule compared line
   left edges against the document margin, and a list marker moves a line's left edge without
