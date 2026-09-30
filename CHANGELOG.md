@@ -13,6 +13,21 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Fixed
+
+- **One posting on a portal without a numeric id no longer gets a second key when its
+  title is re-listed with different casing** (#501, `tools/job_key.py`,
+  `tests/test_job_key.py`) - the key hashed a slugified title alongside the URL whenever
+  `normalizeId` found no six-digit run in the path, which is every freehire posting. The
+  live API returns both `Инженер` and `инженер` across rows, and the slugifier maps those
+  to different slugs, so one URL could be stored under several keys. `/rank` builds its
+  exclusion set from `seen_jobs.json`, so a posting already seen could be presented again.
+  The key is now a hash of the URL alone: the URL is the identity `/scrape` stores, and
+  the title was never a stable half of it. **Entries written before this fix for a
+  non-Latin title on a portal without a numeric id will re-key once on the next scrape.**
+  `python3 tools/job_key.py --audit` reports those entries under
+  `keys_not_matching_current_rule`; it never rewrites them.
+
 ## [1.7.2] - 2026-09-29
 
 ### Added
