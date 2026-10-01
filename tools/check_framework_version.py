@@ -23,7 +23,9 @@ if root_agents.exists():
     FRAMEWORK_FILES.append(root_agents)
 
 def run_git(args: list[str]) -> tuple[int, str, str]:
-    res = subprocess.run(["git"] + args, cwd=str(ROOT), capture_output=True, text=True)
+    res = subprocess.run(
+        ["git"] + args, cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8"
+    )
     return res.returncode, res.stdout, res.stderr
 
 def get_base_commit() -> str | None:
