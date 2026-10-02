@@ -15,6 +15,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`check_framework_version.py`'s git diff read no longer crashes on non-ASCII framework-file
+  content** (`tools/check_framework_version.py`) - `run_git()` called
+  `subprocess.run(text=True)` without an explicit `encoding`, so output decoded via the host
+  locale's default codec instead of UTF-8. On a real Windows checkout (cp1252 default) this
+  raised `UnicodeDecodeError` on any byte cp1252 leaves undefined - Cyrillic Ё/ё, much CJK,
+  Á-class Latin - appearing in a framework file's diff, crashing the version gate before it
+  ever evaluated the change. `run_git()` now passes `encoding="utf-8"` and `errors="replace"`
+  (matching the convention already used elsewhere in this repo, e.g. `robots_check.py`),
+  decoding deterministically regardless of host locale. Pinned by `RunGitEncodingTests` in
+  `tests/test_check_framework_version.py`, which fails against the original un-pinned call.
+
 - **`/rank` still sweeps deadlines when there is nothing new to score** (`.claude/commands/rank.md`
   Step 1, `tests/test_rank_command.py`) - when `rank_state.py candidates` reported no eligible
   jobs, Step 1 said "Nothing new to rank" and stopped before Step 3's rule 6 expiry sweep ever

@@ -24,7 +24,12 @@ if root_agents.exists():
 
 def run_git(args: list[str]) -> tuple[int, str, str]:
     res = subprocess.run(
-        ["git"] + args, cwd=str(ROOT), capture_output=True, text=True, encoding="utf-8"
+        ["git"] + args,
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     return res.returncode, res.stdout, res.stderr
 

@@ -111,12 +111,14 @@ class RunGitEncodingTests(unittest.TestCase):
     whatever `subprocess.run(text=True)` falls back to on the host locale.
 
     On a real Windows checkout, the un-pinned call decodes as cp1252 (the
-    locale default there) and a non-ASCII byte in the diff - e.g. an em dash
-    in a profile file - raises UnicodeDecodeError before the gate ever
-    evaluates the change (reported 2026-10-01, reproduced on Windows).
-    `LC_ALL`/`LANG` don't influence this on Windows, so the regression is
-    pinned directly against the subprocess.run() call rather than by trying
-    to simulate the OS locale."""
+    locale default there) and a byte cp1252 leaves undefined - e.g.
+    Cyrillic Ё/ё, much CJK, or Á-class Latin - in a framework file's diff
+    raises UnicodeDecodeError before the gate ever evaluates the change
+    (reported 2026-10-01, reproduced on Windows with Cyrillic Ё). An em
+    dash does not trigger this - cp1252 maps it fine. `LC_ALL`/`LANG` don't
+    influence this on Windows, so the regression is pinned directly against
+    the subprocess.run() call rather than by trying to simulate the OS
+    locale."""
 
     def test_run_git_pins_utf8_encoding(self):
         import importlib.util
