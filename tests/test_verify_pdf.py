@@ -99,6 +99,16 @@ class FindNonAsciiDateRangesTests(unittest.TestCase):
         # 05-cv-templates.md keeps `--` in prose ranges like EUR 600k--1M.
         self.assertEqual(find_non_ascii_date_ranges("EUR 600k\u20131M, 12\u201315 people"), [])
 
+    def test_year_like_digits_inside_a_longer_number_are_not_a_year(self):
+        # `2000` sits inside `120000`, `200000`, `12000`, `15000`: a budget or
+        # throughput range typed with `--` is not a date and must not fail 5d.
+        for text in ("Grew budget DKK 120000\u2013200000", "Scaled ingestion from 12000\u201315000 events/s"):
+            with self.subTest(text=text):
+                self.assertEqual(find_non_ascii_date_ranges(text), [])
+
+    def test_a_standalone_year_next_to_a_longer_number_is_still_caught(self):
+        self.assertEqual(find_non_ascii_date_ranges("2016\u20132024 (120000 users)")[0][1], "\u2013")
+
     def test_year_ending_a_line_is_not_joined_to_the_next_lines_dash(self):
         text = "Heading 1988-1994\n\u2013 note\n"
         self.assertEqual(find_non_ascii_date_ranges(text), [])

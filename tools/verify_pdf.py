@@ -94,7 +94,9 @@ def normalize_text(text):
 # rest are the other Unicode dashes and the minus sign, which a parser that splits
 # a range only on U+002D treats the same way.
 NON_ASCII_DASHES = "\u2010\u2011\u2012\u2013\u2014\u2015\u2212"
-_YEAR = r"(?:19|20)\d{2}"
+# A year is four digits standing alone: without the digit boundaries, `2000`
+# inside `120000` or `12000` made a budget or throughput range read as a date.
+_YEAR = r"(?<!\d)(?:19|20)\d{2}(?!\d)"
 # Horizontal whitespace only between the year and the dash: `\s*` also matched
 # a newline, so a year ending one line joined a dash opening the next (a bullet,
 # a wrapped prose line) and an ASCII date was reported as U+2013.
