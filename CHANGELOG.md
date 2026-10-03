@@ -15,6 +15,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`verify_pdf.py --ascii-dates` no longer reads a year-like run inside a longer number as a
+  date** - the year pattern had no digit boundaries, so `2000` inside `120000` or `12000` made
+  `Grew budget DKK 120000–200000` and `12000–15000 events/s` fail `/apply` Step 5d as
+  en-dashed date ranges, and the agent was sent to fix a "date argument" that does not exist.
+  The guide promises a numeric range with no year is left alone; now it is. `2016–2024` next to
+  a longer number is still caught. Two new `test_verify_pdf.py` cases; the numeric one fails
+  on the unbounded pattern.
+
 - **`check_framework_version.py`'s git diff read no longer crashes on non-ASCII framework-file
   content** (`tools/check_framework_version.py`) - `run_git()` called
   `subprocess.run(text=True)` without an explicit `encoding`, so output decoded via the host
