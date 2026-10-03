@@ -15,6 +15,21 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobdanmark-search detail` renders a JSON-LD description as text instead of passing
+  the markup through** (`.agents/skills/jobdanmark-search/cli/src/commands/detail.ts`,
+  `tests/detail-jsonld.test.ts`) - the JSON-LD branch emitted `jobPosting.description`
+  verbatim, so `detail --format plain` printed
+  `description: <p>Vi søger en udvikler til R&D.</p><ul><li>Python & Go</li>...` while the
+  rendered-HTML branch of the same command printed one clean line per paragraph and bullet:
+  two description shapes from one command depending on which page layout it hit, and the
+  markup landed in `/scrape`'s stored snippet and `/rank`'s agent context as-is. The
+  portal contract (`/add-portal` Step 4) asks for "readable text (entities decoded, tags
+  stripped, paragraph breaks preserved)". The JSON-LD branch now renders the HTML through
+  `node-html-parser`'s `structuredText` - one line per block element, entities decoded, tags
+  gone - which is the shape the fallback already produces. A plain-text description is
+  unchanged, an absent one stays `""`. The JSON-LD test that pinned the raw `<p>...</p>` now
+  expects the text, plus two new cases; the HTML case fails on master.
+
 - **`job_key.py` no longer gives two postings one key when a title or company is partly
   non-Latin** (`tools/job_key.py`, `tests/test_job_key.py`) - the hash fallbacks from #487
   and #502 fired only when the slug was completely empty, so a mixed-script name kept its
