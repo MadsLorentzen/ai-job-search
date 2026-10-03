@@ -100,6 +100,60 @@ class MakeKey(unittest.TestCase):
         self.assertNotEqual(a, b)
 
 
+class MixedScriptNamesKeepTheirIdentity(unittest.TestCase):
+    """A name that folds to a fragment is as lossy as one that folds to nothing.
+
+    #487 and #502 added the hash fallbacks for titles and companies that
+    slugify to '', but a mixed-script name keeps its Latin or digit fragment and
+    skipped them: "Программист 1С" and "Аналитик 1С" both became "1", "Сбер AI"
+    and "Яндекс AI" both became "ai", so two postings shared one key and
+    `/scrape` Step 4 dropped the second as already seen. "1С" titles and
+    "N категории" grade suffixes are everyday Russian listings on freehire.
+    """
+
+    def test_titles_sharing_a_digit_fragment_get_distinct_keys(self):
+        company = "Яндекс"
+        a = make_key(company, "Программист 1С", url="https://freehire.me/jobs/programmist-1s-aaa")
+        b = make_key(company, "Аналитик 1С", url="https://freehire.me/jobs/analitik-1s-bbb")
+        self.assertNotEqual(a, b)
+        self.assertTrue(is_canonical(a) and is_canonical(b))
+
+    def test_titles_sharing_a_latin_word_get_distinct_keys(self):
+        company = "ООО Чен"
+        a = make_key(company, "Python-разработчик", url="https://freehire.me/jobs/python-razrabotchik-x1")
+        b = make_key(company, "Python-аналитик", url="https://freehire.me/jobs/python-analitik-x2")
+        self.assertNotEqual(a, b)
+        # The fragment survives as a readable prefix; the URL carries the identity.
+        self.assertTrue(a.split("_", 1)[1].startswith("python-"))
+
+    def test_lossy_title_prefers_the_portal_numeric_id(self):
+        key = make_key("Acme", "Инженер 1 категории", url="https://kr.linkedin.com/jobs/view/x-4461771225")
+        self.assertEqual(key, "acme_1-4461771225")
+
+    def test_companies_sharing_a_latin_word_get_distinct_keys(self):
+        a = make_key("Сбер AI", "ML Engineer", url="https://example.com/1")
+        b = make_key("Яндекс AI", "ML Engineer", url="https://example.com/2")
+        self.assertNotEqual(a, b)
+        self.assertTrue(a.startswith("ai-") and b.startswith("ai-"))
+        self.assertTrue(is_canonical(a) and is_canonical(b))
+
+    def test_lossy_company_is_stable_across_case_and_urls(self):
+        a = make_key("Сбер AI", "ML Engineer", url="https://example.com/1")
+        b = make_key("сбер ai", "ML Engineer", url="https://example.com/2")
+        self.assertEqual(a.split("_", 1)[0], b.split("_", 1)[0])
+
+    def test_latin_names_with_accents_and_ligatures_are_not_lossy(self):
+        # NFKD folds these without dropping a letter, so existing keys stay put.
+        self.assertEqual(make_key("Zürich Versicherung", "Ingénieur ﬁnance"), "zurich-versicherung_ingenieur-finance")
+
+    def test_latin_letters_without_a_decomposition_do_not_re_key(self):
+        # "ø" and "æ" have no NFKD decomposition and are dropped by the fold,
+        # but they are Latin letters: "Ørsted" has keyed as "rsted" since the
+        # rule existed, and a live Danish seen_jobs.json must not re-key.
+        self.assertEqual(make_key("Ørsted A/S", "Senior Engineer"), "rsted-a-s_senior-engineer")
+        self.assertEqual(make_key("Mærsk", "Søfarende"), "mrsk_sfarende")
+
+
 class CompanyFallbackCLI(unittest.TestCase):
     def key_for(self, company, url="https://example.com/jobs/123456"):
         proc = subprocess.run(

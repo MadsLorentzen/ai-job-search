@@ -27,7 +27,11 @@ collide.
 A title that slugifies to nothing (a posting written in a non-Latin script) has
 no usable key half at all - "securion_" was a real entry, and it would have
 collided with every future non-Latin posting from that company. Those fall back
-to the portal's numeric id from the URL.
+to the portal's numeric id from the URL. A title or company that slugifies to
+*less* than it says is the same problem one step on: "Программист 1С" and
+"Аналитик 1С" both fold to "1", "Сбер AI" and "Яндекс AI" both fold to "ai",
+so whenever the ASCII fold drops letters the surviving fragment is only a
+readable prefix and the identity comes from the same fallback.
 
 Usage:
   python3 tools/job_key.py --company "Acme Corp" --title "SOC Analyst (L2)"
@@ -68,6 +72,29 @@ def slugify(text: str) -> str:
     return _NON_SLUG.sub("-", ascii_only.lower()).strip("-")
 
 
+def _lost_letters(text: str) -> bool:
+    """True when the ASCII fold dropped non-Latin letters, so the slug under-identifies.
+
+    NFKD turns "ü" into "u" plus a combining mark and "ﬁ" into "fi", so most
+    Latin text keeps every letter. A Cyrillic, Greek, CJK or Arabic letter has
+    no ASCII decomposition and vanishes; a mixed-script name then keeps only
+    its Latin or digit fragment, and two different names can share it.
+
+    Latin letters that also lack a decomposition ("ø", "æ", "ß", "ł") are
+    deliberately NOT counted: "Ørsted" has keyed as "rsted" since the rule
+    existed, and treating it as lossy would re-key every Danish company in a
+    live seen_jobs.json for a collision that does not happen in practice.
+    """
+    if not text:
+        return False
+    for ch in unicodedata.normalize("NFKD", str(text)):
+        if ord(ch) < 128 or not ch.isalpha():
+            continue
+        if not unicodedata.name(ch, "LATIN").startswith("LATIN"):
+            return True
+    return False
+
+
 def _cap(slug: str, limit: int) -> str:
     """Cap length without making truncation lossy across runs.
 
@@ -85,18 +112,26 @@ def _cap(slug: str, limit: int) -> str:
 def make_key(company: str, title: str, url: str = "") -> str:
     """The canonical seen_jobs.json key for one posting."""
     company_slug = _cap(slugify(company), COMPANY_MAX)
-    if not company_slug:
+    if not company_slug or _lost_letters(company):
         name = unicodedata.normalize("NFC", str(company or "").strip().casefold())
         # An absent name stays unknown; a non-Latin name still has an identity.
+        # A mixed-script name keeps its Latin fragment as a readable prefix, but
+        # the identity is the hash: "Сбер AI" and "Яндекс AI" both fold to "ai".
         digest = hashlib.sha1(name.encode("utf-8")).hexdigest()[:HASH_LEN]
-        company_slug = f"company-{digest}" if name else "unknown-company"
+        if not name:
+            company_slug = "unknown-company"
+        else:
+            company_slug = f"{company_slug}-{digest}" if company_slug else f"company-{digest}"
     title_slug = _cap(slugify(title), TITLE_MAX)
-    if not title_slug:
-        # No Latin characters in the title. The portal's own numeric id is the
-        # only stable handle left; never emit a bare "company_" prefix.
+    if not title_slug or _lost_letters(title):
+        # No Latin characters in the title, or not enough of them to identify
+        # it: "Программист 1С" and "Аналитик 1С" both fold to "1". The portal's
+        # own numeric id is the stable handle; a surviving fragment stays as a
+        # readable prefix only. Never emit a bare "company_" prefix.
+        fragment = title_slug
         match = _JOB_ID.search(url or "")
         if match:
-            title_slug = match.group(1)
+            title_slug = f"{fragment}-{match.group(1)}" if fragment else match.group(1)
         else:
             basis = slugify(unicodedata.normalize("NFKD", str(title or url or "")))
             # Hash the URL alone when there is one. The URL is the posting's
@@ -111,7 +146,7 @@ def make_key(company: str, title: str, url: str = "") -> str:
             # is left to key on.
             digest_basis = str(url) if url else str(title)
             digest = hashlib.sha1(digest_basis.encode("utf-8")).hexdigest()[:HASH_LEN]
-            title_slug = basis or f"untitled-{digest}"
+            title_slug = f"{fragment or basis or 'untitled'}-{digest}"
     return f"{company_slug}_{title_slug}"
 
 

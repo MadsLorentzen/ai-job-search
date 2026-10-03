@@ -15,6 +15,25 @@ per-file diff commands.
 
 ### Fixed
 
+- **`job_key.py` no longer gives two postings one key when a title or company is partly
+  non-Latin** (`tools/job_key.py`, `tests/test_job_key.py`) - the hash fallbacks from #487
+  and #502 fired only when the slug was completely empty, so a mixed-script name kept its
+  Latin or digit fragment and skipped them: `Программист 1С` and `Аналитик 1С` at one company
+  both keyed as `company-6d769a_1`, `Python-разработчик` and `Python-аналитик` as `..._python`,
+  `Сбер AI` and `Яндекс AI` as `ai_...`. `/scrape` Step 4 then dropped the second posting as
+  already seen, and because the dict key is overwritten, `--audit` could not report the
+  collision as a duplicate URL either. "1С" titles and "N категории" grade suffixes are
+  everyday Russian listings on freehire, the shipped multi-market portal. The fold is now
+  treated as lossy whenever it drops a letter outside the Latin script, and the existing
+  fallbacks take over: the title half uses the portal's numeric id or the URL hash with the
+  fragment kept as a readable prefix (`1-4461771225`, `python-bb31e9`), the company half uses
+  the NFC-casefold name hash with the fragment as prefix (`ai-d35210`). Latin letters that
+  also lack a decomposition (`ø`, `æ`, `ß`, `ł`) are deliberately not counted, so `Ørsted`
+  still keys as `rsted` and a live Danish `seen_jobs.json` does not re-key; an existing
+  mixed-script entry re-keys once on the next scrape and `--audit` lists it under
+  `keys_not_matching_current_rule`, the same one-time drift #502 accepted. Seven new cases;
+  the four collision cases fail on master.
+
 - **`verify_pdf.py --ascii-dates` no longer reads a year-like run inside a longer number as a
   date** - the year pattern had no digit boundaries, so `2000` inside `120000` or `12000` made
   `Grew budget DKK 120000–200000` and `12000–15000 events/s` fail `/apply` Step 5d as
