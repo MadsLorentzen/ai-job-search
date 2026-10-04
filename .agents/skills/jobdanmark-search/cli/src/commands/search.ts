@@ -74,6 +74,10 @@ export function normalizeItem(item: ApiSearchItem): Record<string, unknown> {
     applicationDeadline: item.applicationDeadline ?? null,
     url: fullUrl,
     slug,
+    // /scrape contract aliases (add-portal.md: every result carries at least
+    // id, title, company, location, date, url). `id` is the slug - the value
+    // `detail` takes - under the name every other portal CLI uses.
+    id: slug,
     company: item.companyName,
     location: extractCity(item.companyAddress),
     date: toContractDate(item.publishedDate),

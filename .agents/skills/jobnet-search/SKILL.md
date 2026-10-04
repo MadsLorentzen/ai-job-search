@@ -69,7 +69,7 @@ Key flags:
 bun run .agents/skills/jobnet-search/cli/src/cli.ts detail <jobAdId> [--format json|plain]
 ```
 
-`jobAdId` is the UUID from `search` results (the `jobAdId` field). Returns the complete job
+`jobAdId` is the UUID from `search` results (the `jobAdId` field, also emitted as `id`, the portal-contract name every search CLI shares). Returns the complete job
 description, contact persons, application deadline, employer details, and direct application URL.
 
 ### Search occupation types

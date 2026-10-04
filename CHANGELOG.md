@@ -15,6 +15,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobnet-search` and `jobdanmark-search` search results now carry the contract's `id`
+  field** (`search.ts` and `search-normalization.test.ts` in both CLIs, both `SKILL.md`s) -
+  `/add-portal`'s contract says every search result has at least `id`, `title`, `company`,
+  `location`, `date`, `url`, and the four other shipped CLIs emit `id`. When #340 added the
+  `company`/`location`/`date`/`url` aliases to these two, `id` was left out: jobnet exposed the
+  value only as `jobAdId`, jobdanmark only as `slug`, so a consumer reading every portal's
+  JSON through one shape had to special-case both to call `detail`. Purely additive: `id`
+  equals `jobAdId` on jobnet and `slug` on jobdanmark, the native keys stay, nothing is
+  renamed. The additive-contract test in each CLI now asserts `id` and its equality with the
+  native key; both fail on master.
+
 - **`jobdanmark-search detail` renders a JSON-LD description as text instead of passing
   the markup through** (`.agents/skills/jobdanmark-search/cli/src/commands/detail.ts`,
   `tests/detail-jsonld.test.ts`) - the JSON-LD branch emitted `jobPosting.description`

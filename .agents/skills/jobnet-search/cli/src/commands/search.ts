@@ -104,6 +104,10 @@ export function createSearchOutput(data: SearchApiResponse, flags: SearchFlags) 
     workPlaceAddress: job.workPlaceAddress ?? "",
     isSeen: job.isSeen,
     isFavorite: job.isFavorite,
+    // /scrape contract aliases (add-portal.md: every result carries at least
+    // id, title, company, location, date, url). `id` is the jobAdId - the
+    // value `detail` takes - under the name every other portal CLI uses.
+    id: job.jobAdId,
     company: job.hiringOrgName,
     location: job.postalDistrictName ?? job.municipality ?? null,
     date: job.publicationDate ? job.publicationDate.slice(0, 10) : null,
