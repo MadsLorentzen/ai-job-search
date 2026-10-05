@@ -1,10 +1,12 @@
 """Tests for the /expand command specification."""
 
+import re
 import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXPAND_COMMAND_FILE = REPO_ROOT / ".claude" / "commands" / "expand.md"
+BEHAVIORAL_PROFILE = REPO_ROOT / ".claude" / "skills" / "job-application-assistant" / "02-behavioral-profile.md"
 
 
 class ExpandCommandTests(unittest.TestCase):
@@ -38,6 +40,26 @@ class ExpandCommandTests(unittest.TestCase):
         self.assertIn("GitHub — repo-name", text)
         self.assertIn("Portfolio & projects grounded in code", text)
         self.assertNotIn("documents/projects/", text)
+
+    def test_behavioral_additions_name_sections_the_shipped_file_has(self):
+        # Step 5 told the model to append to "Strongest Behavioral Traits" or
+        # "How I Work Best" and to "match existing structure" - but the shipped
+        # 02-behavioral-profile.md has neither heading (it has "Strongest
+        # Behaviors" and "How You Work Best"), so the addition either landed
+        # in a duplicate near-identical section or was dropped. Derived from
+        # the shipped file so a renamed heading fails here until /expand follows.
+        text = EXPAND_COMMAND_FILE.read_text(encoding="utf-8")
+        start = text.index("### Additions to `02-behavioral-profile.md`")
+        section = text[start: text.index("---", start)]
+        quoted = re.findall(r'"([^"]+)"', section)
+        self.assertTrue(quoted, "the 02-behavioral-profile step must name its target sections")
+        headings = {
+            line[3:].strip() for line in BEHAVIORAL_PROFILE.read_text(encoding="utf-8").splitlines()
+            if line.startswith("## ")
+        }
+        for name in quoted:
+            with self.subTest(section=name):
+                self.assertIn(name, headings, f"02-behavioral-profile.md has no '## {name}' heading")
 
     def test_expand_enforces_additive_and_confirmation_principles(self):
         text = EXPAND_COMMAND_FILE.read_text(encoding="utf-8")

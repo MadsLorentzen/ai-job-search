@@ -189,7 +189,7 @@ Apply only the confirmed items. Use the Edit tool to add to the relevant section
 For each addition, add a brief source annotation in a comment or parenthetical: *(Coursera — Deep Learning Specialisation)*, *(GitHub — project-name)*, etc. This makes future `/expand` runs idempotent.
 
 ### Additions to `02-behavioral-profile.md`
-- Soft/behavioral signals → append to the "Strongest Behavioral Traits" or "How I Work Best" section (match existing structure)
+- Soft/behavioral signals → append to the "Strongest Behaviors" or "How You Work Best" section (the shipped file's `##` headings - match existing structure)
 - Always label inferred behavioral additions: *[Inferred from reference letter — Name / review before relying on this]*
 
 ---

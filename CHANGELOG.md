@@ -15,6 +15,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/expand` and `/setup` now append behavioral findings to sections `02-behavioral-profile.md`
+  actually has** (`.claude/commands/expand.md` Step 5, `.claude/commands/setup.md` Step A7,
+  `tests/test_expand_command.py`, `tests/test_setup_command.py`) - both told the model to add
+  to "Strongest Behavioral Traits" and "How I Work Best" / "How [Candidate] Works Best" while
+  also saying "match existing structure", but the shipped file's headings are "Strongest
+  Behaviors" and "How You Work Best", so an inferred trait either opened a duplicate
+  near-identical section or was dropped. The companion to #519, which fixed the same drift in
+  `/reset`'s skeleton; the maintainer asked for this half as its own PR. Both bullets now name
+  the shipped headings, and a derived test in each command's suite reads the quoted section
+  names and requires each to be a `##` heading of the shipped file; both fail on master.
+
 - **`jobnet-search` and `jobdanmark-search` search results now carry the contract's `id`
   field** (`search.ts` and `search-normalization.test.ts` in both CLIs, both `SKILL.md`s) -
   `/add-portal`'s contract says every search result has at least `id`, `title`, `company`,
