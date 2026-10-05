@@ -163,11 +163,6 @@ class TestResetCoversEveryPersonalizedSkillFile(unittest.TestCase):
             f"{mislabeled}",
         )
 
-
-if __name__ == "__main__":
-    unittest.main()
-
-
 SKILL_DIR = REPO / ".claude" / "skills" / "job-application-assistant"
 
 
@@ -245,3 +240,6 @@ class TestResetTargetsTheHeadingsTheShippedFilesHave(unittest.TestCase):
                 block_start = step.index("```markdown") + len("```markdown")
                 block = step[block_start: step.index("```", block_start)]
                 self.assertIn(anchor, block, f"the replacement for {filename} must keep the heading {anchor!r}")
+
+if __name__ == "__main__":
+    unittest.main()

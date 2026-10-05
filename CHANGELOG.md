@@ -24,8 +24,8 @@ per-file diff commands.
   statements `/setup` Path A extracted from archived applications, survived a reset that
   reported success. The `02-behavioral-profile.md` skeleton used headings the shipped file
   does not have (`Strongest Behavioral Traits`, `How I Work Best`, a truncated `Growth Areas`)
-  and dropped `## Core Behavioral Drives` - the assessment table `/setup` Section 6 collects
-  and `/interview` Step 4 reads - so one reset left the file's headings permanently different
+  and dropped `## Core Behavioral Drives` - the assessment table the shipped file carries - so
+  one reset left the file's headings permanently different
   from every other fork's, with nothing to recreate the table. The anchor now names the real
   heading and the replacement re-emits it; the skeleton carries the shipped headings in order.
   `01-candidate-profile.md` and `07-interview-prep.md` were already correct. Two new tests
