@@ -142,6 +142,19 @@ class MixedScriptNamesKeepTheirIdentity(unittest.TestCase):
         b = make_key("сбер ai", "ML Engineer", url="https://example.com/2")
         self.assertEqual(a.split("_", 1)[0], b.split("_", 1)[0])
 
+    def test_empty_title_with_a_non_numeric_url_keeps_its_pre_fragment_key(self):
+        # The fragment rule must not reach past its own case: an empty title
+        # with a URL that carries no six-digit run keyed on the URL-derived
+        # basis alone before #514, and the first cut of the rule had started
+        # appending the digest there too. Unreachable from /scrape, which always
+        # passes a title, but the key is a pure function of the posting and
+        # should not move for a case the rule was never about.
+        self.assertEqual(
+            make_key("Acme", "", url="https://example.com/jobs/abc-xyz"),
+            "acme_https-example-com-jobs-abc-xyz",
+        )
+        self.assertTrue(make_key("Acme", "", url="").startswith("acme_untitled-"))
+
     def test_latin_names_with_accents_and_ligatures_are_not_lossy(self):
         # NFKD folds these without dropping a letter, so existing keys stay put.
         self.assertEqual(make_key("Zürich Versicherung", "Ingénieur ﬁnance"), "zurich-versicherung_ingenieur-finance")

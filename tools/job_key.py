@@ -146,7 +146,10 @@ def make_key(company: str, title: str, url: str = "") -> str:
             # is left to key on.
             digest_basis = str(url) if url else str(title)
             digest = hashlib.sha1(digest_basis.encode("utf-8")).hexdigest()[:HASH_LEN]
-            title_slug = f"{fragment or basis or 'untitled'}-{digest}"
+            # A lossy fragment needs the digest to tell two postings apart; an
+            # empty title keeps the bare basis (a URL-derived slug, or
+            # "untitled-<hash>") exactly as before the fragment rule existed.
+            title_slug = f"{fragment}-{digest}" if fragment else (basis or f"untitled-{digest}")
     return f"{company_slug}_{title_slug}"
 
 

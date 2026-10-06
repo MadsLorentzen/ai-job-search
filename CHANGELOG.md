@@ -52,13 +52,17 @@ per-file diff commands.
   everyday Russian listings on freehire, the shipped multi-market portal. The fold is now
   treated as lossy whenever it drops a letter outside the Latin script, and the existing
   fallbacks take over: the title half uses the portal's numeric id or the URL hash with the
-  fragment kept as a readable prefix (`1-4461771225`, `python-bb31e9`), the company half uses
+  fragment kept as a readable prefix (`1-4461771225`, `python-fb29d7`), the company half uses
   the NFC-casefold name hash with the fragment as prefix (`ai-d35210`). Latin letters that
   also lack a decomposition (`ø`, `æ`, `ß`, `ł`) are deliberately not counted, so `Ørsted`
   still keys as `rsted` and a live Danish `seen_jobs.json` does not re-key; an existing
   mixed-script entry re-keys once on the next scrape and `--audit` lists it under
   `keys_not_matching_current_rule`, the same one-time drift #502 accepted. Seven new cases;
-  the four collision cases fail on master.
+  the four collision cases fail on master. A follow-up keeps the rule inside its own case:
+  an empty title whose URL carries no six-digit run keys on the URL-derived basis alone
+  (`acme_https-example-com-jobs-abc-xyz`) exactly as before, where the first cut had started
+  appending the digest - unreachable from `/scrape`, which always passes a title, but a key
+  is a pure function of the posting and should not move for a case the rule was never about.
 
 - **`verify_pdf.py --ascii-dates` no longer reads a year-like run inside a longer number as a
   date** - the year pattern had no digit boundaries, so `2000` inside `120000` or `12000` made
