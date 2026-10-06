@@ -15,11 +15,13 @@ the sentinels exist in the pristine files, and (c) that simulating the
 /setup edit destroys at least one checked sentinel per file - i.e. the
 guard actually fires on the failure it exists to catch.
 """
-import os
 import unittest
 from pathlib import Path
 
-UPSTREAM = "MadsLorentzen/ai-job-search"
+try:
+    from tests._upstream import is_upstream_checkout
+except ImportError:  # `python -m unittest discover -s tests` imports test modules top-level
+    from _upstream import is_upstream_checkout
 
 REPO = Path(__file__).resolve().parent.parent
 CI = REPO / ".github" / "workflows" / "ci.yml"
@@ -45,7 +47,7 @@ def personalize_cv(text: str) -> str:
 
 
 @unittest.skipIf(
-    os.environ.get("GITHUB_REPOSITORY", UPSTREAM) != UPSTREAM,
+    not is_upstream_checkout(),
     "placeholder-integrity guards the pristine upstream template; forks personalize these files via /setup",
 )
 class TestCvSentinelsAreDataLocated(unittest.TestCase):
@@ -82,7 +84,7 @@ class TestCvSentinelsAreDataLocated(unittest.TestCase):
 
 
 @unittest.skipIf(
-    os.environ.get("GITHUB_REPOSITORY", UPSTREAM) != UPSTREAM,
+    not is_upstream_checkout(),
     "placeholder-integrity guards the pristine upstream template; forks personalize these files via /setup",
 )
 class TestProfileSentinelIsDataLocated(unittest.TestCase):

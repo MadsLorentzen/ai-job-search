@@ -9,11 +9,13 @@ were not, so a full Path B/C run left `[YOUR_NAME]`, `[YOUR_EMAIL]` and
 on the drafter noticing. A real user (#420) ran `/setup` and then hand-edited both
 files to close the gap.
 """
-import os
 import unittest
 from pathlib import Path
 
-UPSTREAM = "MadsLorentzen/ai-job-search"
+try:
+    from tests._upstream import is_upstream_checkout
+except ImportError:  # `python -m unittest discover -s tests` imports test modules top-level
+    from _upstream import is_upstream_checkout
 
 REPO = Path(__file__).resolve().parent.parent
 COMMAND = REPO / ".claude" / "commands" / "setup.md"
@@ -71,7 +73,7 @@ class SetupStep3ContactBlocks(unittest.TestCase):
 
 
 @unittest.skipIf(
-    os.environ.get("GITHUB_REPOSITORY", UPSTREAM) != UPSTREAM,
+    not is_upstream_checkout(),
     "template-placeholder guard targets the pristine upstream template; forks personalize 05-cv-templates.md and 06-cover-letter-templates.md via /setup",
 )
 class TemplatesStillCarryThePlaceholders(unittest.TestCase):
