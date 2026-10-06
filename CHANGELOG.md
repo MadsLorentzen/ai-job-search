@@ -29,6 +29,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **Fork-skip guards no longer run on a fork during a local test run** (`tests/_upstream.py`,
+  `tests/test_placeholder_integrity.py`, `tests/test_setup_command.py`,
+  `tests/test_upstream_checkout.py`) - the fork skip read
+  `os.environ.get("GITHUB_REPOSITORY", UPSTREAM)`, so with the variable unset a local
+  run fell back to upstream and the placeholder guards fired on every personalized fork,
+  leaving its suite permanently red after `/setup`. The three skips now share one helper:
+  `GITHUB_REPOSITORY` decides when set, otherwise the checkout's `origin` remote is matched
+  against the upstream repo (https and ssh forms, optional `.git` suffix), and an
+  undeterminable checkout assumes upstream. Tests only, no `framework_version` bump.
+
 - **`linkedin-search` and `freehire-search` reject invalid `--format` flags with `BAD_ARG`** (#555,
   `.agents/skills/linkedin-search/cli/src/cli.ts`, `.agents/skills/freehire-search/cli/src/cli.ts`) -
   unrecognized `--format` flags previously fell back silently to `"json"` with exit code 0, masking
