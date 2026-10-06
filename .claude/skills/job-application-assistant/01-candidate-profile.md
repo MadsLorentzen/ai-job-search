@@ -1,73 +1,49 @@
----
-framework_version: 1.1.1
----
-
-# Candidate Profile
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all sections will be filled with your actual information -->
+# Candidate Profile: Shivam Prajapati
 
 ## Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_ADDRESS]
-- **Phone:** [YOUR_PHONE]
-- **Email:** [YOUR_EMAIL]
-- **LinkedIn:** [YOUR_LINKEDIN_URL]
-- **GitHub:** [YOUR_GITHUB_URL]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **Constraints:** [YOUR_COMMUTE_OR_LOCATION_CONSTRAINTS]
-
-### Languages
-<!-- Every language you can work in professionally, with your honest level. Used by the
-Language Gate in 04-job-evaluation.md and by job-scraper/search-queries.md's query-language
-generation. Omit any language you don't actually work in - an undeclared language is treated as
-a hard no, not a gap to smooth over. -->
-
-| Language | Level | Notes |
-|----------|-------|-------|
-| [LANGUAGE] | [LEVEL, e.g. "Native" / "C2" / "B1/B2 (conversational)"] | [optional] |
+- **Name:** Shivam Prajapati
+- **Location:** Remote, Worldwide
+- **Email:** shivamprajapati9897@gmail.com
+- **Phone:** +918630799695
+- **Languages:** English (Professional)
+- **Status:** Employed
 
 ## Education
-
-| Degree | Period | Institution | Key Topics |
-|--------|--------|-------------|------------|
-| [DEGREE] | [YEARS] | [INSTITUTION] | [TOPICS] |
+- **B.Tech in Computer Science** (2018 - 2022) - Anand Engineering College Agra
 
 ## Professional Experience
 
-### [JOB_TITLE] - [COMPANY] ([START] - [END])
-[LOCATION]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_1]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_2]
-- [RESPONSIBILITY_OR_ACHIEVEMENT_3]
+### Sr. Software Engineer - Mobifly (Brainbox Network)
+**May 2026 - Present**
+- Developed Resource Management System using microservices (Employee, Allocations, Projects, etc.) enabling modular, scalable tracking.
+- Implemented complex SQL logic for resource availability, leaves, budget, and materialized views using PostgreSQL.
+- Designed backend microservices using NestJS with Sequelize ORM and PostgreSQL; integrated with Azure Service Bus.
+- Built features for resource allocation, requisitions, and project listing (OptiWise/GTRMS).
 
-<!-- Add more roles as needed -->
+### Software Engineer - SculpSoft Pvt.Ltd
+**May 2025 – March 2026**
+- Architected and delivered scalable microservices using C# and .NET Core for the Blitzz platform (video collaboration).
+- Improved Excel/CSV report export performance by migrating to ClosedXML, reducing memory usage & licensing overhead.
+- Added Live Transcription to video calls via Twilio APIs.
+- Deployed and monitored services using Azure DevOps CI/CD pipelines (zero-downtime releases).
+- Leveraged AI-assisted coding tools (GitHub Copilot, Cursor, Claude) for feature development.
 
-## Independent Projects
-<!-- Projects outside of employment: freelance, open source, personal -->
-- **[PROJECT_NAME]**: [DESCRIPTION]
+### Jr. Software Engineer - Netsmartz IT Solutions Pvt.Ltd
+**April 2022 – April 2025**
+- Designed and maintained ASP.NET MVC / .NET Core web apps for telecom, government, and enterprise clients.
+- Engineered SQL Server stored procedures, views, and triggers.
+- Remediated critical security vulnerabilities (SQL injection, XSS) across production applications in VAPT assessments.
+- Integrated RESTful APIs and third-party services into existing applications.
 
 ## Technical Skills
+- **Programming Languages:** C#, SQL, HTML, CSS3, JavaScript, JQuery
+- **Frameworks & Libraries:** .Net Core, ASP.Net Framework, Entity Framework, Blazor, ADO.Net, Microservices, RESTful APIs, FrontEnd (Angular, React)
+- **Databases:** SQL Server, Postgres SQL, Kafka
+- **Cloud & DevOps:** Microsoft Azure, Azure DevOps, CI/CD Pipelines, GitHub/Gitlab
+- **Vibe Coding/AI Tools:** GitHub Copilot, Cursor IDE, Claude Code (Anthropic), ChatGPT
 
-### Programming & ML
-- **[LANGUAGE]** ([PROFICIENCY]): [FRAMEWORKS_AND_LIBRARIES]
-- [OTHER_SKILLS]
-
-### Domain Expertise
-- [DOMAIN_1]
-- [DOMAIN_2]
-
-### Software & Tools
-- [TOOL_LIST]
-
-## Publications
-<!-- List peer-reviewed publications, if any -->
-1. [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL]. [DOI_LINK]
-
-## Awards
-- [AWARD] - [EVENT] ([YEAR])
-
-## References
-- [NAME], [TITLE], [COMPANY] ([EMAIL], [PHONE])
-
-More references available upon request.
+## Independent Projects
+- **OptiWise GT Bharat LLP:** Enterprise Resource Management System built as microservices (.NET / Node) behind an API Gateway, integrated with identity, and Azure DevOps for deployment.
+- **Blitzz Sculptsoft:** Remote video collaboration and customer support platform integrated with Twilio APIs.
+- **UPN (Unite Private Network):** Fibre-optic communications infrastructure services built on ASP.NET MVC, Blazor, Entity Framework.
+- **Tool Monitoring | Security Deposit | Incident Log:** Identifying and mitigating security vulnerabilities (VAPT) across ASP.NET Core apps.
