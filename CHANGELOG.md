@@ -15,6 +15,22 @@ per-file diff commands.
 
 ### Fixed
 
+- **The `/apply` host-check test derives its installed-portal hosts from the skills tree
+  instead of a hand-copied set** (#497, `tests/test_apply_host_check.py`) - `SHIPPED_PORTAL_HOSTS`
+  was six names typed into the test and nothing tied it to anything: a portal added by
+  `/add-portal` fetches from a host the copy never heard of, so its postings reached `/apply`
+  classified "unverified" while the suite stayed green, and a dropped portal left a stale
+  name behind. Rule 1 in `apply.md` defines an installed portal as "any configured job portal
+  in `.agents/skills/`", so that tree is now the source: the host literals in each
+  `*-search/cli/src/**/*.ts` (one `BASE_URL` per shipped CLI, `www.` dropped so apex and
+  subdomain both match), discovery by installation rather than by the `enabled:` flag
+  because an installed-but-disabled board is still a legitimate source for a pasted posting.
+  `classify_posting_host`'s default is that discovered set, and a new test class asserts that
+  every installed portal has a discoverable host and that each host classifies as
+  `installed_portal` at the apex, under `www.` and under a subdomain. The ATS apex list stays
+  the fixed set it is; parsing `apply.md`'s example list was deliberately not done, since a
+  parser keyed on prose wording is the next thing to go stale. Reported by Holo-Eter.
+
 - **`/expand` and `/setup` now append behavioral findings to sections `02-behavioral-profile.md`
   actually has** (`.claude/commands/expand.md` Step 5, `.claude/commands/setup.md` Step A7,
   `tests/test_expand_command.py`, `tests/test_setup_command.py`) - both told the model to add
