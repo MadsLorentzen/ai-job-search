@@ -57,15 +57,20 @@ Run two parallel sweeps against the monitored ATS list and dedupe by URL. The du
 
 ```bash
 bun run skills/ats-search/cli/src/cli.ts search-all \
-  --queries "growth,lifecycle,plg,monetization,activation,gtm,head of growth,vp of growth,founding,head of product,vp of product,founder in residence,entrepreneur in residence" \
+  --queries "growth,lifecycle,plg,product-led,product led,self-serve,self serve,freemium,monetization,activation,retention marketing,demand gen,demand engine,performance marketing,growth marketing,product marketing,crm,gtm,head of growth,vp of growth,founding,head of product,vp of product,founder in residence,entrepreneur in residence" \
   --since <YYYY-MM-DD> --format json
 ```
 
-**Sweep 1B — body search.** Catches roles whose title doesn't say "growth" but whose body describes the work:
+**Sweep 1B — body search.** Catches roles whose title doesn't say "growth" but whose body describes the work.
+
+**Matching is plain case-insensitive substring** (`cli.ts:120`) — no stemming, no punctuation normalization. Two consequences, both measured on the 2026-08-03 run:
+
+1. **Hyphenated and unhyphenated spellings are different queries.** `product-led growth` does not match "product led growth". Always ship both variants of every compound term or the role silently never matches.
+2. **Keep body terms to multi-word phrases only.** Short/weak tokens (`product led`, `self-serve`, `freemium`, `retention` on their own) match boilerplate in job-post footers and blow up the result set — adding them took one run from 13 extra hits to 130, nearly all junk. Roles with descriptive titles (`Head of Demand Engine`, `Performance Marketing Lead`) belong in the **title** sweep, where matching is precise. Body search is for roles whose *title hides the work*.
 
 ```bash
 bun run skills/ats-search/cli/src/cli.ts search-all \
-  --query-body "product-led growth,lifecycle marketing,growth experimentation,activation funnel,pricing and packaging" \
+  --query-body "product-led growth,product led growth,plg motion,plg funnel,self-serve funnel,self-serve growth,self serve growth,self-service funnel,freemium funnel,freemium conversion,bottom-up adoption,bottoms-up adoption,lifecycle marketing,growth experimentation,experimentation velocity,activation funnel,onboarding funnel,pricing and packaging,growth loop,answer engine optimization,generative engine optimization" \
   --since <YYYY-MM-DD> --format json
 ```
 
@@ -150,9 +155,34 @@ For each promising result from Step 2 (Step 1 results already include structured
 
 For each new job, do a rapid fit check (NOT the full evaluation from `04-job-evaluation.md` - just a quick signal):
 
+Score on two axes — **role fit** and **company weight** — then combine.
+
+**Role fit (the base score):**
+
 - **High match**: Role directly involves the candidate's core skills (PLG, growth engineering, lifecycle/email, experimentation), is at a target sector (frontier AI lab, growth-stage AI), and is in the acceptable location set (remote, NYC, hybrid NYC, or otherwise compelling enough to consider relocation)
 - **Medium match**: Role is adjacent to the candidate's experience (e.g. Sr PM at an AI company without "growth" in the title; lifecycle role at a non-AI consumer co)
 - **Low match**: Role requires significant skills the candidate lacks (e.g. pure data science ownership, pure enterprise sales)
+
+**Company weight (the modifier).** Two classes of company get promoted, because both the mission fit and the brand equity on the CV justify more friction than a generic posting:
+
+| Tier | Tag in `companies.json` | Effect |
+|---|---|---|
+| **Marquee** | `marquee` — Google, Anthropic, OpenAI, Apple, Netflix, NVIDIA, Stripe, Figma, Spotify, Amazon, Salesforce, Adobe, Reddit, Pinterest, Duolingo, Robinhood | **Promote one level.** Also relax the geographic filter: an on-site-only role outside NYC is *borderline*, not *skip* — surface it and flag the location rather than dropping it. |
+| **AI-native** | `frontier-ai`, `agentic-platform`, `ai`, `ai-work` | **Promote one level** when the role is growth/PLG/lifecycle/product. AI-as-core-capability is an explicit "what excites you" item in `CLAUDE.md`. |
+
+Rules:
+- A company in **both** classes (Anthropic, OpenAI, Google DeepMind, NVIDIA) promotes **medium → very high**, not just high. These are the top of the funnel.
+- Promotion **never rescues a genuine skills mismatch**. A marquee tag does not lift enterprise-sales quota roles, GTM *finance* roles, recruiting/HR, or pure DS/DE roles above low. Weighting boosts adjacency, not wrong function.
+- Beware the `gtm` token: at large companies it matches GTM Finance, GTM Enablement, GTM Recruiting, and Compensation-Business-Partner-GTM roles. These are low regardless of brand.
+- When a marquee or AI-native role is surfaced, check `job_scraper/referral_paths_2hop.json` and note whether a referral path exists — these companies should route to the referral track before a cold apply.
+
+**Marquee companies not on an ATS the CLI can read** (Google, Apple, Netflix, and the rest of `_phase3_queue` in `companies.json`) will never appear in the Step 1 sweep. Cover them explicitly in Step 2C with targeted WebSearch each run:
+
+```
+WebSearch: site:google.com/about/careers "growth" OR "product-led" New York
+WebSearch: Google careers "Product Manager, Growth" New York 2026
+WebSearch: Netflix jobs "growth" OR "lifecycle" product manager remote
+```
 
 ### Step 5: Deduplicate & Store
 
@@ -164,8 +194,10 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
       "title": "...",
       "company": "...",
       "url": "...",
+      "location": "...",
       "first_seen": "YYYY-MM-DD",
-      "fit": "high/medium/low",
+      "fit": "very high/high/medium/low",
+      "fit_basis": "why this score (weighting tier applied, demotions)",
       "status": "new/skipped/evaluated",
       "source": "ats|websearch"
     }
@@ -173,6 +205,10 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
 }
 ```
 2. Only present jobs NOT already in the seen list or tracker.
+
+**Always store `location`.** It was missing from the schema until 2026-08-03, which made the geo filter unenforceable on re-scoring passes — international postings (Luxembourg, Tel Aviv, Singapore) survived as high-fit purely on brand. Without `location` on the row, a later weighting pass cannot tell a Remote-US role from a Ljubljana one.
+
+**Apply the geo filter *after* the weighting promotion, never before.** Marquee status relaxes the geo tier only inside the US/Canada — it does not make a London or Singapore posting relevant. Demote any promoted row whose location is non-US and lacks a US/remote-US option. Likewise demote junior titles (`Specialist`, `Associate`, `Coordinator`, `Intern`) that a brand promotion lifted above their level.
 
 ### Step 6: Present Results
 

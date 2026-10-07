@@ -14,7 +14,7 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 - **Name:** AJ Magnuson
 - **Location:** Brooklyn, NY, USA (prefers remote; Brooklyn-based hybrid/on-site fine; open to relocation for a stellar role or compensation)
 - **Languages:** English (native); actively learning Brazilian Portuguese, Spanish, and Arabic (all beginner)
-- **Status:** Founder at Omega Point (fractional and project-based revenue growth advisory). Actively interviewing for senior growth roles and IC growth roles at frontier AI labs.
+- **Status:** Director of Growth & Automation at Shelf (offer signed 2026-08-08; exact start date TBC). Searching selectively while employed: large established companies and/or PM-growth roles, not pure marketing. Also Founder at Omega Point (fractional revenue growth advisory).
 - **LinkedIn headline:** "3x founder | growth leadership | I help companies maximize revenue through PLG, experimentation, messaging strategy and AI systems."
 
 ### Education
@@ -22,11 +22,13 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
   - Interdisciplinary degree across cognitive science, AI, decision theory, logic, and computer science
 
 ### Professional Experience
+- **Director of Growth & Automation** (Aug/Sep 2026 - Present; exact start date TBC) - **Shelf** (Remote / NYC) - AI knowledge-automation platform
+  - [Bullets TBD - gather accomplishments from AJ before using this entry on a CV]
 - **Founder** (May 2026 - Present) - **Omega Point** (New York, NY)
   - Fractional and project-based revenue growth advisory
   - Growth content hub
 - **VP of Growth** (Feb 2025 - Jan 2026) - **Checkmate Intelligence** (Remote / NYC) - Series A B2B2C discounts platform, Google Ventures backed
-  - Led PLG, revenue intelligence, experiment velocity and acquisition through 10x revenue expansion in 12 months
+  - Led PLG, revenue intelligence, experiment velocity and acquisition through 9x revenue expansion in 12 months (~$1M to ~$9M)
   - Introduced "Enrichment" product line that grew to 15% of total revenue in the first 3 months
   - 2x LTV on B2C mobile app; 40% revenue conversion lift in B2B channel
   - Built B2B2C growth loop driving an additional 30,000 high-intent consumer opt-ins per week
@@ -58,9 +60,9 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 - **Engineer → Sr. Engineer** (Oct 2006 - Jan 2008) - **RockYou** (San Mateo) - First engineering hire at Sequoia-backed startup; built consumer apps reaching 100M+ MAU
 - **Researcher → Sr. Researcher** (Jul 2004 - Oct 2006) - **Become.com** (Mountain View) - First product hire at Ron Conway-backed search startup founded by the MySimon team (acq. CNET)
 
-### Independent Projects (active)
-- **Warmode** - agentic growth harness
-- **Matic** - AI workflow builder
+### Independent Projects
+- **Warmode** (ACTIVE) - agentic growth harness / AI-native growth decision engine. Built with technical co-founder Rohan. This is the AI-native proof point to cite in interviews.
+- **Matic** (BACKBURNER) - AI workflow builder. Not active; do not lead with it or imply current work.
 - **Time Trail** - build-in-public storytelling changelog
 - **Omega Point** - fractional growth agency and growth content hub
 
@@ -74,10 +76,23 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 - AngelPad inductee (2014-2015) - top-ranked startup accelerator
 
 ### Publications
-- None
+- Literary fiction, published under the byline **A.E. Magnuson** (distinct from the professional name A.J. Magnuson)
 
 ### Awards
 - AngelPad - top-ranked startup accelerator inductee (2014-2015)
+
+### Personal Context (deploy selectively, never by default)
+Two genuine parts of AJ's life that are assets in some processes and noise in others. Include only when the trigger below is met; omitting them is the default.
+
+**Writing / literary fiction (byline A.E. Magnuson)**
+- *Use when:* the role is at a creator, publishing, media, or writing-adjacent company; OR writing quality is an explicit requirement (frontier AI labs routinely name communication skills); OR the interviewer is themselves a writer.
+- *Why it lands:* it is a real practice, not a hobby claim, and writing quality has been explicitly praised as a differentiator in past processes. It also gives AJ standing on questions about what AI can and cannot replace in written work, since he is arguing from inside the craft.
+- *Do not use for:* fintech, B2B infrastructure, or any role where it reads as unrelated.
+
+**Music (serious lifelong musician: guitar, voice, songwriting, bands)**
+- *Use when:* the company is in music, audio, or artist tooling (Suno, Blast Radio, Spotify-adjacent); OR the role serves creators and the credibility of "I am one" matters.
+- *Why it lands:* it is the through-line nobody notices in his CV. damntheradio (Linkin Park, Black Keys), FanBridge (Lady Gaga, John Mayer), Blast Radio (social radio), the Avenged Sevenfold scale story. He has been building for musicians for fifteen years because he is one.
+- *Caution:* AJ loves the craft, not the music business. Do not frame him as wanting to work in the industry for its own sake.
 
 ### Behavioral Profile
 *[All entries inferred from LinkedIn summary + CV pattern. No formal assessment on file.]*

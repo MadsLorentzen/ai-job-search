@@ -468,7 +468,11 @@ function renderKanban(spec: KanbanRenderSpec): string {
     parts.push(`## ${label}`)
     parts.push("")
     const cards = grouped[status] || []
-    const cap = status === spec.newColumnKey ? spec.newColumnCap : Number.MAX_SAFE_INTEGER
+    // Cap the two archive-scale columns ("new" backlog and "skipped") so the
+    // board stays renderable; everything else shows in full. Skipped grew to
+    // 1,300+ cards after the 2026-10-07 stale-role cleanup, which made the
+    // kanban plugin unusable uncapped.
+    const cap = status === spec.newColumnKey || status === "skipped" ? spec.newColumnCap : Number.MAX_SAFE_INTEGER
     const shown = cards.slice(0, cap)
     for (const card of shown) {
       const filename = spec.filenamesByUrl.get(card.url)

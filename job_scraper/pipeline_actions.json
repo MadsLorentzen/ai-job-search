@@ -30,7 +30,9 @@
           "to": "Alex Ortiz",
           "via_broker": null,
           "note": "Asked Alex Ortiz to broker an intro to Kat Killion (GTM @ Anthropic, 2-hop path via Alex). Re: PM API Growth role. Waiting on Alex.",
-          "outcome": "pending"
+          "outcome": "declined",
+          "outcome_note": "Alex Ortiz could not make the referral. Path closed; re-route Anthropic/Cursor to another contact or cold apply.",
+          "outcome_logged": "2026-08-03"
         }
       ],
       "follow_up_due": "2026-06-25",
@@ -54,7 +56,9 @@
           "to": "Jeff Maselli",
           "via_broker": null,
           "note": "Reached out to Jeff (leads search efforts across Executive and AI at Perplexity, strong-connection broker) about the Product Manager (Builder) role. Asked if its on his team / who the right person to talk to is.",
-          "outcome": "pending"
+          "outcome": "no_offer_stay_in_touch",
+          "outcome_note": "Referral converted to interviews at Perplexity; did not get the GTM Engineer role. Perplexity said to stay in touch -- warm contact for future Perplexity roles.",
+          "outcome_logged": "2026-08-03"
         }
       ],
       "follow_up_due": "2026-06-25",
@@ -68,7 +72,9 @@
           "to": "Jeff Maselli",
           "via_broker": null,
           "note": "Reached out to Jeff (leads search efforts across Executive and AI at Perplexity, strong-connection broker) about the Product Marketing Manager, API role. Asked if its on his team / who the right person to talk to is.",
-          "outcome": "pending"
+          "outcome": "no_offer_stay_in_touch",
+          "outcome_note": "Referral converted to interviews at Perplexity; did not get the GTM Engineer role. Perplexity said to stay in touch -- warm contact for future Perplexity roles.",
+          "outcome_logged": "2026-08-03"
         }
       ],
       "follow_up_due": "2026-06-25",
@@ -82,7 +88,9 @@
           "to": "Jeff Maselli",
           "via_broker": null,
           "note": "Reached out to Jeff (leads search efforts across Executive and AI at Perplexity, strong-connection broker) about the Product Marketing Manager role. Asked if its on his team / who the right person to talk to is.",
-          "outcome": "pending"
+          "outcome": "no_offer_stay_in_touch",
+          "outcome_note": "Referral converted to interviews at Perplexity; did not get the GTM Engineer role. Perplexity said to stay in touch -- warm contact for future Perplexity roles.",
+          "outcome_logged": "2026-08-03"
         }
       ],
       "follow_up_due": "2026-06-25",
@@ -96,7 +104,9 @@
           "to": "Alex Ortiz",
           "via_broker": null,
           "note": "Asked Alex Ortiz to broker an intro to Jordan MacDonald (2-hop path, Building Cursor). Re: PMM role.",
-          "outcome": "pending"
+          "outcome": "declined",
+          "outcome_note": "Alex Ortiz could not make the referral. Path closed; re-route Anthropic/Cursor to another contact or cold apply.",
+          "outcome_logged": "2026-08-03"
         }
       ],
       "follow_up_due": "2026-06-25"
@@ -109,7 +119,9 @@
           "to": "Alex Ortiz",
           "via_broker": null,
           "note": "Asked Alex Ortiz about Cursor connect (Jordan MacDonald, 2-hop). Re: PM Agent Harness role \u2014 direct match for AJs Warmode work.",
-          "outcome": "pending"
+          "outcome": "declined",
+          "outcome_note": "Alex Ortiz could not make the referral. Path closed; re-route Anthropic/Cursor to another contact or cold apply.",
+          "outcome_logged": "2026-08-03"
         }
       ],
       "follow_up_due": "2026-06-25",
@@ -204,7 +216,11 @@
         "cover_letter": "cover_letters/cover_substack_pm_growth.tex",
         "cover_letter_pdf": "cover_letters/cover_substack_pm_growth.pdf",
         "notes": "Built 2026-06-22 via parallel drafter agents on ajcv.cls/cover_aj.cls templates. Independently recompiled: CV 2pp, cover 1pp, 0 errors. Very strong creator-economy fit. SQL named as required, not a documented AJ skill; positioned Amplitude/analytics fluency instead.",
-        "recruiter_screen_prep": "documents/applications/substack-product-manager-growth/recruiter-screen-prep.md"
+        "recruiter_screen_prep": "documents/applications/substack-product-manager-growth/recruiter-screen-prep.md",
+        "hm_round_prep": "documents/applications/substack-product-manager-growth/hm-chris-chen-prep.md",
+        "job_description": "documents/applications/substack-product-manager-growth/job-description.md",
+        "aeo_analysis_plan": "documents/applications/substack-product-manager-growth/aeo-analysis-plan.md",
+        "aeo_study_output": "Google Drive (one-pager + raw JSON), delivered to Substack 2026-07-28"
       },
       "outreach": [
         {
@@ -213,10 +229,24 @@
           "to": "Substack",
           "note": "Auto-submitted application; confirmation received.",
           "outcome": "submitted"
+        },
+        {
+          "date": "2026-07-27",
+          "channel": "interview",
+          "to": "Chris Aston Chen (Head of Growth)",
+          "note": "HM round, 30min.",
+          "outcome": "scheduled"
+        },
+        {
+          "date": "2026-07-27",
+          "channel": "interview",
+          "to": "Chris Aston Chen (Head of Growth)",
+          "note": "HM round. Flat throughout; no role/team detail given; neutral-negative close.",
+          "outcome": "likely_rejected"
         }
       ],
       "follow_up_due": "2026-07-06",
-      "notes": "Cold apply CONVERTED -> recruiter screen. Substack = creator subscription platform (near-identical to AJ Beacons background). Role: PM, Growth (NEW role, product-first), owns ORGANIC acquisition flywheel: SEO, ASO, sign-up/onboarding/first-run, D1/D7 retention, funnel instrumentation. Reports to Head of Growth; works with Activation + Growth Marketing. GEO FLAG: listed San Francisco (HQ) only -- AJ is NYC; clarify remote/NYC early (potential deal-breaker). FIT: onboarding/activation/experimentation/subscription funnel = AJ core (Beacons). GAP: SEO/ASO as named disciplines not in AJ profile -- be honest, lean on adjacent organic-growth + fast learning + engineer-PM. | 2026-07-21: advanced to Chris Chen (chris-aston) HM round. BEST-FIT role. Comp likely ~$230k base + options (strike ~$1bn). Crux = comp vs. exceptional fit. | Chris Aston Chen = Substack HEAD OF GROWTH (AJ future manager). Ex-Roblox 7yr (growth). Writes chenstack.substack.com on platforms/creator ecosystems/cold starts. Prep: read his writing to mirror frame (Raman-style). Rapport goldmine = shared creator-platform-growth worldview (his Roblox creator economy + AJ Beacons creator subscriptions).",
+      "notes": "Cold apply CONVERTED -> recruiter screen. Substack = creator subscription platform (near-identical to AJ Beacons background). Role: PM, Growth (NEW role, product-first), owns ORGANIC acquisition flywheel: SEO, ASO, sign-up/onboarding/first-run, D1/D7 retention, funnel instrumentation. Reports to Head of Growth; works with Activation + Growth Marketing. GEO FLAG: listed San Francisco (HQ) only -- AJ is NYC; clarify remote/NYC early (potential deal-breaker). FIT: onboarding/activation/experimentation/subscription funnel = AJ core (Beacons). GAP: SEO/ASO as named disciplines not in AJ profile -- be honest, lean on adjacent organic-growth + fast learning + engineer-PM. | 2026-07-21: advanced to Chris Chen (chris-aston) HM round. BEST-FIT role. Comp likely ~$230k base + options (strike ~$1bn). Crux = comp vs. exceptional fit. | Chris Aston Chen = Substack HEAD OF GROWTH (AJ future manager). Ex-Roblox 7yr (growth). Writes chenstack.substack.com on platforms/creator ecosystems/cold starts. Prep: read his writing to mirror frame (Raman-style). Rapport goldmine = shared creator-platform-growth worldview (his Roblox creator economy + AJ Beacons creator subscriptions). | 2026-07-27 12:45-1:15pm ET: HM round w/ Chris Aston Chen, Head of Growth (Zoom substackinc 84781028148, 30min). Prep doc written. KEY: Chris published his own rubric 7/12 ('How to Win the PM Interview When Everyone's Qualified') = story + rigor + conviction, decided in 180 seconds. His conviction-vs-data thesis ('Certainty is a story you tell afterward') maps directly onto AJ's DailyPay hyper-users + Beacons longer-onboarding stories. | 2026-07-27 JD VERIFIED via Ashby posting API (api.ashbyhq.com/posting-api/job-board/substack) \u2014 USE THIS ENDPOINT for Ashby JDs; the jobs.ashbyhq.com page is JS-rendered and WebFetch returns only the title, which is almost certainly why the 6/22 cover letter missed the role's actual emphasis. CORRECTIONS: (1) comp band is $190k-$230k cash, NOT '~$230k base' \u2014 $230k is the ceiling. (2) SEO/ASO is CENTRAL not peripheral: 2 of 3 'What You'll Do' blocks are ASO and SEO; 3 of 7 requirements are technical SEO, hands-on ASO, AEO. (3) Favorable nuances: SEO scope is 'protecting and extending an already-strong position rather than rebuilding it'; ASO block is mostly listing conversion testing (copy/screenshots/preview video/ratings) = AJ's core skill on an unfamiliar surface; AEO requirement explicitly accepts 'a clear point of view' in lieu of experience = AJ's opening. (4) Location: field says SF (HQ) but body states no location requirement (sibling Growth Marketing Manager role says 'SF or New York'). | 2026-07-27 OUTCOME: HM round cold (see seen_jobs outcome_note). Decided NOT to send Chris a follow-up \u2014 after a call that flat, an unsolicited argument reads as relitigating. Instead: proactive redirect to RUSSELL on the existing 'Next Steps' thread, sent BEFORE the formal rejection lands, conceding the SEO/ASO role and asking about PM-Creator. | 2026-07-28: AJ declined the PM-Creator redirect (Chris now owns product too, so it likely routes to the same desk). Chosen play instead: a 3-hour AEO citation audit sent to Chris unasked as a work sample \u2014 the only follow-up type that can move a factual judgment about domain depth. Est. 15% it changes the Substack outcome; justified by reuse (Omega Point post, Perplexity demand-gen material, Anthropic Labs evidence of self-directed prototyping). Plan: aeo-analysis-plan.md. SEQUENCING: behind Shelf DS prep. | 2026-07-28: FORM REJECTION received. AJ sent Russell a closing note: AEO study (40 queries x 4 types x 5 models via Perplexity Computer Model Council) linked via Drive, offer to forward to Chris, a light signal that he read the verdict early, and a direct ASK FOR SPECIFIC FEEDBACK. Deliberately omitted: the 3-motives disclosure (incl. that he's interviewing at Perplexity), any critique of Chris, and the 'reach out if the team changes shape' door. STATUS: closed. Artifact is reusable \u2014 see below.",
       "events": [
         {
           "date": "2026-07-21",
@@ -820,7 +850,8 @@
         "cover_letter": "cover_letters/cover_shelf_gtm.tex",
         "cover_letter_pdf": "cover_letters/cover_shelf_gtm.pdf",
         "notes": "Built 2026-06-24 via parallel drafters; ATS link resolved from LinkedIn find. Recompiled CV 2pp / cover 1pp, 0 err, no em-dash. Strong fit. AI knowledge-automation, hands-on GTM/growth IC. NYC in-person.",
-        "diligence": "documents/applications/shelf-growth-strategy-lead/diligence.md"
+        "diligence": "documents/applications/shelf-growth-strategy-lead/diligence.md",
+        "ceo_round_prep": "documents/applications/shelf-growth-strategy-lead/head-of-automation-prep.md"
       },
       "outreach": [
         {
@@ -829,9 +860,30 @@
           "to": "Shelf",
           "note": "Auto-submitted application (CV+cover). Confirmation received.",
           "outcome": "submitted"
+        },
+        {
+          "date": "2026-07-27",
+          "channel": "interview",
+          "to": "Sedarius Perrotta (CEO)",
+          "note": "CEO round 2 \u2014 Head of Automation role definition.",
+          "outcome": "scheduled"
+        },
+        {
+          "date": "2026-07-27",
+          "channel": "interview",
+          "to": "Sedarius Perrotta (CEO)",
+          "note": "CEO round 2 complete. Advanced to DS assessment + 2hr in-person NYC Fri 7/31 10a-12p.",
+          "outcome": "advanced"
+        },
+        {
+          "date": "2026-08-08",
+          "channel": "other",
+          "to": "Shelf",
+          "note": "OFFER SIGNED. Applied 2026-07-19, process ran ~3 weeks.",
+          "outcome": "offer_signed"
         }
       ],
-      "notes": "Cold applied 2026-07-19; Kevin Ford (Head of Marketing at Shelf, and the role reports closely to Head of Marketing = effectively the hiring manager) CALLED AJ morning of 2026-07-20 (~12hr after apply). Very strong signal. Shelf = GenAI context/answer-automation platform (agentic AI), Series B $52.5M (Tiger Global+Insight), customers incl John Deere, HelloFresh, Glovo, HBR; HQ Stamford CT but THIS role is NYC. Role = high-agency generalist \"force multiplier\" on core team (Operator/Orchestrator/Creative Force), builds from blank page across growth/campaigns/automation/events/strategy, AI-native leverage. FIT: strong on builder/0-1/high-agency/AI-native/first-principles (Warmode/Matic/Claude Code = direct match). CAVEATS: generalist utility role under Head of Marketing (level likely below VP target; more operator/EiR); has creative/copy/brand/events lean. ACTION: call Kevin back promptly. | 2026-07-21 call set. 5-DAY IN-OFFICE NYC (geo OK but full in-office). AJ: decent fit + on-thesis; COMP is the crux. NOTE: Substack Russell screen also 7/21 2:30pm ET -- avoid overlap. | 2026-07-21: advanced past HM call. Safety-school framing. Culture flags (turnover/long-hours/storm) -> diligence needed; comp bar RAISED not lowered. | DILIGENCE (2026-07-21): MODERATE concern. NOT toxic (Glassdoor 4.1, founding team intact). Real risk = 5-YR FUNDING GAP (Series B Aug2021, no Series C) + intense/grind culture (63% CEO approval, WLB 3.6). Uber/Progressive/Prudential customers UNCONFIRMED. Resolve runway/raise question before proceeding. | 2026-07-23 CEO round: pitched \"Head of Automation\" role (deploy new AI product to automate internal ops). Virtual Mon PM. No longer a simple safety-school; now high-variance speculative play. Resolve product-reality + runway + scope/comp Monday. SCHEDULING: Mon already has Substack 12:45p ET + maybe Perplexity -- protect Substack, space Shelf clear. | 2026-07-23: cash-flow-even @ $20M rev (stability upgraded). Options strike $0.27, believed raise $20 (upside real but speculative, tied to new product). Equity thesis = same bet as \"is the product real.\"",
+      "notes": "Cold applied 2026-07-19; Kevin Ford (Head of Marketing at Shelf, and the role reports closely to Head of Marketing = effectively the hiring manager) CALLED AJ morning of 2026-07-20 (~12hr after apply). Very strong signal. Shelf = GenAI context/answer-automation platform (agentic AI), Series B $52.5M (Tiger Global+Insight), customers incl John Deere, HelloFresh, Glovo, HBR; HQ Stamford CT but THIS role is NYC. Role = high-agency generalist \"force multiplier\" on core team (Operator/Orchestrator/Creative Force), builds from blank page across growth/campaigns/automation/events/strategy, AI-native leverage. FIT: strong on builder/0-1/high-agency/AI-native/first-principles (Warmode/Matic/Claude Code = direct match). CAVEATS: generalist utility role under Head of Marketing (level likely below VP target; more operator/EiR); has creative/copy/brand/events lean. ACTION: call Kevin back promptly. | 2026-07-21 call set. 5-DAY IN-OFFICE NYC (geo OK but full in-office). AJ: decent fit + on-thesis; COMP is the crux. NOTE: Substack Russell screen also 7/21 2:30pm ET -- avoid overlap. | 2026-07-21: advanced past HM call. Safety-school framing. Culture flags (turnover/long-hours/storm) -> diligence needed; comp bar RAISED not lowered. | DILIGENCE (2026-07-21): MODERATE concern. NOT toxic (Glassdoor 4.1, founding team intact). Real risk = 5-YR FUNDING GAP (Series B Aug2021, no Series C) + intense/grind culture (63% CEO approval, WLB 3.6). Uber/Progressive/Prudential customers UNCONFIRMED. Resolve runway/raise question before proceeding. | 2026-07-23 CEO round: pitched \"Head of Automation\" role (deploy new AI product to automate internal ops). Virtual Mon PM. No longer a simple safety-school; now high-variance speculative play. Resolve product-reality + runway + scope/comp Monday. SCHEDULING: Mon already has Substack 12:45p ET + maybe Perplexity -- protect Substack, space Shelf clear. | 2026-07-23: cash-flow-even @ $20M rev (stability upgraded). Options strike $0.27, believed raise $20 (upside real but speculative, tied to new product). Equity thesis = same bet as \"is the product real.\" | 2026-07-27 10:00-11:00am ET: CEO round #2 w/ Sedarius (Zoom 7480327819), role = bespoke 'Head of Automation' (deploy Cortex internally). Prep doc written: dogfooding/customer-zero frame + 90-day proposal + open questions (product reality, scope/reporting line, raise, in-office, comp anchor). Sed in NYC Fri for in-person. | 2026-07-27 CEO round #2 DONE -> ADVANCED. Next: (a) assessment with Shelf's Head of Data Science, TBD before Friday; (b) IN-PERSON NYC Fri 2026-07-31 10:00a-12:00p (2 hrs, Sed said he'd be back in NYC Friday). Process is moving fast and is now multi-stage, which raises the seriousness of the 'Head of Automation' role beyond a floated idea. STILL OPEN from diligence: written scope/title/reporting line, equity grant size (strike $0.27), Series C plans, 5-day in-office question.",
       "events": [
         {
           "date": "2026-07-20",
@@ -1044,7 +1096,9 @@
           "channel": "recruiter_call",
           "to": "AIOS recruiter",
           "note": "Inbound -> 15-min recruiter screen scheduled FRIDAY 2026-06-26 for Head of Product Growth. Role heavily focused on referral lift / viral growth.",
-          "outcome": "pending"
+          "outcome": "rejected_after_interview",
+          "outcome_note": "Passed first interview; AIOS later proceeded with another candidate.",
+          "outcome_logged": "2026-08-03"
         }
       ],
       "follow_up_due": "2026-06-26",
@@ -1434,7 +1488,7 @@
       "notes": "Skipped 2026-07-06: listing no longer active (liveness check, was in triaged)."
     },
     "https://jobs.ashbyhq.com/perplexity/2be717cb-ad3e-4052-a464-79b107a70406": {
-      "notes": "Perplexity GTM demand-gen lead for enterprise/business products. SF or NYC (geo OK). AI-native tooling emphasis (build own tools, automate, treat campaigns as experiments) -- plays to AJ engineer-PM/experimentation edge, though it is a demand-gen/marketing seat vs pure growth/PM. Frontier-AI target company. Added to Interview 2026-07-13. | HM round: Raman Malik (VP Product Growth, future manager). Positioning: AI-fluent + technical + forward-thinking, NOT a playbook operator. | HM identity confirmed: Raman Malik (VP Product Growth), LinkedIn: https://www.linkedin.com/in/ramanrmalik/ | 2026-07-24 Raman round STRONG: writing praised (culture is writing-centric), role EVOLVING from Demand Gen Lead (marketing exec) -> bespoke opportunistic BUILDER/systems role (\"canvas + unlimited tokens to build gtm\"). Better fit for AJ edge. Parallel to Shelf CEO re-scoping to Head of Automation -- leaders read AJ as builder not executor. Next gate: Ramans weekend read of doc -> email early next week. Role/level/comp UNDEFINED (opportunity + risk).",
+      "notes": "Perplexity GTM demand-gen lead for enterprise/business products. SF or NYC (geo OK). AI-native tooling emphasis (build own tools, automate, treat campaigns as experiments) -- plays to AJ engineer-PM/experimentation edge, though it is a demand-gen/marketing seat vs pure growth/PM. Frontier-AI target company. Added to Interview 2026-07-13. | HM round: Raman Malik (VP Product Growth, future manager). Positioning: AI-fluent + technical + forward-thinking, NOT a playbook operator. | HM identity confirmed: Raman Malik (VP Product Growth), LinkedIn: https://www.linkedin.com/in/ramanrmalik/ | 2026-07-24 Raman round STRONG: writing praised (culture is writing-centric), role EVOLVING from Demand Gen Lead (marketing exec) -> bespoke opportunistic BUILDER/systems role (\"canvas + unlimited tokens to build gtm\"). Better fit for AJ edge. Parallel to Shelf CEO re-scoping to Head of Automation -- leaders read AJ as builder not executor. Next gate: Ramans weekend read of doc -> email early next week. Role/level/comp UNDEFINED (opportunity + risk). | 2026-07-29 CLOSED WARM. NEXT ACTION: reply repositioning AJ from 'demand gen candidate' to 'growth engineer who builds GTM systems' so Raman's mental model is right for the next req. Hook: AJ's AEO citation research is directly in Perplexity's own product domain. FOLLOW-UP: re-contact Raman ~6 weeks (mid-Sept 2026) as team grows. The pre-sent written POV technique (portable-interview-context \u00a77.9) WORKED here \u2014 Raman read it and led his reply with it.",
       "events": [
         {
           "date": "2026-07-13",
@@ -1470,7 +1524,16 @@
       ],
       "materials": {
         "interview_dossier": "documents/applications/perplexity-demand-generation-lead/interview-dossier.md"
-      }
+      },
+      "outreach": [
+        {
+          "date": "2026-07-29",
+          "channel": "email",
+          "to": "Raman Malik (HM)",
+          "note": "Passed on Demand Gen Lead; role became GTM Engineer. Warm close, invited future contact.",
+          "outcome": "rejected_warm"
+        }
+      ]
     },
     "https://capitalone.wd12.myworkdayjobs.com/job/McLean-VA/Senior-Product-Manager--Growth---Capital-One-Shopping--Remote-Eligible-_R246326-1": {
       "notes": "Sr PM Growth, Capital One Shopping (Remote-Eligible). Clean growth-PM + remote. Consumer shopping/commerce surface. Added 2026-07-15.",
@@ -1565,7 +1628,9 @@
           "channel": "other",
           "to": "Upward Coach",
           "note": "Coach referral request submitted via Upward portal for Warner Bros. Discovery \u2014 Senior Product Manager, Growth (International)",
-          "outcome": "pending"
+          "outcome": "referral_secured_not_yet_applied",
+          "outcome_note": "Upward coach referral came through (only one of the 5 to respond). NOT YET APPLIED -- application is the open action.",
+          "outcome_logged": "2026-08-03"
         }
       ]
     },
@@ -1576,7 +1641,9 @@
           "channel": "other",
           "to": "Upward Coach",
           "note": "Coach referral request submitted via Upward portal for Cockroach Labs \u2014 VP, Growth Marketing",
-          "outcome": "pending"
+          "outcome": "no_response",
+          "outcome_note": "Upward coach referral request went unanswered. Only the Warner Bros. Discovery request converted.",
+          "outcome_logged": "2026-08-03"
         }
       ]
     },
@@ -1587,7 +1654,9 @@
           "channel": "other",
           "to": "Upward Coach",
           "note": "Coach referral request submitted via Upward portal for Rippling \u2014 Head of Automated Growth",
-          "outcome": "pending"
+          "outcome": "no_response",
+          "outcome_note": "Upward coach referral request went unanswered. Only the Warner Bros. Discovery request converted.",
+          "outcome_logged": "2026-08-03"
         }
       ]
     },
@@ -1598,7 +1667,9 @@
           "channel": "other",
           "to": "Upward Coach",
           "note": "Coach referral request submitted via Upward portal for Snap Inc. \u2014 Head of User Growth Strategy & Operations",
-          "outcome": "pending"
+          "outcome": "no_response",
+          "outcome_note": "Upward coach referral request went unanswered. Only the Warner Bros. Discovery request converted.",
+          "outcome_logged": "2026-08-03"
         }
       ]
     },
@@ -1609,7 +1680,9 @@
           "channel": "other",
           "to": "Upward Coach",
           "note": "Coach referral request submitted via Upward portal for Moloco \u2014 Senior Growth Director, Moloco Ads",
-          "outcome": "pending"
+          "outcome": "no_response",
+          "outcome_note": "Upward coach referral request went unanswered. Only the Warner Bros. Discovery request converted.",
+          "outcome_logged": "2026-08-03"
         }
       ]
     },
@@ -1655,6 +1728,57 @@
     "https://www.linkedin.com/jobs/view/4442221581/": {
       "notes": "INBOUND: HM nudged AJ via LinkedIn. CPO at an early-stage NYC consumer MUSIC startup (shibuyaaa.com). RARE 4-WAY FIT: 0-to-1 consumer founder + technical/engineer-PM (2x CTO) + growth/PLG + MUSIC-TECH domain -- AJ uniquely has the music axis via Blast Radio (lossless social radio), damntheradio (artist social CMS: Linkin Park/Black Keys), FanBridge (artist engagement: Lady Gaga/John Mayer). Role wants: founder-mode, 0-to-1 consumer at scale, technical, distribution-first, music knowledge, build 100K retentive MAU in 6mo, recruit/lead eng/design/ML. Exec title (CPO), NYC hybrid. Comp $200K+ cash + meaningful equity (cash below AJ $250k target; exec title + equity offset). CAVEATS: VERY early stage = high-variance/unproven; consumer-music (not frontier-AI, though ML teams); they want GENUINE music passion (5-track playlist ask) -- AJ has pro music-platform depth but should convey real music affinity. APPLY via email gigs@shibuyaaa.com, subject \"Ship it!\", include: (1) product/startup built, (2) LinkedIn/CV/site, (3) 5-track playlist. | MUSIC PASSION CONFIRMED (2026-07-25): AJ is a serious lifelong musician -- led 3 bands, played in 6, wrote ~50 songs, 30yr virtuosic guitar, 12yr voice lessons (Raz Kennedy), album w/ a John Mayer collaborator, Bandcamp-featured album, wrote/performed for 3 weddings incl his own. The music-passion filter (playlist ask) is now a STRENGTH not a question. Nuance: loves the craft, not the business of music. Upgrades fit -- rare full-stack match (serious musician + 0-to-1 consumer founder + engineer-PM + growth).",
       "fit_note": "Music-passion caveat resolved -> among the best full-self fits on the board."
+    },
+    "https://job-boards.greenhouse.io/anthropic/jobs/5096878008": {
+      "materials": {
+        "notes": "No CV/cover built yet. Build on ajcv.cls/cover_aj.cls. MUST name Claude Code (per CLAUDE.md and because the JD names it as a qualification)."
+      },
+      "outreach": [],
+      "notes": "Anthropic Research PM, Labs (NYC). $385k-$460k posted, far above anything else in pipeline. LinkedIn source: linkedin.com/jobs/view/4438383940; ATS = job-boards.greenhouse.io/anthropic/jobs/5096878008 (use ATS, not LinkedIn \u2014 cowork cannot submit on LinkedIn). FIT (very high): 3x founder ('we seek experienced founders'); engineer-PM/2x CTO ('build prototypes yourself'); Claude Code daily driver (NAMED in JD); 0-to-1 track record (Beacons AI Email 0-1, Checkmate Enrichment 15% of revenue in 3mo, DailyPay WorkLife $3M at inception); 'navigate and execute amidst ambiguity' = AJ's stated thriving environment; Stanford Symbolic Systems (cog sci/AI/decision theory) is a nice bridge to research-facing product. GAP: research-adjacent product is newer ground than growth; this is NOT a growth role, so materials must lead 0-to-1 builder, not PLG/lifecycle. REFERRAL CHANNELS: no 1st-degree current Anthropic employees. Coach dashboard (referrals.upwardproductmanagement.com) shows 3 Anthropic connections. 2-hop candidates: Henry Shi (AI @ Anthropic, ex-Super.com founder \u2014 best fit, founder-to-founder), David Mercurio (MTS), Kat Killion (GTM), Ryan Ball (Ent Sales), Shad Ahmed (via broker Chantel Benson), Adrian Santos (via broker Caren Kelleher, verify current). SIBLING ROLE also open + NYC: Research Product Manager, Model Behaviors (greenhouse 5247407008). NEXT: draft referral asks (Henry Shi first) + build tailored CV/cover. | 2026-07-28: Henry Shi RULED OUT as referral path \u2014 AJ doesn't know how the connection was formed, so the ask would be cold-with-extra-steps. Remaining options: coach dashboard (referrals.upwardproductmanagement.com, 3 Anthropic contacts, verify who), David Mercurio (MTS), Kat Killion (GTM), Shad Ahmed via broker Chantel Benson. If none are real, treat Labs as a COLD APPLY with a strong written artifact attached rather than burning time sourcing a weak intro."
+    },
+    "https://job-boards.greenhouse.io/anthropic/jobs/5247407008": {
+      "materials": {
+        "notes": "No materials built. If pursued, lead 0-to-1 + judgment-under-ambiguity, NOT growth. Name Claude Code."
+      },
+      "outreach": [],
+      "notes": "Anthropic Research PM, Model Behaviors (NYC). $385k-$460k. Same referral channels as the Labs role \u2014 pursue BOTH in a single conversation rather than two separate asks. Labs is the stronger fit (founder + self-prototyping + Claude Code are named there); Model Behaviors leans ML/alignment depth AJ has less of. Order the ask: Labs first, Model Behaviors as the alternate. | 2026-07-28: Henry Shi RULED OUT as referral path \u2014 AJ doesn't know how the connection was formed, so the ask would be cold-with-extra-steps. Remaining options: coach dashboard (referrals.upwardproductmanagement.com, 3 Anthropic contacts, verify who), David Mercurio (MTS), Kat Killion (GTM), Shad Ahmed via broker Chantel Benson. If none are real, treat Labs as a COLD APPLY with a strong written artifact attached rather than burning time sourcing a weak intro."
+    },
+    "https://jobs.ashbyhq.com/substack/cf626dcf-0c76-4ad5-a738-3fbc72e4da06": {
+      "materials": {
+        "notes": "No materials yet. If it advances: lead Beacons creator lifecycle + FanBridge, monetization/pricing (120% lift), self-built analytics. Do NOT reuse the PM-Growth cover letter."
+      },
+      "outreach": [],
+      "notes": "Substack PM-Creator. Redirect target. NEXT ACTION: reply to Russell Lifson on the 'Next Steps with Substack' thread (russell.lifson@substackinc.com) today/tomorrow AM, before rejection lands. Confirm reporting line (Product vs Chris Chen's Growth org) and NYC/remote. Comp not posted on this listing; PM-Growth band was $190k-$230k for reference."
+    },
+    "inbound:popow-cpo": {
+      "outreach": [
+        {
+          "date": "2026-08-07",
+          "channel": "email",
+          "to": "Sam Singh <sam@harmonioushiring.com>",
+          "note": "Inbound retained search: confidential CPO, AI creator/UGC platform = Popow (popow.ai, Samyang Roundsquare subsidiary). $370-450K base + incentive; LA/SF/NY/MI. Screening call done: asked re acquired-founder, short-form video, 0-to-1, creator market.",
+          "outcome": "in_conversation"
+        }
+      ],
+      "follow_up_due": "2026-08-12",
+      "materials": {
+        "cv": "cv/main_popow.tex",
+        "cv_pdf": "cv/main_popow.pdf"
+      },
+      "next_step": "Next call: falsify structure risk. Ask: (1) CPO reporting line - LA CEO or Seoul? (2) equity/LTI mechanism, not just 'incentive bonus'; (3) % revenue from non-Samyang brands; (4) parent commitment horizon; (5) why is the seat open; (6) why Michigan.",
+      "context": "AJ signed Shelf offer 2026-08-08. Popow continues only as a 'very attractive role' candidate - answers to the 6 questions decide."
+    },
+    "referral:robinhood": {
+      "outreach": [
+        {
+          "date": "2026-10-07",
+          "channel": "other",
+          "to": "Robinhood referral contact (name TBC - ask AJ)",
+          "note": "AJ reports he has a referral available at Robinhood. Target roles: Senior PM Gold Growth (gh 8247333, fresh 2026-10-06, NYC 3d/wk) and Staff PM International Growth & Expansion (gh 8060585, open since ~June, NYC 3d/wk). Route applications through the referral, not cold.",
+          "outcome": "pending"
+        }
+      ],
+      "next_step": "Get referral contact's name; pick role(s); referral submission before/with application."
     }
   }
 }
