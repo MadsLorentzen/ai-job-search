@@ -65,6 +65,50 @@ describe("parseJobPostingFromHtml", () => {
     expect(parsed.validThrough).toBeNull();
   });
 
+  test("drops a malformed closing tag that the parser left as text (#525)", () => {
+    // A live page (konsulent-til-renoveringsprogram) wrote its Jobtype item as
+    // `Fuldtid </ li >`; node-html-parser does not recognise `</ li >` as a tag,
+    // so it reached employmentType verbatim. The same cleanText feeds the title,
+    // company, workplace and description on this branch.
+    const html = HTML_WITHOUT_JSON_LD.replace(
+      "<li><strong>Jobtype:</strong> Fuldtid</li>",
+      "<li><strong>Jobtype:</strong> Fuldtid </ li ></li>",
+    ).replace(
+      "<p>Hvad nu hvis du med f&#xE5; klik kunne unders&#xF8;ge dit lokalomr&#xE5;de?</p>",
+      "<p>Hvad nu hvis du med f&#xE5; klik kunne unders&#xF8;ge dit lokalomr&#xE5;de?</ p ></p>",
+    );
+
+    const parsed = parseJobPostingFromHtml(
+      html,
+      "journalistisk-udvikler",
+      "https://jobdanmark.dk/job/journalistisk-udvikler",
+    );
+
+    expect(parsed.employmentType).toEqual(["Fuldtid"]);
+    expect(parsed.description.split("\n")[0]).toBe("Hvad nu hvis du med få klik kunne undersøge dit lokalområde?");
+    expect(JSON.stringify(parsed)).not.toMatch(/<\s*\/?\s*[a-z]+\s*>/i);
+  });
+
+  test("keeps author text the page entity-encoded as a literal tag (#525)", () => {
+    // node-html-parser decodes entities before cleanText runs, so `&lt;div&gt;`
+    // in a description arrives as a literal `<div>`. Only the malformed
+    // closing-tag shape is stripped; an opening tag or a type parameter stays.
+    const html = HTML_WITHOUT_JSON_LD.replace(
+      "<p>Hvad nu hvis du med f&#xE5; klik kunne unders&#xF8;ge dit lokalomr&#xE5;de?</p>",
+      "<p>Erfaring med &lt;div&gt; og &lt;span&gt; i HTML, og &lt;T&gt; generics; x &lt; y &gt; z.</p>",
+    );
+
+    const parsed = parseJobPostingFromHtml(
+      html,
+      "journalistisk-udvikler",
+      "https://jobdanmark.dk/job/journalistisk-udvikler",
+    );
+
+    expect(parsed.description.split("\n")[0]).toBe(
+      "Erfaring med <div> og <span> i HTML, og <T> generics; x < y > z.",
+    );
+  });
+
   test("does not reject titles containing '404' mid-phrase", () => {
     const htmlWith404InTitle = HTML_WITHOUT_JSON_LD.replace(
       "<title>Journalistisk udvikler s&#xF8;ges | jobdanmark</title>",
