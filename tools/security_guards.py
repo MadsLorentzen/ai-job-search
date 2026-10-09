@@ -70,6 +70,11 @@ REQUIRED_IGNORE_RULES = [
     "documents/postings/**",
     "documents/interview/**",
     "job_search_tracker.csv",
+    # The durable job store (app/jobs/store.py). Canonical jobs, the dedup
+    # index, the run ledger and quarantined records together describe exactly
+    # which vacancies this person is pursuing - the most personal artefact the
+    # repo produces. Same failure mode as the tracker row above.
+    "data/",
     "gmail_sync/",
     "reports/",
     "upskill/*.md",

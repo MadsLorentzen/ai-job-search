@@ -83,6 +83,11 @@ documents/interview/**
 # Personal job search tracking
 job_search_tracker.csv
 
+# Durable job store (app/jobs/store.py): canonical jobs, the dedup index, the
+# discovery-run ledger, and quarantined records. All of it describes which
+# vacancies this person is pursuing, so none of it may be committed.
+data/
+
 # Gmail sync state (message IDs, subjects - personal data)
 gmail_sync/
 
