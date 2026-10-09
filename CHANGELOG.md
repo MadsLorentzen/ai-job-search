@@ -15,6 +15,19 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobdanmark-search detail` no longer keeps a malformed closing tag as text on the
+  rendered-HTML branch** (#525, `detail.ts`, `tests/detail-parsing.test.ts`) - a live page wrote
+  its Jobtype item as `Fuldtid </ li >`, and because `node-html-parser` does not recognise a
+  closing tag with a space after the slash, the fragment reached the output verbatim:
+  `employmentType: ["Fuldtid </ li >"]`, a value that matches none of the documented job-type
+  vocabulary. The same `cleanText` feeds every text field on both branches, so any of them
+  could carry it. `cleanText` now drops the closing-tag shape (`</ li >`, `</ li>`, `< /li>`)
+  before collapsing whitespace - and only that shape, because the parser decodes entities
+  before `cleanText` runs, so author text the page encoded as `&lt;div&gt;` or `&lt;T&gt;`
+  arrives as a literal `<div>` / `<T>` and must survive. Two fixtures: the stray tag in both
+  the Jobtype item and a description paragraph (fails on master), and an entity-encoded
+  `<div>` in a description that stays in the text.
+
 - **`/reset profile` now targets the headings the shipped skill files actually have**
   (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - two of its Step 3
   targets had drifted. The `05-cv-templates.md` step anchored on a section beginning
