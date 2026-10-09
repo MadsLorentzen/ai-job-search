@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="AI Job Search 本地任务型求职工作台">
+    <title>AI 求职工作台</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="主导航">
+        <a class="brand" href="#today" aria-label="AI 求职工作台首页">
+          <span class="brand-mark" aria-hidden="true">AI</span>
+          <span class="brand-copy"><strong>求职工作台</strong><small>LOCAL CAREER OS</small></span>
+        </a>
+        <nav id="main-nav" class="nav-list" aria-label="工作台页面"></nav>
+        <div class="sidebar-footer">
+          <a class="local-status" href="#settings"><i class="status-dot" aria-hidden="true"></i><span><strong>本机模式</strong><small>数据默认留在本机</small></span></a>
+        </div>
+      </aside>
+
+      <main class="main-content" id="main-content">
+        <header class="topbar">
+          <div class="topbar-copy">
+            <p id="page-eyebrow" class="eyebrow">TODAY</p>
+            <h1 id="page-title">今天先推进最重要的一步</h1>
+            <p id="page-subtitle" class="subtitle">查看进度、处理待办，让每次打开工作台都有明确方向。</p>
+          </div>
+          <div class="topbar-actions">
+            <span class="local-badge"><i class="status-dot" aria-hidden="true"></i>本机优先</span>
+            <button id="refresh-button" class="button button-secondary button-icon-mobile" type="button" aria-label="刷新工作台状态"><span aria-hidden="true">↻</span><span>刷新</span></button>
+            <a class="button button-ghost settings-shortcut" href="#settings" aria-label="打开设置"><span aria-hidden="true">⚙</span><span>设置</span></a>
+          </div>
+        </header>
+
+        <div id="global-status" class="sr-only" role="status" aria-live="polite"></div>
+
+        <section id="today" class="page-panel active" data-page="today" tabindex="-1" aria-labelledby="page-title">
+          <article id="next-action-card" class="next-action-card" aria-busy="true">
+            <div class="next-action-copy">
+              <span class="section-label">下一步</span>
+              <h2>正在判断当前进度…</h2>
+              <p>读取本地职位与资料状态。</p>
+            </div>
+            <div class="skeleton-button" aria-hidden="true"></div>
+          </article>
+
+          <section class="metric-grid" aria-label="求职进度摘要">
+            <article class="metric-card"><span class="metric-icon blue" aria-hidden="true">⌕</span><div><strong id="metric-new-jobs" class="metric-value">—</strong><span>待处理职位</span></div></article>
+            <article class="metric-card"><span class="metric-icon green" aria-hidden="true">✓</span><div><strong id="metric-shortlist" class="metric-value">—</strong><span>高匹配职位</span></div></article>
+            <article class="metric-card"><span class="metric-icon amber" aria-hidden="true">↗</span><div><strong id="metric-applications" class="metric-value">—</strong><span>申请记录</span></div></article>
+            <article class="metric-card"><span class="metric-icon navy" aria-hidden="true">◷</span><div><strong id="metric-interviews" class="metric-value">—</strong><span>面试阶段</span></div></article>
+          </section>
+
+          <div class="today-grid">
+            <section class="panel" aria-labelledby="recent-jobs-title">
+              <div class="panel-heading">
+                <div><span class="section-label">RECENT MATCHES</span><h2 id="recent-jobs-title">最近职位</h2></div>
+                <a href="#jobs">查看全部</a>
+              </div>
+              <div id="recent-jobs" class="compact-list" aria-busy="true"><div class="skeleton-stack" aria-hidden="true"><i></i><i></i><i></i></div></div>
+            </section>
+
+            <section class="panel" aria-labelledby="progress-title">
+              <div class="panel-heading"><div><span class="section-label">PROFILE</span><h2 id="progress-title">资料准备度</h2></div><strong id="profile-progress-value" class="progress-value">—</strong></div>
+              <div class="progress-track" role="progressbar" aria-label="资料准备度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="profile-progress-bar"></span></div>
+              <ul id="profile-checklist" class="checklist"></ul>
+              <a class="text-action" href="#profile">查看资料与材料 <span aria-hidden="true">→</span></a>
+            </section>
+
+            <section class="panel activity-panel" aria-labelledby="activity-title">
+              <div class="panel-heading"><div><span class="section-label">ACTIVITY</span><h2 id="activity-title">最近任务</h2></div></div>
+              <div id="recent-tasks" class="activity-list" aria-busy="true"><div class="empty-inline">正在读取本地任务…</div></div>
+            </section>
+
+            <section class="panel deadline-panel" aria-labelledby="deadline-title">
+              <div class="panel-heading"><div><span class="section-label">DEADLINES</span><h2 id="deadline-title">即将截止</h2></div><a href="#applications">申请记录</a></div>
+              <div id="deadline-list" class="deadline-list" aria-busy="true"><div class="empty-inline">正在检查截止日期…</div></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="jobs" class="page-panel" data-page="jobs" tabindex="-1" aria-labelledby="page-title" hidden>
+          <section class="panel search-panel" aria-labelledby="search-title">
+            <div class="panel-heading">
+              <div><span class="section-label">DISCOVER</span><h2 id="search-title">搜索职位</h2><p class="panel-subtitle">只有点击开始后才会调用所选平台的只读搜索。</p></div>
+              <button id="open-import-button" class="button button-secondary" type="button" aria-expanded="false" aria-controls="import-panel">人工导入</button>
+            </div>
+            <form id="search-form" class="search-form">
+              <label class="form-field search-query-field"><span>搜索关键词 <em>*</em></span><input id="search-query" required maxlength="200" placeholder="例如：AI 应用开发、Python 后端" aria-describedby="search-query-help"><small id="search-query-help">岗位、技能或方向均可。</small></label>
+              <label class="form-field"><span>城市</span><input id="search-cities" placeholder="例如：杭州"></label>
+              <label class="form-field limit-field"><span>每个平台</span><input id="search-limit" type="number" min="1" max="50" value="10"></label>
+              <fieldset class="form-field platform-field"><legend>搜索平台</legend><div class="check-grid platform-grid"><label><input type="checkbox" name="search-platforms" value="zhaopin-search" checked> 智联招聘</label><label><input type="checkbox" name="search-platforms" value="liepin-search"> 猎聘</label><label><input type="checkbox" name="search-platforms" value="boss-search"> BOSS（导入）</label><label><input type="checkbox" name="search-platforms" value="51job-search"> 51job（导入）</label></div></fieldset>
+              <div class="search-submit"><button class="button button-primary" type="submit">开始搜索</button><span id="search-status" class="form-status" role="status"></span></div>
+            </form>
+          </section>
+
+          <section id="import-panel" class="panel import-panel collapsible-panel" hidden aria-labelledby="import-title">
+            <div class="panel-heading"><div><span class="section-label">MANUAL IMPORT</span><h2 id="import-title">导入一个职位</h2><p class="panel-subtitle">适用于 BOSS / 51job。原文只保存在本机。</p></div><button id="close-import-button" class="icon-button" type="button" aria-label="关闭人工导入"><span aria-hidden="true">×</span></button></div>
+            <form id="import-form" class="form-grid">
+              <label class="form-field"><span>职位详情页链接 <em>*</em></span><input id="import-url" name="url" type="url" placeholder="https://www.zhipin.com/job_detail/..." required></label>
+              <label class="form-field"><span>平台</span><select id="import-portal" name="portal"><option value="auto">自动识别</option><option value="boss-search">BOSS</option><option value="51job-search">51job</option></select></label>
+              <label class="form-field form-wide"><span>职位正文 <em>*</em></span><textarea id="import-text" name="text" rows="7" maxlength="200000" placeholder="从平台复制职位正文粘贴到这里" required></textarea></label>
+              <div class="form-actions"><button class="button button-primary" type="submit">保存并加入职位列表</button><span id="import-status" class="form-status" role="status"></span></div>
+              <div id="import-result" class="parse-result form-wide" hidden></div>
+            </form>
+          </section>
+
+          <section class="panel jobs-workbench" aria-labelledby="jobs-list-title">
+            <div class="workbench-heading">
+              <div><span class="section-label">JOB WORKBENCH</span><h2 id="jobs-list-title">职位工作台</h2><p id="rank-summary" class="panel-subtitle" aria-live="polite">正在读取本地职位…</p></div>
+              <div class="workbench-primary-action">
+                <button id="start-rank-task" class="button button-primary" type="button">运行职位匹配</button>
+                <span id="ai-match-status" class="form-status" role="status"></span>
+              </div>
+            </div>
+
+            <div id="rank-task-status" class="readiness-strip" aria-live="polite"></div>
+            <div class="filter-bar" aria-label="职位筛选">
+              <label><span>平台</span><select id="rank-filter-portal"><option value="">全部</option><option value="zhaopin-search">智联</option><option value="liepin-search">猎聘</option><option value="boss-search">BOSS</option><option value="51job-search">51job</option></select></label>
+              <label><span>状态</span><select id="rank-filter-status"><option value="">全部</option><option value="new">待匹配</option><option value="ranked">已匹配</option><option value="expired">已失效</option></select></label>
+              <label><span>最低分</span><input id="rank-filter-score" type="number" min="0" max="100" step="1" placeholder="不限"></label>
+              <label><span>排序</span><select id="rank-filter-sort"><option value="score">匹配分</option><option value="recent">发布时间</option><option value="title">职位名称</option></select></label>
+              <button id="rank-filter-button" class="button button-secondary" type="button">应用筛选</button>
+            </div>
+
+            <div class="jobs-layout">
+              <div class="job-list-pane">
+                <div id="rank-list" class="job-list" aria-busy="true"></div>
+              </div>
+              <aside id="job-detail" class="job-detail-pane" aria-label="职位详情" aria-live="polite" tabindex="-1">
+                <div class="empty-detail"><span class="empty-icon" aria-hidden="true">⌁</span><h3>选择一个职位查看详情</h3><p>这里会展示匹配分、门禁、优势、差距和归档原文。</p></div>
+              </aside>
+            </div>
+          </section>
+
+          <section id="direct-ai-panel" class="panel direct-ai-panel" hidden>
+            <div class="panel-heading"><div><span class="section-label">ONE-OFF MATCH</span><h2>临时单职位匹配</h2><p class="panel-subtitle">使用上方导入正文和资料页简历文本。不会写入申请记录。</p></div><button id="start-ai-match" class="button button-secondary" type="button" disabled>匹配当前正文</button></div>
+            <div id="ai-match-result" class="ai-match-result parse-result" hidden></div>
+          </section>
+        </section>
+
+        <section id="applications" class="page-panel" data-page="applications" tabindex="-1" aria-labelledby="page-title" hidden>
+          <section class="application-summary-grid" aria-label="申请阶段摘要">
+            <article class="stage-card"><span>待提交</span><strong id="application-drafted">—</strong></article>
+            <article class="stage-card"><span>已申请 / 进行中</span><strong id="application-open">—</strong></article>
+            <article class="stage-card"><span>面试</span><strong id="application-interview">—</strong></article>
+            <article class="stage-card"><span>Offer</span><strong id="application-offer">—</strong></article>
+          </section>
+          <section class="panel" aria-labelledby="application-list-title">
+            <div class="panel-heading"><div><span class="section-label">PIPELINE</span><h2 id="application-list-title">申请记录</h2><p class="panel-subtitle">只读展示 canonical `job_search_tracker.csv`，不会在此自动投递或修改状态。</p></div><span id="application-source-badge" class="status-badge neutral">本地跟踪表</span></div>
+            <div id="application-list" class="application-list" aria-busy="true"><div class="skeleton-stack" aria-hidden="true"><i></i><i></i><i></i></div></div>
+          </section>
+        </section>
+
+        <section id="profile" class="page-panel" data-page="profile" tabindex="-1" aria-labelledby="page-title" hidden>
+          <ol class="progress-steps" aria-label="资料准备步骤">
+            <li class="active" data-profile-step="preferences"><span>1</span><div><strong>求职偏好</strong><small>目标、城市与平台</small></div></li>
+            <li data-profile-step="resume"><span>2</span><div><strong>简历与资料</strong><small>解析并确认候选人资料</small></div></li>
+            <li data-profile-step="ready"><span>3</span><div><strong>开始搜索</strong><small>确认后进入职位工作台</small></div></li>
+          </ol>
+
+          <section class="panel profile-section" id="setup" aria-labelledby="setup-title">
+            <div class="panel-heading"><div><span class="section-label">STEP 1</span><h2 id="setup-title">设置求职偏好</h2><p class="panel-subtitle">从一句话开始，识别结果只用于回填，确认后才保存。</p></div><span class="status-badge neutral">本地草稿</span></div>
+            <form id="setup-form" class="form-grid">
+              <label class="form-field form-wide"><span>一句话求职目标 <em>*</em></span><textarea id="setup-goal" name="goal" rows="3" maxlength="500" placeholder="例如：杭州，Python 后端或 AI 应用开发，20K 以上，可接受混合办公" required aria-describedby="setup-goal-help"></textarea><div class="field-inline"><small id="setup-goal-help">不用整理格式，按平时的说法填写即可。</small><button id="parse-goal-button" class="button button-ghost button-small" type="button">识别目标</button></div><div id="goal-parse-result" class="parse-result" hidden></div></label>
+              <label class="form-field"><span>目标城市 <em>*</em></span><input id="setup-cities" name="cities" placeholder="例如：杭州、上海" required aria-describedby="setup-cities-help"><small id="setup-cities-help">多个城市用逗号分隔。</small></label>
+              <label class="form-field"><span>最低月薪（元）</span><input id="setup-salary" name="salary_min" type="number" min="0" max="1000000" step="1000" placeholder="例如：20000"><small>不确定可以留空。</small></label>
+              <label class="form-field form-wide"><span>其他限制</span><input id="setup-constraints" name="constraints" placeholder="例如：不接受外包、必须全职"><small>多个限制用逗号分隔。</small></label>
+              <fieldset class="form-field"><legend>办公方式</legend><div class="check-grid"><label><input type="checkbox" name="work_mode" value="onsite" checked> 现场办公</label><label><input type="checkbox" name="work_mode" value="hybrid"> 混合办公</label><label><input type="checkbox" name="work_mode" value="remote"> 远程办公</label></div></fieldset>
+              <fieldset class="form-field"><legend>搜索平台</legend><div class="check-grid"><label><input type="checkbox" name="platforms" value="zhaopin-search" checked> 智联招聘</label><label><input type="checkbox" name="platforms" value="liepin-search"> 猎聘</label><label><input type="checkbox" name="platforms" value="boss-search"> BOSS 导入</label><label><input type="checkbox" name="platforms" value="51job-search"> 51job 导入</label></div></fieldset>
+              <div class="form-actions"><button class="button button-primary" type="submit">保存求职偏好</button><span id="setup-status" class="form-status" role="status"></span></div>
+            </form>
+            <div id="next-actions-wrap" class="next-actions-wrap"><p class="section-label">保存后建议</p><ol id="next-actions" class="next-actions"></ol></div>
+          </section>
+
+          <section id="resume" class="panel profile-section" aria-labelledby="resume-title">
+            <div class="panel-heading"><div><span class="section-label">STEP 2</span><h2 id="resume-title">导入简历并确认资料</h2><p class="panel-subtitle">支持文本、DOCX 和 PDF 本地解析；先预览，再明确写入。</p></div><span id="resume-state-badge" class="status-badge neutral">未确认</span></div>
+            <form id="resume-form" class="form-grid">
+              <label class="form-field"><span>文件名</span><input id="resume-filename" name="filename" placeholder="例如：resume.txt"></label>
+              <label class="form-field"><span>选择简历文件</span><input id="resume-file" type="file" accept=".txt,.md,.text,.docx,.pdf"><small>文件只在本机解析，不会上传。</small></label>
+              <label class="form-field form-wide"><span>简历文本 <em>*</em></span><textarea id="resume-text" name="text" rows="9" maxlength="200000" placeholder="选择文件或粘贴简历正文，系统只提取候选字段供你确认" required></textarea></label>
+              <div class="form-actions"><button class="button button-secondary" id="parse-resume-button" type="submit">识别简历</button><button class="button button-primary" id="confirm-resume-button" type="button" disabled>确认并保存本机</button><button class="button button-ghost" id="map-profile-button" type="button" disabled>预览正式资料更新</button><span id="resume-status" class="form-status" role="status"></span></div>
+              <div id="resume-result" class="parse-result form-wide" hidden></div>
+              <div id="profile-map-result" class="parse-result form-wide" hidden></div>
+            </form>
+          </section>
+
+          <section class="profile-bottom-grid">
+            <article class="panel" aria-labelledby="materials-title"><div class="panel-heading"><div><span class="section-label">MATERIALS</span><h2 id="materials-title">材料概览</h2></div></div><div id="materials-summary" class="materials-summary" aria-busy="true"></div></article>
+            <article class="panel ready-card" aria-labelledby="ready-title"><div><span class="section-label">STEP 3</span><h2 id="ready-title">准备好后开始找职位</h2><p>搜索只读取公开职位；任何模型请求都会再次向你确认。</p></div><a class="button button-primary" href="#jobs">进入职位工作台</a></article>
+          </section>
+        </section>
+
+        <section id="settings" class="page-panel" data-page="settings" tabindex="-1" aria-labelledby="page-title" hidden>
+          <div class="settings-grid">
+            <section class="panel" id="health" aria-labelledby="health-title"><div class="panel-heading"><div><span class="section-label">PORTALS</span><h2 id="health-title">搜索平台与运行环境</h2><p class="panel-subtitle">这里只显示是否可用；路径与命令收在技术详情中。</p></div><button id="health-refresh-link" class="button button-secondary button-small" type="button">重新检查</button></div><div id="health-summary" class="health-list" aria-busy="true"><div class="skeleton-stack" aria-hidden="true"><i></i><i></i></div></div><p id="health-guidance" class="health-guidance"></p></section>
+            <section class="panel" aria-labelledby="ai-settings-title"><div class="panel-heading"><div><span class="section-label">AI SERVICE</span><h2 id="ai-settings-title">AI 匹配服务</h2><p class="panel-subtitle">默认不发送外部请求，只有明确确认后才会调用。</p></div></div><div id="ai-provider-status" aria-busy="true"><div class="empty-inline">正在检查配置…</div></div></section>
+            <section class="panel settings-wide" id="privacy" aria-labelledby="privacy-title"><div class="panel-heading"><div><span class="section-label">PRIVACY</span><h2 id="privacy-title">隐私与数据边界</h2><p class="panel-subtitle">本地工作台能做什么、明确不会做什么。</p></div><span class="status-badge safe">本机优先</span></div><div id="privacy-summary" aria-busy="true"><div class="empty-inline">正在读取隐私策略…</div></div></section>
+            <details class="panel settings-wide technical-details" id="release"><summary><span><span class="section-label">DEVELOPER</span><strong>技术详情与发布检查</strong></span><span aria-hidden="true">⌄</span></summary><div class="technical-body"><div id="release-summary" aria-busy="true"><div class="empty-inline">正在检查…</div></div></div></details>
+          </div>
+        </section>
+
+        <footer class="footer-note">资料和职位原文默认保存在本机。工作台不会自动投递、私聊或绕过平台登录。</footer>
+      </main>
+
+      <nav id="mobile-nav" class="mobile-nav" aria-label="移动端主导航"></nav>
+    </div>
+
+    <dialog id="consent-dialog" class="consent-dialog" aria-labelledby="consent-title" aria-describedby="consent-description">
+      <form method="dialog" class="dialog-card">
+        <div class="dialog-icon" aria-hidden="true">↗</div>
+        <div>
+          <p class="section-label">EXTERNAL REQUEST</p>
+          <h2 id="consent-title">确认发送到 AI 匹配服务</h2>
+          <p id="consent-description">系统将发送候选人资料摘要和职位正文，用于生成匹配评分。</p>
+        </div>
+        <dl class="consent-list">
+          <div><dt>将发送</dt><dd>职位正文、候选人资料摘要</dd></div>
+          <div><dt>发送到</dt><dd id="consent-destination">已配置的 OpenAI 兼容 API</dd></div>
+          <div><dt>不会执行</dt><dd>自动投递、平台私聊、修改申请状态</dd></div>
+        </dl>
+        <div class="dialog-actions"><button class="button button-secondary" value="cancel" type="submit">取消</button><button id="consent-confirm" class="button button-primary" value="confirm" type="submit">同意并开始匹配</button></div>
+      </form>
+    </dialog>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

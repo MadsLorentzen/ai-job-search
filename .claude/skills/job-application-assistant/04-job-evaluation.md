@@ -1,10 +1,31 @@
 ---
-framework_version: 1.2.6
+framework_version: 1.2.7
 ---
 
 # Job Evaluation Framework
 
 <!-- SETUP: Skill match areas and career goals are personalized by running /setup -->
+
+## China-market normalization notes
+
+For postings from mainland Chinese portals, preserve the original wording in
+the evidence and use the shared normalization fields only as a comparison aid.
+Do not infer a requirement when the posting is silent.
+
+- Salary: treat `15-25K`, `1.5-2.5万`, and `15000-25000元/月` as monthly ranges;
+  `20万-30万/年` as an annual range; retain `·13薪` or another extra-pay note;
+  treat `面议` as unknown rather than zero.
+- Experience: map `经验不限`/`无经验` to no experience requirement, `应届` to
+  graduate-level entry, and `1-3年` or `3年以上` literally. A numeric range is
+  not evidence that the candidate meets it until the profile is compared.
+- Education: distinguish `学历不限`, `大专/专科`, `本科`, `硕士/研究生`, and
+  `博士`. `本科及以上` means the floor is bachelor's degree.
+- Location: preserve the portal string such as `北京·海淀·上地`; compare the
+  city and district to the candidate's stated commute constraint. A remote or
+  hybrid label must be confirmed from the posting's own wording.
+- Employment: `全职`, `兼职`, `实习`, `劳务派遣`, and `外包` are distinct
+  conditions. Treat dispatch/outsourcing as a visible caveat, not as equivalent
+  to a direct permanent role.
 
 ## Eligibility Gate — run before scoring
 

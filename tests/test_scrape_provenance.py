@@ -2,8 +2,8 @@
 
 The scraper is a markdown spec (the spec IS the implementation), so these
 tests pin the invariants that would break silently: seen_jobs.json entries
-record whether they came from a portal CLI or the WebSearch fallback
-(`source`), and the Step 5 summary names the portals that ran on the
+record whether they came from a portal CLI, the WebSearch fallback, or a
+user-supplied manual import (`source`), and the Step 5 summary names the portals that ran on the
 fallback. Together these keep a ghost-job report diagnosable days after
 the run's scrollback is gone (#331): a stale-index entry, a live-CLI
 entry, and a job with no entry at all each point at a different mechanism.
@@ -37,7 +37,7 @@ class ScrapeProvenanceSpec(unittest.TestCase):
     def test_schema_block_carries_source_field(self):
         step4 = self.steps.get("Step 4: Deduplicate & Store", "")
         self.assertIn(
-            '"source": "cli/websearch"',
+            '"source": "cli/websearch/manual"',
             step4,
             "the seen_jobs.json schema block lost the source (provenance) field",
         )
@@ -48,6 +48,11 @@ class ScrapeProvenanceSpec(unittest.TestCase):
             "`cli` for Step 1b portal-CLI output, `websearch` for the Step 1c fallback",
             step4,
             "Step 4 must define which mechanism each source value names",
+        )
+        self.assertIn(
+            "`manual` for a user-provided posting",
+            step4,
+            "Step 4 must define manual-import provenance",
         )
         self.assertIn(
             "the mechanism was not recorded",

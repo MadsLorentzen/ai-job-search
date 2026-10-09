@@ -8,6 +8,39 @@
 
 The `site:` query templates in this file are the **WebSearch fallback** — for portals without a CLI, company career pages, or when a CLI fails.
 
+## China market overlay
+
+When the target market is mainland China, keep the candidate's city and role
+preferences in `CLAUDE.md` as the source of truth, then apply these fallback
+templates when a portal CLI is unavailable. Replace `[目标城市]` and
+`[目标岗位]` with values from the candidate profile; do not invent a city or
+role preference.
+
+Primary domestic boards:
+
+- `zhaopin.com` (智联招聘) — covered by the `zhaopin-search` read-only CLI
+- `liepin.com` (猎聘) — use only an approved official read-only CLI when available
+- `zhipin.com` (BOSS直聘) — first version uses manual import; do not bypass login or CAPTCHA
+- `51job.com` (前程无忧) — first version uses manual import; do not bypass login or CAPTCHA
+
+Suggested site queries by function:
+
+```text
+site:zhaopin.com/jobdetail "[目标岗位]" [目标城市]
+site:liepin.com/job "[目标岗位]" [目标城市]
+site:zhipin.com/job_detail "[目标岗位]" [目标城市]
+site:51job.com "[目标岗位]" [目标城市]
+site:zhaopin.com/jobdetail Python 后端 [目标城市]
+site:zhaopin.com/jobdetail 数据工程师 [目标城市]
+site:zhaopin.com/jobdetail AI 算法工程师 [目标城市]
+site:zhaopin.com/jobdetail 技术项目经理 [目标城市]
+```
+
+Use the Chinese variants `后端开发`, `数据工程`, `机器学习`, `算法工程师`,
+`技术咨询`, and `项目管理` as adjacent queries when the profile's target
+function is broader than one title. Keep the 14-day date filter and record
+`source: websearch` for fallback results.
+
 **Language scope:** write every query category in every language listed in your CLAUDE.md Languages table (typically 1-2, sometimes more). A posting requiring a language you have *not* declared, as a job condition, is excluded before scoring; a posting requiring a *higher level* than you declared in a language you *do* work in is flagged for your own judgment, not excluded — see `04-job-evaluation.md`'s Language Gate, the single source of truth for this rule. Translate each category's keywords rather than machine-translating word-for-word (e.g. "Frontend Developer" -> "Desarrollador Frontend", not a literal word-for-word translation) if you work in more than one language.
 
 ## Search Sites

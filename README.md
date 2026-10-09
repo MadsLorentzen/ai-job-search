@@ -1,4 +1,8 @@
 <p align="center">
+  <a href="README.zh-CN.md">简体中文</a> | <a href="README.md">English</a> | <a href="https://github.com/MadsLorentzen/ai-job-search/releases">版本发布</a> | <a href="https://github.com/MadsLorentzen/ai-job-search/issues">问题反馈</a>
+</p>
+
+<p align="center">
   <img src="assets/mascot/pip_flight_loop.gif" alt="Pip, the courier bird" width="200">
 </p>
 
