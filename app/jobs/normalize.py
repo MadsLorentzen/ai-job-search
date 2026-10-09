@@ -23,7 +23,7 @@ def classify_remote(text: str) -> RemoteStatus:
     if re.search(r"\bremote\b|\bfjernarbejde\b|\bhjemmearbejde\b", value):
         if re.search(r"worldwide|global|anywhere|work from anywhere", value):
             return RemoteStatus.FULLY_REMOTE_GLOBAL
-        if re.search(r"europe|eu|european union", value):
+        if re.search(r"\b(eu|europe(an)?( union)?)\b", value):
             return RemoteStatus.FULLY_REMOTE_REGION_RESTRICTED
         return RemoteStatus.FULLY_REMOTE_COUNTRY_RESTRICTED
     return RemoteStatus.UNKNOWN
