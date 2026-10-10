@@ -337,7 +337,12 @@ Failures here are template-level problems: fix them in the `<CV_EXT>` source (e.
 
 ### 5e. Clean up build artifacts
 
-After the final clean compile, delete intermediate build files the compile command left behind — LaTeX toolchains leave `.aux`/`.log`/`.out`; a custom template's toolchain may leave nothing beyond the PDF. Keep the source file and the `.pdf`.
+Immediately after the final clean compile, run an explicit cleanup shell command in the working output directory to delete intermediate build artifacts:
+- **Standard LaTeX toolchains:** Execute `rm -f *.aux *.log *.out *.fls *.fdb_latexmk *.synctex.gz` (or `rm -f cv/*.aux cv/*.log cv/*.out cover_letters/*.aux cover_letters/*.log cover_letters/*.out`).
+- **Custom templates using `build/`:** Execute `rm -rf build/`.
+- **Typst / zero-artifact toolchains:** Skip cleanup if no intermediate files were generated.
+
+Always ensure only the source file (`.tex`) and the compiled document (`.pdf`) remain.
 
 ---
 
