@@ -15,6 +15,20 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/reset profile` keeps the `framework_version` frontmatter on the two files it rewrites**
+  (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - the full-file skeletons
+  for `01-candidate-profile.md` and `02-behavioral-profile.md` started at the `#` title, while
+  the shipped files open with a `---` block carrying `framework_version`. Applied as written,
+  one `/reset profile` left both files failing `tools/check_framework_version.py` ("missing
+  'framework_version' in frontmatter") and invisible to `tools/check_upstream_updates.py`,
+  which records a configuration error for a file with no local version to compare - the fork
+  update path the README sends every fork through. The step now says to keep the frontmatter
+  block and replace only what follows, with a note under "Profile reset" that the marker is
+  framework data, never candidate data; the version is not hardcoded into the skeleton, where
+  it would go stale on the next bump. A derived test applies each skeleton the way the step
+  says and asserts the shipped file's version still parses out unchanged; it fails on master.
+  Found while re-checking #519's class of drift.
+
 - **`/reset profile` now targets the headings the shipped skill files actually have**
   (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - two of its Step 3
   targets had drifted. The `05-cv-templates.md` step anchored on a section beginning
