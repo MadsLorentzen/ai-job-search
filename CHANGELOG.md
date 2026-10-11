@@ -68,6 +68,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`verify_pdf.py --ascii-dates` no longer reads a numeric range with year-shaped ends as a
+  date** - #512 bounded the year to four standalone digits, but `EUR 1500–2000 per month` and
+  `2000–5000 requests per second` still failed `/apply` Step 5d: each has a four-digit number
+  next to the dash that happens to fall in 1900-2099. A range whose two ends are both bare
+  numbers (the whole whitespace-delimited token, outer punctuation stripped) now counts as a
+  date only when both are years, so the salary band and the throughput range pass, while
+  `2016–2024`, `1990–2010` and `2016 – Present` still fail as before and a numerically
+  formatted range (`03/2016–07/2024`, `01.2016 – 12.2024`, `2016-03–2024-07`, `2016/17–2018/19`)
+  is not a bare number on either side and is still caught. Three new `test_verify_pdf.py`
+  cases; the quantity one fails on master.
+
 - **`upstream_triage` forces UTF-8 stdout and decodes git output as UTF-8** (#544,
   `tools/upstream_triage.py`, `tests/test_tools_utf8_output.py`) - like the other Python tools,
   the triage report now calls `_force_utf8_output()` on startup and decodes git subprocess
