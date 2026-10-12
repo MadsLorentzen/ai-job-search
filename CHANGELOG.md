@@ -29,6 +29,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`linkedin-search` and `freehire-search` reject invalid `--format` flags with `BAD_ARG`** (#555,
+  `.agents/skills/linkedin-search/cli/src/cli.ts`, `.agents/skills/freehire-search/cli/src/cli.ts`) -
+  unrecognized `--format` flags previously fell back silently to `"json"` with exit code 0, masking
+  formatting typos and violating the CLI contract. Both CLIs now validate format arguments strictly
+  (`json|table|plain` for search, `json|plain` for detail) and exit 1 with `{ error, code: "BAD_ARG" }`
+  on invalid options.
+
 - **`jobdanmark-search detail` no longer keeps a malformed closing tag as text on the
   rendered-HTML branch** (#525, `detail.ts`, `tests/detail-parsing.test.ts`) - a live page wrote
   its Jobtype item as `Fuldtid </ li >`, and because `node-html-parser` does not recognise a

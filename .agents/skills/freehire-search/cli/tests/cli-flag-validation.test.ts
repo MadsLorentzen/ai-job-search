@@ -75,6 +75,24 @@ describe("freehire CLI flag validation", () => {
     });
   });
 
+  describe("--format validation", () => {
+    test("search with an unsupported format exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "--format", "invalid"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/format/);
+    });
+
+    test("detail with an unsupported format exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["detail", "example-slug", "--format", "table"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/format/);
+    });
+  });
+
   describe("detail argument validation", () => {
     test("missing slug exits 1 with NO_ID", async () => {
       const result = await runCLI(["detail"]);

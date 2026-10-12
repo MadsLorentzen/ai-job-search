@@ -168,7 +168,13 @@ async function main(): Promise<number> {
   }
 
   if (cmd === "search") {
-    const fmt = (flags.format as string) || "json"
+    const fmt = flags.format !== undefined ? String(flags.format) : "json"
+    if (!["json", "table", "plain"].includes(fmt)) {
+      process.stderr.write(
+        JSON.stringify({ error: `--format must be one of json|table|plain, got "${fmt}"`, code: "BAD_ARG" }) + "\n",
+      )
+      return 1
+    }
 
     // Validated here rather than server-side: the API answers an unrecognized
     // format with raw HTML instead of an error, so a typo would silently change
@@ -209,7 +215,7 @@ async function main(): Promise<number> {
       jobage: flags.jobage ? parseInt(flags.jobage as string, 10) : 9999,
       page: flags.page ? Math.max(1, parseInt(flags.page as string, 10)) : 1,
       limit: flags.limit ? Math.max(1, parseInt(flags.limit as string, 10)) : 25,
-      format: (["json", "table", "plain"].includes(fmt) ? fmt : "json") as SearchOpts["format"],
+      format: fmt as SearchOpts["format"],
       descriptionFormat: descFmt as DescriptionFormat,
       includeDescription: flags["no-description"] === undefined,
       regions: commaList(flags.region),
@@ -232,8 +238,14 @@ async function main(): Promise<number> {
       process.stderr.write(JSON.stringify({ error: "detail requires a <slug|url>", code: "NO_ID" }) + "\n")
       return 1
     }
-    const fmt = (flags.format as string) || "json"
-    const opts: DetailOpts = { id, format: fmt === "plain" ? "plain" : "json" }
+    const fmt = flags.format !== undefined ? String(flags.format) : "json"
+    if (!["json", "plain"].includes(fmt)) {
+      process.stderr.write(
+        JSON.stringify({ error: `--format must be one of json|plain, got "${fmt}"`, code: "BAD_ARG" }) + "\n",
+      )
+      return 1
+    }
+    const opts: DetailOpts = { id, format: fmt as DetailOpts["format"] }
     return runDetail(opts)
   }
 
