@@ -29,6 +29,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/add-portal` includes the `.agents` prefix in generated `allowed-tools`** (#545,
+  `.claude/commands/add-portal.md`, `tests/test_add_portal_command.py`) - the specification template
+  for the new portal's `SKILL.md` frontmatter wrote `allowed-tools: Bash(bun run skills/<name>/cli/src/cli.ts *)`
+  without `.agents/`, the one path in the file without it. A skill's `allowed-tools` grants the
+  listed command when that skill is invoked, so a generated portal invoked on its own granted a
+  command that does not exist and prompted instead; the string now names the real path, matching
+  the six shipped `SKILL.md` files.
+
 - **`robots_check` unquotes incoming query strings and restricts `$` anchors to pattern end**
   (#543, `tools/robots_check.py`, `tests/test_robots_check.py`) - two path-matching edge cases in
   the robots.txt gate failed open. First, `gate(url)` called `unquote(parts.path)` but concatenated
