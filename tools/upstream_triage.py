@@ -36,9 +36,22 @@ import subprocess
 import sys
 
 
+def _force_utf8_output() -> None:
+    """Write UTF-8 whatever the host's default encoding is.
+
+    A piped stdout on Windows defaults to the ANSI code page (cp1252 on most
+    Western installs), so printing a commit subject or author outside it
+    raised UnicodeEncodeError before the report could be emitted.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            reconfigure(encoding="utf-8")
+
+
 def git(*args: str) -> str:
     return subprocess.run(
-        ["git", *args], capture_output=True, text=True, check=True
+        ["git", *args], capture_output=True, text=True, encoding="utf-8", errors="replace", check=True
     ).stdout
 
 
@@ -50,10 +63,10 @@ def rev_list(range_spec: str) -> list[str]:
 def patch_id(sha: str) -> str | None:
     """Stable patch-id for a commit, or None if it has no diff."""
     show = subprocess.run(
-        ["git", "show", sha], capture_output=True, text=True, check=True
+        ["git", "show", sha], capture_output=True, text=True, encoding="utf-8", errors="replace", check=True
     ).stdout
     r = subprocess.run(
-        ["git", "patch-id", "--stable"], input=show, capture_output=True, text=True
+        ["git", "patch-id", "--stable"], input=show, capture_output=True, text=True, encoding="utf-8", errors="replace"
     )
     line = r.stdout.strip()
     return line.split()[0] if line else None
@@ -111,6 +124,7 @@ def commit_cell(short: str, sha: str, slug: str | None) -> str:
 
 
 def main() -> int:
+    _force_utf8_output()
     ap = argparse.ArgumentParser()
     ap.add_argument("--remote", default="upstream")
     ap.add_argument("--branch", default="master")

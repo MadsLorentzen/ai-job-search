@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`upstream_triage` forces UTF-8 stdout and decodes git output as UTF-8** (#544,
+  `tools/upstream_triage.py`, `tests/test_tools_utf8_output.py`) - like the other Python tools,
+  the triage report now calls `_force_utf8_output()` on startup and decodes git subprocess
+  streams with `encoding="utf-8", errors="replace"`. Under Windows default ANSI code pages (such as
+  `cp1252`), upstream commits with Cyrillic, CJK, or emoji characters in their subjects raised
+  `UnicodeEncodeError` when writing stdout or `UnicodeDecodeError` in subprocess pipes, terminating
+  triage runs before the report could be emitted.
+
 - **`jobnet-search` routes external ads to employer `jobAdUrl` rather than broken `find-job` links**
   (#538, `.agents/skills/jobnet-search/cli/src/commands/search.ts`, `.agents/skills/jobnet-search/cli/README.md`,
   `.agents/skills/jobnet-search/cli/tests/search-normalization.test.ts`) - external job postings on
@@ -138,6 +146,7 @@ per-file diff commands.
   it would go stale on the next bump. A derived test applies each skeleton the way the step
   says and asserts the shipped file's version still parses out unchanged; it fails on master.
   Found while re-checking #519's class of drift.
+
 
 - **`/reset profile` now targets the headings the shipped skill files actually have**
   (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - two of its Step 3
