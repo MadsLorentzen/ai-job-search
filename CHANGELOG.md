@@ -29,6 +29,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`robots_check` unquotes incoming query strings and restricts `$` anchors to pattern end**
+  (#543, `tools/robots_check.py`, `tests/test_robots_check.py`) - two path-matching edge cases in
+  the robots.txt gate failed open. First, `gate(url)` called `unquote(parts.path)` but concatenated
+  `parts.query` raw, while `_match()` decodes the pattern: rules targeting encoded query parameters
+  (such as `Disallow: /search?q=machine%20learning`) never matched the incoming URL, evaluating
+  disallowed scraping targets as allowed. Query parameters are now decoded when assembling `path`.
+  Second, `_match()` converted every `$` character unconditionally into a regular-expression
+  end-of-string anchor, causing rules with an internal `$` (e.g. `/tag/$var`) to never match; under
+  RFC 9309 section 2.2.3, `$` is an end anchor only at the end of the pattern, and internal `$`
+  characters are now matched literally.
+
 - **CV template guidance aligns geometry scale with master template** (#553,
   `.claude/skills/job-application-assistant/05-cv-templates.md`, `tests/test_latex_guidance.py`) -
   the preamble snippet in `05-cv-templates.md` specified `\usepackage[scale=0.77]{geometry}`,
