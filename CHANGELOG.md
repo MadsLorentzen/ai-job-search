@@ -29,6 +29,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **CV template guidance aligns geometry scale with master template** (#553,
+  `.claude/skills/job-application-assistant/05-cv-templates.md`, `tests/test_latex_guidance.py`) -
+  the preamble snippet in `05-cv-templates.md` specified `\usepackage[scale=0.77]{geometry}`,
+  whereas the master reference template `cv/main_example.tex` configures `scale=0.80`. The guide
+  has been aligned to `scale=0.80`, preventing tighter margins and unwanted page overflow during
+  CV generation, and a test now guards that the two files stay in sync.
+
 - **`.claude/settings.local.json` is ignored in `.gitignore` and pinned in security guards** (#551,
   `.gitignore`, `tools/security_guards.py`) - Claude Code stores machine-local settings and
   ad-hoc tool approvals in `.claude/settings.local.json`. The file is now excluded from version
