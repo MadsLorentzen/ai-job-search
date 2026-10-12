@@ -184,7 +184,6 @@ export const detail = defineCommand({
           })
           const match = searchResult.jobAds?.find((ad) => ad.jobAdId === id)
           if (match) {
-            process.stderr.write("note: detail endpoint returned 404; retrieved external posting summary from search endpoint\n")
             data = prepareDetail(mapSearchAdToDetail(match))
           }
         } catch {
