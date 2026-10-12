@@ -29,6 +29,12 @@ per-file diff commands.
 
 ### Fixed
 
+- **`.claude/settings.local.json` is ignored in `.gitignore` and pinned in security guards** (#551,
+  `.gitignore`, `tools/security_guards.py`) - Claude Code stores machine-local settings and
+  ad-hoc tool approvals in `.claude/settings.local.json`. The file is now excluded from version
+  control in `.gitignore` and pinned in `REQUIRED_IGNORE_RULES` to prevent fork users from
+  accidentally committing local session configurations.
+
 - **`/rank` retires scored jobs whose preserved deadline has passed**
   (`tools/rank_state.py`, `tests/test_rank_state.py`) - a fresh `null` deadline
   preserves the stored date, but `apply` previously wrote the job as `ranked`
