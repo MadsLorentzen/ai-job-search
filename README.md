@@ -163,7 +163,7 @@ Postings are treated as untrusted input (the workflow follows no instructions em
 
 ### Optional: local web console
 
-Prefer a browser to the terminal? `python3 ui/server.py` opens a local console at `http://127.0.0.1:8765` (standard library only). It shows your tracker and scraped jobs as tables you can filter and update, and its buttons run the same commands headlessly through `claude -p` (`/scrape`, `/rank`, `/apply`, `/outcome followup`, `/gmail-sync`, `/interview`), streaming the output and linking the PDFs a run produces. When a command asks a question, you answer it in the console and the same Claude session continues. Local state (`ui/state.json`, `ui/runs/`) is gitignored.
+Prefer a browser to the terminal? `python3 ui/server.py` opens a local console at `http://127.0.0.1:8765` (standard library only). It shows your tracker and scraped jobs as tables you can filter and update, and its buttons run the same commands headlessly through `claude -p` (`/scrape`, `/rank`, `/apply`, `/outcome followup`, `/gmail-sync`, `/interview`), streaming the output and linking the PDFs a run produces. When a command asks a question, you answer it in the console and the same Claude session continues. After a scrape it also writes a short brief for each new job (what the role is, its requirements, and strengths / concerns / gaps against your profile), so you can triage the backlog without opening every posting. Local state (`ui/state.json`, `ui/runs/`, `ui/briefs.json`) is gitignored.
 
 ## File structure
 

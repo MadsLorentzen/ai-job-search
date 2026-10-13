@@ -26,7 +26,11 @@ per-file diff commands.
   (URL or pasted posting text), `/outcome followup`, `/gmail-sync`, `/interview` - streaming its
   output and linking any PDFs the run wrote. When a command stops to ask something (`/apply`'s
   confirmation, `/interview`'s stage questions), a reply box resumes the same session with
-  `--resume`, so the interactive steps stay where the specs put them. Guard rails: Host/Origin
+  `--resume`, so the interactive steps stay where the specs put them. After a scrape, a
+  read-only background run writes a short **brief** for each new job - what the role is,
+  must-have and nice-to-have requirements, and strengths / concerns / gaps against the profile -
+  returned as JSON, validated by the server and stored in `ui/briefs.json`, so a long scrape
+  backlog can be triaged without opening every posting. Guard rails: Host/Origin
   checks against DNS rebinding and cross-site requests, an allow-list for command arguments,
   file serving limited to `cv/`, `cover_letters/` and `documents/`, per-file locks so two runs
   never write the tracker or `seen_jobs.json` at once, Stop and Ctrl+C that end a run's whole
