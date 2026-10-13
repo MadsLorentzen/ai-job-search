@@ -7,7 +7,7 @@ Reads/writes job_search_tracker.csv and job_scraper/seen_jobs.json directly for
 quick edits, and drives the slash-command workflows (/scrape, /rank, /outcome,
 /gmail-sync, /apply) by spawning headless `claude -p` runs and streaming output.
 """
-import csv, json, os, re, subprocess, sys, threading, time, uuid, argparse
+import csv, json, os, re, signal, subprocess, sys, threading, time, uuid, argparse
 from datetime import date, datetime
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs, unquote
@@ -133,21 +133,23 @@ def save_ui_state(known):
 
 def job_group(status):
     s = status or ""
+    if s.startswith("expired") or s == "skipped-expired":   # before the skipped-* prefix check
+        return "expired"
     if s.startswith("skipped") or s == "already_seen_stale":
         return "skipped"
-    if s.startswith("expired") or s == "skipped-expired":
-        return "expired"
     if s in ("new", "ranked", "evaluated", "reviewed"):
         return "review"
     return s  # saved, applied
 
 
 def add_tracker_row(job):
-    """Mirror a job marked applied in the UI into the tracker, unless company+role is already there."""
+    """Mirror a job marked applied in the UI into the tracker, unless it is already there - matched on
+    company+role, or on the posting URL (a recruiter ad often names the company differently)."""
     rows = read_tracker()
     norm = lambda x: re.sub(r"\s+", " ", (x or "").strip().lower())
-    if any(norm(r.get("company")) == norm(job.get("company")) and norm(r.get("role")) == norm(job.get("title"))
-           for r in rows):
+    url = norm(job.get("url")).rstrip("/")
+    if any((norm(r.get("company")) == norm(job.get("company")) and norm(r.get("role")) == norm(job.get("title")))
+           or (url and norm(r.get("source")).rstrip("/") == url) for r in rows):
         return False
     rows.append({"date": date.today().isoformat(), "company": job.get("company", ""),
                  "role": job.get("title", ""), "channel": (job.get("portal") or "").replace("-search", "").title(),
@@ -161,7 +163,7 @@ def add_tracker_row(job):
 
 def busy(resource):
     with RUN_LOCK:
-        return next((r["prompt"] for r in RUNS.values()
+        return next((r["label"] for r in RUNS.values()
                      if r["status"] in ("running", "cancelling") and resource in RUN_WRITES.get(r["action"], ())), None)
 
 
@@ -372,43 +374,47 @@ def _exec(run):
     save_run(run)
 
 
+SIGKILL = getattr(signal, "SIGKILL", signal.SIGTERM)
+
+
+def signal_group(p, sig):
+    """Signal a run's whole process group (POSIX), so tools Claude spawned die with it.
+    Windows has no process groups: fall back to the Claude process itself."""
+    try:
+        if hasattr(os, "killpg"):
+            os.killpg(p.pid, sig)
+        elif p.poll() is None:
+            p.kill() if sig == SIGKILL else p.terminate()
+    except (ProcessLookupError, PermissionError, OSError):
+        pass
+
+
 def stop_run(run):
-    import signal
     p = run.get("proc")
     if run["status"] != "running" or not p or p.poll() is not None:
         return
     run["status"] = "cancelling"
 
-    def signal_group(sig):
-        try:
-            os.killpg(p.pid, sig)
-        except (ProcessLookupError, PermissionError):
-            pass
-
     def escalate():
         # A child forked while the first SIGTERM was in flight misses it but stays in the group
         # holding our stdout pipe open, so re-signal the group rather than only the leader.
-        for delay, sig in ((0.5, signal.SIGTERM), (1.5, signal.SIGTERM), (4, signal.SIGKILL)):
+        for delay, sig in ((0.5, signal.SIGTERM), (1.5, signal.SIGTERM), (4, SIGKILL)):
             time.sleep(delay)
-            signal_group(sig)
-    signal_group(signal.SIGTERM)
+            signal_group(p, sig)
+    signal_group(p, signal.SIGTERM)
     threading.Thread(target=escalate, daemon=True).start()
 
 
 def shutdown():
     """Ctrl+C: runs live in their own process groups (for Stop), so the terminal's SIGINT never
     reaches them. Stop them here rather than leaving orphaned Claude sessions writing files."""
-    import signal
     SHUTTING_DOWN.set()
     live = [r for r in RUNS.values() if r["status"] in ("running", "cancelling") and r.get("proc")]
     if live:
         print(f"\nStopping {len(live)} running Claude run(s)…")
-    for sig, wait in ((signal.SIGTERM, 2), (signal.SIGKILL, 0)):
+    for sig, wait in ((signal.SIGTERM, 2), (SIGKILL, 0)):
         for r in live:
-            try:
-                os.killpg(r["proc"].pid, sig)
-            except (ProcessLookupError, PermissionError):
-                pass
+            signal_group(r["proc"], sig)
         deadline = time.time() + wait
         while time.time() < deadline and any(r["proc"].poll() is None for r in live):
             time.sleep(0.1)
@@ -488,8 +494,9 @@ class H(BaseHTTPRequestHandler):
             return self._send(200, public_run(r, int(q.get("since", ["0"])[0])))
         if u.path == "/file":
             rel = unquote(q.get("path", [""])[0])
-            full = os.path.realpath(os.path.join(ROOT, rel))
-            if not any(full.startswith(os.path.join(ROOT, d) + os.sep) for d in FILE_DIRS) or not os.path.isfile(full):
+            root = os.path.realpath(ROOT)   # both sides resolved, or a symlinked checkout path 404s everything
+            full = os.path.realpath(os.path.join(root, rel))
+            if not any(full.startswith(os.path.join(root, d) + os.sep) for d in FILE_DIRS) or not os.path.isfile(full):
                 return self._send(404, {"error": "not found"})
             ctype = "application/pdf" if full.endswith(".pdf") else "text/plain"
             with open(full, "rb") as f:

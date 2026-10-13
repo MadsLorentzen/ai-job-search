@@ -13,6 +13,25 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Added
+
+- **Optional local web console** (`ui/server.py`, `ui/index.html`, `tests/test_ui_server.py`) - a
+  browser front end over the files and commands the framework already has, for users who would
+  rather not live in the terminal. `python3 ui/server.py` serves it on `127.0.0.1:8765`;
+  standard library only, nothing to install. It adds no workflow logic of its own: the
+  Applications view reads and edits `job_search_tracker.csv` (status changes, notes, days quiet,
+  deadline urgency), the Discovered view reads `job_scraper/seen_jobs.json` (Save / Applied /
+  Skip written back, jobs that arrived since the last visit highlighted), and every action button
+  runs the existing slash command headlessly through `claude -p` - `/scrape`, `/rank`, `/apply`
+  (URL or pasted posting text), `/outcome followup`, `/gmail-sync`, `/interview` - streaming its
+  output and linking any PDFs the run wrote. When a command stops to ask something (`/apply`'s
+  confirmation, `/interview`'s stage questions), a reply box resumes the same session with
+  `--resume`, so the interactive steps stay where the specs put them. Guard rails: Host/Origin
+  checks against DNS rebinding and cross-site requests, an allow-list for command arguments,
+  file serving limited to `cv/`, `cover_letters/` and `documents/`, per-file locks so two runs
+  never write the tracker or `seen_jobs.json` at once, Stop and Ctrl+C that end a run's whole
+  process group, and visible warnings for permission denials and an unauthorized Gmail connector.
+
 ### Fixed
 
 - **`/reset profile` now targets the headings the shipped skill files actually have**
