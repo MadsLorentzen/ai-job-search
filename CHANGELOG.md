@@ -46,6 +46,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobnet-search` routes external ads to employer `jobAdUrl` rather than broken `find-job` links**
+  (#538, `.agents/skills/jobnet-search/cli/src/commands/search.ts`, `.agents/skills/jobnet-search/cli/README.md`,
+  `.agents/skills/jobnet-search/cli/tests/search-normalization.test.ts`) - external job postings on
+  Jobnet (`isExternal: true`) point to `/find-job/{jobAdId}`, which returns 404, while the Jobnet API
+  carries the destination in `jobAdUrl`. The search command now routes external ads to `jobAdUrl` when
+  a valid http(s) destination is present, falling back to `/find-job/{jobAdId}` when missing or
+  non-http(s) to preserve distinct URLs for `/scrape` deduplication. Both `url` and `jobAdUrl`
+  validate the scheme the same way. Reported with live testing by NishilRathod.
+
 - **Fork-skip guards no longer run on a fork during a local test run** (`tests/_upstream.py`,
   `tests/test_placeholder_integrity.py`, `tests/test_setup_command.py`,
   `tests/test_upstream_checkout.py`) - the fork skip read
