@@ -5,15 +5,42 @@ export interface DetailOpts {
   format: "json" | "plain"
 }
 
-/** Accept a raw job ID, a job-view URL, or a job URN. */
+const LINKEDIN_HOST = /(^|\.)linkedin\.com$/i
+
+/**
+ * Accept a raw job ID, a job URN, a LinkedIn job-view URL (any linkedin.com
+ * host, with or without scheme), or a bare title slug ending in the ID.
+ *
+ * A URL on any other host is rejected. The previous pattern took the first
+ * 6+-digit path segment from ANY URL, so a Greenhouse or Lever apply link -
+ * the kind a posting's own page hands out - fetched whatever LinkedIn
+ * posting happened to carry that number and printed it with exit 0. Host and
+ * path are read through real URL parsing, so look-alike hosts
+ * (linkedin.com.evil.io) and userinfo tricks (linkedin.com@evil.io) fall on
+ * the reject side too.
+ */
 export function normalizeId(input: string): string | null {
-  const urn = input.match(/urn:li:jobPosting:(\d+)/)
+  const trimmed = input.trim()
+  const urn = trimmed.match(/urn:li:jobPosting:(\d+)/)
   if (urn) return urn[1]
-  const url = input.match(/-(\d{6,})(?:[\/?]|$)/) || input.match(/\/(\d{6,})(?:[\/?]|$)/)
-  if (url) return url[1]
-  const bare = input.match(/^\d{6,}$/)
-  if (bare) return input
-  return null
+  if (/^\d{6,}$/.test(trimmed)) return trimmed
+
+  const hasScheme = /^https?:\/\//i.test(trimmed)
+  if (hasScheme || /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(trimmed)) {
+    let parsed: URL
+    try {
+      parsed = new URL(hasScheme ? trimmed : `https://${trimmed}`)
+    } catch {
+      return null
+    }
+    if (!LINKEDIN_HOST.test(parsed.hostname)) return null
+    const path = parsed.pathname.match(/\/jobs\/view\/(?:[^/]*-)?(\d{6,})\/?$/)
+    return path ? path[1] : null
+  }
+
+  // A scheme- and slash-free slug such as "software-engineer-1234567890".
+  const slug = trimmed.match(/^[a-z0-9-]*-(\d{6,})$/i)
+  return slug ? slug[1] : null
 }
 
 export async function runDetail(opts: DetailOpts): Promise<number> {

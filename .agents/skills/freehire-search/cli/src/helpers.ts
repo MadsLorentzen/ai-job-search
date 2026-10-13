@@ -107,6 +107,7 @@ export interface FreehireJob {
     salary_min?: number
     salary_max?: number
     salary_currency?: string
+    salary_period?: string // e.g. "year", "month"
   }
 }
 
@@ -144,11 +145,15 @@ export interface JobDetailResult extends JobResult {
   description: string | null
 }
 
-/** Reshape a freehire job into the contract search-result fields. */
+/**
+ * Reshape a freehire job into the contract search-result fields. The title comes
+ * from the source ATS as indexed, which can carry HTML entities and stray
+ * whitespace ("Intern - Fullstack &amp; AI Innovation "), so it is decoded and trimmed.
+ */
 export function toResult(j: FreehireJob): JobResult {
   return {
     id: j.public_slug,
-    title: j.title || "(untitled)",
+    title: decodeHtmlEntities(j.title || "").trim() || "(untitled)",
     company: j.company || null,
     company_slug: j.company_slug || null,
     location: j.location || null,
@@ -176,12 +181,17 @@ export function toDetail(j: FreehireJob): JobDetailResult {
   }
 }
 
-/** Human-readable salary line from the enrichment fields, or null when absent. */
+/**
+ * Human-readable salary line from the enrichment fields, or null when absent.
+ * The period is kept when freehire records one ("INR 300000–300000/year"):
+ * without it a yearly figure is indistinguishable from a monthly one.
+ */
 function formatSalary(e: FreehireJob["enrichment"]): string | null {
   if (e.salary_min == null && e.salary_max == null) return null
   const cur = e.salary_currency ? `${e.salary_currency} ` : ""
-  if (e.salary_min != null && e.salary_max != null) return `${cur}${e.salary_min}–${e.salary_max}`
-  return `${cur}${e.salary_min ?? e.salary_max}`
+  const per = e.salary_period ? `/${e.salary_period}` : ""
+  if (e.salary_min != null && e.salary_max != null) return `${cur}${e.salary_min}–${e.salary_max}${per}`
+  return `${cur}${e.salary_min ?? e.salary_max}${per}`
 }
 
 function numericEntity(cp: number): string {

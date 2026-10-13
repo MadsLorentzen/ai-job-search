@@ -56,6 +56,21 @@ function cleanText(text: string): string {
   return text.replace(/\s+/g, " ").trim()
 }
 
+/**
+ * JSON-LD descriptions arrive as HTML (schema.org allows it, jobdanmark uses
+ * it). Render them to the same newline-separated plain text the rendered-HTML
+ * branch produces, so `detail` emits one description shape whichever page
+ * layout it hit: tags gone, entities decoded, one line per block element.
+ */
+function descriptionToText(html: string | undefined): string {
+  if (!html) return ""
+  return parse(html)
+    .structuredText.split("\n")
+    .map(cleanText)
+    .filter(Boolean)
+    .join("\n")
+}
+
 function normalizeUrl(value: string | null | undefined): string | null {
   if (!value) return null
   const decoded = value.replace(/&amp;/g, "&")
@@ -115,7 +130,7 @@ function fromJsonLd(jobPosting: JsonLdJobPosting, slug: string, url: string): De
       postalCode: address?.postalCode ?? null,
       addressCountry: address?.addressCountry ?? null,
     },
-    description: jobPosting.description ?? "",
+    description: descriptionToText(jobPosting.description),
     applyUrl: null,
   }
 }

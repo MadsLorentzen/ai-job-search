@@ -20,16 +20,19 @@ function item(): ApiSearchItem {
 }
 
 describe("Jobdanmark search normalization", () => {
-  test("additively emits the /scrape contract fields (company, location, date, deadline)", () => {
+  test("additively emits the /scrape contract fields (id, company, location, date, deadline, url)", () => {
     const result = normalizeItem(item());
 
     expect(result).toMatchObject({
+      id: "softwareudvikler-til-statens-it",
       company: "Statens It",
       location: "Ballerup",
       date: "2026-07-27",
       deadline: "2026-08-17",
       url: "https://jobdanmark.dk/job/softwareudvikler-til-statens-it",
     });
+    // `id` is the contract name for the value `detail <slug>` consumes.
+    expect(result.id).toBe(result.slug);
   });
 
   test("maps a missing address zip and a null deadline to null", () => {

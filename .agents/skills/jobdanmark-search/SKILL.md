@@ -224,6 +224,6 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 - All data is from the public Jobdanmark.dk API — no credentials required.
 - Pagination is 1-indexed (`--page 1` is the first page). 30 items per page, server-enforced.
 - The `detail` command fetches the HTML job page and parses embedded JSON-LD when available, with a rendered-HTML fallback for pages that omit structured data. It does not use a separate JSON API.
-- `slug` in search results is extracted from the API's relative `url` field (the path after `/job/`).
+- `slug` in search results is extracted from the API's relative `url` field (the path after `/job/`); it is also emitted as `id`, the portal-contract name every search CLI shares.
 - `applicationDeadline` in search results can be `null` (no deadline set).
 - Job type values for filters: `fuldtid`, `deltid`, `fleksjob`, `elev`, `studiejob`, `praktik`.

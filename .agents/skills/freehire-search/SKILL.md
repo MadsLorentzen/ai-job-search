@@ -126,7 +126,8 @@ bun run .agents/skills/freehire-search/cli/src/cli.ts detail <slug|url> [--forma
 `slug` is the `id` from a `search` result (e.g. `golang-zensar-2bxu6dxm`). You may
 also pass a full `https://freehire.me/jobs/<slug>` URL. Returns the full (HTML-stripped)
 description, skills, region/country, and — when the posting is enriched — seniority,
-category, employment type, and salary.
+category, employment type, and salary. `salary` keeps its period when freehire records
+one (`INR 300000–300000/year`, `INR 12000/month`); compare pay only in one period.
 
 Use it for a posting you already have a slug for — a tracked application, a shared
 link, or a closed posting search no longer lists. Re-fetching a hit that `search`

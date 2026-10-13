@@ -17,6 +17,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -104,6 +105,44 @@ class FrameworkVersionGateTests(CheckerRepoFixture):
 
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("missing 'framework_version'", result.stdout)
+
+class RunGitEncodingTests(unittest.TestCase):
+    """run_git() must decode `git diff` output as UTF-8 explicitly, not via
+    whatever `subprocess.run(text=True)` falls back to on the host locale.
+
+    On a real Windows checkout, the un-pinned call decodes as cp1252 (the
+    locale default there) and a byte cp1252 leaves undefined - e.g.
+    Cyrillic Ё/ё, much CJK, or Á-class Latin - in a framework file's diff
+    raises UnicodeDecodeError before the gate ever evaluates the change
+    (reported 2026-10-01, reproduced on Windows with Cyrillic Ё). An em
+    dash does not trigger this - cp1252 maps it fine. `LC_ALL`/`LANG` don't
+    influence this on Windows, so the regression is pinned directly against
+    the subprocess.run() call rather than by trying to simulate the OS
+    locale."""
+
+    def test_run_git_pins_utf8_encoding(self):
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(
+            "check_framework_version", SCRIPT
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        with unittest.mock.patch.object(module.subprocess, "run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(
+                args=["git"], returncode=0, stdout="", stderr=""
+            )
+            module.run_git(["diff", "-U0", "HEAD"])
+
+        _, kwargs = mock_run.call_args
+        self.assertEqual(
+            kwargs.get("encoding"),
+            "utf-8",
+            "run_git() must pass encoding=\"utf-8\" to subprocess.run() - "
+            "omitting it falls back to the host locale's default codec "
+            "(cp1252 on Windows), which crashes on non-ASCII diff content.",
+        )
 
 
 if __name__ == "__main__":

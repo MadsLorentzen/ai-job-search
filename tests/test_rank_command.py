@@ -43,6 +43,21 @@ def _sections(text: str) -> dict[str, str]:
 
 
 class RankCommandSpec(unittest.TestCase):
+    def test_step1_empty_candidates_still_sweeps_and_reports(self):
+        """No new jobs must not bypass expiry maintenance of ranked jobs."""
+        step1 = _sections(COMMAND.read_text(encoding="utf-8"))["Step 1: Load State"]
+        empty_branch = step1.partition("If it reports no candidates")[2].partition("Then read")[0]
+        self.assertIn(
+            "python3 tools/rank_state.py sweep --write",
+            empty_branch,
+            "an empty candidate batch must still persist rule 6's expiry sweep",
+        )
+        self.assertNotIn("--exclude", empty_branch, "no jobs were re-scored on this path")
+        for field in ("swept", "newly_expired", "closing_soon", "unparseable_deadlines"):
+            self.assertIn(field, empty_branch, f"the empty-run report must consume {field}")
+        self.assertIn("Skip", empty_branch)
+        self.assertIn("Steps 2-4", empty_branch, "an empty run must not fetch or score jobs")
+
     def test_command_file_exists_with_lint_compliant_header(self):
         self.assertTrue(COMMAND.is_file(), "command spec missing")
         first_line = COMMAND.read_text(encoding="utf-8").splitlines()[0]

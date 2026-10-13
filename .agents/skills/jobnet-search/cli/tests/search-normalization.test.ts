@@ -128,11 +128,12 @@ describe("Jobnet search normalization", () => {
     expect("description" in output.results[0]).toBe(false);
   });
 
-  test("additively emits the /scrape contract fields (company, location, date, deadline, url)", () => {
+  test("additively emits the /scrape contract fields (id, company, location, date, deadline, url)", () => {
     const output = createSearchOutput(apiResponse(), { ...flags, limit: undefined });
 
     expect(output.results).toHaveLength(2);
     expect(output.results[0]).toMatchObject({
+      id: "job-1",
       company: "Acme",
       location: null,
       date: "2026-07-01",
@@ -140,6 +141,7 @@ describe("Jobnet search normalization", () => {
       url: "https://jobnet.dk/find-job/job-1",
     });
     expect(output.results[1]).toMatchObject({
+      id: "job-2",
       company: "Example Co",
       location: "København Ø",
       date: "2026-07-02",
@@ -148,6 +150,8 @@ describe("Jobnet search normalization", () => {
     });
     expect(output.results[0].hiringOrgName).toBe("Acme");
     expect(output.results[1].applicationDeadline).toBe("2026-08-01T23:59:00+02:00");
+    // `id` is the contract name for the value `detail <jobAdId>` consumes.
+    expect(output.results[0].id).toBe(output.results[0].jobAdId);
   });
 
   test("maps Jobnet's undisclosed-deadline sentinel (1900-01-01) to null", () => {

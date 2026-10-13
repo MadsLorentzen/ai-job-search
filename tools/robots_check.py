@@ -13,9 +13,12 @@ Rules implemented (RFC 9309), deliberately on the cautious side:
   * a Disallow for either "*" or "Claude-User" blocks the retry
   * blank lines inside a record do not end it (Python's robotparser drops
     rules in that case, which fails open - see tests)
+  * one leading UTF-8 byte-order mark is skipped (left in, it hides a first
+    "User-agent" line and drops that whole group, which fails open)
   * 404 means no published policy, which is permission
   * any other failure to read robots.txt leaves permission unconfirmed,
-    and the retry does not happen
+    and the retry does not happen - including a User-agent, Allow or
+    Disallow line holding U+FFFD, i.e. a byte that is not valid UTF-8
 
 Usage:  python3 tools/robots_check.py <url>
 Exit 0 = the retry may proceed. Exit 1 = do not retry; go to escalation step 3.
@@ -37,7 +40,10 @@ def _fetch(url, ua):
     r = subprocess.run(
         ['curl', '-sS', '-L', '--max-redirs', '5', '--max-time', '12', '-A', ua,
          '-H', 'Accept: text/plain,*/*', '-w', '\n%{http_code}', '--', url],
-        capture_output=True, text=True, timeout=20)
+        # robots.txt is UTF-8 (RFC 9309). Unpinned, Turkish Windows decoded it as
+        # cp1254, where bytes like 0x81 are undefined: the pipe reader thread died,
+        # stdout came back None, and tr.indeed.com read as UNCONFIRMED.
+        capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=20)
     if r.returncode != 0:
         raise RuntimeError('curl exit %d' % r.returncode)
     body, _, code = r.stdout.rpartition('\n')
@@ -53,6 +59,7 @@ def is_robots_body(text):
     body IS a valid allow-all under RFC 9309 and stays allowed; a non-empty body
     with no recognised directive is treated as unreadable.
     """
+    text = text.removeprefix('\ufeff')          # byte-order mark, see _groups
     if not text.strip():
         return True
     for raw in text.splitlines():
@@ -63,10 +70,36 @@ def is_robots_body(text):
             return True
     return False
 
+def has_undecodable_rule(text):
+    """Does a User-agent, Allow or Disallow line hold U+FFFD?
+
+    U+FFFD stands in for a byte that did not decode as UTF-8. A non-conformant
+    robots.txt saved in a legacy code page (cp1254, ISO-8859-9) with raw
+    non-ASCII bytes in a rule yields a pattern that can never match: the rule
+    was silently skipped and the path read as allowed. Such a body is
+    unreadable, not permissive. The field is named with U+FFFD removed, so a
+    stray byte before "Disallow" cannot hide the line. U+FFFD in a comment or
+    in any other field (Sitemap, Crawl-delay, ...) decides nothing and is
+    ignored.
+    """
+    for raw in text.removeprefix('\ufeff').splitlines():
+        line = raw.split('#', 1)[0]
+        if '\ufffd' in line and ':' in line:
+            field = line.split(':', 1)[0].replace('\ufffd', '').strip().lower()
+            if field in ('user-agent', 'allow', 'disallow'):
+                return True
+    return False
+
 def _groups(text):
-    """user-agent -> [(is_allow, pattern)], tolerating blank lines inside a record."""
+    """user-agent -> [(is_allow, pattern)], tolerating blank lines inside a record.
+
+    One leading U+FEFF is skipped, as Google's reference parser does. A file
+    saved with a UTF-8 byte-order mark otherwise hid its first field: a leading
+    "User-agent: *" went unseen, every rule in its group was dropped for want
+    of an agent, and "Disallow: /" read as allow-all.
+    """
     out, agents, expect = {}, [], True
-    for raw in text.splitlines():
+    for raw in text.removeprefix('\ufeff').splitlines():
         line = raw.split('#', 1)[0].strip()
         if not line or ':' not in line:
             continue
@@ -123,6 +156,9 @@ def gate(url):
         if code == 200:
             if not is_robots_body(text):
                 last = 'HTTP 200 but the body is not a robots.txt'
+                continue
+            if has_undecodable_rule(text):
+                last = 'HTTP 200 but a User-agent/Allow/Disallow line is not valid UTF-8'
                 continue
             body = text; break
         last = 'HTTP %d' % code

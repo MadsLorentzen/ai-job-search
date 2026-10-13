@@ -49,6 +49,24 @@ describe("toResult — reshape into the portal-skill contract", () => {
     expect(r.date).toBeNull();
     expect(r.work_mode).toBeNull();
   });
+
+  test("decodes HTML entities and trims whitespace in the title", () => {
+    // Real title from the index (freehire slug intern-fullstack-amp-ai-innovation-noise-edaawqq2).
+    expect(toResult(job({ title: "Intern - Fullstack &amp; AI Innovation " })).title).toBe(
+      "Intern - Fullstack & AI Innovation",
+    );
+    expect(toResult(job({ title: "R&#38;D Engineer" })).title).toBe("R&D Engineer");
+    expect(toResult(job({ title: "SDE Intern - Frontend   " })).title).toBe("SDE Intern - Frontend");
+  });
+
+  test("a whitespace-only title still falls back to (untitled)", () => {
+    expect(toResult(job({ title: "   " })).title).toBe("(untitled)");
+    expect(toResult(job({ title: "" })).title).toBe("(untitled)");
+  });
+
+  test("detail inherits the cleaned title", () => {
+    expect(toDetail(job({ title: "Data &amp; Analytics Intern" })).title).toBe("Data & Analytics Intern");
+  });
 });
 
 describe("toDetail — adds cleaned description + enrichment", () => {
@@ -66,6 +84,18 @@ describe("toDetail — adds cleaned description + enrichment", () => {
     expect(d.seniority).toBe("senior");
     expect(d.category).toBe("backend");
     expect(d.salary).toBe("EUR 90000–120000");
+  });
+
+  test("keeps the salary period, so a yearly figure is not read as monthly", () => {
+    const d = toDetail(
+      job({ enrichment: { salary_min: 300000, salary_max: 300000, salary_currency: "INR", salary_period: "year" } }),
+    );
+    expect(d.salary).toBe("INR 300000–300000/year");
+  });
+
+  test("a single-bound salary keeps its period too", () => {
+    const d = toDetail(job({ enrichment: { salary_min: 12000, salary_currency: "INR", salary_period: "month" } }));
+    expect(d.salary).toBe("INR 12000/month");
   });
 
   test("null enrichment fields when the enrichment object is empty", () => {
