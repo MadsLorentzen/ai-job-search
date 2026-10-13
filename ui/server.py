@@ -39,6 +39,7 @@ MAX_RUNS = 200
 LOCK = threading.Lock()  # guards tracker / seen writes
 RUNS = {}                # id -> run dict
 RUN_LOCK = threading.Lock()
+SHUTTING_DOWN = threading.Event()  # set on Ctrl+C; shutdown() owns the final state of live runs
 
 
 # ---------- data ----------
@@ -346,6 +347,8 @@ def _exec(run):
             if run.get("abort") and run["status"] == "running":
                 stop_run(run)   # nothing useful can happen without the connector; don't spend tokens
         p.wait()
+        if SHUTTING_DOWN.is_set():
+            return
         dur = round(time.time() - run["started"])
         info = f"{dur // 60}m {dur % 60}s" if dur >= 60 else f"{dur}s"
         if run.get("cost"):
@@ -390,6 +393,31 @@ def stop_run(run):
             signal_group(sig)
     signal_group(signal.SIGTERM)
     threading.Thread(target=escalate, daemon=True).start()
+
+
+def shutdown():
+    """Ctrl+C: runs live in their own process groups (for Stop), so the terminal's SIGINT never
+    reaches them. Stop them here rather than leaving orphaned Claude sessions writing files."""
+    import signal
+    SHUTTING_DOWN.set()
+    live = [r for r in RUNS.values() if r["status"] in ("running", "cancelling") and r.get("proc")]
+    if live:
+        print(f"\nStopping {len(live)} running Claude run(s)…")
+    for sig, wait in ((signal.SIGTERM, 2), (signal.SIGKILL, 0)):
+        for r in live:
+            try:
+                os.killpg(r["proc"].pid, sig)
+            except (ProcessLookupError, PermissionError):
+                pass
+        deadline = time.time() + wait
+        while time.time() < deadline and any(r["proc"].poll() is None for r in live):
+            time.sleep(0.1)
+    for r in live:
+        r["status"] = "interrupted"
+        r["lines"].append(("error", "Interrupted: the UI server was stopped during this run"))
+        r["ended"] = time.time()
+        save_run(r)
+    print("Job UI stopped.")
 
 
 def public_run(r, since=0):
@@ -567,5 +595,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--port", type=int, default=8765)
     port = ap.parse_args().port
     load_runs()
-    print(f"Job UI on http://127.0.0.1:{port}")
-    ThreadingHTTPServer(("127.0.0.1", port), H).serve_forever()
+    print(f"Job UI on http://127.0.0.1:{port}  (Ctrl+C to stop)")
+    try:
+        ThreadingHTTPServer(("127.0.0.1", port), H).serve_forever()
+    except KeyboardInterrupt:
+        shutdown()
