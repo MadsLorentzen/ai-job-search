@@ -148,7 +148,7 @@ dialog .btns{justify-content:flex-end}
 .job.fresh{background:linear-gradient(90deg,color-mix(in srgb,var(--acc) 9%,var(--panel)),var(--panel) 60%)}
 .job.fresh:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:var(--acc)}
 .job .score{width:42px;height:42px;border-radius:11px;font-size:15px}
-.job .score.none{--c:var(--gray);font-size:11px;font-weight:600}
+.job .score.none{--c:var(--gray);width:auto;min-width:42px;padding:0 8px;font-size:11px;font-weight:600}
 .jt{font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:8px;min-width:0}
 .jt span.t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .newb{font-size:10.5px;font-weight:700;letter-spacing:.03em;color:#fff;background:var(--acc);border-radius:5px;padding:1px 6px;flex:none}
@@ -219,7 +219,7 @@ const toast=(m,undo,btn='Undo')=>{const t=$('#toast');$('#toastT').textContent=m
 const fileUrl=p=>'/file?path='+encodeURIComponent(p);
 const fileName=p=>p.split('/').pop();
 function md(t){ // tiny, escape-first markdown for Claude's replies
-  return esc(t).replace(/^#{1,4} (.*)$/gm,'<h4>$1</h4>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>')
+  return esc(t).replace(/^#{1,4} (.*)$/gm,'<h4>$1</h4>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|[\s(])\*([^*\s][^*\n]*?)\*(?=[\s.,;:)!?]|$)/gm,'$1<i>$2</i>').replace(/`([^`]+)`/g,'<code>$1</code>')
     .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>').replace(/\n/g,'<br>')}
 const I={ext:'<svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
   doc:'<svg viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/></svg>',
@@ -264,7 +264,7 @@ function render(){
   $('#n-jobs').className=fc?'badge':'n';$('#n-jobs').textContent=fc?fc+' new':(S.jobs.filter(j=>j.group==='review').length||'');
   $$('#nav .item').forEach(b=>b.classList.toggle('on',b.dataset.view===S.view));
   $('#filters').hidden=S.view==='runs';$('#fh').textContent=S.view==='jobs'?'SHOW':'STATUS';
-  $('#seg').style.visibility=S.view==='runs'?'hidden':'';
+  $('#seg').style.visibility=$('.search').style.visibility=S.view==='runs'?'hidden':'';
   $('#seg').innerHTML=S.view==='jobs'?`<button data-js="score" class="${S.jsort==='score'?'on':''}">Best match</button><button data-js="date" class="${S.jsort==='date'?'on':''}">Newest</button>`
     :`<button data-o="1" class="${S.open?'on':''}">Open</button><button data-o="0" class="${!S.open?'on':''}">All</button>`;
   if(S.view==='apps')renderApps();else if(S.view==='jobs')renderJobs();else renderRuns();
