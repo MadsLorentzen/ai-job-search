@@ -118,3 +118,7 @@ company_research/*.json
 
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/
+
+# Local web UI state: viewed-jobs set and run history
+ui/state.json
+ui/runs/
