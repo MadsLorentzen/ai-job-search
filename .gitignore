@@ -122,3 +122,4 @@ company_research/*.json
 # Local web UI state: viewed-jobs set and run history
 ui/state.json
 ui/runs/
+ui/briefs.json

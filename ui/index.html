@@ -52,7 +52,7 @@ kbd{font:11px ui-monospace,monospace;border:1px solid var(--line);border-radius:
 .kpi{background:var(--panel);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow)}
 .kpi b{display:block;font-size:22px;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .kpi span{color:var(--mut);font-size:12px}
-.card{background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.card{background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);overflow-x:auto}
 table{border-collapse:collapse;width:100%}
 th{font-size:11.5px;font-weight:550;color:var(--mut);text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
 th:hover{color:var(--ink)}th .ar{opacity:.7}
@@ -60,7 +60,7 @@ td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr{cursor:pointer;transition:background .08s}
 tbody tr:hover{background:var(--hover)}tbody tr.sel{background:var(--sel)}
 tbody tr:last-child td{border-bottom:0}
-.co{font-weight:600}.role{color:var(--ink2);margin-top:1px;max-width:440px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.co{font-weight:600}.role{color:var(--ink2);margin-top:1px;max-width:min(440px,32vw);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .m{color:var(--mut)}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:2px 9px 2px 7px;border-radius:99px;font-size:12px;font-weight:550;white-space:nowrap;
@@ -102,6 +102,21 @@ tbody tr:last-child td{border-bottom:0}
 textarea,.field{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px;outline:0;resize:vertical}
 textarea:focus,.field:focus{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent)}
 ul.plain{margin:0;padding-left:16px;color:var(--ink2);font-size:12.5px}
+/* role brief */
+.brief{border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 5%,var(--panel)),var(--panel) 70%)}
+.brief .bh{display:flex;align-items:center;gap:8px}.brief .bh h5{margin:0;font-size:11.5px;font-weight:600;color:var(--mut)}
+.brief .bh .m{font-size:11px;margin-left:auto}
+.lnk{border:0;background:none;color:var(--acc);cursor:pointer;font-size:11.5px;padding:0}
+.brief p.bs{margin:0;font-size:13px;line-height:1.5;color:var(--ink)}
+.verdict{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--ink2)}
+.brief h6{margin:0 0 4px;font-size:11px;font-weight:650;color:var(--mut);letter-spacing:.02em}
+.brief ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--ink2)}.brief li{margin:2px 0}
+.ana{display:flex;flex-direction:column;gap:8px}
+.ana>div{border-left:3px solid var(--c);padding:2px 0 2px 10px}
+.ana ul{list-style:none;padding:0}.ana li{position:relative;padding-left:16px}.ana li:before{content:var(--b);color:var(--c);font-weight:700;position:absolute;left:0}
+.brief.none{align-items:flex-start;background:var(--hover)}.brief.none p{margin:0;color:var(--mut);font-size:12.5px}
+.chip-busy{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--acc);font-weight:600}
 
 /* console */
 #con{border-top:1px solid var(--line);background:var(--panel);height:0;transition:height .18s ease;display:flex;flex-direction:column}
@@ -329,9 +344,14 @@ function renderJobs(){
     const meta=[esc(j.company),esc(j.location||''),esc((j.portal||'').replace('-search','')),S.jsort==='date'?'':ago(j.first_seen)].filter(Boolean).join(' · ');
     html+=`<div class="job ${j.fresh?'fresh':''} ${S.sel===j.key?'sel':''}" data-key="${esc(j.key)}">${jobScore(j)}
       <div class="jm"><div class="jt"><span class="t">${esc(j.title)}</span>${j.fresh?'<span class="newb">NEW</span>':''}${j.rank_verdict?`<span class="tag">${esc(j.rank_verdict)}</span>`:''}</div>
-      <div class="js">${meta}</div>${j.notes?`<div class="jn">${esc(j.notes)}</div>`:''}</div>
+      <div class="js">${meta}</div>${briefBusy(j.brief_id)?`<div class="jn"><span class="chip-busy"><span class="dot pulse" style="--c:var(--acc)"></span>Summarizing…</span></div>`
+        :j.brief?`<div class="jn" style="color:var(--ink2)">${esc(j.brief.summary)}</div>`:j.notes?`<div class="jn">${esc(j.notes)}</div>`:''}</div>
       <div class="jr"><span class="num" style="font-size:12px">${j.deadline&&j.deadline!=='open'?'Due '+deadlineCell(j.deadline,S.jg!=='expired'):'<span class="m">No deadline</span>'}</span>${jobActions(j)}</div></div>`}
-  const banner=S.jg==='fresh'&&v.length?`<div class="banner">${I.spark}<div><b>${v.length} new job${v.length>1?'s':''}</b><div class="m">Found since you last looked. Save, skip or apply, or mark them all as seen.</div></div><span style="flex:1"></span><button class="btn" data-ja-all="seen">Mark all as seen</button></div>`:'';
+  const need=['fresh','review','saved'].includes(S.jg)?v.filter(j=>!j.brief&&!briefBusy(j.brief_id)):[];
+  const sumBtn=need.length?`<button class="btn" data-brief-all>${I.spark}Summarize ${Math.min(need.length,12)}${need.length>12?' of '+need.length:''}</button>`:'';
+  S.needBrief=need.slice(0,12).map(j=>({kind:'job',key:j.key}));
+  const banner=S.jg==='fresh'&&v.length?`<div class="banner">${I.spark}<div><b>${v.length} new job${v.length>1?'s':''}</b><div class="m">Found since you last looked. Save, skip or apply, or mark them all as seen.</div></div><span style="flex:1"></span>${sumBtn}<button class="btn" data-ja-all="seen">Mark all as seen</button></div>`
+    :sumBtn?`<div class="btns" style="justify-content:flex-end;margin-bottom:10px">${sumBtn}</div>`:'';
   $('#scroll').innerHTML=banner+(v.length?`<div class="jobs">${html}</div>`:`<div class="card empty">${S.jg==='fresh'?'All caught up.':S.jg==='review'?'Nothing to review. Run “Scrape new jobs”.':'Nothing here yet.'}</div>`);
 }
 const dur=s=>{s=Math.round(s);return s>=60?`${Math.floor(s/60)}m ${s%60}s`:s+'s'};
@@ -341,6 +361,27 @@ function renderRuns(){
    ${S.runs.map(r=>`<tr data-run-id="${r.id}"><td class="num m">${new Date(r.started*1000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</td><td>${esc(r.label)}${r.artifacts.length?`<div class="m">${r.artifacts.map(fileName).map(esc).join(', ')}</div>`:''}</td><td>${pill(r.status)}</td>
      <td class="num m">${r.ended?dur(r.ended-r.started):'…'}</td><td class="num m">${r.cost?'$'+r.cost.toFixed(2):'—'}</td></tr>`).join('')}</tbody></table>${S.runs.length?'':'<div class="empty">No runs yet. Use the actions in the sidebar.</div>'}</div>`;
 }
+
+// ---------- role brief ----------
+const briefBusy=id=>S.runs.some(r=>r.action==='brief'&&isLive(r.status)&&(r.brief_ids||[]).includes(id));
+const FIT={high:'--green',medium:'--amber',low:'--red'};
+function briefBlock(kind,x){
+  const b=x.brief;
+  if(briefBusy(x.brief_id))return `<div class="brief none"><span class="chip-busy"><span class="dot pulse" style="--c:var(--acc)"></span>Summarizing… Claude is reading the posting</span></div>`;
+  // no brief yet: offer one; a ranked job still shows /rank's own strengths and gaps
+  if(!b){const rs=x.strengths||[],rg=x.gaps||[];
+    return `<div class="brief none"><p>No summary of this role yet.</p><button class="btn" data-brief>${I.spark}Summarize with Claude</button>
+      ${rs.length||rg.length?`<div class="ana" style="width:100%"><h6>FROM /RANK</h6>${anaList('Strengths',rs,'--green','"✓"')}${anaList('Gaps',rg,'--red','"✕"')}</div>`:''}</div>`}
+  const list=(t,a)=>a.length?`<div><h6>${t}</h6><ul>${a.map(v=>`<li>${esc(v)}</li>`).join('')}</ul></div>`:'';
+  return `<div class="brief">
+    <div class="bh"><h5>About the role</h5><span class="m">${b.source==='notes'?'from stored notes':'from the posting'} · ${esc(b.date||'')}</span><button class="lnk" data-brief title="Summarize again">Refresh</button></div>
+    <p class="bs">${esc(b.summary)}</p>
+    ${b.verdict||b.fit?`<div class="verdict">${b.fit?`<span class="pill" style="--c:var(${FIT[b.fit]})"><span class="dot"></span>${label(b.fit)} fit</span>`:''}<span>${esc(b.verdict)}</span></div>`:''}
+    ${list('REQUIREMENTS',b.requirements||[])}${list('NICE TO HAVE',b.nice_to_have||[])}
+    <div class="ana">${anaList('Strengths',b.strengths||[],'--green','"✓"')}${anaList('Concerns',b.concerns||[],'--amber','"!"')}${anaList('Gaps',b.gaps||[],'--red','"✕"')}</div>
+  </div>`}
+const anaList=(t,a,c,bullet)=>a.length?`<div style="--c:var(${c});--b:'${bullet.replace(/"/g,'')}'"><h6>${t.toUpperCase()}</h6><ul>${a.map(v=>`<li>${esc(v)}</li>`).join('')}</ul></div>`:'';
+async function summarize(refs){try{const r=await api('/api/run',{action:'brief',refs});toast('Started: '+r.label);await watch();render()}catch(e){toast(e.message)}}
 
 // ---------- inspector ----------
 function genBlock(kind,x){
@@ -373,6 +414,7 @@ function renderInspector(){
      </dl>
      <div class="btns">${r.source?`<a class="btn" href="${esc(r.source.trim())}" target="_blank" rel="noopener">${I.ext}Posting</a>`:''}
       ${r.files.map(f=>`<a class="btn" href="/file?path=${encodeURIComponent(f.path)}" target="_blank">${I.doc}${f.label}${f.kind!=='pdf'?` <span class="m">.${f.kind}</span>`:''}</a>`).join('')}</div>
+     ${briefBlock('app',r)}
      ${genBlock('app',r)}
      ${!r.final&&r.status!=='drafted'?`<div class="btns"><button class="btn" data-a="followup">${I.mail}Draft follow-up email</button></div>`:''}
      ${body?`<div class="sec"><h5>Notes</h5><div class="body">${esc(body)}</div></div>`:''}
@@ -386,14 +428,14 @@ function renderInspector(){
      <dl class="facts"><dt>Score</dt><dd>${j.rank_score!=null?fitCell(String(j.rank_score)):fitCell(j.fit)}</dd><dt>Deadline</dt><dd>${deadlineCell(j.deadline,true)}</dd>
       <dt>First seen</dt><dd>${esc(j.first_seen||'')}</dd>${j.portal?`<dt>Source</dt><dd>${esc(j.portal)}</dd>`:''}
       ${j.language_gate?`<dt>Language</dt><dd>${esc(j.language_gate)}</dd>`:''}${j.location_verdict?`<dt>Location</dt><dd>${esc(j.location_verdict)}</dd>`:''}</dl>
+     ${briefBlock('job',j)}
      ${genBlock('job',j)}
      <div class="btns"><button class="btn" data-a="apply">${I.spark}Full /apply flow</button><a class="btn" href="${esc(j.url)}" target="_blank" rel="noopener">${I.ext}Posting</a></div>
      <div class="sec"><h5>Mark as</h5><div class="stsel">${[['new','To review','--blue'],['saved','Saved','--amber'],['applied','Applied','--green'],['skipped','Skipped','--gray']].map(([s,l,c])=>
        `<button data-ja="${s}" class="${(s==='new'?j.group==='review':j.group===s)?'on':''}" style="--c:var(${c})"><span class="dot"></span>${l}</button>`).join('')}</div>
        ${j.fresh?`<div class="btns" style="margin-top:8px"><button class="btn" data-ja-seen>Mark as seen</button></div>`:''}</div>
      ${j.notes?`<div class="sec"><h5>Notes</h5><div class="body">${esc(j.notes)}</div></div>`:''}
-     ${(j.strengths||[]).length?`<div class="sec"><h5>Strengths</h5><ul class="plain">${j.strengths.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:''}
-     ${(j.gaps||j.concerns||[]).length?`<div class="sec"><h5>Gaps</h5><ul class="plain">${(j.gaps||j.concerns).map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:''}`;
+`;
   }
 }
 
@@ -420,6 +462,7 @@ async function markSeen(body){await api('/api/jobs/seen',body);await loadJobs()}
 
 $('#scroll').onclick=e=>{
   const ja=e.target.closest('[data-ja]');if(ja){e.stopPropagation();return setJob(ja.closest('[data-key]').dataset.key,ja.dataset.ja)}
+  if(e.target.closest('[data-brief-all]'))return summarize(S.needBrief);
   if(e.target.closest('[data-ja-all]'))return markSeen({all:true}).then(()=>toast('All caught up'));
   if(e.target.closest('a'))return;
   const h=e.target.closest('th[data-k]');if(h){const k=h.dataset.k;S.sort={k,d:S.sort.k===k?-S.sort.d:1};return render()}
@@ -427,6 +470,7 @@ $('#scroll').onclick=e=>{
   const tr=e.target.closest('[data-key]');if(tr){S.sel=S.sel===tr.dataset.key?null:tr.dataset.key;render()}};
 $('#iw').onclick=async e=>{
   const g=e.target.closest('[data-gen]');if(g)return generate(g.dataset.gen,g.dataset.kind,S.sel);
+  if(e.target.closest('[data-brief]'))return summarize([{kind:S.view==='apps'?'app':'job',key:S.sel}]);
   const ja=e.target.closest('[data-ja]');if(ja)return setJob(S.sel,ja.dataset.ja);
   if(e.target.closest('[data-ja-seen]'))return markSeen({keys:[S.sel]});
   const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
@@ -483,6 +527,7 @@ async function watch(){clearTimeout(S.wt);let runs;try{runs=await api('/api/runs
   S.wt=setTimeout(watch,live.length?2000:8000)}
 async function onFinished(r){
   loadApps();await loadJobs();
+  if(r.action==='brief'&&r.status==='done')return toast(r.brief_ids.length>1?`${r.brief_ids.length} job summaries ready`:'Summary ready');
   if(r.action==='scrape'&&r.status==='done'){const n=freshCount();
     if(n){S.view='jobs';S.jg='fresh';S.sel=null;render();return toast(`${n} new job${n>1?'s':''} found`)}return toast('Scrape finished — no new jobs')}
   const pdf=r.artifacts.find(p=>p.endsWith('.pdf'))||r.artifacts[0];

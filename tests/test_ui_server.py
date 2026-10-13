@@ -45,10 +45,11 @@ class UiServerCase(unittest.TestCase):
                         "status": "skipped-expired"},
             }}, f)
         self._saved = {k: getattr(server, k) for k in
-                       ("ROOT", "UI", "TRACKER", "SEEN", "UI_STATE", "RUNS_DIR")}
+                       ("ROOT", "UI", "TRACKER", "SEEN", "UI_STATE", "RUNS_DIR", "BRIEFS")}
         server.ROOT, server.UI, server.TRACKER, server.SEEN = self.tmp, os.path.join(self.tmp, "ui"), self.tracker, self.seen
         server.UI_STATE = os.path.join(self.tmp, "ui", "state.json")
         server.RUNS_DIR = os.path.join(self.tmp, "ui", "runs")
+        server.BRIEFS = os.path.join(self.tmp, "ui", "briefs.json")
         server.RUNS.clear()
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), server.H)
         self.port = self.httpd.server_address[1]
@@ -205,6 +206,100 @@ class StopKillsTheWholeRun(UiServerCase):
         self.assertLess(time.time() - start, 5)
         with open(os.path.join(server.RUNS_DIR, run["id"] + ".json")) as f:
             self.assertEqual("cancelled", json.load(f)["status"])
+
+
+FAKE_CLAUDE = r"""#!/usr/bin/env python3
+# Stand-in for `claude -p ... --output-format stream-json`, enough for the brief flow.
+import json, os, sys
+prompt = sys.argv[2]
+with open("ui/fake_argv.json", "a") as f:
+    f.write(json.dumps(sys.argv[1:]) + "\n")
+say = lambda t: print(json.dumps({"type": "assistant", "message": {"content": [{"type": "text", "text": t}]}}), flush=True)
+print(json.dumps({"type": "system", "subtype": "init", "session_id": "s-1", "mcp_servers": []}), flush=True)
+if prompt.startswith("/scrape"):
+    with open("job_scraper/seen_jobs.json") as f:
+        d = json.load(f)
+    d["seen"]["fresh1"] = {"title": "Ops Assistant", "company": "Beta", "url": "https://example.com/job/9", "status": "new"}
+    with open("job_scraper/seen_jobs.json", "w") as f:
+        json.dump(d, f)
+    say("Found 1 new job.")
+elif prompt.startswith("Write a short brief"):
+    if os.path.exists("ui/fake_broken"):
+        say("Here you go: ```json {not json} ```")
+    else:
+        brief = {"summary": "Coordinates staff travel for a regional office.", "requirements": ["2+ years travel coordination"],
+                 "nice_to_have": [], "strengths": ["Direct travel booking experience"], "concerns": ["Some evening calls"],
+                 "gaps": [], "fit": "high", "verdict": "Strong match on the core duties.", "source": "posting"}
+        say("Done.\n```json\n" + json.dumps({"j1": brief}) + "\n```")
+print(json.dumps({"type": "result", "is_error": False, "total_cost_usd": 0.01}), flush=True)
+"""
+
+
+@unittest.skipUnless(hasattr(os, "killpg"), "the stand-in claude is a POSIX script")
+class RoleBriefs(UiServerCase):
+    def setUp(self):
+        super().setUp()
+        bindir = os.path.join(self.tmp, "bin")
+        os.makedirs(bindir)
+        fake = os.path.join(bindir, "claude")
+        with open(fake, "w") as f:
+            f.write(FAKE_CLAUDE)
+        os.chmod(fake, os.stat(fake).st_mode | stat.S_IEXEC)
+        self._path = os.environ["PATH"]
+        os.environ["PATH"] = bindir + os.pathsep + self._path
+
+    def tearDown(self):
+        os.environ["PATH"] = self._path
+        super().tearDown()
+
+    def wait(self, run_id):
+        for _ in range(200):
+            if server.RUNS[run_id]["status"] not in ("running", "cancelling"):
+                return server.RUNS[run_id]
+            time.sleep(0.05)
+        self.fail("run did not finish")
+
+    def test_brief_is_stored_once_and_shown_on_the_job_and_its_tracker_row(self):
+        row_key = server.row_key(server.read_tracker()[0])
+        # The scraped job and the tracker row point at the same posting: one target, one brief.
+        code, run = self.request("/api/run", {"action": "brief", "refs": [{"kind": "job", "key": "northwind"},
+                                                                          {"kind": "app", "key": row_key}]})
+        self.assertEqual(200, code)
+        self.assertEqual(1, len(run["brief_ids"]))
+        self.assertEqual("done", self.wait(run["id"])["status"])
+        _, jobs = self.request("/api/jobs")
+        brief = next(j for j in jobs["jobs"] if j["key"] == "northwind")["brief"]
+        self.assertEqual("Coordinates staff travel for a regional office.", brief["summary"])
+        self.assertEqual(["Some evening calls"], brief["concerns"])
+        _, apps = self.request("/api/applications")
+        self.assertEqual(brief, apps["rows"][0]["brief"])
+
+    def test_brief_runs_cannot_edit_files(self):
+        _, run = self.request("/api/run", {"action": "brief", "refs": [{"kind": "job", "key": "acme"}]})
+        self.wait(run["id"])
+        with open(os.path.join(self.tmp, "ui", "fake_argv.json")) as f:
+            argv = json.loads(f.readline())
+        self.assertIn("--disallowedTools", argv)
+        self.assertTrue({"Write", "Edit"} <= set(argv[argv.index("--disallowedTools") + 1:]))
+
+    def test_unparseable_reply_saves_nothing_and_reports_it(self):
+        open(os.path.join(self.tmp, "ui", "fake_broken"), "w").close()
+        _, run = self.request("/api/run", {"action": "brief", "refs": [{"kind": "job", "key": "acme"}]})
+        done = self.wait(run["id"])
+        self.assertEqual("error", done["status"])
+        self.assertIn("did not parse", " ".join(t for _, t in done["lines"]))
+        self.assertEqual({}, server.read_briefs())
+
+    def test_a_finished_scrape_summarizes_the_jobs_it_added(self):
+        self.request("/api/jobs")   # first launch: everything already scraped counts as seen
+        scrape = server.start_run("scrape", "/scrape ")
+        self.wait(scrape["id"])
+        briefs = [r for r in server.RUNS.values() if r["action"] == "brief"]
+        self.assertEqual(1, len(briefs))
+        self.assertEqual(["https://example.com/job/9"], [t["id"] for t in briefs[0]["targets"]])
+        self.wait(briefs[0]["id"])
+        _, jobs = self.request("/api/jobs")
+        self.assertIsNotNone(next(j for j in jobs["jobs"] if j["key"] == "fresh1")["brief"])
 
 
 if __name__ == "__main__":
