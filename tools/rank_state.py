@@ -289,6 +289,19 @@ def cmd_apply(args) -> int:
             errors.append({"key": key, "error": str(exc)})
             continue
 
+        # A missing deadline from the fresh fetch is not a correction to the
+        # stored date. Scored keys are excluded from the later sweep, so apply
+        # must retire a passed deadline before updating any ranking metadata.
+        parsed = parse_iso(result.get("deadline") or entry.get("deadline"))
+        if parsed is not None and parsed < today:
+            entry["status"] = "expired"
+            if result.get("deadline"):
+                entry["deadline"] = result["deadline"]
+            expired.append(
+                {"key": key, "title": entry.get("title"), "company": entry.get("company"), "url": entry.get("url")}
+            )
+            continue
+
         legacy = entry_location_verdict(entry)
         if entry.get("location") in ("PASS", "FAIL", "FLAG"):
             entry.pop("location", None)  # legacy verdict, never a place
@@ -312,7 +325,6 @@ def cmd_apply(args) -> int:
             if isinstance(value, list):
                 entry[field] = [str(b) for b in value][:3]
 
-        parsed = parse_iso(entry.get("deadline"))
         rows.append(
             {
                 "key": key,

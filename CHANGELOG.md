@@ -29,6 +29,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/rank` retires scored jobs whose preserved deadline has passed**
+  (`tools/rank_state.py`, `tests/test_rank_state.py`) - a fresh `null` deadline
+  preserves the stored date, but `apply` previously wrote the job as `ranked`
+  even after that date had passed. The later sweep excludes re-scored keys,
+  so it could not correct the state or shortlist. Apply now expires the job
+  before changing rank metadata; current-day deadlines, explicit future
+  extensions, invalid dates, dry runs, and scoring errors keep their behavior.
+
 - **`/reset profile` keeps the `framework_version` frontmatter on the two files it rewrites**
   (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - the full-file skeletons
   for `01-candidate-profile.md` and `02-behavioral-profile.md` started at the `#` title, while

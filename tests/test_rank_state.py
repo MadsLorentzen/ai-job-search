@@ -259,6 +259,73 @@ class Apply(RankStateCase):
         path.write_text(json.dumps(payload), encoding="utf-8")
         return str(path)
 
+    def test_scored_keys_keep_past_deadlines_out_of_the_shortlist(self):
+        for status in ("new", "ranked", "expired"):
+            with self.subTest(status=status):
+                original = entry(status=status, deadline="2026-09-02")
+                if status != "new":
+                    original.update(rank_score=61, rank_date="2026-08-31", strengths=["stored strength"])
+                self.write_state({"a": original})
+                args = ["candidates", "--tracker", str(self.tmp / "none.csv")]
+                if status != "new":
+                    args.append("--all")
+                selected = self.run_tool(*args)["selected"]
+                self.assertEqual([row["key"] for row in selected], ["a"])
+                result = {"key": "a", "status": "scored", "deadline": None,
+                          "scores": {dimension: 80 for dimension in ("technical", "experience", "behavioral", "career")},
+                          "location_verdict": "PASS", "language_gate": "PASS", "language": "en",
+                          "strengths": ["fresh strength"], "gaps": []}
+                out = self.run_tool("apply", "--results", self.results([result]))
+                self.assertEqual(out["ranked"], [])
+                self.assertEqual(out["vetoed"], [])
+                self.assertEqual([row["key"] for row in out["expired"]], ["a"])
+                self.assertEqual(self.read_state()["a"], dict(original, status="expired"))
+                swept = self.run_tool("sweep", "--write", "--exclude", "a")
+                self.assertEqual(swept["swept"], 0)
+                self.assertEqual(self.read_state()["a"]["status"], "expired")
+
+    def test_deadline_apply_boundaries_and_dry_run_keep_existing_semantics(self):
+        cases = [
+            (TODAY, None, "scored", "ranked"),
+            ("2026-09-04", None, "scored", "ranked"),
+            ("ASAP", None, "scored", "ranked"),
+            (None, None, "scored", "ranked"),
+            ("2026-09-02", "2026-09-04", "scored", "ranked"),
+            (None, None, "expired", "expired"),
+            ("2026-09-02", None, "scored", "expired"),
+        ]
+        for stored, fresh, status, expected in cases:
+            with self.subTest(stored=stored, fresh=fresh, status=status):
+                self.write_state({"a": entry(deadline=stored)})
+                before = self.state.read_bytes()
+                result = {"key": "a", "status": status, "deadline": fresh,
+                          "scores": {dimension: 80 for dimension in ("technical", "experience", "behavioral", "career")}}
+                path = self.results([result])
+                dry = self.run_tool("apply", "--results", path, "--dry-run")
+                self.assertFalse(dry["written"])
+                self.assertEqual(self.state.read_bytes(), before)
+                self.assertEqual([row["key"] for row in dry[expected]], ["a"])
+                out = self.run_tool("apply", "--results", path)
+                self.assertEqual([row["key"] for row in out[expected]], ["a"])
+                self.assertEqual(self.read_state()["a"]["status"], expected)
+                self.assertEqual(self.read_state()["a"]["deadline"], fresh or stored)
+
+    def test_past_deadline_does_not_bypass_scoring_errors(self):
+        for result in ({"key": "a", "status": "scored", "scores": {"technical": 80}},
+                       {"key": "missing", "status": "scored", "scores": {}}):
+            with self.subTest(result=result):
+                original = entry(deadline="2026-09-02")
+                self.write_state({"a": original})
+                before = self.state.read_bytes()
+                path = self.results([result])
+                dry = self.run_tool("apply", "--results", path, "--dry-run", expect=1)
+                self.assertEqual(len(dry["errors"]), 1)
+                self.assertEqual(self.state.read_bytes(), before)
+                out = self.run_tool("apply", "--results", path, expect=1)
+                self.assertEqual(len(out["errors"]), 1)
+                self.assertEqual(out["expired"], [])
+                self.assertEqual(self.read_state()["a"], original)
+
     def test_weights_bands_and_persisted_fields(self):
         self.write_state({"a": entry()})
         out = self.run_tool(
