@@ -27,6 +27,26 @@ per-file diff commands.
   `trustedDependencies`, the same set `security_guards.py` forbids in-tree, so a borrowed portal
   carrying one is read before it runs. `--dry-run` lists what it would install.
 
+### Changed
+
+- **`/rank` retries a posting it could not fetch instead of expiring it** (#534,
+  `tools/rank_state.py`, `.claude/commands/rank.md`) - a data-model change: scoring agents
+  now return a third status, `unreachable` (with a short `fetch_error`), when retrieval still
+  fails after the `09-web-research.md` escalation order (401/403, login wall, 404, timeout,
+  5xx, empty page), and keep `expired` for positive evidence the posting is closed (closed
+  page, 410, redirect to a listing page, passed deadline). Before, both became `expired`,
+  which `candidates` never selects again, so a transient failure on ranking day removed a
+  live job from the pipeline and the report presented it as closed. `candidates` now selects
+  `unreachable` alongside `new`; `apply` increments `fetch_attempts` and stores
+  `last_fetch_error`, and after 3 attempts with at least 48 hours between the first and the
+  last it writes `expired` with `expired_reason: "unreachable"` and reports the job once under
+  "Gave up, check manually" with its URL, so a login-walled live posting is still seen by a
+  human. The 48-hour floor keeps a scheduled run plus a manual one on the same day from
+  burning every attempt on one outage. `rank_state.py` owns the status set
+  (`AGENT_STATUSES`) and a test pins `rank.md`'s JSON contract to it. No migration: no
+  existing entry carries the new status. Reported by @ai-tvang, who also proposed the time
+  floor and the give-up listing.
+
 ### Fixed
 
 - **Fork-skip guards no longer run on a fork during a local test run** (`tests/_upstream.py`,
