@@ -1,5 +1,5 @@
 ---
-framework_version: 1.1.1
+framework_version: 1.1.2
 ---
 
 # Web Research and Fetching
@@ -81,10 +81,15 @@ Modern sites embed real copy inside JSON blobs in the markup, so useful text oft
 
 Try these in order and stop at the first that yields real content:
 
-1. **`WebFetch`** on the target URL. Cheapest, returns clean markdown.
-2. **Check `robots.txt`, then `curl` with browser headers** (above), then strip tags. Fixes the 403 class of failure. If `robots.txt` disallows the path for `*` or `Claude-User`, **skip this step entirely** and go to step 3.
-3. **`WebSearch`** for the company or role by name, to find an alternative canonical URL: the employer's own careers portal is almost always richer than the aggregator that surfaced the posting, and it carries the reference ID and grade that aggregators drop.
-4. **Declare it genuinely unavailable** only after 1 to 3 have failed. In `/rank` that means marking the entry `expired`; in `/apply` it means telling the user the posting could not be retrieved and stopping rather than drafting from the title.
+1. **Installed portal CLI `detail` command** if the target URL's domain belongs to a configured job portal in `.agents/skills/*/` (e.g. `linkedin.com` → `linkedin-search`, `jobnet.dk` → `jobnet-search`, `freehire.me` → `freehire-search`, `jobindex.dk` → `jobindex-search`, etc.):
+   ```bash
+   bun run .agents/skills/<portal-skill>/cli/src/cli.ts detail '<URL>' --format plain
+   ```
+   This retrieves the posting directly from the portal's API or resilient detail route, bypassing bot-detection 403s and login walls entirely.
+2. **`WebFetch`** on the target URL (for non-portal URLs, or if the portal CLI is missing or failed). Cheapest for general web pages, returns clean markdown.
+3. **Check `robots.txt`, then `curl` with browser headers** (above), then strip tags. Fixes the 403 class of failure. If `robots.txt` disallows the path for `*` or `Claude-User`, **skip this step entirely** and go to step 4.
+4. **`WebSearch`** for the company or role by name, to find an alternative canonical URL: the employer's own careers portal is almost always richer than the aggregator that surfaced the posting, and it carries the reference ID and grade that aggregators drop.
+5. **Declare it genuinely unavailable** only after 1 to 4 have failed. In `/rank` that means marking the entry `expired`; in `/apply` it means telling the user the posting could not be retrieved and stopping rather than drafting from the title.
 
 ### Login walls are a different failure
 
