@@ -55,6 +55,7 @@ per-file diff commands.
   was synthesized from search results has moved to `stdout` as a `source: "search-fallback"`
   field on the detail object, and the fallback execution path is now covered by automated tests.
 
+
 - **`jobnet-search` routes external ads to employer `jobAdUrl` rather than broken `find-job` links**
   (#538, `.agents/skills/jobnet-search/cli/src/commands/search.ts`, `.agents/skills/jobnet-search/cli/README.md`,
   `.agents/skills/jobnet-search/cli/tests/search-normalization.test.ts`) - external job postings on

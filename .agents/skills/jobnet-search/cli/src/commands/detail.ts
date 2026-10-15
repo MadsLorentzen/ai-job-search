@@ -17,6 +17,7 @@ export interface DetailApiResponse {
   hasLogo: boolean
   logoUrl: string | null
   isExternal?: boolean
+  source?: string
   employer: {
     cvrNumber: string | null
     pNumber: string | null
@@ -81,6 +82,7 @@ export function mapSearchAdToDetail(raw: JobAdRaw & { jobAdUrl?: string | null; 
     hasLogo: Boolean(raw.hasLogo),
     logoUrl: raw.logoUrl ?? null,
     isExternal: true,
+    source: "search-fallback",
     employer: {
       cvrNumber: raw.cvr ?? null,
       pNumber: null,
