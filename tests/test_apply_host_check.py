@@ -263,19 +263,30 @@ class InstalledPortalsAreVerifiedTests(unittest.TestCase):
             tier, host = classify_posting_host(url)
             self.assertEqual(tier, "unverified", f"{url} must fail closed as unverified, got {tier}")
 
-    def test_resolve_portal_skill_maps_known_urls_to_installed_skills(self):
-        cases = {
-            "https://dk.linkedin.com/jobs/view/123456": "linkedin-search",
-            "https://jobnet.dk/find-job/9ef43bce-d82b": "jobnet-search",
-            "https://freehire.me/jobs/developer-123": "freehire-search",
-            "https://www.jobindex.dk/jobannonce/h1647303": "jobindex-search",
-        }
-        for url, expected_skill in cases.items():
+    def test_resolve_portal_skill_maps_all_installed_portal_hosts(self):
+        """Every installed portal skill must resolve URLs for each host it queries (#535)."""
+        skills = installed_portal_skills()
+        self.assertGreater(len(skills), 0, "must discover installed portal skills")
+        for skill in skills:
+            hosts = portal_hosts(skill)
+            self.assertGreater(len(hosts), 0, f"{skill.name} must declare at least one host")
+            for host in hosts:
+                for test_url in (f"https://{host}/posting/123", f"https://sub.{host}/posting/123"):
+                    with self.subTest(skill=skill.name, host=host, url=test_url):
+                        resolved = resolve_portal_skill(test_url)
+                        self.assertIsNotNone(resolved, f"failed to resolve skill for {test_url}")
+                        self.assertEqual(resolved.name, skill.name)
+                        self.assertTrue((resolved / "cli" / "src" / "cli.ts").is_file())
+
+    def test_resolve_portal_skill_returns_none_for_non_portal_urls(self):
+        unrelated = [
+            "https://example.com/posting/123",
+            "https://greenhouse.io/corp/123",
+            "not-a-valid-url",
+        ]
+        for url in unrelated:
             with self.subTest(url=url):
-                resolved = resolve_portal_skill(url)
-                self.assertIsNotNone(resolved, f"failed to resolve skill for {url}")
-                self.assertEqual(resolved.name, expected_skill)
-                self.assertTrue((resolved / "cli" / "src" / "cli.ts").is_file())
+                self.assertIsNone(resolve_portal_skill(url))
 
 
 class WebResearchEscalationOrderTests(unittest.TestCase):

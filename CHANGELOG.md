@@ -29,6 +29,14 @@ per-file diff commands.
 
 ### Changed
 
+- **`/apply` and `/rank` route matching portal URLs to installed CLI `detail` before `WebFetch`**
+  (#535, `.claude/commands/apply.md` Step 0, `.claude/commands/rank.md` Step 2,
+  `.claude/skills/job-application-assistant/09-web-research.md`) - job portal URLs pasted
+  into `/apply` or evaluated in batch by `/rank` now invoke the matching installed portal CLI's
+  `detail <url> --format plain` command first, avoiding bot-detection 403s and login walls on
+  aggregator boards before falling back to `WebFetch`. Escalation order in `09-web-research.md`
+  places portal CLI detail as the first rung (`framework_version: 1.1.1 -> 1.1.2`).
+
 - **`/apply` Step 5e names explicit cleanup shell commands for build intermediates**
   (#531, `.claude/commands/apply.md`) - the step previously described deleting `.aux`/`.log`/`.out`
   in prose, leaving artifact cleanup vulnerable to being skipped by agents. It now specifies explicit

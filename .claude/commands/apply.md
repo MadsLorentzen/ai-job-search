@@ -21,7 +21,7 @@ This rule is the input side of the Step 3 Factual Grounding Audit, not a competi
 ## Step 0: Parse Input
 
 - If `$ARGUMENTS` looks like a URL, retrieve the job posting content following the escalation order in `.claude/skills/job-application-assistant/09-web-research.md`:
-  - **Portal CLI first:** If the URL's host matches an installed portal skill in `.agents/skills/` (e.g. `linkedin.com` → `linkedin-search`, `jobnet.dk` → `jobnet-search`, `freehire.me` → `freehire-search`, `jobindex.dk` → `jobindex-search`), run that CLI's `detail` command first:
+  - **Portal CLI first:** If the URL's host matches an installed portal skill in `.agents/skills/` (derived from the board hosts in `.agents/skills/*/cli/src` and `url-reference.md`, e.g. `linkedin.com` -> `linkedin-search`), run that CLI's `detail` command first:
     ```bash
     bun run .agents/skills/<portal-skill>/cli/src/cli.ts detail "$ARGUMENTS" --format plain
     ```
