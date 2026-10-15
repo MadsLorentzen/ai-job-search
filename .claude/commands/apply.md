@@ -337,12 +337,14 @@ Failures here are template-level problems: fix them in the `<CV_EXT>` source (e.
 
 ### 5e. Clean up build artifacts
 
-Immediately after the final clean compile, run an explicit cleanup shell command in the working output directory to delete intermediate build artifacts:
-- **Standard LaTeX toolchains:** Execute `rm -f *.aux *.log *.out *.fls *.fdb_latexmk *.synctex.gz` (or `rm -f cv/*.aux cv/*.log cv/*.out cover_letters/*.aux cover_letters/*.log cover_letters/*.out`).
-- **Custom templates using `build/`:** Execute `rm -rf build/`.
-- **Typst / zero-artifact toolchains:** Skip cleanup if no intermediate files were generated.
+After the final clean compile (and after 5b-5d have passed), delete the intermediate files the compile command left behind. Keep the source (`<CV_EXT>`/`<COVER_EXT>`), the `.pdf`, and every template asset (`cover.cls`, `OpenFonts/`, a custom template's files).
 
-Always ensure only the source file (`.tex`) and the compiled document (`.pdf`) remain.
+- **Stock or custom LaTeX toolchain:**
+  ```bash
+  rm -f cv/main_<company>_<role>.{aux,log,out,fls,fdb_latexmk,synctex.gz} cover_letters/cover_<company>_<role>.{aux,log,out,fls,fdb_latexmk,synctex.gz}
+  ```
+- **Custom template whose compile command redirects to `build/`:** also `rm -rf cv/build cover_letters/build` (`/add-template` Step 4 already says `/apply` must delete it).
+- **Zero-artifact toolchain (e.g. `typst compile`):** nothing to delete.
 
 ---
 

@@ -27,6 +27,15 @@ per-file diff commands.
   `trustedDependencies`, the same set `security_guards.py` forbids in-tree, so a borrowed portal
   carrying one is read before it runs. `--dry-run` lists what it would install.
 
+### Changed
+
+- **`/apply` Step 5e names explicit cleanup shell commands for build intermediates**
+  (#531, `.claude/commands/apply.md`) - the step previously described deleting `.aux`/`.log`/`.out`
+  in prose, leaving artifact cleanup vulnerable to being skipped by agents. It now specifies explicit
+  `rm` commands for stock/custom LaTeX toolchains and redirected `build/` directories, timed after
+  log-inspecting steps 5b-5d complete, and explicitly preserves template assets (`cover.cls`,
+  `OpenFonts/`, custom template files).
+
 ### Fixed
 
 - **Fork-skip guards no longer run on a fork during a local test run** (`tests/_upstream.py`,
