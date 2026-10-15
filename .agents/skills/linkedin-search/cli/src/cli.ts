@@ -113,7 +113,13 @@ async function main(): Promise<number> {
       )
       return 1
     }
-    const fmt = (flags.format as string) || "json"
+    const fmt = flags.format !== undefined ? String(flags.format) : "json"
+    if (!["json", "table", "plain"].includes(fmt)) {
+      process.stderr.write(
+        JSON.stringify({ error: `--format must be one of json|table|plain, got "${fmt}"`, code: "BAD_ARG" }) + "\n",
+      )
+      return 1
+    }
 
     if (flags.jobage !== undefined && flags["jobage-minutes"] !== undefined) {
       process.stderr.write(
@@ -168,7 +174,7 @@ async function main(): Promise<number> {
       remote: typeof flags.remote === "string" ? flags.remote : undefined,
       page: flags.page ? Math.max(1, parseInt(flags.page as string, 10)) : 1,
       limit: flags.limit ? parseInt(flags.limit as string, 10) : undefined,
-      format: (["json", "table", "plain"].includes(fmt) ? fmt : "json") as SearchOpts["format"],
+      format: fmt as SearchOpts["format"],
     }
     return runSearch(opts)
   }
@@ -179,10 +185,16 @@ async function main(): Promise<number> {
       process.stderr.write(JSON.stringify({ error: "detail requires an <id|url>", code: "NO_ID" }) + "\n")
       return 1
     }
-    const fmt = (flags.format as string) || "json"
+    const fmt = flags.format !== undefined ? String(flags.format) : "json"
+    if (!["json", "plain"].includes(fmt)) {
+      process.stderr.write(
+        JSON.stringify({ error: `--format must be one of json|plain, got "${fmt}"`, code: "BAD_ARG" }) + "\n",
+      )
+      return 1
+    }
     const opts: DetailOpts = {
       id,
-      format: (fmt === "plain" ? "plain" : "json") as DetailOpts["format"],
+      format: fmt as DetailOpts["format"],
     }
     return runDetail(opts)
   }

@@ -68,6 +68,24 @@ class TestPathRules(unittest.TestCase):
         self.assertFalse(allowed(body, "*", "/files/cv.pdf"))
         self.assertTrue(allowed(body, "*", "/files/cv.pdf.html"))
 
+    def test_dollar_sign_mid_pattern_is_literal_not_end_anchor(self):
+        body = "User-agent: *\nDisallow: /tag/$var\n"
+        self.assertFalse(allowed(body, "*", "/tag/$var"))
+        self.assertFalse(allowed(body, "*", "/tag/$var/sub"))
+
+    def test_percent_encoded_query_string_matches_rule_in_gate(self):
+        import robots_check
+
+        body = "User-agent: *\nDisallow: /search?q=machine%20learning\n"
+        original = robots_check._fetch
+        robots_check._fetch = lambda url, ua: (body, 200)
+        try:
+            rc, msg = robots_check.gate("https://example.com/search?q=machine%20learning")
+        finally:
+            robots_check._fetch = original
+        self.assertEqual(rc, 1, msg)
+        self.assertIn("DISALLOWED", msg)
+
     def test_empty_disallow_means_allow_everything(self):
         self.assertTrue(allowed("User-agent: *\nDisallow:\n", "*", "/anything"))
 

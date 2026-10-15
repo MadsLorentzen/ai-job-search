@@ -51,6 +51,7 @@ Thumbs.db
 
 # Memory files (Claude Code user-specific)
 .claude/projects/
+.claude/settings.local.json
 
 # Skills lock (auto-generated)
 skills-lock.json

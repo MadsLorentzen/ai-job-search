@@ -166,13 +166,26 @@ class TestResetCoversEveryPersonalizedSkillFile(unittest.TestCase):
 SKILL_DIR = REPO / ".claude" / "skills" / "job-application-assistant"
 
 
+def skeleton_step(reset_text, filename):
+    """(instruction sentence, fenced markdown) /reset uses to rewrite `filename` in Step 3."""
+    marker = f"**For `{filename}`**"
+    start = reset_text.index(marker)
+    fence_open = reset_text.index("```markdown", start)
+    fence_close = reset_text.index("```", fence_open + len("```markdown"))
+    return reset_text[start:fence_open], reset_text[fence_open + len("```markdown"):fence_close]
+
+
 def skeleton_block(reset_text, filename):
     """The fenced markdown /reset writes over `filename` in Step 3."""
-    marker = f"**For `{filename}`**, replace the file content with:"
-    start = reset_text.index(marker)
-    fence_open = reset_text.index("```markdown", start) + len("```markdown")
-    fence_close = reset_text.index("```", fence_open)
-    return reset_text[fence_open:fence_close]
+    return skeleton_step(reset_text, filename)[1]
+
+
+def frontmatter(text):
+    """The leading `---` block of a skill file, or '' when it has none."""
+    if not text.startswith("---\n"):
+        return ""
+    end = text.index("\n---", 4)
+    return text[: end + len("\n---") + 1]
 
 
 def h2_headings(text):
@@ -209,6 +222,34 @@ class TestResetTargetsTheHeadingsTheShippedFilesHave(unittest.TestCase):
                     h2_headings(shipped),
                     f"/reset's skeleton for {filename} must carry exactly the shipped "
                     "## headings, in order - a reset must not rename or drop sections",
+                )
+
+    def test_full_file_skeletons_keep_the_framework_version_frontmatter(self):
+        # The shipped files open with a `framework_version` marker that
+        # check_framework_version.py requires and check_upstream_updates.py
+        # reads. The skeletons started at the `#` title, so one /reset profile
+        # left both files failing the version gate ("missing 'framework_version'
+        # in frontmatter") and invisible to the fork update checker. The
+        # instruction must say to keep the block, and the block must not be
+        # hardcoded into the skeleton, where it would go stale on the next bump.
+        import sys
+        sys.path.insert(0, str(REPO / "tools"))
+        from check_upstream_updates import get_framework_version_from_text
+
+        for filename in ("01-candidate-profile.md", "02-behavioral-profile.md"):
+            with self.subTest(file=filename):
+                shipped = (SKILL_DIR / filename).read_text(encoding="utf-8")
+                head = frontmatter(shipped)
+                self.assertTrue(head, f"{filename} must ship with a frontmatter block")
+                instruction, block = skeleton_step(self.reset, filename)
+                self.assertIn("frontmatter", instruction, f"the {filename} step must say to keep the frontmatter")
+                self.assertNotIn("framework_version", block, "the skeleton must not hardcode a version")
+                # What the file looks like after the reset, applied as written.
+                after = head + block.lstrip("\n")
+                self.assertEqual(
+                    get_framework_version_from_text(after),
+                    get_framework_version_from_text(shipped),
+                    f"a reset must leave {filename}'s framework_version readable and unchanged",
                 )
 
     def test_partial_anchors_exist_in_the_files_they_target(self):

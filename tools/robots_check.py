@@ -122,11 +122,15 @@ def _match(pattern, path):
     The pattern is percent-decoded to match the already-decoded path. Without
     this, "Disallow: /foo%20bar" never matched "/foo bar" and the rule was
     silently skipped - a fail-open on any site that encodes its own rules.
+    Under RFC 9309 section 2.2.2, '$' anchors the end of the URL only when
+    at the end of the pattern; mid-pattern '$' is matched literally.
     """
     if pattern == '':
         return -1
     pattern = unquote(pattern)
-    rx = '^' + ''.join('.*' if c == '*' else ('$' if c == '$' else re.escape(c)) for c in pattern)
+    end_anchor = pattern.endswith('$')
+    pat = pattern[:-1] if end_anchor else pattern
+    rx = '^' + ''.join('.*' if c == '*' else re.escape(c) for c in pat) + ('$' if end_anchor else '')
     return len(pattern) if re.match(rx, path) else -1
 
 def allowed(text, agent, path):
@@ -143,7 +147,7 @@ def gate(url):
     parts = urlsplit(url)
     path = unquote(parts.path) or '/'
     if parts.query:
-        path += '?' + parts.query
+        path += '?' + unquote(parts.query)
     robots = f'{parts.scheme}://{parts.netloc}/robots.txt'
     body, last = None, 'no attempt'
     for ua in ('Claude-User', BROWSER):

@@ -1,5 +1,5 @@
 ---
-framework_version: 1.4.5
+framework_version: 1.4.6
 ---
 
 # CV Templates and Tailoring Guide
@@ -65,7 +65,7 @@ Expected output: `Output written on main_<company>_<role>.pdf (2 pages, ...)`. A
     % value here would win and open every CV in fullscreen presentation mode.
     pdfpagemode=UseNone,
 }}
-\usepackage[scale=0.77]{geometry}
+\usepackage[scale=0.80]{geometry}
 \usepackage{import}
 
 % Personal data
