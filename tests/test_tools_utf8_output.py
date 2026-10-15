@@ -147,6 +147,8 @@ class ToolsWriteUtf8(unittest.TestCase):
         proc = run_legacy_stdout([
             TOOLS / "convert_salary_excel.py", workbook, "--output", self.tmp / "out.json",
         ])
+        self.assert_clean_utf8(proc, 0, CYRILLIC)
+
     def test_upstream_triage_handles_non_latin_commit_subjects(self):
         repo = self.tmp / "repo"
         repo.mkdir()
