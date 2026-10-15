@@ -17,6 +17,7 @@ export interface DetailApiResponse {
   hasLogo: boolean
   logoUrl: string | null
   isExternal?: boolean
+  source?: string
   employer: {
     cvrNumber: string | null
     pNumber: string | null
@@ -81,6 +82,7 @@ export function mapSearchAdToDetail(raw: JobAdRaw & { jobAdUrl?: string | null; 
     hasLogo: Boolean(raw.hasLogo),
     logoUrl: raw.logoUrl ?? null,
     isExternal: true,
+    source: "search-fallback",
     employer: {
       cvrNumber: raw.cvr ?? null,
       pNumber: null,
@@ -184,7 +186,6 @@ export const detail = defineCommand({
           })
           const match = searchResult.jobAds?.find((ad) => ad.jobAdId === id)
           if (match) {
-            process.stderr.write("note: detail endpoint returned 404; retrieved external posting summary from search endpoint\n")
             data = prepareDetail(mapSearchAdToDetail(match))
           }
         } catch {

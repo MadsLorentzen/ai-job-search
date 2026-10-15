@@ -46,6 +46,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **Jobnet CLI detail command emits degraded search summary signal on stdout** (#549,
+  `.agents/skills/jobnet-search/cli/src/commands/detail.ts`,
+  `.agents/skills/jobnet-search/cli/tests/detail-fallback.test.ts`) - when `runDetail`
+  resolved an external ad via the search endpoint fallback introduced in #432, it wrote an
+  informational note directly to `process.stderr`. To keep `jobnet-search` stderr behavior
+  consistent with the other portal CLIs (silent `stderr` on exit 0), the signal that detail
+  was synthesized from search results has moved to `stdout` as a `source: "search-fallback"`
+  field on the detail object, and the fallback execution path is now covered by automated tests.
+
+
 - **`jobnet-search` routes external ads to employer `jobAdUrl` rather than broken `find-job` links**
   (#538, `.agents/skills/jobnet-search/cli/src/commands/search.ts`, `.agents/skills/jobnet-search/cli/README.md`,
   `.agents/skills/jobnet-search/cli/tests/search-normalization.test.ts`) - external job postings on
@@ -138,6 +148,7 @@ per-file diff commands.
   it would go stale on the next bump. A derived test applies each skeleton the way the step
   says and asserts the shipped file's version still parses out unchanged; it fails on master.
   Found while re-checking #519's class of drift.
+
 
 - **`/reset profile` now targets the headings the shipped skill files actually have**
   (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - two of its Step 3
