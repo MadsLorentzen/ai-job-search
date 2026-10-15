@@ -16,17 +16,19 @@ REPO = Path(__file__).resolve().parent.parent
 
 _HTTPS_PREFIX = "https://github.com/"
 _SSH_PREFIX = "git@github.com:"
+_SSH_URL_PREFIX = "ssh://git@github.com/"
 
 
 def _is_upstream_url(url: str) -> bool:
     """Whether a git remote URL points at the upstream template repo.
 
-    Matches the https and ssh forms with an optional ``.git`` suffix;
+    Matches the https, scp-style ssh and ``ssh://`` forms with an optional
+    ``.git`` suffix;
     anything else (a fork URL, some other host) is not upstream.
     """
     lowered = url.strip().lower()
     slug = UPSTREAM.lower()
-    for prefix in (_HTTPS_PREFIX, _SSH_PREFIX):
+    for prefix in (_HTTPS_PREFIX, _SSH_PREFIX, _SSH_URL_PREFIX):
         if lowered.startswith(prefix):
             rest = lowered[len(prefix):].rstrip("/")
             if rest.endswith(".git"):
