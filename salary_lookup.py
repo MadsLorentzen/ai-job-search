@@ -163,11 +163,13 @@ def load_data():
 
 def normalize(s):
     """Normalize string for robust fuzzy matching."""
-    s = s.lower().strip()
+    s = unicodedata.normalize("NFC", s.casefold()).strip()
     for pat in STRIP_PATTERNS:
         s = re.sub(pat, "", s)
-    s = re.sub(r"[^a-zæøåöäü0-9]", "", s)
-    return s.strip()
+    return "".join(
+        char for char in s
+        if char.isalnum() or unicodedata.category(char).startswith("M")
+    )
 
 
 def anglicize(s):
@@ -180,10 +182,16 @@ def anglicize(s):
 
 def extract_core_words(s):
     """Extract meaningful words from a company name, ignoring noise."""
-    s = s.lower()
+    s = unicodedata.normalize("NFC", s.casefold())
     for pat in STRIP_PATTERNS:
         s = re.sub(pat, "", s)
-    words = re.findall(r"[a-zæøåöäü0-9]+", s)
+    # Keep the same identity as normalize(), including combining marks in
+    # scripts where NFC cannot compose them into a single letter.
+    s = "".join(
+        char if char.isalnum() or unicodedata.category(char).startswith("M") else " "
+        for char in s
+    )
+    words = s.split()
     return [w for w in words if len(w) > 1]
 
 
