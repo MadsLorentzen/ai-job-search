@@ -68,6 +68,11 @@ per-file diff commands.
 
 ### Fixed
 
+- **Version-line formatting no longer substitutes for a framework marker change**
+  (`tools/check_framework_version.py`) - re-quoting or spacing an unchanged
+  `framework_version` no longer lets an accompanying guidance edit pass the gate.
+  Formatting-only changes remain allowed, as do edits with a changed marker value.
+
 - **`/reset documents` clears nested and hidden user entries while preserving scaffolds** - cleanup retains tracked `.gitkeep` files and the README, with the complete inventory shown before confirmation (#580).
 
 - **`jobindex-search` examples follow the search CLI contract** - the posted-today example includes a required query, unsupported flags are removed, and regression checks accept LF and CRLF checkouts (#579).

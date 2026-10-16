@@ -62,7 +62,9 @@ def get_base_commit() -> str | None:
 def parse_frontmatter(path: Path) -> dict:
     if not path.exists():
         return {}
-    text = path.read_text(encoding="utf-8")
+    return parse_frontmatter_text(path.read_text(encoding="utf-8"))
+
+def parse_frontmatter_text(text: str) -> dict:
     if not text.startswith("---\n"):
         return {}
     end = text.find("\n---", 4)
@@ -107,9 +109,15 @@ def has_non_trivial_changes(file_path: Path, base_commit: str) -> bool:
                 continue
             meaningful_changes += 1
             
-    # If the version key itself was modified, we don't fail, regardless of other changes
+    # Editing a version line is not necessarily a bump: YAML quoting and
+    # whitespace can change while the parsed marker stays the same.
     if version_changed:
-        return False
+        rc, base_text, _ = run_git(["show", f"{base_commit}:{rel_path}"])
+        if rc != 0 or (
+            parse_frontmatter_text(base_text).get("framework_version")
+            != parse_frontmatter(file_path).get("framework_version")
+        ):
+            return False
         
     # If there are meaningful changes but the version was not changed
     return meaningful_changes > 0
