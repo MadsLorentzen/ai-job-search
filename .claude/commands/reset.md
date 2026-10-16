@@ -88,6 +88,8 @@ cv/main_example.tex. This scope covers skill files only.
 
 Use Glob to list all files present in `documents/cv/`, `documents/linkedin/`, `documents/diplomas/`, `documents/references/`, `documents/projects/`, `documents/postings/`, and `documents/applications/`. Present as:
 
+Include nested and hidden user entries in the inventory. Each subfolder's tracked `.gitkeep` is a scaffold placeholder: exclude it from the deletion list and from the empty/non-empty decision, and preserve it.
+
 ```
 ## Documents reset will delete:
 
@@ -251,16 +253,27 @@ Leave the rest of the file intact: the portal-CLI and WebSearch-fallback explana
 
 ### Documents reset
 
-For each non-empty document subfolder, delete all files within it using Bash `rm`. Do not delete the folder itself, and do not delete `documents/README.md`.
+For each non-empty document subfolder, delete all user entries, including nested folders and hidden files. Preserve the seven top-level subfolders, their `.gitkeep` placeholders, and `documents/README.md`. Run the following Bash block only after the confirmation above; its glob settings stay inside the subshell. If `documents/` or any of its seven roots is a symbolic link, stop before deleting anything and ask the user to replace that linked root with a local document folder.
 
 ```bash
-rm -f documents/cv/*
-rm -f documents/linkedin/*
-rm -f documents/diplomas/*
-rm -f documents/references/*
-rm -f documents/projects/*
-rm -f documents/postings/*
-rm -rf documents/applications/*/
+(
+  set -e
+  for directory in documents documents/{cv,linkedin,diplomas,references,projects,postings,applications}; do
+    if [ -L "$directory" ]; then
+      printf 'Reset stopped: %s is a symbolic link.\n' "$directory" >&2
+      exit 1
+    fi
+  done
+  shopt -s dotglob nullglob
+  GLOBIGNORE='*/.gitkeep'
+  rm -rf documents/cv/*
+  rm -rf documents/linkedin/*
+  rm -rf documents/diplomas/*
+  rm -rf documents/references/*
+  rm -rf documents/projects/*
+  rm -rf documents/postings/*
+  rm -rf documents/applications/*
+)
 ```
 
 ---
@@ -287,7 +300,7 @@ Then tell the user what to do next based on what was reset:
 > Note that `CLAUDE.md` and `cv/main_example.tex` are outside the `profile` scope and still hold your personal data. If you are handing this fork over or making it public, clear them by hand.
 
 **If documents were reset:**
-> The `documents/` folder is now empty. Add your career documents and run `/setup` to populate your profile. See `documents/README.md` for instructions on what to put where.
+> Your user documents are now cleared. The folder structure, `.gitkeep` placeholders, and `documents/README.md` are preserved. Add your career documents and run `/setup` to populate your profile.
 
 **If both were reset:**
-> Both your profile files and documents folder are now empty. Add documents to `documents/` (or skip and use the CV import / interview path), then run `/setup`.
+> Your profile data and user documents are now cleared; the document folders, `.gitkeep` placeholders, and `documents/README.md` are preserved. Add documents to `documents/` (or skip and use the CV import / interview path), then run `/setup`.
