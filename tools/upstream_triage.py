@@ -23,7 +23,8 @@ Two signals drive the sort:
 
 2. Relevant to this fork? A commit that only touches files this fork deleted
    (e.g. removed demo portals) is almost certainly N/A. We check each commit's
-   touched paths against the working tree and flag accordingly.
+   touched paths against HEAD and the shared base: a genuinely new upstream
+   path is worth reviewing, rather than a file the fork chose to remove.
 
 Usage: python tools/upstream_triage.py [--remote upstream] [--branch master]
 Exits 0 always (a report, not a gate). Prints a note to stderr and exits 0 if
@@ -81,10 +82,10 @@ def files_touched(sha: str) -> list[str]:
     return [f for f in out.splitlines() if f]
 
 
-def path_exists(path: str) -> bool:
-    # ls-tree against HEAD is authoritative for "does this fork still ship it".
+def path_exists(path: str, ref: str = "HEAD") -> bool:
+    # Read committed trees, rather than uncommitted files in the working tree.
     r = subprocess.run(
-        ["git", "cat-file", "-e", f"HEAD:{path}"], capture_output=True
+        ["git", "cat-file", "-e", f"{ref}:{path}"], capture_output=True
     )
     return r.returncode == 0
 
@@ -154,6 +155,11 @@ def main() -> int:
     fork_only = rev_list(f"{ref}..HEAD")
     fork_patch_ids = {p for p in (patch_id(s) for s in fork_only) if p}
     fork_subjects = {subject(s) for s in fork_only}
+    try:
+        common_base = git("merge-base", "HEAD", ref).strip()
+    except subprocess.CalledProcessError:
+        # Without shared history, absence cannot establish a deliberate deletion.
+        common_base = None
 
     review: list[tuple[str, str, str, list[str]]] = []
     skip: list[tuple[str, str, str, str]] = []
@@ -168,14 +174,17 @@ def main() -> int:
             skip.append((short, sha, subj, "on the fork's won't-port list"))
             continue
         touched = files_touched(sha)
-        present = [f for f in touched if path_exists(f)]
+        relevant = [
+            f for f in touched
+            if path_exists(f) or common_base is None or not path_exists(f, common_base)
+        ]
         # A commit whose only surviving footprint is the changelog is one whose
         # real change lives in files this fork removed - the code doesn't apply,
         # only a doc line would. Low signal; demote it.
-        substantive = [f for f in present if f != "CHANGELOG.md"]
-        if touched and not present:
+        substantive = [f for f in relevant if f != "CHANGELOG.md"]
+        if touched and not relevant:
             skip.append((short, sha, subj, "touches only files not in this fork"))
-        elif present and not substantive:
+        elif relevant and not substantive:
             skip.append((short, sha, subj, "changelog-only footprint in this fork"))
         else:
             review.append((short, sha, subj, substantive))
@@ -190,7 +199,7 @@ def main() -> int:
     lines.append("### Worth reviewing")
     if review:
         lines.append("")
-        lines.append("| Commit | Subject | Fork files it touches |")
+        lines.append("| Commit | Subject | Relevant files it touches |")
         lines.append("|---|---|---|")
         for short, sha, subj, present in review:
             shown = ", ".join(f"`{p}`" for p in present[:4]) or "_(new/shared paths)_"
