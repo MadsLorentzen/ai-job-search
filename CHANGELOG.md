@@ -68,6 +68,11 @@ per-file diff commands.
 
 ### Fixed
 
+- **Upstream triage emits cherry-pick suggestions in dependency order**
+  (`tools/upstream_triage.py`) - ready-to-run commands now list ancestors before
+  descendants, so a follow-up patch is not suggested before the change it edits.
+  The report tables remain newest first; the tool still executes no Git mutations.
+
 - **`/upskill` and `/notion-sync` now name the field ranked entries actually carry when joining
   them to tracker rows** (`.claude/skills/upskill/SKILL.md` Step 3, `.claude/commands/notion-sync.md`
   Step 2, `tests/test_upskill_skill.py`, `tests/test_notion_sync_command.py`) - both said to match

@@ -137,6 +137,29 @@ class AlreadyAppliedTests(TriageRepoFixture):
         self.assertIn("**1** worth reviewing", result.stdout)
 
 
+class SuggestedCherryPickOrderTests(TriageRepoFixture):
+    def test_suggested_commands_apply_dependent_changes_in_ancestry_order(self):
+        self.write("kept.py", "print('first upstream change')\n")
+        first = self.commit("Introduce shared behavior")
+        self.write("kept.py", "print('second upstream change')\n")
+        second = self.commit("Refine shared behavior")
+        self.set_upstream_to_head()
+        git(self.root, "reset", "--hard", "HEAD~2")
+        self.write("fork_only.txt", "fork customization\n")
+        self.commit("Customize fork")
+
+        result = self.run_triage()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        commands = [line.split("  #", 1)[0].split() for line in result.stdout.splitlines()
+                    if line.startswith("git cherry-pick ")]
+        self.assertEqual(len(commands), 2, result.stdout)
+        for command in commands:
+            replay = subprocess.run(command, cwd=self.root, capture_output=True, text=True)
+            self.assertEqual(replay.returncode, 0, replay.stdout + replay.stderr)
+        self.assertEqual([command[2] for command in commands], [first, second])
+        self.assertEqual((self.root / "kept.py").read_text(), "print('second upstream change')\n")
+
+
 class WontPortTests(TriageRepoFixture):
     def test_listed_sha_is_excluded(self):
         self.write("kept.py", "print('rejected feature')\n")

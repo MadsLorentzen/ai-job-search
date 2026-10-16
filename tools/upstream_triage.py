@@ -56,7 +56,7 @@ def git(*args: str) -> str:
 
 
 def rev_list(range_spec: str) -> list[str]:
-    out = git("rev-list", "--no-merges", range_spec).strip()
+    out = git("rev-list", "--no-merges", "--topo-order", range_spec).strip()
     return out.splitlines() if out else []
 
 
@@ -203,7 +203,8 @@ def main() -> int:
         lines.append("<details><summary>Ready-to-run cherry-picks (review each before running)</summary>")
         lines.append("")
         lines.append("```bash")
-        for short, sha, subj, _ in review:
+        # Report rows stay newest first; commands must apply ancestors first.
+        for short, sha, subj, _ in reversed(review):
             lines.append(f"git cherry-pick {sha}  # {subj}")
         lines.append("```")
         lines.append("")
