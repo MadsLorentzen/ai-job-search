@@ -176,5 +176,23 @@ class TestPdflatexFontEncodingGuard(unittest.TestCase):
         self.assert_has_guarded_fontenc(CV_TEMPLATES)
 
 
+class TestGeometryScaleAlignment(unittest.TestCase):
+    """The geometry scale specified in 05-cv-templates.md must match cv/main_example.tex."""
+
+    GEOMETRY_SCALE = re.compile(r"\\usepackage\[scale=([0-9.]+)\]\{geometry\}")
+
+    def test_cv_guide_and_example_cv_share_geometry_scale(self):
+        cv_match = self.GEOMETRY_SCALE.search(EXAMPLE_CV.read_text(encoding="utf-8"))
+        guide_match = self.GEOMETRY_SCALE.search(CV_TEMPLATES.read_text(encoding="utf-8"))
+        self.assertIsNotNone(cv_match, "cv/main_example.tex must declare geometry scale")
+        self.assertIsNotNone(guide_match, "05-cv-templates.md must declare geometry scale")
+        self.assertEqual(
+            guide_match.group(1),
+            cv_match.group(1),
+            f"05-cv-templates.md geometry scale ({guide_match.group(1)}) must match "
+            f"cv/main_example.tex ({cv_match.group(1)})",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

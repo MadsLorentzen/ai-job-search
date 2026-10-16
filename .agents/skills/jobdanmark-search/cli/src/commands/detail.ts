@@ -52,8 +52,18 @@ interface DetailResult {
   applyUrl: string | null
 }
 
+// A malformed closing tag that reached the text layer. node-html-parser
+// consumes well-formed markup (`<strong>`, `<br/>`, `</li >`) but does not
+// recognise a closing tag with a space after the `<` or the slash, so `</ li >`
+// survives as text; a live jobdanmark page emitted
+// `employmentType: ["Fuldtid </ li >"]` that way. Only the closing shape is
+// stripped: the parser decodes entities before this runs, so author text the
+// page encoded as `&lt;div&gt;` or `&lt;T&gt;` arrives here as a literal
+// `<div>` / `<T>` and must stay.
+const STRAY_CLOSING_TAG = /<\s*\/\s*[a-z][a-z0-9-]*\s*>/gi
+
 function cleanText(text: string): string {
-  return text.replace(/\s+/g, " ").trim()
+  return text.replace(STRAY_CLOSING_TAG, " ").replace(/\s+/g, " ").trim()
 }
 
 /**

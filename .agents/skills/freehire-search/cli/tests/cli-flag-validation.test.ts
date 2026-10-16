@@ -68,10 +68,83 @@ describe("freehire CLI flag validation", () => {
   });
 
   describe("--facet validation", () => {
+    for (const args of [
+      ["--facet"],
+      ["--facet", "--limit", "1"],
+      ["--facet", "salary_min="],
+      ["--facet", "salary_min= , "],
+      ["--facet", "countries=US", "--facet"],
+    ]) {
+      test(`${args.join(" ")} rejects an empty filter before requesting jobs`, async () => {
+        const requests: string[] = [];
+        const server = Bun.serve({
+          hostname: "127.0.0.1",
+          port: 0,
+          fetch(request) {
+            requests.push(request.url);
+            return Response.json({ data: [], meta: { total: 0 } });
+          },
+        });
+        try {
+          const result = await runCLI(["search", ...args], { FREEHIRE_API_URL: server.url.toString() });
+          expect(result.exitCode).toBe(1);
+          expect(result.stdout).toBe("");
+          expect(parsedStderr(result.stderr).code).toBe("BAD_ARG");
+          expect(parsedStderr(result.stderr).error).toContain("--facet");
+          expect(requests).toEqual([]);
+        } finally {
+          server.stop(true);
+        }
+      });
+    }
+
+    test("repeated facets and comma-separated values reach the API", async () => {
+      const requests: URL[] = [];
+      const server = Bun.serve({
+        hostname: "127.0.0.1",
+        port: 0,
+        fetch(request) {
+          requests.push(new URL(request.url));
+          return Response.json({ data: [], meta: { total: 0 } });
+        },
+      });
+      try {
+        const result = await runCLI([
+          "search", "--facet", "countries=US, CA", "--facet", "countries=GB",
+          "--facet", "salary_min=100000", "--remote",
+        ], { FREEHIRE_API_URL: server.url.toString() });
+        expect(result.exitCode).toBe(0);
+        expect(requests).toHaveLength(1);
+        expect(requests[0].searchParams.getAll("countries")).toEqual(["US", "CA", "GB"]);
+        expect(requests[0].searchParams.get("salary_min")).toBe("100000");
+        expect(requests[0].searchParams.get("work_mode")).toBe("remote");
+      } finally {
+        server.stop(true);
+      }
+    });
+
     test("a facet without '=' exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "--facet", "novalue"]);
       expect(result.exitCode).not.toBe(0);
       expect(parsedStderr(result.stderr).code).toBe("BAD_ARG");
+    });
+  });
+
+  describe("--format validation", () => {
+    test("search with an unsupported format exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "--format", "invalid"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/format/);
+    });
+
+    test("detail with an unsupported format exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["detail", "example-slug", "--format", "table"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/format/);
     });
   });
 

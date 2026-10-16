@@ -47,6 +47,99 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobnet-search` routes external ads to employer `jobAdUrl` rather than broken `find-job` links**
+  (#538, `.agents/skills/jobnet-search/cli/src/commands/search.ts`, `.agents/skills/jobnet-search/cli/README.md`,
+  `.agents/skills/jobnet-search/cli/tests/search-normalization.test.ts`) - external job postings on
+  Jobnet (`isExternal: true`) point to `/find-job/{jobAdId}`, which returns 404, while the Jobnet API
+  carries the destination in `jobAdUrl`. The search command now routes external ads to `jobAdUrl` when
+  a valid http(s) destination is present, falling back to `/find-job/{jobAdId}` when missing or
+  non-http(s) to preserve distinct URLs for `/scrape` deduplication. Both `url` and `jobAdUrl`
+  validate the scheme the same way. Reported with live testing by NishilRathod.
+
+- **Fork-skip guards no longer run on a fork during a local test run** (`tests/_upstream.py`,
+  `tests/test_placeholder_integrity.py`, `tests/test_setup_command.py`,
+  `tests/test_upstream_checkout.py`) - the fork skip read
+  `os.environ.get("GITHUB_REPOSITORY", UPSTREAM)`, so with the variable unset a local
+  run fell back to upstream and the placeholder guards fired on every personalized fork,
+  leaving its suite permanently red after `/setup`. The three skips now share one helper:
+  `GITHUB_REPOSITORY` decides when set, otherwise the checkout's `origin` remote is matched
+  against the upstream repo (https and ssh forms, optional `.git` suffix), and an
+  undeterminable checkout assumes upstream. Tests only, no `framework_version` bump.
+
+- **`linkedin-search` and `freehire-search` reject invalid `--format` flags with `BAD_ARG`** (#555,
+  `.agents/skills/linkedin-search/cli/src/cli.ts`, `.agents/skills/freehire-search/cli/src/cli.ts`) -
+  unrecognized `--format` flags previously fell back silently to `"json"` with exit code 0, masking
+  formatting typos and violating the CLI contract. Both CLIs now validate format arguments strictly
+  (`json|table|plain` for search, `json|plain` for detail) and exit 1 with `{ error, code: "BAD_ARG" }`
+  on invalid options.
+
+- **`jobdanmark-search detail` no longer keeps a malformed closing tag as text on the
+  rendered-HTML branch** (#525, `detail.ts`, `tests/detail-parsing.test.ts`) - a live page wrote
+  its Jobtype item as `Fuldtid </ li >`, and because `node-html-parser` does not recognise a
+  closing tag with a space after the slash, the fragment reached the output verbatim:
+  `employmentType: ["Fuldtid </ li >"]`, a value that matches none of the documented job-type
+  vocabulary. The same `cleanText` feeds every text field on both branches, so any of them
+  could carry it. `cleanText` now drops the closing-tag shape (`</ li >`, `</ li>`, `< /li>`)
+  before collapsing whitespace - and only that shape, because the parser decodes entities
+  before `cleanText` runs, so author text the page encoded as `&lt;div&gt;` or `&lt;T&gt;`
+  arrives as a literal `<div>` / `<T>` and must survive. Two fixtures: the stray tag in both
+  the Jobtype item and a description paragraph (fails on master), and an entity-encoded
+  `<div>` in a description that stays in the text.
+
+- **`/add-portal` includes the `.agents` prefix in generated `allowed-tools`** (#545,
+  `.claude/commands/add-portal.md`, `tests/test_add_portal_command.py`) - the specification template
+  for the new portal's `SKILL.md` frontmatter wrote `allowed-tools: Bash(bun run skills/<name>/cli/src/cli.ts *)`
+  without `.agents/`, the one path in the file without it. A skill's `allowed-tools` grants the
+  listed command when that skill is invoked, so a generated portal invoked on its own granted a
+  command that does not exist and prompted instead; the string now names the real path, matching
+  the six shipped `SKILL.md` files.
+
+- **`robots_check` unquotes incoming query strings and restricts `$` anchors to pattern end**
+  (#543, `tools/robots_check.py`, `tests/test_robots_check.py`) - two path-matching edge cases in
+  the robots.txt gate failed open. First, `gate(url)` called `unquote(parts.path)` but concatenated
+  `parts.query` raw, while `_match()` decodes the pattern: rules targeting encoded query parameters
+  (such as `Disallow: /search?q=machine%20learning`) never matched the incoming URL, evaluating
+  disallowed scraping targets as allowed. Query parameters are now decoded when assembling `path`.
+  Second, `_match()` converted every `$` character unconditionally into a regular-expression
+  end-of-string anchor, causing rules with an internal `$` (e.g. `/tag/$var`) to never match; under
+  RFC 9309 section 2.2.3, `$` is an end anchor only at the end of the pattern, and internal `$`
+  characters are now matched literally.
+
+- **CV template guidance aligns geometry scale with master template** (#553,
+  `.claude/skills/job-application-assistant/05-cv-templates.md`, `tests/test_latex_guidance.py`) -
+  the preamble snippet in `05-cv-templates.md` specified `\usepackage[scale=0.77]{geometry}`,
+  whereas the master reference template `cv/main_example.tex` configures `scale=0.80`. The guide
+  has been aligned to `scale=0.80`, preventing tighter margins and unwanted page overflow during
+  CV generation, and a test now guards that the two files stay in sync.
+
+- **`.claude/settings.local.json` is ignored in `.gitignore` and pinned in security guards** (#551,
+  `.gitignore`, `tools/security_guards.py`) - Claude Code stores machine-local settings and
+  ad-hoc tool approvals in `.claude/settings.local.json`. The file is now excluded from version
+  control in `.gitignore` and pinned in `REQUIRED_IGNORE_RULES` to prevent fork users from
+  accidentally committing local session configurations.
+
+- **`/rank` retires scored jobs whose preserved deadline has passed**
+  (`tools/rank_state.py`, `tests/test_rank_state.py`) - a fresh `null` deadline
+  preserves the stored date, but `apply` previously wrote the job as `ranked`
+  even after that date had passed. The later sweep excludes re-scored keys,
+  so it could not correct the state or shortlist. Apply now expires the job
+  before changing rank metadata; current-day deadlines, explicit future
+  extensions, invalid dates, dry runs, and scoring errors keep their behavior.
+
+- **`/reset profile` keeps the `framework_version` frontmatter on the two files it rewrites**
+  (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - the full-file skeletons
+  for `01-candidate-profile.md` and `02-behavioral-profile.md` started at the `#` title, while
+  the shipped files open with a `---` block carrying `framework_version`. Applied as written,
+  one `/reset profile` left both files failing `tools/check_framework_version.py` ("missing
+  'framework_version' in frontmatter") and invisible to `tools/check_upstream_updates.py`,
+  which records a configuration error for a file with no local version to compare - the fork
+  update path the README sends every fork through. The step now says to keep the frontmatter
+  block and replace only what follows, with a note under "Profile reset" that the marker is
+  framework data, never candidate data; the version is not hardcoded into the skeleton, where
+  it would go stale on the next bump. A derived test applies each skeleton the way the step
+  says and asserts the shipped file's version still parses out unchanged; it fails on master.
+  Found while re-checking #519's class of drift.
+
 - **`/reset profile` now targets the headings the shipped skill files actually have**
   (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - two of its Step 3
   targets had drifted. The `05-cv-templates.md` step anchored on a section beginning
@@ -63,6 +156,11 @@ per-file diff commands.
   `01-candidate-profile.md` and `07-interview-prep.md` were already correct. Two new tests
   derive both checks from the shipped files, so a renamed heading fails until `/reset`
   follows it; both fail on master.
+
+- **`freehire-search` rejects empty `--facet` filters before requesting jobs** (#561) -
+  a bare flag (including one after a valid repeated facet), `salary_min=`, or a
+  comma-separated value list containing only whitespace now returns `BAD_ARG` and
+  exits 1 instead of silently dropping the filter and running a broader search.
 
 - **The `/apply` host-check test derives its installed-portal hosts from the skills tree
   instead of a hand-copied set** (#497, `tests/test_apply_host_check.py`) - `SHIPPED_PORTAL_HOSTS`

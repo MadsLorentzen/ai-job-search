@@ -134,6 +134,24 @@ describe("LinkedIn CLI flag validation", () => {
       expect(err.code).not.toBe("BAD_ARG");
     });
   });
+
+  describe("--format validation", () => {
+    test("search with an unsupported format exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["search", "-l", LOCATION, "--format", "invalid"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/format/);
+    });
+
+    test("detail with an unsupported format exits 1 with BAD_ARG", async () => {
+      const result = await runCLI(["detail", "123456", "--format", "table"]);
+      expect(result.exitCode).not.toBe(0);
+      const err = parsedStderr(result.stderr);
+      expect(err.code).toBe("BAD_ARG");
+      expect(err.error).toMatch(/format/);
+    });
+  });
 });
 
 

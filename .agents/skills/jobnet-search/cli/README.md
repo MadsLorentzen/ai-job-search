@@ -141,6 +141,7 @@ bun run src/cli.ts search \
       "applicationDeadlineStatus": "ExpirationDate",
       "workHourPartTime": false,
       "isExternal": false,
+      "jobAdUrl": null,
       "hasLogo": true,
       "logoUrl": "/bff/SharedComponents/JobAdCard/CompanyLogo/ByJobAdId/9ef43bce-d82b-4ea1-a098-7ff6520f99be",
       "cvr": "29190925",
@@ -160,7 +161,7 @@ bun run src/cli.ts search \
 
 > **Note**: The `description` field (raw HTML) is intentionally omitted from `search` results for brevity. Use `detail` to retrieve the full job description.
 
-> **Note**: Every result also carries the cross-portal contract fields `company`, `location`, `date`, `deadline` and `url` — derived respectively from `hiringOrgName`, `postalDistrictName`/`municipality`, and the jobnet detail page URL. `/scrape` Step 2 expects search output to include title, company, location, date, and URL, and dates follow the `YYYY-MM-DD` convention of the other portal CLIs. The API's `1900-01-01` deadline sentinel (deadline not disclosed) maps to `null`. The native fields above are preserved unchanged.
+> **Note**: Every result also carries the cross-portal contract fields `company`, `location`, `date`, `deadline` and `url` - derived respectively from `hiringOrgName`, `postalDistrictName`/`municipality`, and the destination URL (the employer's `jobAdUrl` for external ads, or `/find-job/{jobAdId}` for internal ones). `/scrape` Step 2 expects search output to include title, company, location, date, and URL, and dates follow the `YYYY-MM-DD` convention of the other portal CLIs. The API's `1900-01-01` deadline sentinel (deadline not disclosed) maps to `null`. The native fields above are preserved unchanged.
 
 > **Note**: `resultsPerPage` and `pageNumber` must always be provided — omitting them while also providing `searchString` causes the API to return error 1014 ("Fejl i formatering af inputs").
 
@@ -361,9 +362,10 @@ https://jobnet.dk/find-job/{jobAdId}
 ```
 
 The legacy `https://jobnet.dk/job/{jobAdId}` route redirects anonymous visitors into the
-MitID login flow, so it is never emitted. External ads (`isExternal: true`, jobAdIds with an
-`E` prefix) 404 on `/find-job/` and hit the login wall on `/job/` - neither route serves them
-anonymously; `/find-job/` is still strictly better and external ads are left as-is.
+MitID login flow, so it is never emitted. External ads (`isExternal: true`) 404 on `/find-job/`
+and hit the login wall on `/job/` - the search command routes external ads to their destination
+in `jobAdUrl` (falling back to `/find-job/{jobAdId}` when missing or not http(s)) instead of
+emitting a broken link.
 
 Company logo images (prefix relative logoUrl from API):
 
