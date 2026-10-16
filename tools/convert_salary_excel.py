@@ -26,6 +26,7 @@ with paired count/index columns per category, it groups them automatically.
 """
 
 import json
+import math
 import sys
 import argparse
 import re
@@ -58,10 +59,17 @@ ID_PATTERNS = {"id", "personnummer"}
 DEFAULT_CATEGORY = "all_employees"
 
 
+def _finite_float(value):
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("salary values must be finite")
+    return number
+
+
 def parse_numeric_cell(value):
     """Parse numeric Excel values, including localized string cells."""
     if isinstance(value, (int, float)):
-        return float(value)
+        return _finite_float(value)
     if not isinstance(value, str):
         raise ValueError("not numeric")
 
@@ -84,7 +92,7 @@ def parse_numeric_cell(value):
     elif "." in text:
         if re.fullmatch(r"[+-]?\d+\.\d{3}", text):
             raise ValueError("ambiguous dot separator")
-    return float(text)
+    return _finite_float(text)
 
 
 def header_matches(header, patterns):
