@@ -170,6 +170,18 @@ async function main(): Promise<number> {
   }
 
   if (cmd === "search") {
+    // These options take values, unlike bare --remote and --no-description.
+    // Treating a present-but-empty option as unset silently broadens the query.
+    for (const name of ["query", "company", "country", "region", "city", "seniority", "category", "skill", "description-format"]) {
+      const value = flags[name]
+      if (value !== undefined && (typeof value !== "string" || !value.trim())) {
+        process.stderr.write(
+          JSON.stringify({ error: `--${name} requires a non-empty value`, code: "BAD_ARG" }) + "\n",
+        )
+        return 1
+      }
+    }
+
     const fmt = flags.format !== undefined ? String(flags.format) : "json"
     if (!["json", "table", "plain"].includes(fmt)) {
       process.stderr.write(
