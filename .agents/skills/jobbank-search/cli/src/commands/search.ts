@@ -37,21 +37,27 @@ export const search = defineCommand({
       description: "Exclude keywords (antikey)",
     }),
     type: option(z.union([z.string(), z.array(z.string())]).optional(), {
+      repeatable: true,
       description: "Job type code (cvtype). Repeatable: --type 3 --type 6",
     }),
     education: option(z.union([z.string(), z.array(z.string())]).optional(), {
+      repeatable: true,
       description: "Education field code (udd). Repeatable.",
     }),
     location: option(z.union([z.string(), z.array(z.string())]).optional(), {
+      repeatable: true,
       description: "Region code (amt). Repeatable.",
     }),
     "work-area": option(z.union([z.string(), z.array(z.string())]).optional(), {
+      repeatable: true,
       description: "Work area / function code (erf). Repeatable.",
     }),
     industry: option(z.union([z.string(), z.array(z.string())]).optional(), {
+      repeatable: true,
       description: "Industry code (branche). Repeatable.",
     }),
     "suitable-for": option(z.union([z.string(), z.array(z.string())]).optional(), {
+      repeatable: true,
       description: "Suitable-for code (andet). Repeatable.",
     }),
     company: option(z.coerce.number().int().min(1).optional(), {
