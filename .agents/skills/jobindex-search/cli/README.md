@@ -11,7 +11,7 @@ CLI for searching jobs on [Jobindex.dk](https://www.jobindex.dk).
 ## Installation
 
 ```bash
-cd skills/jobindex-search/cli
+cd .agents/skills/jobindex-search/cli
 bun install
 ```
 
