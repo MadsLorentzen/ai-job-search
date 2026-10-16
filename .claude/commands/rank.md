@@ -55,10 +55,10 @@ State how many jobs will be ranked and how many are deferred before proceeding.
 Dispatch parallel `general-purpose` agents via the **Agent tool**, ~5 jobs per agent (a single agent is fine for ≤5 jobs). Token-efficiency rules, consistent with `/apply`:
 
 - Pass each agent everything it needs **inline in the prompt** - the job list (title, company, URL) and a compact scoring rubric extracted from the files you read in Step 1: the strong/moderate/weak skill match areas, direct/adjacent experience domains, behavioral thrive/drain factors, career goals, deal-breakers, and the location constraints. Do **not** make agents re-read the profile files.
-- Agents fetch each posting URL with WebFetch and score **only from actually fetched content** - never from the title alone, never from fabricated posting content. A job that is not scored gets one of two statuses, and they mean different things:
+- Agents fetch each posting URL following the escalation order in `.claude/skills/job-application-assistant/09-web-research.md` (using the installed portal CLI's `detail` command when the URL belongs to a portal in `.agents/skills/`, or `WebFetch` otherwise) and score **only from actually fetched content** - never from the title alone, never from fabricated posting content. A job that is not scored gets one of two statuses, and they mean different things:
   - `expired` - **positive evidence the posting is closed**: the page says it is no longer available or the deadline has passed, the server answers 410 Gone, or the URL redirects to a listing page instead of the posting.
   - `unreachable` - **retrieval failed, so nothing is known about the posting**: 401/403 or a login wall, a 404, a timeout, a 5xx, or an empty or unparseable page. The agent adds `"fetch_error"`, one short plain-text line naming the failure (e.g. `"403 after curl retry"`). A 404 is `unreachable`, not `expired`: links break while postings stay live (#538 was one).
-- **Before returning `unreachable` or `expired`, the agent must exhaust the escalation order** in `.claude/skills/job-application-assistant/09-web-research.md`: a `WebFetch` 403 is a rejected *client*, not a missing page, and retrying with browser headers via curl recovers most corporate and bank domains. A stored URL ending in a `#fragment` points at a listing page rather than a posting, so the agent should search the employer's own careers site for the role by name before writing the job off. Include this instruction in every scoring agent's prompt. Neither status means "the first fetch was unhelpful".
+- **Before returning `unreachable` or `expired`, the agent must exhaust the escalation order** in `09-web-research.md`: installed portal CLI first, then `WebFetch`, then curl with browser headers (if `robots.txt` permits), then search for the employer's own careers site. A `WebFetch` 403 is a rejected *client*, not a missing page, and retrying with browser headers via curl recovers most corporate and bank domains. A stored URL ending in a `#fragment` points at a listing page rather than a posting, so the agent should search the employer's own careers site for the role by name before writing the job off. Include this instruction in every scoring agent's prompt. Neither status means "the first fetch was unhelpful".
 - Scope is triage: posting text vs. rubric. **No company research, no salary lookup, no web searches** - that depth belongs to `/apply`.
 
 Each agent returns a JSON array, one object per job:
@@ -179,7 +179,7 @@ Swept <S> previously ranked entries (<E> newly expired, <C> closing soon).
 - <Title> at <Company> - expired <date> - [Link](...)
 
 ### Couldn't fetch - will retry
-- <Title> at <Company> - attempt 1/3: 403 after curl retry - [Link](...)
+- <Title> at <Company> - attempt 1: 403 after curl retry - [Link](...)
 
 ### Gave up, check manually
 - <Title> at <Company> - unreachable after 3 attempts (last: login wall) - may still be live - [Link](...)
@@ -187,7 +187,7 @@ Swept <S> previously ranked entries (<E> newly expired, <C> closing soon).
 
 Rules for the presentation:
 
-- "Couldn't fetch" lists `apply`'s `unreachable` rows with `fetch_attempts`/3 and `last_fetch_error`; "Gave up, check manually" lists its `gave_up` rows. Show either heading only when it has rows. A gave-up job appears there once, on the run that gave up, and is never presented as a closed posting: nothing showed it closed, only that it could not be read (a login wall, for instance).
+- "Couldn't fetch" lists `apply`'s `unreachable` rows as `attempt <fetch_attempts>` with `last_fetch_error` - never "N/3": a job can pass its third attempt while it waits out the 48-hour floor; "Gave up, check manually" lists its `gave_up` rows. Show either heading only when it has rows. A gave-up job appears there once, on the run that gave up, and is never presented as a closed posting: nothing showed it closed, only that it could not be read (a login wall, for instance).
 
 - Every table and list (shortlist, below threshold, excluded, couldn't fetch, gave up) includes the posting URL as a clickable link - use the `url` in `apply`'s output (not the entry's key, which for some portals is a company+title composite rather than the URL), so this never requires an extra lookup. Never drop the link for brevity.
 - A shortlisted job with `language_gate: FLAG` gets a ⚠ marker next to its Title (same treatment as a location FLAG) and its `language_note` quoted in that job's "Why these ranked highest" writeup, so the language-level gap is visible without digging into the raw JSON.

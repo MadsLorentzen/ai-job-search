@@ -1,5 +1,5 @@
 ---
-framework_version: 1.1.1
+framework_version: 1.1.2
 ---
 
 # Web Research and Fetching
@@ -30,7 +30,7 @@ Do **not** respond to a 403 by softening the cover letter to vague generalities,
 `WebFetch` identifies itself as `Claude-User` and honors `robots.txt`. That is the formal opt-out a site owner is told they can rely on, so a 403 has two very different causes and they must not be treated the same:
 
 - **A WAF default on a site whose published policy allows access.** Many bank and corporate domains serve `User-agent: *` / `Allow: /` while their firewall filters any client that does not look like a browser. Retrying there overrides a firewall default, not an expressed preference. Proceed.
-- **A site that has actually declined.** If `robots.txt` disallows the path for `*` or for `Claude-User`, retrying with browser headers circumvents the exact mechanism the site was told to use. **Do not retry.** Skip to escalation step 3 and find the employer's own posting instead.
+- **A site that has actually declined.** If `robots.txt` disallows the path for `*` or for `Claude-User`, retrying with browser headers circumvents the exact mechanism the site was told to use. **Do not retry.** Skip to escalation step 4 and find the employer's own posting instead.
 
 Check it first. It is one cheap fetch, and the repo ships the check:
 
@@ -38,7 +38,7 @@ Check it first. It is one cheap fetch, and the repo ships the check:
 python3 tools/robots_check.py '<URL>'
 ```
 
-Exit status `0` means the retry may proceed; `1` means it must not, so go to escalation step 3. The rules it applies are deliberately on the cautious side: longest-match wins, a tie between `Allow` and `Disallow` goes to `Disallow`, and a disallow for **either** `*` or `Claude-User` blocks the retry. A `404` means the site publishes no policy, which is permission; **any other failure to read `robots.txt` leaves permission unconfirmed and the retry does not happen.**
+Exit status `0` means the retry may proceed; `1` means it must not, so go to escalation step 4. The rules it applies are deliberately on the cautious side: longest-match wins, a tie between `Allow` and `Disallow` goes to `Disallow`, and a disallow for **either** `*` or `Claude-User` blocks the retry. A `404` means the site publishes no policy, which is permission; **any other failure to read `robots.txt` leaves permission unconfirmed and the retry does not happen.**
 
 Two details worth knowing, both covered by `tests/test_robots_check.py`:
 
@@ -81,14 +81,19 @@ Modern sites embed real copy inside JSON blobs in the markup, so useful text oft
 
 Try these in order and stop at the first that yields real content:
 
-1. **`WebFetch`** on the target URL. Cheapest, returns clean markdown.
-2. **Check `robots.txt`, then `curl` with browser headers** (above), then strip tags. Fixes the 403 class of failure. If `robots.txt` disallows the path for `*` or `Claude-User`, **skip this step entirely** and go to step 3.
-3. **`WebSearch`** for the company or role by name, to find an alternative canonical URL: the employer's own careers portal is almost always richer than the aggregator that surfaced the posting, and it carries the reference ID and grade that aggregators drop.
-4. **Declare it genuinely unavailable** only after 1 to 3 have failed. In `/rank` that means marking the entry `expired`; in `/apply` it means telling the user the posting could not be retrieved and stopping rather than drafting from the title.
+1. **Installed portal CLI `detail` command** if the target URL's domain belongs to a configured job portal in `.agents/skills/*/` (derived from each portal's board hosts in `cli/src` and `url-reference.md`, e.g. `linkedin.com` -> `linkedin-search`):
+   ```bash
+   bun run .agents/skills/<portal-skill>/cli/src/cli.ts detail '<URL>' --format plain
+   ```
+   This retrieves the posting directly from the portal's API or resilient detail route, bypassing bot-detection 403s and login walls entirely.
+2. **`WebFetch`** on the target URL (for non-portal URLs, or if the portal CLI is missing or failed). Cheapest for general web pages, returns clean markdown.
+3. **Check `robots.txt`, then `curl` with browser headers** (above), then strip tags. Fixes the 403 class of failure. If `robots.txt` disallows the path for `*` or `Claude-User`, **skip this step entirely** and go to step 4.
+4. **`WebSearch`** for the company or role by name, to find an alternative canonical URL: the employer's own careers portal is almost always richer than the aggregator that surfaced the posting, and it carries the reference ID and grade that aggregators drop.
+5. **Declare it genuinely unavailable** only after 1 to 4 have failed. In `/rank` that means marking the entry `expired`; in `/apply` it means telling the user the posting could not be retrieved and stopping rather than drafting from the title.
 
 ### Login walls are a different failure
 
-A page that returns 200 but renders a sign-in prompt (common on LinkedIn job views) is **not** fixable with headers. Go to step 3 and find the employer's own posting. Never draft from an aggregator's title plus assumption.
+A page that returns 200 but renders a sign-in prompt (common on LinkedIn job views) is **not** fixable with headers. Go to step 4 and find the employer's own posting. Never draft from an aggregator's title plus assumption.
 
 ## Prefer the employer's own posting
 
@@ -108,7 +113,7 @@ When a posting arrives from an aggregator, search the employer's careers site fo
 `03-writing-style.md` rule 5 requires every company-specific claim in a cover letter to be independently verified. This file is how that verification gets done. The bar:
 
 - The claim traces to a page you actually fetched from the company's own domain, or to consistent reporting you fetched from an independent source.
-- Search-result **snippets are a lead, not a source.** A snippet is enough to justify fetching the page; it is not enough to put a fact in a letter. If the page will not yield to steps 1 and 2, drop the claim rather than citing the snippet.
+- Search-result **snippets are a lead, not a source.** A snippet is enough to justify fetching the page; it is not enough to put a fact in a letter. If the page will not yield to steps 1 to 3, drop the claim rather than citing the snippet.
 - Prefer specific verified facts (legal entity name, office cities, anniversary year, client segments, cross-jurisdiction arrangements) over generic praise. They are what make a letter read as researched.
 
 Record what was verified and from where when presenting the final application, so the user can defend any claim in an interview.
