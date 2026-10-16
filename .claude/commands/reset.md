@@ -264,15 +264,15 @@ For each non-empty document subfolder, delete all user entries, including nested
       exit 1
     fi
   done
+  unset GLOBIGNORE
   shopt -s dotglob nullglob
-  GLOBIGNORE='*/.gitkeep'
-  rm -rf documents/cv/*
-  rm -rf documents/linkedin/*
-  rm -rf documents/diplomas/*
-  rm -rf documents/references/*
-  rm -rf documents/projects/*
-  rm -rf documents/postings/*
-  rm -rf documents/applications/*
+  for directory in documents/cv documents/linkedin documents/diplomas documents/references documents/projects documents/postings documents/applications; do
+    for entry in "$directory"/*; do
+      if [ "${entry##*/}" != ".gitkeep" ]; then
+        rm -rf -- "$entry"
+      fi
+    done
+  done
 )
 ```
 
