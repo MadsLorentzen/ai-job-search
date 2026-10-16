@@ -11,12 +11,14 @@ from tests.test_check_upstream_updates import UpstreamCheckerRepoFixture, FRONTM
 
 
 class CompanionRefTests(UpstreamCheckerRepoFixture):
+    branch_name = "release/next"
+
     def setUp(self):
         super().setUp()
         source = Path(__file__).resolve().parent.parent
         shutil.copy(source / "tools/upstream_triage.py", self.root / "tools/upstream_triage.py")
         self.remote = "forks/template"
-        self.branch = "release/next"
+        self.branch = self.branch_name
         # A local remote permits the real companion CLI's normal fetch without
         # contacting a service. The selected branch differs from master.
         self.add_remote(self.remote, str(self.root))
@@ -59,3 +61,7 @@ class CompanionRefTests(UpstreamCheckerRepoFixture):
         companion = self.follow(command)
         self.assertIn(f"{self.remote}/{self.branch}", companion)
         self.assertIn("[UPDATE]", companion)
+
+
+class QuotedCompanionRefTests(CompanionRefTests):
+    branch_name = "release'next"

@@ -33,6 +33,7 @@ the upstream ref is unavailable, so a scheduled job degrades gracefully.
 from __future__ import annotations
 
 import argparse
+import shlex
 import subprocess
 import sys
 
@@ -243,7 +244,7 @@ def _print_crossref(remote: str, branch: str) -> None:
     print()
     print(
         "_For personalized-file version stamps (which methodology files changed), "
-        f"run `python tools/check_upstream_updates.py --remote {remote} --branch {branch}`._"
+        f"run `python tools/check_upstream_updates.py --remote {shlex.quote(remote)} --branch {shlex.quote(branch)}`._"
     )
 
 
