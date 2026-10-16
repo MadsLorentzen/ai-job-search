@@ -18,6 +18,7 @@ Usage:
 """
 
 import json
+import math
 import sys
 import re
 import argparse
@@ -69,6 +70,16 @@ def collect_validation_issues(data):
     metadata = data.get("metadata", {})
     if metadata is not None and not isinstance(metadata, dict):
         errors.append("'metadata' must be an object when provided")
+    elif isinstance(metadata, dict):
+        baseline = metadata.get("index_baseline", 100)
+        try:
+            finite_baseline = math.isfinite(baseline)
+        except (TypeError, OverflowError):
+            finite_baseline = False
+        if isinstance(baseline, bool) or not finite_baseline:
+            errors.append("'metadata.index_baseline' must be a finite number")
+        if not isinstance(metadata.get("index_label", "Index"), str):
+            errors.append("'metadata.index_label' must be a string")
 
     companies = data.get("companies")
     if not isinstance(companies, list):
