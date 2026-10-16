@@ -119,7 +119,7 @@ def main() -> int:
     for rel_path in FRAMEWORK_FILES:
         local_path = ROOT / rel_path
         if not local_path.exists():
-            print(f"Local file missing: {rel_path}")
+            errors.append(f"Local file missing: {rel_path}")
             continue
 
         # Get local version
@@ -145,6 +145,7 @@ def main() -> int:
             errors.append(f"Local file {rel_path} is missing 'framework_version' in frontmatter.")
             continue
         if not upstream_ver:
+            errors.append(f"Upstream file {rel_path} is missing 'framework_version' in frontmatter.")
             continue
             
         if parse_semver(upstream_ver) > parse_semver(local_ver):
