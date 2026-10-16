@@ -191,6 +191,12 @@ def parse_sheet(ws, sheet_label=None):
         elif header_matches(h, CITY_PATTERNS):
             city_col = i
 
+    # A qualified salary header such as "Company Index" may also contain a
+    # metadata token. Prefer an unqualified metadata column when one exists,
+    # leaving the qualified column available as salary data.
+    company_col = next((i for i, h in enumerate(headers) if h.lower() in COMPANY_PATTERNS), company_col)
+    city_col = next((i for i, h in enumerate(headers) if h.lower() in CITY_PATTERNS), city_col)
+
     if company_col is None:
         print(f"Warning: Could not find company column in sheet '{ws.title}'.", file=sys.stderr)
         return []
