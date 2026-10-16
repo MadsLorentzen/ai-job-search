@@ -322,6 +322,20 @@ def cmd_apply(args) -> int:
             continue
 
         if status == "unreachable":
+            # A stored deadline that has already passed is positive evidence the
+            # posting is closed, whatever the fetch did: expire it, as the scored
+            # path and rule 6 would, instead of retrying it and later listing it
+            # as possibly live.
+            deadline = parse_iso(entry.get("deadline"))
+            if deadline is not None and deadline < today:
+                entry["status"] = "expired"
+                for field in (*RETRY_FIELDS, "expired_reason"):
+                    entry.pop(field, None)
+                expired.append(
+                    {"key": key, "title": entry.get("title"), "company": entry.get("company"), "url": entry.get("url")}
+                )
+                continue
+
             previous = entry.get("fetch_attempts")
             valid = isinstance(previous, int) and not isinstance(previous, bool)
             attempts = (previous if valid else 0) + 1

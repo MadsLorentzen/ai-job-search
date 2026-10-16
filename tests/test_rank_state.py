@@ -708,6 +708,25 @@ class Unreachable(RankStateCase):
             self.assertNotIn(field, stored)
         self.assertEqual([r["key"] for r in out["expired"]], ["a"])
 
+    def test_a_failed_fetch_past_the_stored_deadline_still_expires(self):
+        """A posting that closed on 2026-09-20 and returns 403 on 2026-10-05 is
+        closed by its own deadline, not unreachable: it expires at once, as the
+        scored path would, rather than being retried and later listed under
+        "Gave up, check manually" as possibly live."""
+        self.write_state(
+            {"a": entry(deadline="2026-09-20", status="unreachable", fetch_attempts=1,
+                        first_unreachable="2026-10-04T09:00:00Z", last_fetch_error="timeout")}
+        )
+        out = self.fail_fetch("2026-10-05T09:00:00Z")
+        stored = self.read_state()["a"]
+        self.assertEqual(stored["status"], "expired")
+        self.assertNotIn("expired_reason", stored)
+        for field in self.RETRY_FIELDS:
+            self.assertNotIn(field, stored)
+        self.assertEqual([r["key"] for r in out["expired"]], ["a"])
+        self.assertEqual(out["unreachable"], [])
+        self.assertEqual(out["gave_up"], [])
+
     def test_fetch_error_is_stored_as_bounded_plain_text(self):
         self.write_state({"a": entry()})
         self.fail_fetch("2026-09-03T09:00:00Z", error="x" * 500)
