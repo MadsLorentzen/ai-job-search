@@ -382,10 +382,9 @@ def main():
     wb = openpyxl.load_workbook(excel_path, read_only=True, data_only=True)
 
     all_companies = []
-    for sheet_name in wb.sheetnames:
-        print(f"  Parsing sheet: {sheet_name}")
-        ws = wb[sheet_name]
-        companies = parse_sheet(ws, sheet_label=sheet_name)
+    for ws in wb.worksheets:
+        print(f"  Parsing sheet: {ws.title}")
+        companies = parse_sheet(ws, sheet_label=ws.title)
         all_companies.extend(companies)
 
     wb.close()
