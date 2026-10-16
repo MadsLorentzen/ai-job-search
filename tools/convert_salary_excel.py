@@ -280,6 +280,8 @@ def parse_sheet(ws, sheet_label=None):
             continue
 
         company_name = str(row[company_col]).strip()
+        if not company_name:
+            continue
         if city_col is not None and city_col < len(row) and row[city_col]:
             city_name = str(row[city_col]).strip()
         else:
