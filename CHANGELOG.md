@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`job_key.py` transliterates Danish characters (`æ`, `ø`, `å`) to prevent false collisions**
+  (#537, `tools/job_key.py`, `tests/test_job_key.py`) - `slugify()` previously normalized with
+  NFKD followed by an ASCII encode with ignore, which silently dropped `æ` and `ø` and reduced
+  `å` to `a`. Different Danish words collapsed to the same slug (e.g. `Ærø` and `Rø` both keyed
+  to `r`), causing distinct postings to collide and be discarded during scraping. Standard Danish
+  transliteration (`æ->ae`, `ø->oe`, `å->aa`) is now applied prior to the ASCII fold, preserving
+  readability and collision resistance. Reported by ai-tvang.
+
 - **`jobnet-search` routes external ads to employer `jobAdUrl` rather than broken `find-job` links**
   (#538, `.agents/skills/jobnet-search/cli/src/commands/search.ts`, `.agents/skills/jobnet-search/cli/README.md`,
   `.agents/skills/jobnet-search/cli/tests/search-normalization.test.ts`) - external job postings on

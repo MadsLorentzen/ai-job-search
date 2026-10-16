@@ -61,13 +61,22 @@ HASH_LEN = 6
 # be surprised by the next punctuation mark a job board invents.
 _NON_SLUG = re.compile(r"[^a-z0-9]+")
 _JOB_ID = re.compile(r"(\d{6,})")
+_DANISH_TRANS = str.maketrans({
+    "æ": "ae",
+    "Æ": "ae",
+    "ø": "oe",
+    "Ø": "oe",
+    "å": "aa",
+    "Å": "aa",
+})
 
 
 def slugify(text: str) -> str:
     """Lowercase ASCII slug. Non-Latin scripts legitimately reduce to ''."""
     if not text:
         return ""
-    decomposed = unicodedata.normalize("NFKD", str(text))
+    preprocessed = unicodedata.normalize("NFC", str(text)).translate(_DANISH_TRANS)
+    decomposed = unicodedata.normalize("NFKD", preprocessed)
     ascii_only = decomposed.encode("ascii", "ignore").decode("ascii")
     return _NON_SLUG.sub("-", ascii_only.lower()).strip("-")
 
@@ -80,10 +89,9 @@ def _lost_letters(text: str) -> bool:
     no ASCII decomposition and vanishes; a mixed-script name then keeps only
     its Latin or digit fragment, and two different names can share it.
 
-    Latin letters that also lack a decomposition ("ø", "æ", "ß", "ł") are
-    deliberately NOT counted: "Ørsted" has keyed as "rsted" since the rule
-    existed, and treating it as lossy would re-key every Danish company in a
-    live seen_jobs.json for a collision that does not happen in practice.
+    Latin letters that also lack a decomposition ("ß", "ł") are deliberately
+    NOT counted; Danish letters ("æ", "ø", "å") are transliterated before the
+    fold (#537).
     """
     if not text:
         return False

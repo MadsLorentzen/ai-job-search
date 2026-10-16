@@ -159,12 +159,19 @@ class MixedScriptNamesKeepTheirIdentity(unittest.TestCase):
         # NFKD folds these without dropping a letter, so existing keys stay put.
         self.assertEqual(make_key("Zürich Versicherung", "Ingénieur ﬁnance"), "zurich-versicherung_ingenieur-finance")
 
-    def test_latin_letters_without_a_decomposition_do_not_re_key(self):
-        # "ø" and "æ" have no NFKD decomposition and are dropped by the fold,
-        # but they are Latin letters: "Ørsted" has keyed as "rsted" since the
-        # rule existed, and a live Danish seen_jobs.json must not re-key.
-        self.assertEqual(make_key("Ørsted A/S", "Senior Engineer"), "rsted-a-s_senior-engineer")
-        self.assertEqual(make_key("Mærsk", "Søfarende"), "mrsk_sfarende")
+    def test_danish_letters_transliterate_to_prevent_collisions(self):
+        # #537: æ->ae, ø->oe, å->aa prevent collisions where words like "Ærø" and "Rø"
+        # previously both collapsed to "r".
+        self.assertEqual(make_key("Ærø", "Kommune"), "aeroe_kommune")
+        self.assertEqual(make_key("Rø", "Kommune"), "roe_kommune")
+        self.assertNotEqual(
+            make_key("Ærø", "Kommune"),
+            make_key("Rø", "Kommune"),
+        )
+        self.assertEqual(make_key("Ørsted A/S", "Senior Engineer"), "oersted-a-s_senior-engineer")
+        self.assertEqual(make_key("Mærsk", "Søfarende"), "maersk_soefarende")
+        self.assertEqual(make_key("Åbenrå", "Konsulent"), "aabenraa_konsulent")
+        self.assertEqual(make_key("Slagelse & Næstved", "Direktør"), "slagelse-naestved_direktoer")
 
 
 class CompanyFallbackCLI(unittest.TestCase):
