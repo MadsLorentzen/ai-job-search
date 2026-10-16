@@ -46,6 +46,11 @@ per-file diff commands.
 
 ### Fixed
 
+- **Upstream triage checks patch identity instead of commit subjects**
+  (`tools/upstream_triage.py`) - unrelated fork and upstream commits can have the same
+  subject. A matching title no longer marks an unapplied upstream change as already
+  cherry-picked; actual patch-id matches still drop off the review list.
+
 - **`jobnet-search` routes external ads to employer `jobAdUrl` rather than broken `find-job` links**
   (#538, `.agents/skills/jobnet-search/cli/src/commands/search.ts`, `.agents/skills/jobnet-search/cli/README.md`,
   `.agents/skills/jobnet-search/cli/tests/search-normalization.test.ts`) - external job postings on

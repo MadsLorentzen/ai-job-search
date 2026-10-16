@@ -137,6 +137,37 @@ class AlreadyAppliedTests(TriageRepoFixture):
         self.assertIn("**1** worth reviewing", result.stdout)
 
 
+class SubjectCollisionTests(TriageRepoFixture):
+    def test_different_patch_with_same_subject_stays_worth_reviewing(self):
+        self.write("kept.py", "print('upstream fix')\n")
+        upstream_sha = self.commit("Fix configuration")
+        self.set_upstream_to_head()
+        git(self.root, "reset", "--hard", "HEAD~1")
+        self.write("shared.txt", "fork configuration\n")
+        self.commit("Fix configuration")
+
+        result = self.run_triage()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("**1** worth reviewing", result.stdout)
+        self.assertIn(f"git cherry-pick {upstream_sha}", result.stdout)
+        self.assertNotIn("already applied (cherry-picked)", result.stdout)
+
+    def test_same_patch_with_renamed_subject_is_still_already_applied(self):
+        self.write("kept.py", "print('upstream fix')\n")
+        upstream_sha = self.commit("Fix configuration")
+        self.set_upstream_to_head()
+        git(self.root, "reset", "--hard", "HEAD~1")
+        self.write("fork_only.txt", "fork\n")
+        self.commit("Fork configuration")
+        git(self.root, "cherry-pick", upstream_sha)
+        git(self.root, "commit", "--amend", "-m", "Port upstream configuration fix")
+
+        result = self.run_triage()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("**0** worth reviewing", result.stdout)
+        self.assertIn("already applied (cherry-picked)", result.stdout)
+
+
 class WontPortTests(TriageRepoFixture):
     def test_listed_sha_is_excluded(self):
         self.write("kept.py", "print('rejected feature')\n")

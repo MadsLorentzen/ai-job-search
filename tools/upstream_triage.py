@@ -18,8 +18,8 @@ Two signals drive the sort:
 
 1. Already applied? A cherry-pick lands with a NEW sha but the same patch, so a
    raw sha comparison misreports it as missing. We compute git patch-ids for the
-   fork-only commits and treat any upstream commit whose patch-id (or exact
-   subject) matches as already applied.
+   fork-only commits and treat any upstream commit whose patch-id
+   matches as already applied. A matching subject alone does not identify a patch.
 
 2. Relevant to this fork? A commit that only touches files this fork deleted
    (e.g. removed demo portals) is almost certainly N/A. We check each commit's
@@ -139,7 +139,6 @@ def main() -> int:
 
     fork_only = rev_list(f"{ref}..HEAD")
     fork_patch_ids = {p for p in (patch_id(s) for s in fork_only) if p}
-    fork_subjects = {subject(s) for s in fork_only}
 
     review: list[tuple[str, str, str, list[str]]] = []
     skip: list[tuple[str, str, str, str]] = []
@@ -147,7 +146,7 @@ def main() -> int:
     for sha in behind:
         subj = subject(sha)
         short = sha[:9]
-        if patch_id(sha) in fork_patch_ids or subj in fork_subjects:
+        if patch_id(sha) in fork_patch_ids:
             skip.append((short, sha, subj, "already applied (cherry-picked)"))
             continue
         if any(sha.startswith(e) for e in wontport):
