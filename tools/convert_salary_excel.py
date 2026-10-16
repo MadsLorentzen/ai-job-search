@@ -65,7 +65,8 @@ def parse_numeric_cell(value):
     if not isinstance(value, str):
         raise ValueError("not numeric")
 
-    text = value.strip().replace("\u00a0", " ").replace(" ", "")
+    # Localized exports also use narrow no-break and thin spaces for grouping.
+    text = "".join(value.split())
     if not text:
         raise ValueError("not numeric")
     if "," in text and "." in text:
