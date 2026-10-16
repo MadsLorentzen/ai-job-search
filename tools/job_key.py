@@ -25,27 +25,31 @@ long title always produces the same key and two different long titles never
 collide.
 
 A title that slugifies to nothing (a posting written in a non-Latin script) has
-no usable key half at all - "securion_" was a real entry, and it would have
-collided with every future non-Latin posting from that company. Those fall back
-to the portal's numeric id from the URL. A title or company that slugifies to
-*less* than it says is the same problem one step on: "Программист 1С" and
-"Аналитик 1С" both fold to "1", "Сбер AI" and "Яндекс AI" both fold to "ai",
-so whenever the ASCII fold drops letters the surviving fragment is only a
-readable prefix and the identity comes from the same fallback.
+no usable key half at all and would collide with other such postings. Those fall
+back to the portal's numeric id from the URL. A title or company that slugifies
+to *less* than it says is the same problem one step on: whenever the ASCII fold
+drops letters the surviving fragment is only a readable prefix and the identity
+comes from the same fallback. Common Latin letters without an NFKD decomposition are folded explicitly
+first and retain a hash identity; other lost letters are hash-disambiguated.
 
 Usage:
   python3 tools/job_key.py --company "Acme Corp" --title "SOC Analyst (L2)"
   python3 tools/job_key.py --audit job_scraper/seen_jobs.json
+  python3 tools/job_key.py --audit job_scraper/seen_jobs.json --migrate
 
-Exit 0 when a key is produced, or when an audit finds nothing. Exit 1 when an
-audit finds violations.
+Migration is explicit and creates an adjacent .bak copy before rewriting drifted
+keys; collisions block migration without changing the source file. Exit 0 when a
+key is produced, or when an audit finds nothing. Exit 1 when an audit finds
+violations.
 """
 
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
+import tempfile
 import unicodedata
 from pathlib import Path
 
@@ -61,36 +65,35 @@ HASH_LEN = 6
 # be surprised by the next punctuation mark a job board invents.
 _NON_SLUG = re.compile(r"[^a-z0-9]+")
 _JOB_ID = re.compile(r"(\d{6,})")
+_LATIN_FOLD = str.maketrans({
+    "Æ": "AE", "æ": "ae", "Ø": "O", "ø": "o", "ß": "ss", "ẞ": "SS",
+    "Ð": "D", "ð": "d", "Þ": "Th", "þ": "th", "Ł": "L", "ł": "l",
+    "Đ": "D", "đ": "d", "Ħ": "H", "ħ": "h", "ı": "i", "Ŋ": "N",
+    "ŋ": "n", "Œ": "OE", "œ": "oe", "Ŧ": "T", "ŧ": "t",
+})
 
 
 def slugify(text: str) -> str:
-    """Lowercase ASCII slug. Non-Latin scripts legitimately reduce to ''."""
+    """Lowercase ASCII slug, folding common Latin letters before NFKD."""
     if not text:
         return ""
-    decomposed = unicodedata.normalize("NFKD", str(text))
+    folded = str(text).translate(_LATIN_FOLD)
+    decomposed = unicodedata.normalize("NFKD", folded)
     ascii_only = decomposed.encode("ascii", "ignore").decode("ascii")
     return _NON_SLUG.sub("-", ascii_only.lower()).strip("-")
 
 
 def _lost_letters(text: str) -> bool:
-    """True when the ASCII fold dropped non-Latin letters, so the slug under-identifies.
-
-    NFKD turns "ü" into "u" plus a combining mark and "ﬁ" into "fi", so most
-    Latin text keeps every letter. A Cyrillic, Greek, CJK or Arabic letter has
-    no ASCII decomposition and vanishes; a mixed-script name then keeps only
-    its Latin or digit fragment, and two different names can share it.
-
-    Latin letters that also lack a decomposition ("ø", "æ", "ß", "ł") are
-    deliberately NOT counted: "Ørsted" has keyed as "rsted" since the rule
-    existed, and treating it as lossy would re-key every Danish company in a
-    live seen_jobs.json for a collision that does not happen in practice.
-    """
+    """True when folding could collapse this name with a different identity."""
     if not text:
         return False
-    for ch in unicodedata.normalize("NFKD", str(text)):
-        if ord(ch) < 128 or not ch.isalpha():
-            continue
-        if not unicodedata.name(ch, "LATIN").startswith("LATIN"):
+    text = str(text)
+    # Keep a readable transliteration, but also use the identity fallback so a
+    # folded name cannot collide with an otherwise-identical ASCII name.
+    if any(ch in _LATIN_FOLD for ch in text):
+        return True
+    for ch in unicodedata.normalize("NFKD", text):
+        if ord(ch) >= 128 and ch.isalpha():
             return True
     return False
 
@@ -177,10 +180,11 @@ def is_legacy_shape(key: str) -> bool:
     )
 
 
-def audit(path: Path) -> int:
+def audit(path: Path, migrate: bool = False) -> int:
     try:
-        doc = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        original = path.read_bytes()
+        doc = json.loads(original.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         print(f"cannot read {path}: {exc}", file=sys.stderr)
         return 1
     seen = doc.get("seen", doc)
@@ -197,19 +201,66 @@ def audit(path: Path) -> int:
             by_url.setdefault(url, []).append(key)
     duplicates = {u: ks for u, ks in by_url.items() if len(ks) > 1}
     # A key that does not match what make_key would produce today is drift, not
-    # damage: reported separately so a rename is a choice, never automatic.
+    # damage: audit reports it; migration is an explicit, backed-up choice.
     drift = [
         k for k, v in seen.items()
         if is_canonical(k) and k != make_key(v.get("company", ""), v.get("title", ""), v.get("url", ""))
     ]
-
-    print(json.dumps({
+    report = {
         "entries": len(seen),
         "malformed_keys": malformed,
         "legacy_three_part_keys": legacy,
         "duplicate_urls": duplicates,
         "keys_not_matching_current_rule": len(drift),
-    }, indent=2, ensure_ascii=False))
+    }
+    if migrate and drift:
+        migrated: dict[str, dict] = {}
+        origins: dict[str, str] = {}
+        for key, entry in seen.items():
+            new_key = make_key(entry.get("company", ""), entry.get("title", ""), entry.get("url", "")) if key in drift else key
+            if new_key in origins:
+                print(json.dumps({
+                    "migration": "blocked",
+                    "reason": "multiple entries would map to one key",
+                    "keys": [origins[new_key], key],
+                    "target": new_key,
+                }, ensure_ascii=False), file=sys.stderr)
+                return 1
+            origins[new_key] = key
+            migrated[new_key] = entry
+
+        backup = Path(f"{path}.bak")
+        try:
+            with backup.open("xb") as backup_file:
+                backup_file.write(original)
+            backup.chmod(path.stat().st_mode & 0o777)
+            if "seen" in doc:
+                doc["seen"] = migrated
+            else:
+                doc = migrated
+            fd, temp_name = tempfile.mkstemp(dir=str(path.parent), prefix=f".{path.name}.", suffix=".tmp")
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as temp_file:
+                    json.dump(doc, temp_file, indent=2, ensure_ascii=False)
+                    temp_file.write("\n")
+                    temp_file.flush()
+                    os.fsync(temp_file.fileno())
+                os.chmod(temp_name, path.stat().st_mode & 0o777)
+                if path.read_bytes() != original:
+                    raise OSError("source changed during migration")
+                os.replace(temp_name, path)
+            except BaseException:
+                if os.path.exists(temp_name):
+                    os.unlink(temp_name)
+                raise
+        except OSError as exc:
+            print(f"migration failed for {path}: {exc}; source was not replaced; any created backup remains", file=sys.stderr)
+            return 1
+        report["migration"] = {"changed": len(drift), "backup": str(backup)}
+    elif migrate:
+        report["migration"] = {"changed": 0, "backup": None}
+
+    print(json.dumps(report, indent=2, ensure_ascii=False))
     return 1 if (malformed or duplicates) else 0
 
 
@@ -233,10 +284,13 @@ def main() -> int:
     ap.add_argument("--title")
     ap.add_argument("--url", default="")
     ap.add_argument("--audit", nargs="?", const=str(STATE), metavar="STATE_JSON")
+    ap.add_argument("--migrate", action="store_true", help="back up and migrate keys that drift under the current rule")
     args = ap.parse_args()
 
+    if args.migrate and not args.audit:
+        ap.error("--migrate requires --audit")
     if args.audit:
-        return audit(Path(args.audit))
+        return audit(Path(args.audit), migrate=args.migrate)
     if args.company is None or args.title is None:
         ap.error("give --company and --title, or --audit")
     print(make_key(args.company, args.title, args.url))

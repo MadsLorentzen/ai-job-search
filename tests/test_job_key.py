@@ -7,14 +7,17 @@ same job stored twice under two different truncations of a long title. These
 pin the fix - a pure, deterministic function of company+title(+url) - and the
 audit that finds both failure classes in an existing file.
 """
+import contextlib
+import io
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "tools"))
-from job_key import is_canonical, is_legacy_shape, make_key, slugify  # noqa: E402
+from job_key import audit, is_canonical, is_legacy_shape, make_key, slugify  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 TOOL = REPO / "tools" / "job_key.py"
@@ -159,12 +162,62 @@ class MixedScriptNamesKeepTheirIdentity(unittest.TestCase):
         # NFKD folds these without dropping a letter, so existing keys stay put.
         self.assertEqual(make_key("Zürich Versicherung", "Ingénieur ﬁnance"), "zurich-versicherung_ingenieur-finance")
 
-    def test_latin_letters_without_a_decomposition_do_not_re_key(self):
-        # "ø" and "æ" have no NFKD decomposition and are dropped by the fold,
-        # but they are Latin letters: "Ørsted" has keyed as "rsted" since the
-        # rule existed, and a live Danish seen_jobs.json must not re-key.
-        self.assertEqual(make_key("Ørsted A/S", "Senior Engineer"), "rsted-a-s_senior-engineer")
-        self.assertEqual(make_key("Mærsk", "Søfarende"), "mrsk_sfarende")
+    def test_latin_letters_without_a_decomposition_are_folded_and_disambiguated(self):
+        self.assertEqual(slugify("Ærø ß Ł"), "aero-ss-l")
+        self.assertTrue(make_key("Øtest LLC", "Example Analyst").startswith("otest-"))
+        self.assertNotEqual(make_key("Ætest LLC", "Example Analyst"), make_key("Aetest LLC", "Example Analyst"))
+        self.assertNotEqual(make_key("Ætest LLC", "Example Analyst"), "aetest-llc_example-analyst")
+
+    def test_latin_letters_no_longer_collapse_distinct_names(self):
+        a = make_key("Ærø Test", "Example Analyst", "https://jobs.example.test/a")
+        b = make_key("Rø Test", "Example Analyst", "https://jobs.example.test/b")
+        self.assertNotEqual(a, b)
+        self.assertTrue(is_canonical(a) and is_canonical(b))
+
+
+class AuditMigration(unittest.TestCase):
+    def test_migration_backs_up_and_rekeys_only_the_synthetic_fixture(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "seen.json"
+            original = json.dumps({"seen": {
+                "legacy-a_example-analyst": {
+                    "company": "Ærø Test", "title": "Example Analyst",
+                    "url": "https://jobs.example.test/a",
+                },
+                "legacy-b_example-analyst": {
+                    "company": "Rø Test", "title": "Example Analyst",
+                    "url": "https://jobs.example.test/b",
+                },
+            }}, indent=2).encode("utf-8")
+            path.write_bytes(original)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(audit(path, migrate=True), 0)
+            self.assertEqual((Path(f"{path}.bak")).read_bytes(), original)
+            seen = json.loads(path.read_text(encoding="utf-8"))["seen"]
+            expected = {
+                make_key("Ærø Test", "Example Analyst", "https://jobs.example.test/a"),
+                make_key("Rø Test", "Example Analyst", "https://jobs.example.test/b"),
+            }
+            self.assertEqual(set(seen), expected)
+
+    def test_collision_blocks_migration_without_modifying_synthetic_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "seen.json"
+            original = json.dumps({"seen": {
+                "legacy-a_example-analyst": {
+                    "company": "Example Co", "title": "Example Analyst",
+                    "url": "https://jobs.example.test/a",
+                },
+                "legacy-b_example-analyst": {
+                    "company": "Example Co", "title": "Example Analyst",
+                    "url": "https://jobs.example.test/b",
+                },
+            }}).encode("utf-8")
+            path.write_bytes(original)
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(audit(path, migrate=True), 1)
+            self.assertEqual(path.read_bytes(), original)
+            self.assertFalse(Path(f"{path}.bak").exists())
 
 
 class CompanyFallbackCLI(unittest.TestCase):
