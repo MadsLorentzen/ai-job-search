@@ -214,9 +214,12 @@ export function parseJobDetail(html: string, id: string): JobDetail {
     extractDivContent(html, "description__text")
   if (descHtml) {
     const withBreaks = descHtml
+      .replace(/\s+/g, " ")
       .replace(/<\s*br\s*\/?>/gi, "\n")
       .replace(/<\/(p|li|ul|ol|div|h\d)>/gi, "\n")
-    description = decodeHtmlEntities(stripTags(withBreaks)).replace(/\n{3,}/g, "\n\n").trim() || null
+    // Clean each rendered line separately: stripTags collapses whitespace,
+    // so applying it to the whole description erased these boundaries.
+    description = withBreaks.split("\n").map(clean).join("\n").replace(/\n{3,}/g, "\n\n").trim() || null
   }
 
   // Job-criteria items: subheader label -> text value.
