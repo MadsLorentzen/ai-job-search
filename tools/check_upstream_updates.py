@@ -188,7 +188,7 @@ def main() -> int:
     # answers "which upstream commits deserve review". Point at the companion.
     print(
         f"\nFor commit-level triage of upstream commits, run: "
-        f"python3 tools/upstream_triage.py --remote {remote}"
+        f"python3 tools/upstream_triage.py --remote {remote} --branch {args.branch}"
     )
     return 0
 
