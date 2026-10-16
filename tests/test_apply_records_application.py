@@ -389,7 +389,7 @@ class DeadlineSurvivesEveryWrite(unittest.TestCase):
 class FallbackGlobFindsOneRolesDocuments(unittest.TestCase):
     """The `cv_file` fallback must select one role's documents, not one company's.
 
-    `/apply` names drafts `cv/main_<company>_<role><CV_EXT>`, so two roles
+    `/apply` names drafts `cv/<company>/main_<company>_<role><CV_EXT>`, so two roles
     at one company differ only in the role half. When the tracker row's
     `cv_file`/`cover_letter_file` columns are empty - a row written before
     #291, added by hand, or by /outcome's own outside-the-workflow path -
@@ -431,7 +431,7 @@ class FallbackGlobFindsOneRolesDocuments(unittest.TestCase):
     def globs(path, heading):
         """The two fallback globs exactly as the spec writes them."""
         body = section(path, heading)
-        found = re.findall(r"`(cv/main_[^`]+|cover_letters/cover_[^`]+)`", body)
+        found = re.findall(r"`(cv/(?:<company>/)?main_[^`]+|cover_letters/(?:<company>/)?cover_[^`]+)`", body)
         return [g for g in found if "*" in g]
 
     def resolve(self, glob, role):
@@ -441,9 +441,13 @@ class FallbackGlobFindsOneRolesDocuments(unittest.TestCase):
         return glob.replace("<company>_<role>", stem).replace("<company>", company)
 
     def drafted_files(self, ext=".tex"):
-        """Exactly what /apply Step 5 leaves in cv/ for two roles at one company."""
+        """Exactly what /apply Step 5 leaves in cv/<company>/ for two roles at one company."""
         return [
-            "cv/main_%s%s" % (ArchiveNameIsOnePathComponent.derive(self.COMPANY, r), ext)
+            "cv/%s/main_%s%s" % (
+                ArchiveNameIsOnePathComponent.derive(self.COMPANY, "").rstrip("_"),
+                ArchiveNameIsOnePathComponent.derive(self.COMPANY, r),
+                ext,
+            )
             for r in self.ROLES
         ]
 

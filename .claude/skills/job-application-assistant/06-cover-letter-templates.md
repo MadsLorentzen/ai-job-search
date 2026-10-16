@@ -8,14 +8,14 @@ framework_version: 1.0.2
 
 Cover letters use a custom LaTeX document class (`cover.cls`) with Lato/Raleway fonts.
 
-**Output file:** `cover_letters/cover_<company>_<role>.tex`
+**Output file:** `cover_letters/<company>/cover_<company>_<role>.tex` (one folder per company; `<company>` is the company name alone, derived by the **Subfolder naming** rule in `documents/README.md`)
 **Compile with:** XeLaTeX (cover.cls requires fontspec)
 **Font directory:** `cover_letters/OpenFonts/fonts/`
 
 ### Compile command
 
 ```bash
-cd cover_letters && xelatex -interaction=nonstopmode cover_<company>_<role>.tex
+cd cover_letters && xelatex -interaction=nonstopmode -output-directory=<company> <company>/cover_<company>_<role>.tex
 ```
 
 Expected output: `Output written on cover_<company>_<role>.pdf (1 page, ...)`. Any page count other than 1 is a failure that must be fixed before presenting to the user.
@@ -24,7 +24,7 @@ Expected output: `Output written on cover_<company>_<role>.pdf (1 page, ...)`. A
 
 After writing the cover letter and before presenting to the user, always compile and visually inspect the PDF. Iterate until the layout is clean:
 
-1. Run `xelatex -interaction=nonstopmode cover_<company>_<role>.tex`
+1. Run `xelatex -interaction=nonstopmode -output-directory=<company> <company>/cover_<company>_<role>.tex` from `cover_letters/` (never from inside the company folder: `cover.cls` and its `OpenFonts/` font paths resolve relative to `cover_letters/`)
 2. Confirm page count is exactly 1 and compile succeeded
 3. Read the PDF via the Read tool and visually check: signature fits at the bottom, no text cut off, bullet font matches body
 
@@ -76,7 +76,7 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     TITLE NAME
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\namesection{}{\Huge{[YOUR_NAME]}}{  \href{mailto:[YOUR_EMAIL]}{[YOUR_EMAIL]} | [YOUR_PHONE] |  \urlstyle{same}\href{[YOUR_LINKEDIN_URL]}{LinkedIn}
+\namesection{}{\Huge{Mohit Notani}}{  \href{mailto:mohitnotani97@gmail.com}{mohitnotani97@gmail.com} | +353 89 945 6217 |  \urlstyle{same}\href{https://www.linkedin.com/in/mohit-notani}{LinkedIn}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -108,7 +108,7 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 % doubled break triggers "! LaTeX Error: There's no line here to end."
 \closing{Kind regards,}
 
-\signature{[YOUR_NAME]}
+\signature{Mohit Notani}
 \end{flushright}
 \end{document}
 ```

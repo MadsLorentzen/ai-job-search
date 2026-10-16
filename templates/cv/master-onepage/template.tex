@@ -1,0 +1,131 @@
+%% =====================================================================
+%% master-onepage CV template
+%% Rebuilt from the candidate's master CV (Google Docs export): one page,
+%% US Letter, Calibri, navy/blue accents, no rules under section headings.
+%% Compile with lualatex (fontspec). See TEMPLATE.md for rules and pitfalls.
+%% =====================================================================
+\documentclass[9pt]{extarticle}
+
+% ---------- page geometry (measured from the master PDF) ----------
+\usepackage[letterpaper,left=38pt,right=38pt,top=23pt,bottom=30pt]{geometry}
+
+% ---------- fonts: Calibri if available, else metric-identical Carlito ----------
+\usepackage{fontspec}
+% No common ligatures (Google Docs renders none; ligature glyphs can also trip ATS extraction)
+\defaultfontfeatures{Ligatures={TeX,NoCommon}}
+\newcommand{\WordFontDir}{/Applications/Microsoft Word.app/Contents/Resources/DFonts/}
+\IfFontExistsTF{Calibri}{%
+  \setmainfont{Calibri}%
+}{%
+  \IfFileExists{"\WordFontDir Calibri.ttf"}{%
+    \setmainfont{Calibri}[Path=\WordFontDir, Extension=.ttf,
+      UprightFont=Calibri, BoldFont=Calibrib, ItalicFont=Calibrii, BoldItalicFont=Calibriz]%
+  }{%
+    \setmainfont{Carlito}%
+  }%
+}
+% Calibri's natural line height is 1.22em: 9pt body on an 11pt pitch, as in the master
+\renewcommand{\normalsize}{\fontsize{9pt}{11pt}\selectfont}
+\normalsize
+
+% ---------- colours ----------
+\usepackage{xcolor}
+\definecolor{cvnavy}{HTML}{0D1F3C}
+\definecolor{cvblue}{HTML}{1C4E80}
+\definecolor{cvgrey}{HTML}{555555}
+
+% ---------- links ----------
+\usepackage[hidelinks,pdfusetitle]{hyperref}
+\usepackage[normalem]{ulem}
+\newcommand{\cvlink}[2]{\href{#1}{\textcolor{cvblue}{\uline{#2}}}}
+
+% ---------- lists ----------
+\usepackage{enumitem}
+\setlist[itemize]{label=\textbullet, leftmargin=36pt, labelindent=18pt, labelwidth=18pt,
+  labelsep=0pt, align=left, itemsep=0pt, parsep=0pt, topsep=0pt, partopsep=0pt,
+  before=\raggedright}
+
+% ---------- layout helpers ----------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+% The master never hyphenates: bullets and skills are ragged-right, the summary is justified
+\hyphenpenalty=10000 \exhyphenpenalty=10000
+\pagestyle{empty}
+\newcommand{\sep}{\hspace{0.45em}|\hspace{0.45em}}           % spaced bar used in titles/headline/education
+\newcommand{\dotsep}{\hspace{0.25em}\textperiodcentered\hspace{0.25em}} % middle-dot list separator
+
+% Header
+\newcommand{\cvname}[1]{{\centering\fontsize{20pt}{22pt}\selectfont\bfseries\color{cvnavy}\MakeUppercase{#1}\par}\vspace{2.8pt}}
+\newcommand{\cvheadline}[1]{{\centering\fontsize{9.5pt}{11.5pt}\selectfont\bfseries\color{cvblue}#1\par}\vspace{1.8pt}}
+\newcommand{\cvcontact}[1]{{\centering\fontsize{7.5pt}{9pt}\selectfont\color{cvgrey}#1\par}}
+
+% Section heading: 10pt bold uppercase navy, no rule
+\newcommand{\cvsection}[1]{\par\vspace{8pt}{\fontsize{10pt}{12pt}\selectfont\bfseries\color{cvnavy}\MakeUppercase{#1}\par}\vspace{2.4pt}}
+
+% Job line: bold navy "Title | Company, City" left, grey italic dates right
+\newcommand{\cvjob}[2]{\par{\bfseries\color{cvnavy}\def\sep{\hspace{0.6em}|\hspace{0.6em}}#1}\hfill{\itshape\color{cvgrey}#2}\par}
+% Employer line for multi-role employers (bold navy) with overall dates
+\newcommand{\cvemployer}[2]{\par{\bfseries\color{cvnavy}#1}\hfill{\itshape\color{cvgrey}#2}\par}
+% Sub-role under an employer: indented, bold blue
+\newcommand{\cvsubrole}[2]{\par\hspace*{10pt}{\bfseries\color{cvblue}#1}\hfill{\itshape\color{cvgrey}#2}\par}
+% Gap between experience entries
+\newcommand{\cvgap}{\par\vspace{5pt}}
+
+% Skills line: bold navy label, then items
+\newcommand{\cvskill}[2]{\par{\raggedright{\bfseries\color{cvnavy}#1:} #2\par}}
+
+% Project line: bold navy name | grey italic tech stack
+\newcommand{\cvproject}[2]{\par\vspace{1pt}{\bfseries\color{cvnavy}#1}{\color{cvgrey}\sep\itshape #2}\par}
+\newcommand{\cvprojgap}{\par\vspace{2pt}}
+
+% Education line: bold navy degree | bold navy institution | plain rest
+\newcommand{\cvedu}[3]{\par{\bfseries\color{cvnavy}#1\sep#2\sep}#3\par}
+
+\begin{document}
+
+\cvname{[YOUR_NAME]}
+\cvheadline{[TARGET_TITLE_1]\sep{}[TARGET_TITLE_2]\sep{}[TARGET_TITLE_3]}
+\cvcontact{[YOUR_CITY], [YOUR_COUNTRY]\sep{}[YOUR_PHONE]\sep{}[YOUR_EMAIL]\sep{}\cvlink{https://[YOUR_LINKEDIN_URL]}{[YOUR_LINKEDIN_URL]}\sep{}\cvlink{https://[YOUR_PORTFOLIO_URL]}{[YOUR_PORTFOLIO_URL]}\sep{}\cvlink{https://[YOUR_GITHUB_URL]}{[YOUR_GITHUB_URL]}\sep{} [AVAILABILITY]}
+
+\cvsection{Professional Summary}
+{[PROFILE_STATEMENT: 4-5 justified lines, tailored to the role]\par}
+
+\cvsection{Professional Experience}
+\cvjob{[JOB_TITLE]\sep{}[COMPANY], [CITY]}{[MMM YYYY] - Present}
+\begin{itemize}
+  \item [ACHIEVEMENT_1]
+  \item [ACHIEVEMENT_2]
+  \item [ACHIEVEMENT_3]
+\end{itemize}
+\cvgap
+\cvemployer{[EMPLOYER], [CITY]}{[MMM YYYY] - [MMM YYYY]}
+\cvsubrole{[ROLE_TITLE_LATER]}{[MMM YYYY] - [MMM YYYY]}
+\begin{itemize}
+  \item [ACHIEVEMENT_1]
+  \item [ACHIEVEMENT_2]
+\end{itemize}
+\cvgap
+\cvsubrole{[ROLE_TITLE_EARLIER]}{[MMM YYYY] - [MMM YYYY]}
+\begin{itemize}
+  \item [ACHIEVEMENT_1]
+  \item [ACHIEVEMENT_2]
+\end{itemize}
+
+\cvsection{Technical Skills}
+\cvskill{[SKILL_CATEGORY_1]}{[SKILL]\dotsep{}[SKILL]\dotsep{}[SKILL]}
+\cvskill{[SKILL_CATEGORY_2]}{[SKILL]\dotsep{}[SKILL]\dotsep{}[SKILL]}
+
+\cvsection{Key Projects}
+\cvproject{[PROJECT_NAME]}{[TECH]\dotsep{}[TECH]\dotsep{}[TECH]}
+\begin{itemize}
+  \item [PROJECT_OUTCOME_1]
+  \item [PROJECT_OUTCOME_2]
+\end{itemize}
+
+\cvsection{Education and Certifications}
+\cvedu{[DEGREE]}{[INSTITUTION], [CITY]}{[DISTINCTION]\sep{}[YEAR]}
+\cvedu{[DEGREE]}{[INSTITUTION]}{[YEAR]}
+\cvskill{Certifications}{[CERTIFICATION] [MONTH YEAR].}
+\par In progress: [COURSE]\dotsep{}[COURSE]\par
+
+\end{document}

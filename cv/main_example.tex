@@ -1,8 +1,7 @@
-%% Example CV - [YOUR_NAME]
+%% Example CV - Mohit Notani
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
 %% Compile with: lualatex main_example.tex
 %% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
@@ -40,7 +39,7 @@
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Mohit Notani - CV},
     % Keep pdfpagemode=UseNone: this block runs after moderncv's own
     % \AtEndPreamble (moderncv.cls sets pdfpagemode there), so a FullScreen
     % value here would win and open every CV in fullscreen presentation mode.
@@ -50,13 +49,11 @@
 \usepackage{import}
 
 % personal data
-\name{[First]}{[Last]}
-% If you have no address to list, DELETE this whole line. \address{}{}{} fails
-% with "There's no line here to end" on every moderncv version.
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Mohit}{Notani}
+\address{Dublin, Ireland}{}{}
+\phone[mobile]{+353 89 945 6217}
+\email{mohitnotani97@gmail.com}
+\extrainfo{\href{https://www.linkedin.com/in/mohit-notani}{LinkedIn}, \href{https://github.com/Mohit9674}{GitHub}, \href{https://mohit9674.github.io}{Portfolio}}
 
 \begin{document}
 
@@ -67,7 +64,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{Data and QA engineer with 2.5 years at Accenture automating ETL and source-to-target data validation across 8 source systems with SQL, Python, Robot Framework and Selenium on AWS. Built 500+ automated test cases that cut production data errors by 15\% across 40+ releases, and owned test strategy, defect triage and release validation for a 6-engineer workstream. Hands-on with PySpark, Kafka, dbt and Dagster through pipeline projects. First Class Honours MSc in Data Analytics (NCI Dublin, 2025) and AWS Certified Cloud Practitioner.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -77,15 +74,13 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{Testing \& QA}: Test strategy and test plans, test case design, regression and smoke testing, ETL testing, API testing (Postman), defect lifecycle and RCA, Robot Framework, Selenium, Jira, HP ALM, Agile/Scrum.
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Data Quality}: Source-to-target reconciliation, data validation and profiling, referential-integrity checks, dbt tests.
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Data Engineering}: SQL (advanced), Python (Pandas, NumPy), PySpark, Apache Kafka, dbt, Dagster, ETL/ELT, dimensional modelling (star schema), medallion architecture.
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
-
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Cloud, DevOps \& BI}: AWS (Glue, S3, Redshift), Microsoft Fabric, Docker, Terraform, Git, GitHub Actions and Jenkins CI/CD, Linux, PostgreSQL, MongoDB, Power BI, Excel.
 
 \end{itemize}
 
@@ -97,32 +92,61 @@
 \vspace{3pt}
 \begin{itemize}
 
-% --- Most Recent Role ---
-\item{\cventry{[YYYY-Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{Oct 2025--Present}{Assistant Manager}{Holland \& Barrett}{Dublin, Ireland}{}{\vspace{1pt}
 \begin{itemize}
-    \item {[Achievement or responsibility 1 - be specific, use numbers where possible]}
-    \item {[Achievement or responsibility 2]}
-    \item {[Achievement or responsibility 3]}
-    \item {[Achievement or responsibility 4]}
+    \item {Reduced stock discrepancies by 36\% across 1,000+ SKUs through regular stocktakes and a theft tracking system, applying Lean principles.}
+    \item {Cut reconciliation errors by 30\% across 300+ daily payment transactions (\texteuro20k+/day) by introducing standardised daily validation checks.}
+    \item {Track daily KPIs (sales, items per basket, average order value, loyalty sign-ups) and lead a team of 6; promoted from Retail Assistant in 10 months.}
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Previous Role ---
-\item{\cventry{[YYYY-YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{Jul 2023--Jul 2024}{Data Engineering Analyst -- Quality Automation}{Accenture Solutions Pvt.\ Ltd.}{Bangalore, India}{}{\vspace{1pt}
 \begin{itemize}
-    \item {[Achievement or responsibility 1]}
-    \item {[Achievement or responsibility 2]}
-    \item {[Achievement or responsibility 3]}
+    \item {Defined the test strategy, test plans, acceptance criteria and data-quality rules for 40+ releases, validating 8 source systems through to the reporting layer for a 6-engineer workstream.}
+    \item {Tripled regression coverage from 40 to 120 tables by extending Robot Framework packs with transformation, null, duplicate and referential-integrity checks.}
+    \item {Cut manual testing effort by 30\% by automating SQL and Python reconciliation checks (row counts, schema, nulls) on AWS Glue and Redshift tables feeding Power BI reports.}
+    \item {Reduced release deployment time by 20\% by gating every production merge on automated tests in a Jenkins CI/CD pipeline.}
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Earlier Role ---
-\item{\cventry{[YYYY-YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\item{\cventry{Jan 2022--Jun 2023}{Development Analyst}{Accenture Solutions Pvt.\ Ltd.}{Bangalore, India}{}{\vspace{1pt}
 \begin{itemize}
-    \item {[Achievement or responsibility 1]}
-    \item {[Achievement or responsibility 2]}
+    \item {Reduced production data errors by 15\% by building 500+ Robot Framework test cases with custom SQL and Python keywords for source-to-target validation across 8 systems.}
+    \item {Halved regression cycles from 4 to 2 per release by replacing manual SQL and spreadsheet checks with automated regression packs.}
+    \item {Built a UI test automation framework in Robot Framework and Selenium with reusable keywords for regression and smoke tests, plus API tests in Postman.}
+    \item {Managed defects end to end in Jira and HP ALM, tracing root causes and retesting fixes for 8--12 stakeholders in Agile/Scrum sprints.}
+\end{itemize}}}
+
+\end{itemize}
+
+% ============================================================
+%     KEY PROJECTS
+% ============================================================
+
+\section{Key Projects}
+\vspace{3pt}
+\begin{itemize}
+
+\item{\cventry{}{Kafka, PySpark, dbt, Dagster, Docker, PostgreSQL}{Real-Time Dublin Bus Pipeline}{}{}{\vspace{1pt}
+\begin{itemize}
+    \item {Ran a streaming medallion pipeline for 3 months with zero downtime, ingesting GTFS-Realtime feeds every 5 seconds into a partitioned PostgreSQL Gold layer, with dbt tests and automated data-quality checks.}
+\end{itemize}}}
+
+\item{\cventry{}{FinBERT, Prophet, dbt, GitHub Actions}{LLM + Time-Series Stock Price Prediction (MSc thesis)}{}{}{\vspace{1pt}
+\begin{itemize}
+    \item {Cut 30-day out-of-sample RMSE by 39.2\% against a baseline Prophet model by adding FinBERT news-sentiment features; automated ingestion into a dbt-modelled PostgreSQL layer.}
+\end{itemize}}}
+
+\item{\cventry{}{Spark, PostgreSQL, Streamlit}{NYC Taxi Demand and Weather Analysis}{}{}{\vspace{1pt}
+\begin{itemize}
+    \item {Joined 100M+ taxi trip records with NOAA weather data in Spark; sped up PostgreSQL queries by 60\%+ via partitioning and indexing.}
+\end{itemize}}}
+
+\item{\cventry{}{PyTorch}{Multi-Model Temporal Event Detection -- Soccer Analytics}{}{}{\vspace{1pt}
+\begin{itemize}
+    \item {Benchmarked 4 deep learning models (TCN, CNN-LSTM, Transformer, CALF) for action spotting on SoccerNet-v2 by mAP.}
 \end{itemize}}}
 
 \end{itemize}
@@ -135,16 +159,25 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item{\cventry{[YYYY-YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
+\item{\cventry{2024--2025}{MSc in Data Analytics, First Class Honours (1:1)}{National College of Ireland}{Dublin, Ireland}{}{\vspace{1pt}
+Thesis: ``LLM + Time-Series Stock Price Prediction.'' Hybrid FinBERT sentiment and Prophet forecasting.
 }}
 
 \vspace{3pt}
 
-\item{\cventry{[YYYY-YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
-}}
+\item{\cventry{2017--2021}{BE in Information Science and Engineering}{Visvesvaraya Technological University}{India}{}{}}
 
+\end{itemize}
+
+% ============================================================
+%     CERTIFICATIONS
+% ============================================================
+
+\section{Certifications}
+\vspace{1pt}
+\begin{itemize}
+\item {AWS Certified Cloud Practitioner (June 2026).}
+\item {In progress: Microsoft DP-700 Fabric Data Engineer, dbt Fundamentals, Databricks Lakehouse Fundamentals, Google Data Analytics.}
 \end{itemize}
 
 % ============================================================
@@ -154,27 +187,7 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item {[Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).}
-\end{itemize}
-
-% ============================================================
-%     PUBLICATIONS (optional)
-% ============================================================
-
-\section{Publications}
-\vspace{1pt}
-\begin{itemize}
-\item {[Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
-% ============================================================
-
-\section{Honors and Awards}
-\vspace{1pt}
-\begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item {English (C1), Hindi (native).}
 \end{itemize}
 
 % ============================================================

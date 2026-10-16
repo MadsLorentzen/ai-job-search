@@ -166,7 +166,7 @@ Insert (or replace, if one exists) this block immediately after the file's H1 ti
 > - **Compile command:** `<the full declared command>` (not the command named in the stock guidance below — `/apply`'s compile step must use this instead). Run it from the output directory. If it redirects to `build/`, the log is in `build/`, and `/apply`'s Step 5e cleanup must delete that `build/` folder too
 > - **Fonts:** <font summary, including any path note for bundled fonts>
 > - **Page limit:** exactly <N> page(s)
-> - **Output file:** `cv/main_<company>_<role><source-extension>` / `cover_letters/cover_<company>_<role><source-extension>`; copy any class/package/font files the template needs into the output directory, or reference them by relative path
+> - **Output file:** `cv/<company>/main_<company>_<role><source-extension>` / `cover_letters/<company>/cover_<company>_<role><source-extension>` (one folder per company); copy any class/package/font files the template needs into the company folder, or reference them by relative path from it
 <!-- END ACTIVE-TEMPLATE -->
 ```
 

@@ -30,6 +30,11 @@ If the candidate's permit also constrains *hours* or *start date* (a student vis
 
 A role that fails this gate is not scored and not drafted. Everything below applies only to roles that pass it.
 
+### Candidate status (from /setup)
+- **Permit:** Stamp 1G (Irish Graduate Visa), valid until **December 2027**. Allows full-time work with no hours cap, so there is no hours/start-date gate.
+- **Beyond Dec 2027:** requires a Critical Skills Employment Permit (Data Engineer, Data Analyst and Data Scientist are on Ireland's Critical Skills Occupations List). Must-have: employer open to CSEP sponsorship. If a posting is silent on sponsorship, flag it as unverified rather than failing it.
+- **Hard fail examples:** Irish/EU citizenship required, Stamp 4 required, security clearance, "no sponsorship available".
+
 ## Language Gate — run before scoring
 
 This gate checks a posting's language requirements against what the candidate actually speaks. It is not one of the five Scoring Dimensions below - it runs before them, structured the same way as the Eligibility Gate above: read the posting, classify against profile data, and treat a hard mismatch as FAIL before scoring. Its verdict is tracked downstream: `/rank` records the result as `language_gate` (PASS/FAIL/FLAG) with a supporting `language_note`, persists both into `seen_jobs.json`, and treats a FAIL as a shortlist veto; `/scrape` surfaces the flag in its results table and carries a language-override rule for postings whose ad language differs from the role's working language. `/apply`'s language detection (Step 1, which extracts a posting's required language generically) feeds this same check.
@@ -60,9 +65,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** ETL/data testing, source-to-target reconciliation, data-quality rules, SQL (advanced), Python (Pandas), Robot Framework, Selenium, test strategy & test plans, regression automation, defect management (Jira, HP ALM), AWS Glue/Redshift/S3, Jenkins CI/CD gating
+**Moderate match areas:** PySpark, Apache Kafka, dbt, Dagster, Docker, Terraform, GitHub Actions, PostgreSQL, MongoDB, Power BI, Microsoft Fabric, dimensional modelling, medallion architecture, API testing (Postman) - mostly project-level rather than production
+**Weak match areas:** Snowflake, Databricks (certification in progress), Airflow, Scala/Java, Azure/GCP, Kubernetes, Tableau/Looker, streaming in production
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for? Match on the function and nature of the work performed, not the literal job title - a "Data Consultant" and a "Data Scientist" role can be functionally identical.
@@ -74,9 +79,9 @@ Does work history align with what they're looking for? Match on the function and
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** Data QA / data-quality engineering, ETL testing, test automation (2.5 years at Accenture)
+**Moderate:** Data engineering and analytics engineering (validated production pipelines at Accenture; built pipelines in projects); operational KPI reporting and reconciliation (Holland & Barrett)
+**Entry-level:** Pure data engineering ownership of production pipelines, data science/ML (project-level only), BI development
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -107,19 +112,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Move back into a full-time data role in Dublin, leaving retail management
+- Grow toward data engineering / analytics engineering, using data-quality and test-automation experience as the entry point
+- Secure an employer willing to support a Critical Skills Employment Permit before Stamp 1G expires (Dec 2027)
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: building pipelines and automation, data-quality checks, hands-on work with modern data tooling (dbt, Kafka, Spark) *[default - confirm with user]*
+- Tasks that drain: purely manual testing with no automation scope *[default - confirm with user]*
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Currently employed (retail); visa timeline makes sponsorship-friendly employers a priority
+- **Flexibility**: Dublin-based; hybrid or on-site in the Dublin area
+- **Professional development**: Certifications in progress (DP-700, dbt, Databricks); wants roles that build data engineering depth
 
 ### 6. Salary Benchmark (Optional)
 
@@ -158,7 +163,7 @@ Present the evaluation as:
 | Location | PASS/FAIL | [brief note] |
 | Career Alignment | XX/100 | [brief note] |
 
-**Overall Score: XX/100** (weighted average of scored dimensions)
+**Overall Score: XX/100** = Skills×0.35 + Experience×0.30 + Career×0.20 + Behavioral×0.15 (show the arithmetic; see Weighting)
 
 ### Verdict: [Strong Fit / Good Fit / Moderate Fit / Weak Fit / Poor Fit]
 
@@ -169,7 +174,7 @@ Present the evaluation as:
 - [bullet points]
 
 ### Recommendation
-[1-2 sentences: apply/skip/apply with caveats]
+**Apply / Skip** by the apply rule (overall ≥ 50 and all gates pass), then 1-2 sentences on caveats.
 
 ### Company Research Checklist
 - [ ] Checked company website (mission, values, recent news)
@@ -232,19 +237,25 @@ then write (or overwrite) the file with fresh findings and today's date, so the 
 consumer benefits.
 
 ## Weighting
-- Technical Skills: 30%
-- Experience Match: 25%
-- Behavioral Fit: 15%
-- Career Alignment: 30%
+Set by the user on 2026-10-16. Overall = Skills × 0.35 + Experience × 0.30 + Career × 0.20 + Behavioral × 0.15, rounded to a whole number.
 
-(Location is pass/fail, not weighted)
+- Technical Skills: 35% (decides whether the CV gets past the screen)
+- Experience Match: 30% (decides whether the interview holds up)
+- Career Alignment: 20% (does it move toward data engineering and a sponsoring employer)
+- Behavioral Fit: 15% (hardest to judge from a posting)
 
-## Thresholds
-- **Strong Fit** (75+): Definitely apply, tailor everything
-- **Good Fit** (60-74): Apply, address gaps in cover letter
-- **Moderate Fit** (45-59): Consider carefully, discuss with user
-- **Weak Fit** (30-44): Probably skip unless strategic reasons
-- **Poor Fit** (<30): Skip
+(Location, eligibility and language are pass/fail gates, not weighted. A failed gate means no score and no application, whatever the other dimensions say.)
+
+Always show the arithmetic with the score, e.g. `Skills 70×0.35 + Experience 60×0.30 + Career 65×0.20 + Behavioral 70×0.15 = 66`, so the user can see why a job landed where it did.
+
+## Thresholds and the apply rule
+**Apply rule (user's decision, 2026-10-16): recommend applying when the overall score is 50 or more and every gate passes.** Below 50, recommend skipping unless the user names a strategic reason.
+
+- **Strong Fit** (75+): apply, tailor everything
+- **Good Fit** (60-74): apply, address the gaps in the cover letter
+- **Moderate Fit** (50-59): apply; the cover letter must state the main gap honestly and bridge it
+- **Weak Fit** (30-49): skip by default; draft only if the user asks
+- **Poor Fit** (<30): skip
 
 ## Pre-Application: Call the Employer (Best Practice)
 

@@ -92,7 +92,7 @@ cd ai-job-search
 PowerShell:
 
 ```powershell
-$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search")
+$tools = @("jobbank-search", "jobdanmark-search", "jobindex-search", "jobnet-search", "linkedin-search", "freehire-search", "indeed-search", "jsearch-search")
 foreach ($tool in $tools) {
   Push-Location ".agents/skills/$tool/cli"
   bun install
@@ -103,12 +103,12 @@ foreach ($tool in $tools) {
 Bash / zsh / Git Bash:
 
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search; do
+for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search linkedin-search freehire-search indeed-search jsearch-search; do
   (cd .agents/skills/$tool/cli && bun install)
 done
 ```
 
-For `linkedin-search` and `freehire-search` the install is optional: both have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
+For `linkedin-search`, `freehire-search`, `indeed-search` and `jsearch-search` the install is optional: all four have zero runtime dependencies and run with plain `bun`; `bun install` only pulls TypeScript dev types.
 
 ### 3. Set up your profile
 
@@ -146,8 +146,10 @@ Postings are treated as untrusted input (the workflow follows no instructions em
 
 ## Other commands
 
-`/setup`, `/scrape`, and `/apply` form the core workflow. Ten more commands extend it once your profile is in place:
+`/setup`, `/scrape`, and `/apply` form the core workflow. Twelve more commands extend it once your profile is in place (see [Daily routine and automation](#daily-routine-and-automation) for how `/outreach` and `/linkedin` run day to day):
 
+- **`/outreach`** finds recruiters and writes them short cold emails, each personalised to the recruiter's organisation. `/outreach daily` targets 10+ new recruiters a day: addresses published on job ads, employer and agency pages first, then the Hunter.io email finder (verified addresses only). You approve every email in chat, and approved emails are sent from your Gmail straight from chat, one at a time. A ledger makes sure nobody gets a second cold email, follow-ups are capped at one, and replies, bounces and opt-outs close a contact for good. `/outreach <job numbers>` does the same for specific jobs from a `/scrape` table.
+- **`/linkedin`** runs a weekly check-in (project work, certification progress, data quality lessons) and drafts two posts from your profile and your answers, with an open-to-work post every other week. You approve each post; approved posts publish themselves on Tuesday and Thursday mornings through LinkedIn's official API, even with Claude closed. New facts from the check-in are written back to your profile, so CVs pick them up too.
 - **`/interview`** preps you for a scheduled interview on a tracked application. It builds a stage-specific prep pack from the application's archive (the exact posting, the CV and cover letter the interviewer actually read, feedback recorded from earlier rounds), researches the company and interviewers with a verify-before-use rule, maps likely questions to your STAR examples, and offers a mock interview following the roleplay protocol in `07-interview-prep.md`. Gaps get honest bridge answers, never invented experience.
 - **`/outcome`** records what happened to an application - interview stages, offers, rejections, silence. It archives the submitted CV, cover letter, and posting text into `documents/applications/<company>_<role>/`, keeps `outcome.md` in the format `/setup` Path A parses, and updates the tracker. It also owns the stretch before there is an outcome to record: `/outcome followup` surfaces open applications that have gone quiet (default 10 days), drafts a short channel-appropriate follow-up in your writing style using only claims from the materials you already submitted (drafts only, never sends; at most twice per application), and offers a thank-you note in the same turn an interview stage is recorded. Once a few applications resolve, it points you back to `/setup` to calibrate the fit framework from what actually got interviews.
 - **`/notion-sync`** publishes a one-way, read-only view of the pipeline into a Notion database via the official Notion MCP server (OAuth, no API keys) - one row per ranked job plus every tracked application, with a write-once briefing page per row. The repo files stay the system of record: nothing syncs back, and documents sync as filenames only. Complements `/html-report`: that is the deep offline dashboard you regenerate at your desk; this is the glanceable live view from anywhere Notion runs (desktop, web, phone).
@@ -160,6 +162,58 @@ Postings are treated as untrusted input (the workflow follows no instructions em
 - **`/add-portal`** generates a job-portal search skill for a job board in your market. It investigates the portal (search URL pattern, result structure, access rules), scaffolds the CLI skill from the same structure as the shipped ones, and test-runs a live query before registering. See [Job search tools](#job-search-tools) below.
 
 `/reset` is also available, see [Starting over](#starting-over) below.
+
+## Daily routine and automation
+
+Once set up, the workflow runs on a light weekly rhythm. Nothing goes out under your name without your approval.
+
+| When | What happens | You do |
+|------|--------------|--------|
+| Any day | `/scrape` searches LinkedIn, Indeed, other Irish boards and Google for Jobs for roles posted in the **last 7 days**, checks each match on the employer's own careers site, and saves every job to a spreadsheet | Pick jobs to `/apply` for |
+| After applying | `/outcome <company>` records the submission and archives what you sent | Say what happened |
+| Monday 09:00 | Reminder: run `/linkedin` | Answer the check-in, approve 2 posts |
+| Tue and Thu 08:30 | Approved LinkedIn posts publish automatically | Nothing |
+| Weekdays 10:00 | Reminder: run `/outreach daily` | Approve the recruiter emails |
+| ~10 days after applying | `/outcome followup` drafts a polite follow-up for quiet applications | Send it |
+
+### What `/scrape` does now
+
+- **Sources:** your **LinkedIn and Indeed job-alert emails** in Gmail (free; add more saved-search alerts to widen coverage), `linkedin-search` (free), `indeed-search` (Indeed through an Apify scraper, a few cents per run, capped), `jsearch-search` (Google for Jobs via RapidAPI, skips LinkedIn results it would duplicate), plus web searches for boards without a tool. `freehire-search` is installed but switched off.
+- **7-day window**, set in one place: the Date Filter in `.claude/skills/job-scraper/search-queries.md`.
+- **Employer verification:** each shortlisted job is confirmed live on the employer's own careers site before it is shown; reposts and closed jobs are flagged or dropped, and employers that rule out your visa status are excluded.
+- **Spreadsheet:** every scraped job is written to `job_scraper/scraped_jobs.csv` (opens in Excel; newest first, with fit, status, contacts and links). `seen_jobs.json` stays the source of truth.
+- **Contacts:** recruiter names and addresses published in postings are extracted automatically, and high/medium-fit companies feed `/outreach daily`.
+
+### What `/apply` produces
+
+- One folder per company: `cv/<company>/main_<company>_<role>.tex/.pdf` and `cover_letters/<company>/cover_<company>_<role>.tex/.pdf`.
+- The CV uses the active template. In this fork that is `master-onepage` (a one-page rebuild of the master CV, registered with `/add-template`), compiled with lualatex and checked to exactly one page.
+- Every application gets an independent reviewer pass, a grounding audit against your profile, company facts checked on the company's own site, an ATS text check, a tracker row and an archived copy of the posting.
+
+### One-time setup for the automated parts
+
+Keys and passwords always go in `~/.zshenv` from your own terminal, never in chat or in the repo.
+
+| Feature | What you need | Environment variables | Check it |
+|---------|---------------|-----------------------|----------|
+| Indeed search | Apify account and API token (free plan includes a small monthly credit) | `APIFY_API_TOKEN` | `bun run .agents/skills/indeed-search/cli/src/cli.ts search -q "data engineer" -l Dublin --jobage 7 -n 5 --max-charge 0.10` |
+| Google for Jobs search | RapidAPI key subscribed to JSearch (free plan: 200 requests/month) | `JSEARCH_API_TOKEN` | `bun run .agents/skills/jsearch-search/cli/src/cli.ts search -q "qa engineer" --country ie --jobage 7` |
+| Recruiter emails | Gmail connector in Claude (for sending and inbox checks); optional Hunter.io key (free plan: 50 credits/month, about 30 verified recruiters) | `HUNTER_API_KEY` | `python3 tools/hunter.py account` |
+| LinkedIn posts | LinkedIn developer app with "Share on LinkedIn" and "Sign In with LinkedIn using OpenID Connect", redirect URL `http://localhost:8765/callback` | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET` | `python3 tools/linkedin_post.py auth`, then `whoami` (login lasts about 60 days) |
+
+Background jobs (macOS launchd, current user only):
+
+| Job | Schedule | Install / remove |
+|-----|----------|------------------|
+| LinkedIn publisher (posts only approved items that are due) | every 30 min | `bash tools/install_linkedin_schedule.sh` / `--uninstall` |
+| LinkedIn check-in reminder | Mondays 09:00 | same script |
+| Outreach reminder | weekdays 10:00 | `bash tools/install_outreach_reminder.sh` / `--uninstall` |
+
+The LinkedIn queue and the publisher's working copy live in `~/.local/share/ai-job-search/` because macOS does not let background jobs read files under `~/Desktop`. Re-run the LinkedIn installer after editing `tools/linkedin_post.py`.
+
+### Personal data
+
+The outreach ledger and queue (`outreach/`), application archives, scraper state and the scraped-jobs spreadsheet are all git-ignored, and `tools/security_guards.py` fails CI if those ignore rules disappear. If your fork is public, keep profile commits local or push to a private repository.
 
 ## File structure
 
@@ -179,6 +233,8 @@ ai-job-search/
 │   │   ├── interview.md               # /interview stage-specific prep pack + mock interview
 │   │   ├── html-report.md             # /html-report generate application tracker dashboard
 │   │   ├── notion-sync.md             # /notion-sync one-way pipeline view in a Notion database
+│   │   ├── outreach.md                # /outreach recruiter discovery and cold emails (Gmail drafts)
+│   │   ├── linkedin.md                # /linkedin weekly check-in and approved auto-posts
 │   │   └── reset.md                   # /reset wipe profile data or documents folder
 │   ├── skills/
 │   │   ├── job-application-assistant/  # Core application skill
@@ -199,15 +255,20 @@ ai-job-search/
 │   ├── jobindex-search/               # Jobindex.dk (Denmark)
 │   ├── jobnet-search/                 # Jobnet.dk (Denmark, government portal)
 │   ├── linkedin-search/               # LinkedIn public job listings (country-agnostic)
-│   └── freehire-search/               # freehire.me tech job aggregator (multi-market, REST API)
+│   ├── indeed-search/                 # Indeed via the Apify actor misceres/indeed-scraper (billed, capped)
+│   ├── jsearch-search/                # Google for Jobs via the JSearch API on RapidAPI
+│   └── freehire-search/               # freehire.me tech job aggregator (installed, disabled in this fork)
 ├── cv/
-│   └── main_example.tex               # moderncv LaTeX template
+│   ├── main_example.tex               # moderncv LaTeX template
+│   └── <company>/                     # one folder per company: main_<company>_<role>.tex/.pdf
 ├── cover_letters/
 │   ├── cover.cls                      # Custom cover letter LaTeX class
 │   ├── cover_example.tex              # Example cover letter (structural reference + CI smoke test)
-│   └── OpenFonts/                     # Lato + Raleway fonts
+│   ├── OpenFonts/                     # Lato + Raleway fonts
+│   └── <company>/                     # one folder per company: cover_<company>_<role>.tex/.pdf
 ├── templates/                         # Custom templates registered via /add-template
-│   └── README.md                      # Folder layout instructions
+│   ├── README.md                      # Folder layout instructions
+│   └── cv/master-onepage/             # Active CV template: one-page master CV (template.tex + TEMPLATE.md)
 ├── documents/                         # Career source materials for /setup Path A and /expand
 │   ├── README.md                      # Folder layout instructions
 │   ├── cv/                            # Master CV (PDF or .tex)
@@ -221,6 +282,13 @@ ai-job-search/
 │   ├── check_framework_version.py     # CI check: framework_version bumped when skill files change
 │   ├── check_upstream_updates.py      # Preview which personalized files an upstream update touches
 │   ├── convert_salary_excel.py        # Convert salary Excel to JSON
+│   ├── export_seen_jobs.py            # Write job_scraper/scraped_jobs.csv (Excel view of every scraped job)
+│   ├── extract_contacts.py            # Pull recruiter names/addresses out of posting or page text
+│   ├── hunter.py                      # Hunter.io: find and verify recruiter addresses
+│   ├── outreach_mail.py               # Outreach queue, contact ledger, sent records (draft/SMTP fallbacks)
+│   ├── install_outreach_reminder.sh   # Weekday 10:00 outreach reminder
+│   ├── linkedin_post.py               # LinkedIn OAuth login and publisher for approved posts
+│   ├── install_linkedin_schedule.sh   # LinkedIn publisher + Monday reminder (launchd)
 │   ├── lint_skills.py                 # CI lint for skills, commands, settings.json
 │   ├── robots_check.py                # Gate the browser-header retry against robots.txt
 │   ├── security_guards.py             # CI guards: permission allowlist, gitignore rules, manifests
@@ -228,7 +296,9 @@ ai-job-search/
 │   ├── verify_layout.py               # Measure a compiled PDF's page layout (holes, orphans, footer collisions)
 │   ├── verify_pdf.py                  # Verify a compiled PDF's page count and extractable text
 │   └── README_SALARY_TOOL.md          # Salary tool setup instructions
-├── job_scraper/                       # Scraper state (seen jobs, results)
+├── job_scraper/                       # Scraper state: seen_jobs.json + scraped_jobs.csv (Excel view)
+├── company_research/                  # Cached company research (30-day TTL), reused by /apply and /interview
+├── outreach/                          # Outreach contact ledger and email queue (git-ignored)
 ├── gmail_sync/                        # /gmail-sync state (processed message IDs, last sync date)
 ├── upskill/                           # /upskill report output (markdown reports per run)
 ├── job_search_tracker.csv             # Application tracking spreadsheet
@@ -244,7 +314,7 @@ The `/apply` command runs a **drafter-reviewer workflow** with mandatory PDF com
 3. **Draft** a tailored CV and cover letter in LaTeX
 4. **Spawn a reviewer agent** that researches the company and critiques the drafts
 5. **Revise** based on the reviewer's feedback
-6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. Claude reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
+6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. Claude reads the rendered pages and iterates on the LaTeX until the CV is exactly the active template's page limit (2 pages for the stock template, 1 for this fork's `master-onepage`) with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
 7. **ATS-check the CV**: extract the PDF's text layer (`pdftotext`, optional dependency) and verify it the way an ATS parser sees it — contact details present as literal text, no garbled glyphs, sane reading order — then score the posting's keyword coverage against the extraction. Keywords the profile genuinely supports get added; genuine gaps stay visible, never stuffed.
 8. **Present** the final output with a verification checklist
 
@@ -282,7 +352,7 @@ As your priorities evolve, you can reconfigure just the job search without re-ru
 /setup --section search
 ```
 
-This re-runs the search configuration interview: which roles to target, which skills to search for, which locations, and which portals. It also suggests role types you may not have considered based on your profile.
+This re-runs the search configuration interview: which roles to target, which skills to search for, which locations, and which portals. The posting-age window (7 days in this fork) is the **Date Filter** line in `.claude/skills/job-scraper/search-queries.md`; change the number there and every portal follows it. It also suggests role types you may not have considered based on your profile.
 
 ### Custom templates
 
@@ -314,10 +384,14 @@ Give it your local job board's URL. The command investigates the portal (search-
 
 Maintaining a fork adapted to your market or language? Add it to the [Community forks & adaptations](https://github.com/MadsLorentzen/ai-job-search/discussions/78) thread so others can find it.
 
-For **country-agnostic** starting points outside Denmark, the repo ships two portal skills alongside the Danish demos:
+For **country-agnostic** starting points outside Denmark, the repo ships these portal skills alongside the Danish demos:
 
 - **`linkedin-search`** — built on LinkedIn's public, unauthenticated `jobs-guest` endpoints. Field-agnostic, **zero runtime dependencies** (runs with just `bun`), and takes the search location as an explicit flag, so it works for any market out of the box (`-l "Berlin, Germany"`, `-l "Mumbai, Maharashtra, India"`, `-l "Remote"`, …). Intended for **personal use only** — automated access is against LinkedIn's Terms of Service, so keep volume low. See `.agents/skills/linkedin-search/SKILL.md`.
 - **`freehire-search`** — queries the [freehire.me](https://freehire.me) aggregator's public REST API (JSON, no API key). Tech-focused (software, data, engineering, DevOps, remote), multi-market via facet flags (`--region`, `--country`, `--remote`), and **zero runtime dependencies**. Unlike the HTML-scraping Danish portals, results come back structured (skills, seniority, category). The backend is MIT-licensed and [self-hostable](https://github.com/strelov1/freehire) — point `FREEHIRE_API_URL` at your own instance if you prefer. See `.agents/skills/freehire-search/SKILL.md`.
+- **`indeed-search`** (added in this fork) — Indeed blocks scripted access, so this runs the Apify actor `misceres/indeed-scraper` on ordinary Indeed search URLs with Indeed's own date filter. All titles share one run, every run has a hard spend cap (`--max-charge`, default $1), and results carry the employer's own apply link for verification. Billed per job (about $3-6 per 1,000); personal use only. Needs `APIFY_API_TOKEN`. See `.agents/skills/indeed-search/SKILL.md`.
+- **`jsearch-search`** (added in this fork) — Google for Jobs data through the JSearch API on RapidAPI (`/search-v2`). In Ireland it adds boards such as Jobrapido and Jooble; it does not return Indeed listings. `/scrape` passes `--exclude-publishers LinkedIn` to save quota. Needs `JSEARCH_API_TOKEN`. See `.agents/skills/jsearch-search/SKILL.md`.
+
+Any portal can be switched off without deleting it by setting `enabled: false` in its `SKILL.md`; this fork does that for `freehire-search`.
 
 ### Extending the framework: portals, templates, criteria - and borrowing from other forks
 

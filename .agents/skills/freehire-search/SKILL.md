@@ -11,7 +11,7 @@ description: >
   jobs, engineering vacancies, data/ML jobs, DevOps roles, remote developer jobs,
   "are there any <tech role> jobs in <place>", look up this freehire job posting.
 context: fork
-enabled: true  # set to false to keep this portal installed but have /scrape skip it
+enabled: false  # disabled 2026-10-15 at the user's request (replaced by Indeed in search-queries.md); set true to bring it back
 allowed-tools: Bash(bun run .agents/skills/freehire-search/cli/src/cli.ts *)
 ---
 

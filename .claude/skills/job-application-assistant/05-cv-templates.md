@@ -4,20 +4,34 @@ framework_version: 1.4.5
 
 # CV Templates and Tailoring Guide
 
+<!-- BEGIN ACTIVE-TEMPLATE (managed by /add-template - do not edit by hand) -->
+> **Active template override: `master-onepage`**
+>
+> A custom template is active. Where this block conflicts with the stock guidance below, this block wins. Structural advice below (tailoring, page-budget, cutting rules) still applies.
+>
+> - **Template skeleton:** `templates/cv/master-onepage/template.tex` — use this as the structural reference instead of the stock template
+> - **Manifest:** `templates/cv/master-onepage/TEMPLATE.md` — read this for style rules and known pitfalls before drafting
+> - **Source extension:** `.tex`
+> - **Compile command:** `rm -f <file>.pdf && mkdir -p build && lualatex -interaction=nonstopmode -output-directory=build <file>.tex && mv build/<file>.pdf ./` (not the command named in the stock guidance below — `/apply`'s compile step must use this instead). Run it from the company folder `cv/<company>/`. It redirects to `build/`, so the log is in `build/`, and `/apply`'s Step 5e cleanup must delete that `build/` folder too
+> - **Fonts:** Calibri, found in place (system font or Microsoft Word's DFonts folder), with automatic fallback to the metric-identical Carlito from TeX Live; nothing to copy
+> - **Page limit:** exactly 1 page
+> - **Output file:** `cv/<company>/main_<company>_<role>.tex`; the template needs no class, package or font files beyond standard TeX Live
+<!-- END ACTIVE-TEMPLATE -->
+
 <!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
 
 ## Template: LaTeX moderncv (Banking Style)
 
 All CVs use the moderncv LaTeX package with the "banking" style and "blue" color scheme.
 
-**Output file:** `cv/main_<company>_<role>.tex`
+**Output file:** `cv/<company>/main_<company>_<role>.tex` (one folder per company; `<company>` is the company name alone, derived by the **Subfolder naming** rule in `documents/README.md`)
 **Compile with:** **lualatex** on MiKTeX/TeX Live. pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors; lualatex handles the same sources cleanly.
 **Master reference:** `cv/main_example.tex` (comprehensive CV with all competencies, experience, and achievements - use as source when building targeted CVs)
 
 ### Compile command
 
 ```bash
-cd cv && lualatex -interaction=nonstopmode main_<company>_<role>.tex
+cd cv/<company> && lualatex -interaction=nonstopmode main_<company>_<role>.tex
 ```
 
 Expected output: `Output written on main_<company>_<role>.pdf (2 pages, ...)`. Any page count other than 2 is a failure that must be fixed before presenting to the user.
@@ -59,7 +73,7 @@ Expected output: `Output written on main_<company>_<role>.pdf (2 pages, ...)`. A
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Mohit Notani - CV},
     % Keep pdfpagemode=UseNone: this block runs after moderncv's own
     % \AtEndPreamble (moderncv.cls sets pdfpagemode there), so a FullScreen
     % value here would win and open every CV in fullscreen presentation mode.
@@ -69,13 +83,13 @@ Expected output: `Output written on main_<company>_<role>.pdf (2 pages, ...)`. A
 \usepackage{import}
 
 % Personal data
-\name{[FIRST_NAME]}{[LAST_NAME]}
+\name{Mohit}{Notani}
 % If you have no address to list, DELETE this whole line. \address{}{}{} fails
 % with "There's no line here to end" on every moderncv version.
-\address{[YOUR_ADDRESS]}{}{}
-\phone[mobile]{[YOUR_PHONE]}
-\email{[YOUR_EMAIL]}
-\extrainfo{\href{[YOUR_LINKEDIN_URL]}{LinkedIn}, \href{[YOUR_GITHUB_URL]}{GitHub}}
+\address{Dublin, Ireland}{}{}
+\phone[mobile]{+353 89 945 6217}
+\email{mohitnotani97@gmail.com}
+\extrainfo{\href{https://www.linkedin.com/in/mohit-notani}{LinkedIn}, \href{https://github.com/Mohit9674}{GitHub}}
 
 \begin{document}
 \makecvtitle
@@ -137,11 +151,14 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For Data Engineering / Analytics Engineering roles** (Data Engineer, Associate Data Engineer, Analytics Engineer):
+> Data engineer with 2.5 years at Accenture validating production ETL across 8 source systems on AWS (Glue, S3, Redshift), and hands-on pipeline building with PySpark, Kafka, dbt and Dagster. Built a real-time Dublin Bus streaming pipeline that ran for 3 months with zero downtime, with dbt tests keeping bad records out of the Gold layer. Brings a quality-first approach to pipelines: automated reconciliation, CI-gated releases and data-quality rules from day one. First Class Honours MSc in Data Analytics (NCI Dublin, 2025) and AWS Certified Cloud Practitioner.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For Data Quality / QA / Test Automation roles** (Data Quality Engineer/Analyst, ETL Tester, Data Test Engineer, QA Engineer, Test Automation Engineer):
+> Data quality and test automation engineer with 2.5 years at Accenture owning test strategy, data-quality rules and release validation for 40+ releases across 8 source systems. Built 500+ Robot Framework test cases with custom SQL and Python keywords, cutting production data errors by 15%, tripled regression coverage from 40 to 120 tables, and gated production merges on automated tests in Jenkins. Experienced with Selenium, Postman, Jira and HP ALM in Agile/Scrum teams, on AWS Glue and Redshift. First Class Honours MSc in Data Analytics (NCI Dublin, 2025).
+
+**For Data Analyst / BI roles** (Data Analyst, Junior Data Analyst, BI Analyst):
+> Data analyst with advanced SQL and Python, 2.5 years validating data from 8 source systems through to Power BI reporting at Accenture, and current commercial experience tracking daily retail KPIs as Assistant Manager at Holland & Barrett, where standardised validation checks cut payment reconciliation errors by 30%. First Class Honours MSc in Data Analytics (NCI Dublin, 2025).
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 
@@ -274,7 +291,7 @@ Restore the highest-relevance item that was previously cut — a CV that ends mi
 Most employers run CVs through an ATS before a human sees them, and the ATS reads the PDF's embedded **text layer**, not the rendered page. A CV can pass visual inspection and still extract as garbage. After the layout passes the compile-and-inspect loop, verify the text layer:
 
 ```bash
-python tools/verify_pdf.py cv/main_<company>_<role>.pdf --dump-text cv/main_<company>_<role>.txt
+python tools/verify_pdf.py cv/<company>/main_<company>_<role>.pdf --dump-text cv/<company>/main_<company>_<role>.txt
 ```
 
 Extraction tries **pypdf** first (`pip install pypdf`, BSD license), then Poppler `pdftotext`. If a fallback still uses `pdftotext -layout`, it must also pass `-enc UTF-8`: Xpdf-based builds default to Latin-1, which makes every non-ASCII character in a perfectly good CV read back as a replacement character. If neither extractor is available, skip the mechanical check with a warning and rely on the visual PDF read for keyword coverage.
@@ -310,7 +327,7 @@ Two independent causes, both easy to avoid:
 
    Where a genuine range exists, use it even when a single year would be factually accurate - a degree written `1995` is true but imports worse than `1992-1995`. Do not invent a start date you do not have; a lone graduation year is fine, just expect it to be typed in by hand.
 
-**Cause 1 is mechanical in step 5d**: `python tools/verify_pdf.py cv/main_<company>_<role>.pdf --ascii-dates` scans the raw text layer for a year joined to a Unicode dash and exits 1 naming each hit with its code point (`U+2013 in 'Role Title 2016–2024'`). It deliberately reads the raw layer: the fold that lets `--contains "2016-2024"` match what the template renders maps that same en-dash back to `-`, so `--contains` can never see this. A year on either side of the dash is enough, so `Mar 2016 – Jul 2016` and `2016 – Present` are caught too; a numeric range with no year (`EUR 600k–1M`) is left alone. **Cause 2 stays a read-through check**: after extracting the text layer, confirm every experience entry shows a start *and* an end. Because both failures are silent and invisible in the PDF, the candidate otherwise discovers them only while filling in the application form.
+**Cause 1 is mechanical in step 5d**: `python tools/verify_pdf.py cv/<company>/main_<company>_<role>.pdf --ascii-dates` scans the raw text layer for a year joined to a Unicode dash and exits 1 naming each hit with its code point (`U+2013 in 'Role Title 2016–2024'`). It deliberately reads the raw layer: the fold that lets `--contains "2016-2024"` match what the template renders maps that same en-dash back to `-`, so `--contains` can never see this. A year on either side of the dash is enough, so `Mar 2016 – Jul 2016` and `2016 – Present` are caught too; a numeric range with no year (`EUR 600k–1M`) is left alone. **Cause 2 stays a read-through check**: after extracting the text layer, confirm every experience entry shows a start *and* an end. Because both failures are silent and invisible in the PDF, the candidate otherwise discovers them only while filling in the application form.
 
 ## Page Budget - Hard 2-Page Limit
 

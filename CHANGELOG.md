@@ -13,6 +13,38 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Added
+- `/scrape` reads LinkedIn and Indeed job-alert emails from Gmail (Step 1d, `tools/parse_job_alerts.py`): LinkedIn alert jobs are fetched by job id for full detail, Indeed alert jobs are verified on the employer's site; processed message ids are tracked in `job_scraper/gmail_alerts.json`.
+- `/outreach daily`: recruiter discovery (published pages, then Hunter.io via `tools/hunter.py`), organisation-personalised cold emails, per-email approval, approved emails sent from chat through the Gmail connector, one at a time (Gmail-draft and SMTP modes kept as fallbacks) (`tools/outreach_mail.py`) with a contact ledger, daily and per-domain caps, one follow-up, and reply/bounce/opt-out tracking. Weekday 10:00 reminder via `tools/install_outreach_reminder.sh`.
+- `/linkedin`: weekly LinkedIn check-in (projects, certification progress, data quality lessons), two grounded post drafts a week with an open-to-work post every other week, user approval per post, and automatic publishing of approved posts through LinkedIn's Posts API (`tools/linkedin_post.py`, launchd schedule via `tools/install_linkedin_schedule.sh`).
+- `indeed-search` portal skill: Indeed listings through the Apify actor `misceres/indeed-scraper` (Indeed blocks scripted access). Token from `APIFY_API_TOKEN`; every run is billed and capped with `maxTotalChargeUsd`; personal use only. `jsearch-search` gains `--exclude-publishers` and moves to the `/search-v2` endpoint.
+- `jsearch-search` portal skill: the JSearch API (Google for Jobs data via RapidAPI), so `/scrape` reaches Indeed listings without scraping Indeed. Key from `JSEARCH_API_TOKEN`; every call is billed; a spent quota stops the CLI instead of retrying.
+- `tools/export_seen_jobs.py` writes `job_scraper/scraped_jobs.csv`, an Excel-friendly view of every scraped job (newest first, tracker-style columns). `/scrape` and `/rank` refresh it after writing state. `seen_jobs.json` stays the source of truth.
+
+- **`/outreach` - cold emails and LinkedIn notes to a job's recruiter** (`.claude/commands/outreach.md`).
+  Finds the contact from stored scrape data, the posting text, then the employer's own careers
+  page; drafts a 90-150 word email (or a sub-300-character LinkedIn note when only a name is
+  published) grounded in the candidate profile; saves it to
+  `documents/applications/<company>_<role>/outreach.md` and creates an unsent Gmail draft.
+  Never sends, never guesses addresses, never scrapes LinkedIn.
+- **`tools/extract_contacts.py`** - extracts named recruiters, recruiting inboxes and generic
+  inboxes from posting text, dropping accommodation, privacy and no-reply addresses.
+  `/scrape` Step 2 runs it on every fetched description and stores a `contacts` array per job
+  in `seen_jobs.json`; the results table gains a Contact column.
+
+### Changed
+- Fit scoring weights set by the user: Skills 35%, Experience 30%, Career 20%, Behavioral 15%, with an explicit apply rule (overall ≥ 50 and all gates pass); Moderate Fit now starts at 50. `/apply` and `/rank` show the arithmetic.
+
+- **Application documents are now filed one folder per company** - `/apply` writes
+  `cv/<company>/main_<company>_<role>.tex` and `cover_letters/<company>/cover_<company>_<role>.tex`,
+  with `<company>` derived from the company name alone by the **Subfolder naming** rule in
+  `documents/README.md`. Filenames keep the full `<company>_<role>` stem, so two roles at one
+  company never collide. Cover letters compile from `cover_letters/` with
+  `-output-directory=<company>` so `cover.cls` and its `OpenFonts/` paths still resolve.
+  `/outcome` and `/interview` look in the company folder first and the legacy flat paths second;
+  `.gitignore` and `tools/security_guards.py` cover the new layout, and the flat rules stay for
+  older applications.
+
 ### Fixed
 
 - **`/reset profile` now targets the headings the shipped skill files actually have**

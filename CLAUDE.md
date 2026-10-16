@@ -1,10 +1,7 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Mohit Notani
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Mohit Notani, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,79 +10,80 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
-
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
+- **Name:** Mohit Notani
+- **Location:** Dublin, Ireland (Dublin-area hybrid or on-site; remote-in-Ireland acceptable)
+- **Contact:** +353 89 945 6217 · mohitnotani97@gmail.com · linkedin.com/in/mohit-notani · github.com/Mohit9674 · mohit9674.github.io
 - **Languages:**
   | Language | Level |
   |----------|-------|
-  | [LANGUAGE] | [LEVEL] |
-  <!-- Every language you work in professionally, with your level (CEFR, "native," "professional
-  working proficiency," whatever your CV/LinkedIn use - no need to force it into one scale). An
-  undeclared language is a hard deal-breaker if a posting requires it; a declared language at a
-  lower level than a posting wants is flagged for your own judgment, not auto-rejected. See
-  04-job-evaluation.md's Language Gate. -->
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+  | English | C1 |
+  | Hindi | Native |
+- **CV language:** English
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Employed as Assistant Manager at Holland & Barrett (retail), seeking a return to data/QA roles; available immediately
+- **Work authorisation:** Stamp 1G valid until December 2027; eligible for a Critical Skills Employment Permit (needs employer sponsorship beyond Dec 2027)
+- **LinkedIn headline:** "Data Engineer & Analyst | Python · AWS · Spark · Kafka · SQL | MSc Data Analytics 1:1 (NCI Dublin) | Ex-Accenture | Stamp 1G – CSEP Eligible"
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **MSc in Data Analytics, First Class Honours (1:1)** (2024-2025) - National College of Ireland, Dublin
+  - Thesis: "LLM + Time-Series Stock Price Prediction" (FinBERT sentiment + Prophet; -39.2% RMSE vs baseline)
+- **BE in Information Science and Engineering** (2017-2021) - Visvesvaraya Technological University, India
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Assistant Manager** (Oct 2025 - Present) - **Holland & Barrett** (Dublin)
+  - Reduced stock discrepancies 36% across 1,000+ SKUs (stocktakes, theft tracking, Lean principles)
+  - Cut payment reconciliation errors 30% across 300+ daily transactions (EUR 20k+/day) with standardised validation checks
+  - Tracks daily KPIs, leads a team of 6; promoted from Retail Assistant in 10 months
+- **Data Engineering Analyst - Quality Automation** (Jul 2023 - Jul 2024) - **Accenture Solutions Pvt. Ltd.** (Bangalore, India)
+  - Owned test strategy, acceptance criteria and data-quality rules for 40+ releases across 8 source systems (6-engineer workstream)
+  - Tripled regression coverage 40 -> 120 tables (Robot Framework); -30% manual testing effort via SQL/Python reconciliation on AWS Glue/Redshift
+  - -20% release deployment time by gating merges on automated tests in Jenkins CI/CD
+- **Development Analyst** (Jan 2022 - Jun 2023) - **Accenture Solutions Pvt. Ltd.** (Bangalore, India)
+  - 500+ Robot Framework test cases for source-to-target validation across 8 systems; -15% production data errors
+  - Halved regression cycles (4 -> 2 per release); UI automation in Robot Framework + Selenium; API tests in Postman
+  - End-to-end defect management in Jira and HP ALM in Agile/Scrum
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** SQL (advanced), Python (Pandas, NumPy), ETL/data testing, source-to-target reconciliation, Robot Framework, Selenium, test strategy, AWS (Glue, S3, Redshift)
+- **Secondary:** PySpark, Apache Kafka, dbt, Dagster, Docker, Terraform, GitHub Actions/Jenkins CI/CD, PostgreSQL, MongoDB, Microsoft Fabric
+- **Domain:** Data quality engineering, ETL/ELT, dimensional modelling, medallion architecture, QA in Agile/Scrum
+- **Software:** Power BI, Excel (VLOOKUP, pivot tables), Jira, HP ALM, Postman, Git, Linux
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- **AWS Certified Cloud Practitioner** - completed June 2026
+- In progress: Microsoft DP-700 Fabric Data Engineer, dbt Fundamentals, Databricks Lakehouse Fundamentals, Google Data Analytics
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- None
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- First Class Honours (1:1), MSc Data Analytics - National College of Ireland (2025)
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+No formal assessment on file; the traits below are inferred from LinkedIn and should be reviewed (see `02-behavioral-profile.md`).
+- **Builder who shows the work** - keeps end-to-end projects public on GitHub
+- **Production-quality mindset** - test strategy, data-quality rules and CI gating
+- **Strengths:** Data validation and automation, measurable process improvement, team leadership (team of 6)
+- **Growth areas:** Production ownership of pipelines (so far project-level), Snowflake/Databricks/Airflow
+- **Thrives in:** *[not yet provided]*
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Building data pipelines and automation with modern tooling (dbt, Kafka, Spark) *[default - confirm]*
+- Making data trustworthy through data-quality checks *[default - confirm]*
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- Not restricted. Dublin tech, financial services, consulting and retail/e-commerce with data teams
+
+### Target Roles (priority order)
+1. Data Engineer, Associate Data Engineer, Analytics Engineer
+2. Data Quality Engineer, Data Quality Analyst, ETL Tester, Data Test Engineer
+3. QA Engineer, QA Analyst, Test Automation Engineer, Software Test Engineer, Software Tester
+4. Data Analyst, Junior Data Analyst, BI Analyst
 
 ### Deal-breakers
-<!-- Hard constraints on job search. Language requirements are handled separately and
-automatically from your Languages table above - don't duplicate them here. -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- Employer unwilling to sponsor a Critical Skills Employment Permit (or requires Irish/EU citizenship or Stamp 4)
+- Requires relocation outside the Dublin area (unless fully remote)
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)
@@ -96,7 +94,7 @@ automatically from your Languages table above - don't duplicate them here. -->
 ## Workflow for New Job Applications
 1. User provides a job posting (URL or text)
 2. **Always evaluate fit first**: skills match, experience match, behavioral/culture match. Present this assessment to the user before proceeding.
-3. If good fit: create targeted CV (`cv/main_<company>_<role>.tex`) and cover letter (`cover_letters/cover_<company>_<role>.tex`)
+3. If good fit: create targeted CV (`cv/<company>/main_<company>_<role>.tex`) and cover letter (`cover_letters/<company>/cover_<company>_<role>.tex`), one folder per company
 4. **Verify both documents** (see Verification Checklist below)
 5. Prepare interview talking points based on the role requirements and your strengths
 
@@ -118,7 +116,7 @@ After creating or updating a CV or cover letter, re-read the generated file and 
 - [ ] Nice-to-have requirements are highlighted where there is a match
 
 ### Consistency
-- [ ] CV follows the standard 2-page moderncv/banking format
+- [ ] CV follows the active CV template's format (currently `master-onepage`, 1 page - see `templates/cv/master-onepage/TEMPLATE.md`; stock fallback: 2-page moderncv/banking)
 - [ ] Cover letter uses cover.cls template and established structure
 - [ ] Tone is consistent across CV and cover letter
 - [ ] No contradictions between CV and cover letter content
@@ -134,13 +132,13 @@ After creating or updating a CV or cover letter, re-read the generated file and 
 ### Compiled PDF verification (MANDATORY - never skip)
 Both documents MUST be compiled and visually inspected via the Read tool on the PDF output. "Looks fine in the .tex" is not acceptable - LaTeX page-break decisions are unpredictable. Iterate until these all pass:
 - [ ] CV compiled with **lualatex** (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors). Cover letter compiled with **xelatex** (cover.cls requires fontspec). If a custom template is active (registered via `/add-template`), compile with its declared command instead — see the `ACTIVE-TEMPLATE` block in `05-cv-templates.md`/`06-cover-letter-templates.md`.
-- [ ] **CV is exactly 2 pages** - not 1, not 3
+- [ ] **CV is exactly the active template's page limit** - currently **1 page** (`master-onepage`); 2 pages only if the stock moderncv template is restored with `/add-template --use default`
 - [ ] **No orphaned `\cventry` titles** - a job/education title must never sit at the bottom of a page with its bullets spilling to the next page. Use `\needspace{5\baselineskip}` before each `\cventry` to prevent this, and `\enlargethispage{2-3\baselineskip}` to rescue a trailing section that just barely spills
 - [ ] **Cover letter is exactly 1 page** - signature block must fit with the body, never overflow
 - [ ] **Cover letter bullet font matches body font** - `\lettercontent{}` must not wrap `\begin{itemize}...\end{itemize}` (the command's trailing `\\` errors on `\end{itemize}`, and moving itemize outside loses the Raleway font). Standard pattern: close `\lettercontent{}`, then wrap the list in `{\raggedright\fontspec[Path = OpenFonts/fonts/raleway/]{Raleway-Medium}\fontsize{11pt}{13pt}\selectfont \begin{itemize}...\end{itemize}\par}`
 
 ### ATS & keyword verification (CV)
-ATS parsers read the PDF's embedded text layer, not the rendered page. Extract it with `python tools/verify_pdf.py cv/main_<company>_<role>.pdf --dump-text cv/main_<company>_<role>.txt` (pypdf, then `pdftotext -layout -enc UTF-8`) and verify what a parser sees. If both extractors are missing, skip the parseability items with a warning and check keyword coverage from the visual PDF read instead.
+ATS parsers read the PDF's embedded text layer, not the rendered page. Extract it with `python tools/verify_pdf.py cv/<company>/main_<company>_<role>.pdf --dump-text cv/<company>/main_<company>_<role>.txt` (pypdf, then `pdftotext -layout -enc UTF-8`) and verify what a parser sees. If both extractors are missing, skip the parseability items with a warning and check keyword coverage from the visual PDF read instead.
 - [ ] CV text layer extracts cleanly - no `(cid:*)` markers, `�` replacement characters, or text visible in the PDF but absent from the extraction
 - [ ] Email and phone appear as **literal text** in the extraction (icon-glyph noise like `MOBILE-ALT`/`Envelope` is harmless, but a contact detail carried only by an icon or hyperlink is invisible to ATS)
 - [ ] Reading order of the extracted text matches the visual order (single-column stock template is safe; multi-column custom templates are where this breaks)

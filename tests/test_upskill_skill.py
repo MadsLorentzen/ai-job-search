@@ -46,7 +46,7 @@ class UpskillSkillSpec(unittest.TestCase):
         sections = _sections(SKILL.read_text(encoding="utf-8"))
         step2 = sections.get("Step 2: Load Data", "")
         self.assertIn("seen_jobs.json", step2)
-        self.assertIn("rank_score >= 45", step2)
+        self.assertIn("rank_score >= 50", step2)
         self.assertIn(
             "gap persistence",
             step2,

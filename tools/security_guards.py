@@ -69,6 +69,9 @@ REQUIRED_IGNORE_RULES = [
     # to its own directory, so the state file lands under .claude/skills/... and
     # a repo-rooted rule silently fails to match it.
     "**/job_scraper/seen_jobs.json",
+    "**/job_scraper/scraped_jobs.csv",
+    "**/job_scraper/gmail_alerts.json",
+    "outreach/",
     "**/job_scraper/notion_sync.json",
     "**/job_scraper/*.md",
     "*_BehavioralReport.pdf",
@@ -80,6 +83,13 @@ REQUIRED_IGNORE_RULES = [
     "cover_letters/cover_*.*",
     # /apply also recognizes the uppercase Cover_* naming variant.
     "cover_letters/Cover_*.*",
+    # Per-company layout (cv/<company>/, cover_letters/<company>/) - same
+    # personal output, one directory deeper; the flat rules above still cover
+    # applications drafted before the layout change.
+    "cv/*/main_*.*",
+    "cv/*/*.txt",
+    "cover_letters/*/cover_*.*",
+    "cover_letters/*/Cover_*.*",
     "documents/cv/**",
     "documents/linkedin/**",
     "documents/diplomas/**",

@@ -14,30 +14,121 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 ## Ready-Made STAR Examples
 
-<!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
+<!-- /setup Path A does not draft full STAR examples. Complete the candidates in 'STAR Candidates (Complete Manually)' below, then move finished ones here. -->
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+## STAR Candidates (Complete Manually)
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+<!-- Added by /setup Path A on 2026-10-14 from the CV. Fill in S/T/A/R before using in interviews. -->
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### Tripled regression coverage (40 to 120 tables)
+**Source:** CV - Data Engineering Analyst, Accenture
+**What happened:** Extended Robot Framework packs with transformation, null, duplicate and referential-integrity checks, tripling regression coverage from 40 to 120 tables.
+**Why it matters:** Initiative, improving quality processes, technical depth in data testing
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
-<!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
+### Automated reconciliation checks (-30% manual testing effort)
+**Source:** CV - Data Engineering Analyst, Accenture
+**What happened:** Automated SQL and Python reconciliation checks (row counts, schema, nulls) on AWS Glue and Redshift tables feeding Power BI reports.
+**Why it matters:** Automation, efficiency improvement, AWS experience, data validation approach
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Jenkins CI/CD test gating (-20% release deployment time)
+**Source:** CV - Data Engineering Analyst, Accenture
+**What happened:** Gated every production merge on automated tests in a Jenkins CI/CD pipeline, reducing release deployment time by 20%.
+**Why it matters:** CI/CD, DevOps collaboration, preventing production defects
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Owning test strategy for 40+ releases across 8 source systems
+**Source:** CV - Data Engineering Analyst, Accenture
+**What happened:** Defined test strategy, test plans, acceptance criteria and data-quality rules for a 6-engineer workstream.
+**Why it matters:** Ownership, planning, stakeholder alignment, data-quality frameworks
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Halved regression cycles (4 to 2 per release)
+**Source:** CV - Development Analyst, Accenture
+**What happened:** Replaced manual SQL and spreadsheet checks with automated regression packs.
+**Why it matters:** Process improvement, automation ROI
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Reduced production data errors by 15%
+**Source:** CV - Development Analyst, Accenture
+**What happened:** Built 500+ Robot Framework test cases with custom SQL and Python keywords for source-to-target validation across 8 systems.
+**Why it matters:** Impact on data quality, attention to detail
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Stock discrepancies down 36% at Holland & Barrett
+**Source:** CV - Assistant Manager, Holland & Barrett
+**What happened:** Reduced stock discrepancies across 1,000+ SKUs through regular stocktakes and a theft tracking system, applying Lean principles.
+**Why it matters:** Data-driven problem solving outside tech, root-cause analysis, explaining the career gap positively
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Payment reconciliation errors down 30%
+**Source:** CV - Assistant Manager, Holland & Barrett
+**What happened:** Introduced standardised daily validation checks across 300+ daily payment transactions (EUR 20k+/day).
+**Why it matters:** Reconciliation mindset transferred to a new domain, process design
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Promotion in 10 months and leading a team of 6
+**Source:** CV - Assistant Manager, Holland & Barrett
+**What happened:** Promoted from Retail Assistant to Assistant Manager in 10 months; leads a team of 6 and tracks daily KPIs.
+**Why it matters:** Leadership, adaptability, 'tell me about a time you took on responsibility'
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### Real-Time Dublin Bus Pipeline (3 months, zero downtime)
+**Source:** CV - Key Projects
+**What happened:** Built a streaming medallion pipeline (Kafka, PySpark, dbt, Dagster, Docker) with dbt tests keeping bad records out of the Gold layer.
+**Why it matters:** Data engineering depth, system design, reliability, self-directed learning
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
+
+### MSc thesis: -39.2% RMSE with FinBERT sentiment features
+**Source:** CV - Key Projects / MSc
+**What happened:** Added FinBERT news-sentiment features to a Prophet model, cutting 30-day out-of-sample RMSE by 39.2%.
+**Why it matters:** Analytical rigour, ML experimentation, end-to-end project delivery
+**S/T/A/R stub:**
+- Situation:
+- Task:
+- Action:
+- Result:
 
 ## Common Tough Questions
 
