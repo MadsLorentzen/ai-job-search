@@ -348,6 +348,9 @@ def format_entry(entry, metadata):
                 elif index is not None:
                     index_str = str(index)
                     diff_str = ""
+                elif "index" not in data:
+                    index_str = "-"
+                    diff_str = ""
                 else:
                     index_str = "N/A*"
                     diff_str = ""
