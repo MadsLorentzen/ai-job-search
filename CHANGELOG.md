@@ -46,6 +46,11 @@ per-file diff commands.
 
 ### Fixed
 
+- **Version-line formatting no longer substitutes for a framework marker change**
+  (`tools/check_framework_version.py`) - re-quoting or spacing an unchanged
+  `framework_version` no longer lets an accompanying guidance edit pass the gate.
+  Formatting-only changes remain allowed, as do edits with a changed marker value.
+
 - **`jobnet-search` routes external ads to employer `jobAdUrl` rather than broken `find-job` links**
   (#538, `.agents/skills/jobnet-search/cli/src/commands/search.ts`, `.agents/skills/jobnet-search/cli/README.md`,
   `.agents/skills/jobnet-search/cli/tests/search-normalization.test.ts`) - external job postings on
