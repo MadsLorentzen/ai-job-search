@@ -173,9 +173,14 @@ class LegacyEncodingTests(UpstreamCheckerRepoFixture):
         self.add_remote("upstream", TEMPLATE_URL)
         self.materialize_remote_ref("upstream")
 
-    def run_legacy_checker(self, *args):
+    def run_legacy_checker(self, *args, ascii_git_codec=True):
         env = dict(os.environ, LC_ALL="C", LANG="C", PYTHONUTF8="0",
                    PYTHONCOERCECLOCALE="0", PYTHONIOENCODING="cp1252")
+        if not ascii_git_codec:
+            # Keep valid Unicode argv while independently forcing legacy stdout.
+            # Linux's ASCII filesystem decoder would instead create surrogate
+            # escapes, testing argument decoding rather than console output.
+            env["PYTHONUTF8"] = "1"
         return subprocess.run(
             [sys.executable, str(self.root / "tools/check_upstream_updates.py"), "--no-fetch", *args],
             cwd=self.root, env=env, capture_output=True,
@@ -190,7 +195,7 @@ class LegacyEncodingTests(UpstreamCheckerRepoFixture):
         branch = "release-版本"
         subprocess.run(["git", "update-ref", f"refs/remotes/upstream/{branch}", "HEAD"],
                        cwd=self.root, check=True, capture_output=True)
-        result = self.run_legacy_checker("--branch", branch)
+        result = self.run_legacy_checker("--branch", branch, ascii_git_codec=False)
         self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8", "replace"))
         self.assertIn(f"upstream/{branch}", result.stdout.decode("utf-8"))
 
