@@ -463,6 +463,8 @@ per-file diff commands.
   `python3 tools/job_key.py --audit` reports those entries under
   `keys_not_matching_current_rule`; it never rewrites them.
 
+- **Salary lookups preserve Unicode company identities and match ASCII-typed accented names such as `Nestle` to `Nestlé`, while retaining Nordic spelling variants** (#570).
+
 ## [1.7.2] - 2026-09-29
 
 ### Added

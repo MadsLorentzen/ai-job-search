@@ -19,7 +19,10 @@ class UnicodeSalaryCLI(unittest.TestCase):
         shutil.copyfile(TOOL, self.root / TOOL.name)
         # Same layout as README_SALARY_TOOL.md's manual-data setup. Keep the
         # fixture next to an isolated copy of the CLI, never a user's dataset.
-        names = ["腾讯", "東京 AI", "北京 AI", "Acme Corp", "Café Étoile"]
+        names = [
+            "腾讯", "東京 AI", "北京 AI", "Acme Corp", "Café Étoile",
+            "Nestlé Danmark A/S", "Ørsted A/S", "Mærsk A/S", "Åland A/S",
+        ]
         data = {"companies": [
             {"company": name, "categories": {"all_employees": {"index": 105}}}
             for name in names
@@ -47,3 +50,13 @@ class UnicodeSalaryCLI(unittest.TestCase):
 
     def test_ascii_control_still_matches(self):
         self.assertEqual(self.lookup("acme"), ["Acme Corp"])
+
+    def test_ascii_query_finds_accented_company(self):
+        self.assertEqual(self.lookup("Nestle"), ["Nestlé Danmark A/S"])
+
+    def test_nordic_spelling_variants_survive_accent_folding(self):
+        for query, expected in [("Orsted", "Ørsted A/S"),
+                                ("Maersk", "Mærsk A/S"),
+                                ("Aaland", "Åland A/S")]:
+            with self.subTest(query=query):
+                self.assertEqual(self.lookup(query), [expected])
