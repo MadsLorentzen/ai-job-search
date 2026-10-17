@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { cleanHtml, normalizeSlug, toResult, toDetail, type FreehireJob } from "../src/helpers";
+import { cleanHtml, contractDate, normalizeSlug, toResult, toDetail, type FreehireJob } from "../src/helpers";
 
 function job(overrides: Partial<FreehireJob> = {}): FreehireJob {
   return {
@@ -28,7 +28,8 @@ describe("toResult — reshape into the portal-skill contract", () => {
   test("maps public_slug -> id and posted_at -> date", () => {
     const r = toResult(job());
     expect(r.id).toBe("backend-engineer-acme-ab12cd34");
-    expect(r.date).toBe("2026-07-06T00:00:00Z");
+    // The contract shape is the date part only, like every other portal CLI.
+    expect(r.date).toBe("2026-07-06");
   });
 
   test("carries the required contract fields", () => {
@@ -115,6 +116,23 @@ describe("cleanHtml", () => {
   test("returns null for empty input", () => {
     expect(cleanHtml("")).toBeNull();
     expect(cleanHtml(null)).toBeNull();
+  });
+});
+
+describe("contractDate", () => {
+  test("cuts the API's ISO timestamp to YYYY-MM-DD", () => {
+    expect(contractDate("2026-07-06T00:00:00Z")).toBe("2026-07-06");
+    expect(contractDate("2026-07-06T15:30:00+02:00")).toBe("2026-07-06");
+    expect(contractDate("2026-07-06")).toBe("2026-07-06");
+  });
+  test("is null for an absent or non-date value", () => {
+    expect(contractDate(null)).toBeNull();
+    expect(contractDate(undefined)).toBeNull();
+    expect(contractDate("")).toBeNull();
+    expect(contractDate("soon")).toBeNull();
+  });
+  test("detail carries the same shape as search", () => {
+    expect(toDetail(job()).date).toBe("2026-07-06");
   });
 });
 

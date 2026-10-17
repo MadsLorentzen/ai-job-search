@@ -68,6 +68,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **`freehire-search` emits the contract's `YYYY-MM-DD` date instead of the API's ISO timestamp**
+  (`.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
+  `tests/commands.test.ts`, `SKILL.md`) - `toResult` passed `posted_at` through verbatim, so
+  search and detail JSON carried `"date": "2026-07-06T00:00:00Z"` while every other portal CLI
+  emits the date part only and `/scrape` stores it as `posted_date: "YYYY-MM-DD"`. The table
+  and plain renderers already cut the value to ten characters, so only JSON consumers - the
+  `/scrape` path - saw the raw timestamp. A `contractDate()` helper now cuts the timestamp to
+  its date part and yields `null` for an absent or non-date value; the two tests that pinned
+  the raw timestamp now expect the date and fail on master, plus three cases on the helper.
+
 - **`/rank`, `/notion-sync` and `/upskill` name `job_scraper/seen_jobs.json` by its full path**
   (follow-up to #608, `.claude/commands/rank.md`, `.claude/commands/notion-sync.md`,
   `.claude/skills/upskill/SKILL.md`, `tests/test_scrape_seen_jobs_path.py`) - #608 qualified the
