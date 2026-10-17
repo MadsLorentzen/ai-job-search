@@ -71,13 +71,15 @@ class UpToDateTests(TriageRepoFixture):
 
 class RelevanceFilterTests(TriageRepoFixture):
     def test_commit_touching_only_removed_files_is_skipped(self):
-        # Upstream edits a file this fork never had -> not relevant.
+        # Both start with the portal; upstream edits it while the fork drops it.
         self.write("portals/removed_portal.py", "x = 1\n")
-        self.commit("upstream: add removed_portal")
+        self.commit("shared: add portal")
+        self.write("portals/removed_portal.py", "x = 2\n")
+        self.commit("upstream: update portal")
         self.set_upstream_to_head()
-        # Fork drops back to before that commit and deletes nothing extra;
-        # the file simply is not in fork HEAD.
         git(self.root, "reset", "--hard", "HEAD~1")
+        git(self.root, "rm", "portals/removed_portal.py")
+        self.commit("fork: remove demo portal")
 
         result = self.run_triage()
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -98,18 +100,53 @@ class RelevanceFilterTests(TriageRepoFixture):
         self.assertIn("git cherry-pick", result.stdout)
 
     def test_changelog_only_footprint_is_skipped(self):
+        self.write("portals/gone.py", "y = 1\n")
+        self.write("CHANGELOG.md", "- base\n")
+        self.commit("shared: add portal and changelog")
         self.write("portals/gone.py", "y = 2\n")
         self.write("CHANGELOG.md", "- did a thing\n")
         self.commit("upstream: feature living in removed area + changelog")
         self.set_upstream_to_head()
         # Fork ships CHANGELOG.md but not the removed portal file.
         git(self.root, "reset", "--hard", "HEAD~1")
-        self.write("CHANGELOG.md", "- fork changelog\n")
-        self.commit("fork changelog")
+        git(self.root, "rm", "portals/gone.py")
+        self.commit("fork: remove demo portal")
 
         result = self.run_triage()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("changelog-only footprint in this fork", result.stdout)
+
+    def test_new_upstream_tool_is_worth_reviewing(self):
+        self.write("tools/new_workflow.py", "print('new workflow')\n")
+        added = self.commit("upstream: add a new workflow tool")
+        self.set_upstream_to_head()
+        git(self.root, "reset", "--hard", "HEAD~1")
+        before = git(self.root, "status", "--porcelain")
+
+        result = self.run_triage()
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("**1** worth reviewing", result.stdout)
+        self.assertIn("tools/new_workflow.py", result.stdout)
+        self.assertIn(f"git cherry-pick {added}", result.stdout)
+        self.assertEqual(git(self.root, "status", "--porcelain"), before)
+        self.assertFalse((self.root / "tools/new_workflow.py").exists())
+
+    def test_new_tool_with_changelog_is_not_changelog_only(self):
+        self.write("CHANGELOG.md", "- base\n")
+        self.commit("shared: add changelog")
+        self.write("tools/new_workflow.py", "print('new workflow')\n")
+        self.write("CHANGELOG.md", "- new workflow tool\n")
+        added = self.commit("upstream: ship a new tool and changelog")
+        self.set_upstream_to_head()
+        git(self.root, "reset", "--hard", "HEAD~1")
+
+        result = self.run_triage()
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("**1** worth reviewing", result.stdout)
+        self.assertIn(f"git cherry-pick {added}", result.stdout)
+        self.assertNotIn("changelog-only footprint in this fork", result.stdout)
 
 
 class AlreadyAppliedTests(TriageRepoFixture):
