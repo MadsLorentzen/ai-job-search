@@ -380,6 +380,8 @@ per-file diff commands.
   `python3 tools/job_key.py --audit` reports those entries under
   `keys_not_matching_current_rule`; it never rewrites them.
 
+
+- **Weighted ranking rounds without binary floating-point drift** (#588) - scores such as 31/55/51/96 now round to 60 and Good Fit instead of 59 and Moderate Fit.
 ## [1.7.2] - 2026-09-29
 
 ### Added
