@@ -246,12 +246,46 @@ export function cleanHtml(html: string | null | undefined): string | null {
   return text || null
 }
 
-/** Extract a freehire public slug from a bare slug or a /jobs/<slug> URL. */
+const FREEHIRE_HOST = /(^|\.)freehire\.me$/i
+
+/** True for freehire.me, any of its subdomains, or the configured self-hosted base URL's host. */
+function isFreehireHost(host: string): boolean {
+  if (FREEHIRE_HOST.test(host)) return true
+  try {
+    const self = new URL(baseUrl()).hostname.toLowerCase()
+    return host === self || host.endsWith(`.${self}`)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Extract a freehire public slug from a bare slug or a freehire `/jobs/<slug>` URL.
+ *
+ * A URL on any other host is rejected. The previous pattern took the segment
+ * after `/jobs/` from ANY string, so a Greenhouse apply link - which is what a
+ * freehire search result's own `url` field carries - was reduced to its last
+ * path segment and `detail` asked the API for a slug that never existed,
+ * reporting "job not found" for a URL that was never a freehire posting. URLs
+ * are parsed for real, so look-alike hosts (freehire.me.evil.io) and userinfo
+ * tricks (freehire.me@evil.io) fall on the reject side; FREEHIRE_API_URL's host
+ * is accepted for a self-hosted instance.
+ */
 export function normalizeSlug(input: string): string | null {
   const trimmed = input.trim()
   if (!trimmed) return null
-  const m = trimmed.match(/\/jobs\/([^/?#]+)/)
-  if (m) return m[1]
+  const hasScheme = /^https?:\/\//i.test(trimmed)
+  if (hasScheme || /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(trimmed)) {
+    let parsed: URL
+    try {
+      parsed = new URL(hasScheme ? trimmed : `https://${trimmed}`)
+    } catch {
+      return null
+    }
+    if (!isFreehireHost(parsed.hostname.toLowerCase())) return null
+    const m = parsed.pathname.match(/^\/jobs\/([a-z0-9][a-z0-9-]*)\/?$/i)
+    return m ? m[1] : null
+  }
   // A bare slug: lowercase alphanumerics and hyphens (no path/scheme).
   if (/^[a-z0-9][a-z0-9-]*$/i.test(trimmed)) return trimmed
   return null

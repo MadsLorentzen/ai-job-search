@@ -124,7 +124,7 @@ bun run .agents/skills/freehire-search/cli/src/cli.ts detail <slug|url> [--forma
 ```
 
 `slug` is the `id` from a `search` result (e.g. `golang-zensar-2bxu6dxm`). You may
-also pass a full `https://freehire.me/jobs/<slug>` URL. Returns the full (HTML-stripped)
+also pass a full `https://freehire.me/jobs/<slug>` URL. A URL on any other host - including the employer apply link a search result's `url` field carries - is rejected with `BAD_ID` before any request. Returns the full (HTML-stripped)
 description, skills, region/country, and — when the posting is enriched — seniority,
 category, employment type, and salary. `salary` keeps its period when freehire records
 one (`INR 300000–300000/year`, `INR 12000/month`); compare pay only in one period.
