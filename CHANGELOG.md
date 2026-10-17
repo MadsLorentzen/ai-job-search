@@ -224,6 +224,8 @@ per-file diff commands.
   control in `.gitignore` and pinned in `REQUIRED_IGNORE_RULES` to prevent fork users from
   accidentally committing local session configurations.
 
+- **Salary lookups distinguish missing indexes from suppression** (#584) - count-only data displays an unavailable index without implying that a privacy-suppression threshold was applied.
+
 - **`/rank` retires scored jobs whose preserved deadline has passed**
   (`tools/rank_state.py`, `tests/test_rank_state.py`) - a fresh `null` deadline
   preserves the stored date, but `apply` previously wrote the job as `ranked`
