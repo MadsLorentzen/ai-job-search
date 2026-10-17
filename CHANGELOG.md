@@ -423,6 +423,8 @@ per-file diff commands.
   harmless, and valid UTF-8 rules decide as before. Nine new tests; the seven that pin the
   fail-opens fail on master.
 
+- **Salary workbook conversion rejects non-finite text cells** (#572) - hand-typed `Infinity` or `NaN` text cells now produce validation errors instead of numeric-conversion tracebacks.
+
 - **`verify_layout.py` finds an orphaned entry header by where the text starts**
   (`tools/verify_layout.py`, `tests/test_verify_layout.py`) - the orphan rule compared line
   left edges against the document margin, and a list marker moves a line's left edge without
