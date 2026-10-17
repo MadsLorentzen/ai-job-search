@@ -1,7 +1,6 @@
 # Rozee.pk URL Reference
 
-Observed 2026-10-17 using a low-volume live search for `AI ML Intern` in
-Lahore.
+Observed 2026-10-17 using low-volume live searches.
 
 ## Search
 
@@ -61,9 +60,8 @@ GET https://www.rozee.pk/<permaLink>
 The detail page is a root-level slug URL, not `/job/<slug>`. The page includes
 an `application/ld+json` JobPosting object with `title`, `description`,
 `datePosted`, `validThrough`, `employmentType`, `hiringOrganization.name`, and
-`jobLocation.address.addressLocality`. The sample
-`https://www.rozee.pk/aiml-intern-lahore-jobs-1906063` returned an AI/ML Intern
-listing in Lahore.
+`jobLocation.address.addressLocality`. An observed detail page returned a valid JobPosting object at a canonical
+root-level permalink.
 
 ## Filters and access
 

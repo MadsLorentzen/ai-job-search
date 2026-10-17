@@ -46,9 +46,9 @@ SEARCH FLAGS
   --format <fmt>         json (default) | table | plain
 
 EXAMPLES
-  bun run src/cli.ts search -q "AI ML Intern" -l Lahore --limit 10 --format table
+  bun run src/cli.ts search -q "Machine Learning Intern" -l Islamabad --limit 10 --format table
   bun run src/cli.ts search -q "Junior Data Analyst" --format table
-  bun run src/cli.ts detail "aiml-intern-lahore-jobs-1906063" --format plain
+  bun run src/cli.ts detail "machine-learning-intern-islamabad-jobs-123456" --format plain
 
 Personal use only — keep volume low and do not redistribute listing content.
 `

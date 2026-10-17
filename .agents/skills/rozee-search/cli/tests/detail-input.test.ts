@@ -3,20 +3,20 @@ import { normalizeDetailInput } from "../src/commands/detail.js"
 import { cityIdForLocation } from "../src/helpers.js"
 
 describe("Rozee detail input validation", () => {
-  test("accepts a permalink slug and a real Rozee detail URL", () => {
-    expect(normalizeDetailInput("aiml-intern-lahore-jobs-1906063")).toEqual({
-      id: "aiml-intern-lahore-jobs-1906063",
-      url: "https://www.rozee.pk/aiml-intern-lahore-jobs-1906063",
+  test("accepts a permalink slug and a canonical-host detail URL", () => {
+    expect(normalizeDetailInput("sample-role-islamabad-jobs-123456")).toEqual({
+      id: "sample-role-islamabad-jobs-123456",
+      url: "https://www.rozee.pk/sample-role-islamabad-jobs-123456",
     })
-    expect(normalizeDetailInput("https://www.rozee.pk/aiml-intern-lahore-jobs-1906063?source=search")?.id)
-      .toBe("aiml-intern-lahore-jobs-1906063")
+    expect(normalizeDetailInput("https://www.rozee.pk/sample-role-islamabad-jobs-123456?source=search")?.id)
+      .toBe("sample-role-islamabad-jobs-123456")
   })
 
   test("rejects numeric IDs and foreign-host URLs", () => {
     expect(normalizeDetailInput("1906063")).toBeNull()
-    expect(normalizeDetailInput("https://jobs.example.com/ai-ml-intern-lahore-jobs-1906063"))
+    expect(normalizeDetailInput("https://jobs.example.com/sample-role-islamabad-jobs-123456"))
       .toBeNull()
-    expect(normalizeDetailInput("https://rozee.pk.evil.test/ai-ml-intern-lahore-jobs-1906063"))
+    expect(normalizeDetailInput("https://rozee.pk.evil.test/sample-role-islamabad-jobs-123456"))
       .toBeNull()
   })
 })

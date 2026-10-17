@@ -3,7 +3,7 @@ name: rozee-search
 version: 1.0.0
 description: >
   Search public job listings on Rozee.pk in Pakistan. Use for Rozee jobs,
-  job search in Pakistan, Lahore vacancies, data and AI/ML roles, and for
+  job search in Pakistan, data and AI/ML roles, and for
   نوکریاں تلاش کرنا or پاکستان میں نوکریاں.
 context: fork
 enabled: true
@@ -62,8 +62,8 @@ job IDs alone cannot be resolved to a permalink by this portal's public pages.
 ## Examples
 
 ```bash
-# Your selected AI/ML internship search in Lahore
-bun run .agents/skills/rozee-search/cli/src/cli.ts search -q "AI ML Intern" -l Lahore --limit 10 --format table
+# AI/ML internships in Islamabad
+bun run .agents/skills/rozee-search/cli/src/cli.ts search -q "Machine Learning Intern" -l Islamabad --limit 10 --format table
 
 # Junior data analyst roles across Pakistan
 bun run .agents/skills/rozee-search/cli/src/cli.ts search -q "Junior Data Analyst" --format table
@@ -72,7 +72,7 @@ bun run .agents/skills/rozee-search/cli/src/cli.ts search -q "Junior Data Analys
 bun run .agents/skills/rozee-search/cli/src/cli.ts search -q "Machine Learning" -l Karachi --format table
 
 # Read a listing returned by search
-bun run .agents/skills/rozee-search/cli/src/cli.ts detail "aiml-intern-lahore-jobs-1906063" --format plain
+bun run .agents/skills/rozee-search/cli/src/cli.ts detail "machine-learning-intern-islamabad-jobs-123456" --format plain
 ```
 
 ## Output formats

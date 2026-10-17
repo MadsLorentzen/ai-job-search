@@ -1,16 +1,17 @@
 import { describe, expect, test } from "bun:test"
 import { runCLI } from "./helpers.js"
 
+if (process.env.ROZEE_LIVE_TEST === "1") {
 describe("live Rozee smoke test (low-volume personal use)", () => {
-  test("searches AI/ML internships in Lahore and reads one returned detail page", async () => {
+  test("searches a role in Islamabad and reads one returned detail page", async () => {
     const search = await runCLI([
       "search",
       "--query",
-      "AI ML Intern",
+      "Machine Learning Intern",
       "--location",
-      "Lahore",
+      "Islamabad",
       "--limit",
-      "5",
+      "3",
     ])
     expect(search.exitCode).toBe(0)
     const payload = JSON.parse(search.stdout) as {
@@ -28,3 +29,4 @@ describe("live Rozee smoke test (low-volume personal use)", () => {
     expect(detail.stdout).toContain("URL: https://www.rozee.pk/")
   }, 60000)
 })
+}
