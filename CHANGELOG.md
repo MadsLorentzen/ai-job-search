@@ -68,6 +68,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/reset profile` keeps the `### Languages` table header under Identity**
+  (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - `04-job-evaluation.md`'s
+  Language Gate and `job-scraper/search-queries.md`'s query-language generation both read "your
+  Languages table" from `01-candidate-profile.md`, but the skeleton `/reset` wrote left
+  `## Identity` empty, so after a reset `/rank` and `/scrape` looked for a table the file no
+  longer had. The skeleton now carries `### Languages` and the table's header and separator
+  rows, derived from the shipped file in the test; the placeholder data row is deliberately
+  not reintroduced. Follow-up noted on #532.
+
 - **`05-cv-templates.md` snippets write the `\cventry` date argument with an ASCII hyphen, as the same
   file's own rule requires** (`.claude/skills/job-application-assistant/05-cv-templates.md`,
   `framework_version: 1.4.6 -> 1.4.7`) - the in-progress-qualification snippet under "In-progress

@@ -252,6 +252,28 @@ class TestResetTargetsTheHeadingsTheShippedFilesHave(unittest.TestCase):
                     f"a reset must leave {filename}'s framework_version readable and unchanged",
                 )
 
+    def test_candidate_skeleton_keeps_the_languages_table_under_identity(self):
+        # 04-job-evaluation.md's Language Gate and job-scraper/search-queries.md
+        # both read "your Languages table" from 01-candidate-profile.md. The
+        # skeleton had `## Identity` with nothing under it, so after a reset the
+        # gate and the scraper looked for a table the file no longer had. Both
+        # the `### Languages` heading and the table header row are derived from
+        # the shipped file; the placeholder data row is deliberately not kept.
+        shipped = (SKILL_DIR / "01-candidate-profile.md").read_text(encoding="utf-8")
+        start = shipped.index("### Languages")
+        header_rows = [
+            line for line in shipped[start:].splitlines()[1:]
+            if line.startswith("|")
+        ][:2]
+        self.assertEqual(len(header_rows), 2, "the shipped Languages table must have a header and a separator row")
+        block = skeleton_block(self.reset, "01-candidate-profile.md")
+        identity = block[block.index("## Identity"): block.index("## Education")]
+        self.assertIn("### Languages", identity, "the Languages table must sit under Identity, as shipped")
+        for row in header_rows:
+            with self.subTest(row=row):
+                self.assertIn(row, identity)
+        self.assertNotIn("[LANGUAGE]", block, "a reset must not reintroduce a placeholder data row")
+
     def test_partial_anchors_exist_in_the_files_they_target(self):
         # (reset.md anchor phrase, file, heading the replacement must re-emit)
         cases = (

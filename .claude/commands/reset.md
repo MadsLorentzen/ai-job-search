@@ -149,6 +149,11 @@ Every skill file under `.claude/skills/job-application-assistant/` opens with a 
 
 ## Identity
 
+### Languages
+
+| Language | Level | Notes |
+|----------|-------|-------|
+
 ## Education
 
 ## Professional Experience
