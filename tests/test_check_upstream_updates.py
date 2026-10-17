@@ -160,5 +160,37 @@ class UpstreamRefMissingFileTests(UpstreamCheckerRepoFixture):
         self.assertIn("[WARNING]", result.stdout)
 
 
+class IncompleteComparisonTests(UpstreamCheckerRepoFixture):
+    def setUp(self):
+        super().setUp()
+        self.add_remote("upstream", TEMPLATE_URL)
+        self.materialize_remote_ref("upstream")
+
+    def test_missing_local_file_does_not_report_all_files_up_to_date(self):
+        (self.root / "AGENTS.md").unlink()
+
+        result = self.run_checker()
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("AGENTS.md", result.stdout)
+        self.assertIn("[WARNING] Framework check incomplete", result.stdout)
+        self.assertNotIn("[OK]", result.stdout)
+
+    def test_missing_upstream_marker_does_not_report_all_files_up_to_date(self):
+        agents = self.root / "AGENTS.md"
+        agents.write_text("# Upstream guidelines without a version marker\n", encoding="utf-8")
+        subprocess.run(["git", "add", "AGENTS.md"], cwd=self.root, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-qm", "remove upstream version marker"], cwd=self.root, check=True, capture_output=True)
+        self.materialize_remote_ref("upstream")
+        agents.write_text(FRONTMATTER, encoding="utf-8")
+
+        result = self.run_checker()
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("AGENTS.md", result.stdout)
+        self.assertIn("[WARNING] Framework check incomplete", result.stdout)
+        self.assertNotIn("[OK]", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
