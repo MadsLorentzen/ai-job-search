@@ -44,12 +44,12 @@ class UiServerCase(unittest.TestCase):
                 "old": {"title": "Expired role", "company": "Old Co", "url": "https://example.com/job/2",
                         "status": "skipped-expired"},
             }}, f)
-        self._saved = {k: getattr(server, k) for k in
-                       ("ROOT", "UI", "TRACKER", "SEEN", "UI_STATE", "RUNS_DIR", "BRIEFS")}
-        server.ROOT, server.UI, server.TRACKER, server.SEEN = self.tmp, os.path.join(self.tmp, "ui"), self.tracker, self.seen
-        server.UI_STATE = os.path.join(self.tmp, "ui", "state.json")
-        server.RUNS_DIR = os.path.join(self.tmp, "ui", "runs")
-        server.BRIEFS = os.path.join(self.tmp, "ui", "briefs.json")
+        # An isolated profile registry, and this temp folder served as profile "test".
+        self._home = server.profiles.HOME
+        server.profiles.HOME = __import__("pathlib").Path(tempfile.mkdtemp())
+        self.ws = server.Workspace({"slug": "test", "path": self.tmp, "gmail": True}, pinned=True)
+        server.WS.clear()
+        server.WS["test"] = self.ws
         server.RUNS.clear()
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), server.H)
         self.port = self.httpd.server_address[1]
@@ -58,12 +58,15 @@ class UiServerCase(unittest.TestCase):
     def tearDown(self):
         self.httpd.shutdown()
         self.httpd.server_close()
-        for k, v in self._saved.items():
-            setattr(server, k, v)
+        shutil.rmtree(server.profiles.HOME, ignore_errors=True)
+        server.profiles.HOME = self._home
+        server.WS.clear()
         server.RUNS.clear()
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def request(self, path, body=None, headers=None):
+        if path.startswith(("/api/", "/file")) and not path.startswith("/api/profiles"):
+            path = "/p/test" + path
         req = urllib.request.Request(f"http://127.0.0.1:{self.port}{path}",
                                      data=json.dumps(body).encode() if body is not None else None,
                                      headers=headers or {})
@@ -78,7 +81,7 @@ class UiServerCase(unittest.TestCase):
 class TrackerWrites(UiServerCase):
     def test_status_update_keeps_lf_line_endings(self):
         # csv's default lineterminator is \r\n; a UI edit must not rewrite every line of an LF tracker.
-        key = server.row_key(server.read_tracker()[0])
+        key = server.row_key(server.read_tracker(self.ws)[0])
         code, row = self.request("/api/applications/update", {"key": key, "status": "interview", "note": "call on Fri"})
         self.assertEqual(200, code)
         self.assertEqual("interview", row["status"])
@@ -88,7 +91,7 @@ class TrackerWrites(UiServerCase):
         self.assertIn(b"update ", data)
 
     def test_invalid_status_is_rejected(self):
-        key = server.row_key(server.read_tracker()[0])
+        key = server.row_key(server.read_tracker(self.ws)[0])
         code, _ = self.request("/api/applications/update", {"key": key, "status": "ghosted"})
         self.assertEqual(400, code)
 
@@ -97,14 +100,14 @@ class TrackerWrites(UiServerCase):
         code, res = self.request("/api/jobs/status", {"key": "northwind", "status": "applied"})
         self.assertEqual(200, code)
         self.assertFalse(res["tracked"])
-        self.assertEqual(1, len(server.read_tracker()))
+        self.assertEqual(1, len(server.read_tracker(self.ws)))
 
     def test_marking_applied_adds_a_new_job_once(self):
         _, res = self.request("/api/jobs/status", {"key": "acme", "status": "applied"})
         self.assertTrue(res["tracked"])
         _, res = self.request("/api/jobs/status", {"key": "acme", "status": "applied"})
         self.assertFalse(res["tracked"])
-        rows = server.read_tracker()
+        rows = server.read_tracker(self.ws)
         self.assertEqual(["Northwind Agency (via Talentbridge)", "Acme"], [r["company"] for r in rows])
         self.assertEqual("applied", rows[1]["status"])
 
@@ -150,31 +153,31 @@ class RequestGuards(UiServerCase):
     def test_file_endpoint_only_serves_document_folders(self):
         with open(os.path.join(self.tmp, "cv", "cv.pdf"), "wb") as f:
             f.write(b"%PDF-1.4")
-        with urllib.request.urlopen(f"http://127.0.0.1:{self.port}/file?path=cv/cv.pdf", timeout=5) as r:
+        with urllib.request.urlopen(f"http://127.0.0.1:{self.port}/p/test/file?path=cv/cv.pdf", timeout=5) as r:
             self.assertEqual(200, r.status)
         for path in ("job_search_tracker.csv", "cv/../job_search_tracker.csv", "../etc/passwd"):
             with self.assertRaises(urllib.error.HTTPError) as cm:
-                urllib.request.urlopen(f"http://127.0.0.1:{self.port}/file?path={path}", timeout=5)
+                urllib.request.urlopen(f"http://127.0.0.1:{self.port}/p/test/file?path={path}", timeout=5)
             cm.exception.close()
             self.assertEqual(404, cm.exception.code, path)
 
 
 class RunLocks(UiServerCase):
     def fake_running(self, action, label):
-        server.RUNS[label] = {"id": label, "action": action, "label": label, "status": "running"}
+        server.RUNS[label] = {"id": label, "action": action, "label": label, "status": "running", "ws": "test"}
 
     def test_runs_writing_the_same_file_conflict(self):
         self.fake_running("scrape", "/scrape")
-        self.assertEqual("/scrape", server.conflict("rank"))          # both write seen_jobs.json
-        self.assertIsNone(server.conflict("cover-letter"))            # tracker only
+        self.assertEqual("/scrape", server.conflict(self.ws, "rank"))          # both write seen_jobs.json
+        self.assertIsNone(server.conflict(self.ws, "cover-letter"))            # tracker only
         code, err = self.request("/api/jobs/status", {"key": "acme", "status": "skipped"})
         self.assertEqual(409, code)                                   # UI edits wait too
 
     def test_resuming_a_session_that_is_still_running_conflicts(self):
-        server.RUNS["r1"] = {"id": "r1", "action": "interview", "label": "prep", "status": "running",
+        server.RUNS["r1"] = {"id": "r1", "action": "interview", "label": "prep", "status": "running", "ws": "test",
                              "session_id": "s-1"}
-        self.assertEqual("prep", server.conflict("interview", resume="s-1"))
-        self.assertIsNone(server.conflict("interview", resume="s-2"))
+        self.assertEqual("prep", server.conflict(self.ws, "interview", resume="s-1"))
+        self.assertIsNone(server.conflict(self.ws, "interview", resume="s-2"))
 
 
 @unittest.skipUnless(hasattr(os, "killpg"), "process groups are POSIX-only")
@@ -191,7 +194,7 @@ class StopKillsTheWholeRun(UiServerCase):
         old_path = os.environ["PATH"]
         os.environ["PATH"] = bindir + os.pathsep + old_path
         try:
-            run = server.start_run("interview", "/interview acme", "prep")
+            run = server.start_run(self.ws, "interview", "/interview acme", "prep")
             for _ in range(50):
                 if run.get("session_id"):
                     break
@@ -204,7 +207,7 @@ class StopKillsTheWholeRun(UiServerCase):
             os.environ["PATH"] = old_path
         self.assertEqual("cancelled", run["status"])
         self.assertLess(time.time() - start, 5)
-        with open(os.path.join(server.RUNS_DIR, run["id"] + ".json")) as f:
+        with open(os.path.join(self.ws.runs_dir, run["id"] + ".json")) as f:
             self.assertEqual("cancelled", json.load(f)["status"])
 
 
@@ -260,7 +263,7 @@ class RoleBriefs(UiServerCase):
         self.fail("run did not finish")
 
     def test_brief_is_stored_once_and_shown_on_the_job_and_its_tracker_row(self):
-        row_key = server.row_key(server.read_tracker()[0])
+        row_key = server.row_key(server.read_tracker(self.ws)[0])
         # The scraped job and the tracker row point at the same posting: one target, one brief.
         code, run = self.request("/api/run", {"action": "brief", "refs": [{"kind": "job", "key": "northwind"},
                                                                           {"kind": "app", "key": row_key}]})
@@ -288,11 +291,11 @@ class RoleBriefs(UiServerCase):
         done = self.wait(run["id"])
         self.assertEqual("error", done["status"])
         self.assertIn("did not parse", " ".join(t for _, t in done["lines"]))
-        self.assertEqual({}, server.read_briefs())
+        self.assertEqual({}, server.read_briefs(self.ws))
 
     def test_a_finished_scrape_summarizes_the_jobs_it_added(self):
         self.request("/api/jobs")   # first launch: everything already scraped counts as seen
-        scrape = server.start_run("scrape", "/scrape ")
+        scrape = server.start_run(self.ws, "scrape", "/scrape ")
         self.wait(scrape["id"])
         briefs = [r for r in server.RUNS.values() if r["action"] == "brief"]
         self.assertEqual(1, len(briefs))
