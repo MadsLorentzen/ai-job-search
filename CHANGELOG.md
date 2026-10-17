@@ -68,6 +68,18 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/upskill` and `/notion-sync` now name the field ranked entries actually carry when joining
+  them to tracker rows** (`.claude/skills/upskill/SKILL.md` Step 3, `.claude/commands/notion-sync.md`
+  Step 2, `tests/test_upskill_skill.py`, `tests/test_notion_sync_command.py`) - both said to match
+  "on company + role" with "casefold + strip on both fields", but a `seen_jobs.json` entry has
+  `title` and no `role` key (the job-scraper schema), so read literally the lookup never matched:
+  `/upskill` then weighted the same job twice, once as a tracker row and once as a ranked entry,
+  the double-count its dedupe step exists to prevent, and `/notion-sync` split one job into two
+  rows with different Keys. `tools/rank_state.py` already does the cross-name join (tracker
+  `role` against entry `title`); both specs now say so. Two derived tests read the entry schema
+  and require the join wording to name `title` for the entry and `role` for the tracker; they
+  fail on master.
+
 - **`/reset profile` keeps the `### Languages` table header under Identity**
   (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - `04-job-evaluation.md`'s
   Language Gate and `job-scraper/search-queries.md`'s query-language generation both read "your

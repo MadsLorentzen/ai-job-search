@@ -43,6 +43,18 @@ class NotionSyncCommandSpec(unittest.TestCase):
             "notion_sync.json is personal state and must never be committable",
         )
 
+    def test_step2_join_names_the_field_ranked_entries_actually_carry(self):
+        # seen_jobs.json entries carry `title` (job-scraper SKILL.md schema), the
+        # tracker carries `role`. "matched ... on company + role" read as a
+        # lookup of `role` on the entry, which never matches, so one job became
+        # two Notion rows with different Keys. The join is role-vs-title.
+        text = COMMAND.read_text(encoding="utf-8")
+        line = next(l for l in text.splitlines() if "matched to `seen_jobs.json` entries" in l)
+        self.assertIn("company + title", line)
+        self.assertIn("`title`", line)
+        self.assertIn("`role`", line)
+        self.assertNotIn("company + role", line)
+
     def test_privacy_rule_documents_never_sync(self):
         text = COMMAND.read_text(encoding="utf-8")
         self.assertIn(
