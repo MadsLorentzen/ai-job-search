@@ -256,6 +256,28 @@ class AuditCLI(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("acme_soc-analyst_athens", report["legacy_three_part_keys"])
 
+    def run_audit_raw(self, document) -> subprocess.CompletedProcess:
+        import tempfile
+
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+            json.dump(document, fh)
+            path = fh.name
+        return subprocess.run(
+            [sys.executable, str(TOOL), "--audit", path], capture_output=True, text=True, encoding="utf-8"
+        )
+
+    def test_non_object_state_file_is_reported_not_a_traceback(self):
+        proc = self.run_audit_raw([])
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("expected an object of job entries", proc.stderr)
+        self.assertNotIn("Traceback", proc.stderr)
+
+    def test_non_object_entry_is_reported_not_a_traceback(self):
+        proc = self.run_audit_raw({"seen": {"acme_soc-analyst": "oops"}})
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("entry is not an object: acme_soc-analyst", proc.stderr)
+        self.assertNotIn("Traceback", proc.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -68,6 +68,11 @@ per-file diff commands.
 
 ### Fixed
 
+- **`job_key.py --audit` reports a state file that is not an object of entries** (`tools/job_key.py`,
+  `tests/test_job_key.py`) - a top-level JSON array, or an entry that is a string or number, crashed the
+  audit with an `AttributeError` traceback on `.get`, although the function already had a one-line error
+  for an unusable `seen` value. Both now print a one-line message naming the problem and exit 1.
+
 - **`freehire-search` emits the contract's `YYYY-MM-DD` date instead of the API's ISO timestamp**
   (`.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `toResult` passed `posted_at` through verbatim, so

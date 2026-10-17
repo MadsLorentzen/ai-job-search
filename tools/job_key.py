@@ -183,9 +183,13 @@ def audit(path: Path) -> int:
     except (OSError, json.JSONDecodeError) as exc:
         print(f"cannot read {path}: {exc}", file=sys.stderr)
         return 1
-    seen = doc.get("seen", doc)
+    seen = doc.get("seen", doc) if isinstance(doc, dict) else doc
     if not isinstance(seen, dict):
         print(f"{path}: expected an object of job entries", file=sys.stderr)
+        return 1
+    not_objects = [k for k, v in seen.items() if not isinstance(v, dict)]
+    if not_objects:
+        print(f"{path}: entry is not an object: {not_objects[0]}", file=sys.stderr)
         return 1
 
     malformed = [k for k in seen if not is_canonical(k) and not is_legacy_shape(k)]
