@@ -15,6 +15,14 @@ per-file diff commands.
 
 ### Added
 
+- **Forks can allow their own `.gitignore` negations without editing `tools/security_guards.py`**
+  (`.github/security-guards-local.txt`, `tools/security_guards.py`, `SETUP.md` section 8,
+  `tests/test_security_guards.py`) - one `!pattern` per line, `#` comments allowed. The file only
+  extends `ALLOWED_IGNORE_NEGATIONS`: unlisted negations still fail, non-negation lines are
+  rejected, and an absent file changes nothing. The guard also fails if the file exists on the
+  upstream template, so it stays a fork-only extension point and fork merges stop conflicting on
+  the allowlist.
+
 - **One cross-platform command installs every portal CLI: `python3 tools/install_portal_clis.py`**
   (#540, `README.md` quick start step 2, `SETUP.md` section 3,
   `tests/test_install_portal_clis.py`) - the README and SETUP.md each carried a PowerShell and a

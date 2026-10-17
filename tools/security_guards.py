@@ -28,6 +28,7 @@ Stdlib only. Exit 0 on success, 1 with a failure list otherwise.
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -128,6 +129,16 @@ ALLOWED_IGNORE_NEGATIONS = {
     "!documents/**/.gitkeep",
 }
 
+# Fork-local extension of the negation allowlist. A fork that adds its own tracked
+# directory under a personal-data ignore rule (say, `!leads/.gitkeep`) lists the
+# negation here instead of editing this file, so `git merge upstream/master` never
+# conflicts on ALLOWED_IGNORE_NEGATIONS. One negation per line, `#` comments and blank
+# lines allowed. The file can only EXTEND the negation allowlist: any other
+# non-comment line is a failure. Upstream never ships it (see
+# check_local_negations_absent_upstream).
+LOCAL_NEGATIONS_FILE = ROOT / ".github" / "security-guards-local.txt"
+UPSTREAM_REPO = "MadsLorentzen/ai-job-search"
+
 # Hook commands the template legitimately ships, as "<Event>:<command>" strings.
 # Empty by design - the template ships no hooks at all.
 #
@@ -219,6 +230,40 @@ def check_permissions() -> None:
         print(f"note: allowlisted permission not present in settings.json: {entry!r}")
 
 
+def load_local_negations() -> set[str]:
+    """Negations a fork lists in .github/security-guards-local.txt (empty if absent)."""
+    if not LOCAL_NEGATIONS_FILE.is_file():
+        return set()
+    try:
+        raw = LOCAL_NEGATIONS_FILE.read_text(encoding="utf-8").splitlines()
+    except OSError as exc:
+        errors.append(f".github/security-guards-local.txt: unreadable: {exc}")
+        return set()
+    extra: set[str] = set()
+    for number, line in enumerate(raw, start=1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if not line.startswith("!"):
+            errors.append(
+                f".github/security-guards-local.txt:{number}: {line!r} is not a negation. "
+                "The file may only list `!pattern` lines that extend the .gitignore "
+                "negation allowlist."
+            )
+            continue
+        extra.add(line)
+    return extra
+
+
+def check_local_negations_absent_upstream() -> None:
+    """The local-negations file must never exist on the upstream template itself."""
+    if os.environ.get("GITHUB_REPOSITORY") == UPSTREAM_REPO and LOCAL_NEGATIONS_FILE.exists():
+        errors.append(
+            ".github/security-guards-local.txt must not exist on the upstream template: "
+            "it is a fork-only extension point. Remove it from this PR."
+        )
+
+
 def check_gitignore() -> None:
     path = ROOT / ".gitignore"
     try:
@@ -235,14 +280,17 @@ def check_gitignore() -> None:
                 "or was renamed intentionally, update REQUIRED_IGNORE_RULES in "
                 "tools/security_guards.py in the same PR."
             )
+    check_local_negations_absent_upstream()
+    allowed_negations = ALLOWED_IGNORE_NEGATIONS | load_local_negations()
     for line in lines:
-        if line.startswith("!") and line not in ALLOWED_IGNORE_NEGATIONS:
+        if line.startswith("!") and line not in allowed_negations:
             errors.append(
                 f".gitignore: negation rule not in the reviewed allowlist: {line!r}. "
                 "A negation re-includes a path an earlier rule excluded and can silently "
                 "re-expose personal data (a required ignore rule stays present but stops "
                 "taking effect). If this negation is intentional, add it to "
-                "ALLOWED_IGNORE_NEGATIONS in tools/security_guards.py in the same PR."
+                "ALLOWED_IGNORE_NEGATIONS in tools/security_guards.py in the same PR "
+                "(on a fork, list it in .github/security-guards-local.txt instead)."
             )
 
 
