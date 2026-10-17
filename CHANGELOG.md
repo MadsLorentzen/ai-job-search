@@ -46,6 +46,8 @@ per-file diff commands.
 
 ### Fixed
 
+- **Portal CLIs decode HTML entities in one pass** (#625) - escaped named and numeric references remain literal text instead of being decoded again, including in Jobindex detail pages.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
