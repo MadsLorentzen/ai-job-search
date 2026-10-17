@@ -44,7 +44,63 @@ per-file diff commands.
   log-inspecting steps 5b-5d complete, and explicitly preserves template assets (`cover.cls`,
   `OpenFonts/`, custom template files).
 
+- **`/rank` retries a posting it could not fetch instead of expiring it** (#534,
+  `tools/rank_state.py`, `.claude/commands/rank.md`) - a data-model change: scoring agents
+  now return a third status, `unreachable` (with a short `fetch_error`), when retrieval still
+  fails after the `09-web-research.md` escalation order (401/403, login wall, 404, timeout,
+  5xx, empty page), and keep `expired` for positive evidence the posting is closed (closed
+  page, 410, redirect to a listing page, passed deadline). Before, both became `expired`,
+  which `candidates` never selects again, so a transient failure on ranking day removed a
+  live job from the pipeline and the report presented it as closed. `candidates` now selects
+  `unreachable` alongside `new`; `apply` increments `fetch_attempts` and stores
+  `last_fetch_error`, and after 3 attempts with at least 48 hours between the first and the
+  last it writes `expired` with `expired_reason: "unreachable"` and reports the job once under
+  "Gave up, check manually" with its URL, so a login-walled live posting is still seen by a
+  human. The 48-hour floor keeps a scheduled run plus a manual one on the same day from
+  burning every attempt on one outage. A failed fetch on a posting whose stored deadline has
+  already passed still expires at once, as on the scored path, rather than being retried and
+  listed as possibly live. `rank_state.py` owns the status set (`AGENT_STATUSES`) and a test
+  pins `rank.md`'s JSON contract to it. `09-web-research.md`'s give-up step now marks a
+  `/rank` entry `unreachable` rather than `expired` (`framework_version: 1.1.2 -> 1.1.3`), so
+  an agent following it cannot write a 403 off as closed. No migration: no existing entry
+  carries the new status. Reported by @ai-tvang, who also proposed the time floor and the
+  give-up listing.
+
 ### Fixed
+
+- **`05-cv-templates.md` snippets write the `\cventry` date argument with an ASCII hyphen, as the same
+  file's own rule requires** (`.claude/skills/job-application-assistant/05-cv-templates.md`,
+  `framework_version: 1.4.6 -> 1.4.7`) - the in-progress-qualification snippet under "In-progress
+  qualifications must say so explicitly" wrote `\cventry{2025--2026}`, the `\needspace` snippet
+  under the orphaned-entry fix wrote `\cventry{YEAR--YEAR}`, and the in-progress section offered a date field
+  of `2025–present` (U+2013) as an accepted alternative. All three are values copied straight into a
+  CV, so an assistant following the file produced exactly the en-dash that **Date fields must be ASCII
+  ranges** forbids 130 lines further down, and that `/apply` Step 5d then rejects: inserting the
+  in-progress snippet as shipped into `cv/main_example.tex` and compiling with `lualatex` makes
+  `python tools/verify_pdf.py cv/main_example.pdf --pages 2 --ascii-dates` exit 1 with
+  `U+2013 in '... 2025–2026'`, where the unmodified template passes. #276 fixed the template's own
+  date fields and added the rule section, but these snippets predate it (#210) and were missed. The
+  deliberate negative example (`% en-dash, may not`) and the illustrations of the forms `--ascii-dates`
+  catches are left as they are.
+
+- **`verify_pdf.py --ascii-dates` no longer reads a numeric range with year-shaped ends as a
+  date** - #512 bounded the year to four standalone digits, but `EUR 1500–2000 per month` and
+  `2000–5000 requests per second` still failed `/apply` Step 5d: each has a four-digit number
+  next to the dash that happens to fall in 1900-2099. A range whose two ends are both bare
+  numbers (the whole whitespace-delimited token, outer punctuation stripped) now counts as a
+  date only when both are years, so the salary band and the throughput range pass, while
+  `2016–2024`, `1990–2010` and `2016 – Present` still fail as before and a numerically
+  formatted range (`03/2016–07/2024`, `01.2016 – 12.2024`, `2016-03–2024-07`, `2016/17–2018/19`)
+  is not a bare number on either side and is still caught. Three new `test_verify_pdf.py`
+  cases; the quantity one fails on master.
+
+- **`upstream_triage` forces UTF-8 stdout and decodes git output as UTF-8** (#544,
+  `tools/upstream_triage.py`, `tests/test_tools_utf8_output.py`) - like the other Python tools,
+  the triage report now calls `_force_utf8_output()` on startup and decodes git subprocess
+  streams with `encoding="utf-8", errors="replace"`. Under Windows default ANSI code pages (such as
+  `cp1252`), upstream commits with Cyrillic, CJK, or emoji characters in their subjects raised
+  `UnicodeEncodeError` when writing stdout or `UnicodeDecodeError` in subprocess pipes, terminating
+  triage runs before the report could be emitted.
 
 - **`jobnet-search occupations` preserves full identifiers in table output** - ESCO URIs and UUIDs are no longer truncated, with documentation-based regression checks covering LF and CRLF checkouts (#586).
 
@@ -140,6 +196,7 @@ per-file diff commands.
   it would go stale on the next bump. A derived test applies each skeleton the way the step
   says and asserts the shipped file's version still parses out unchanged; it fails on master.
   Found while re-checking #519's class of drift.
+
 
 - **`/reset profile` now targets the headings the shipped skill files actually have**
   (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - two of its Step 3

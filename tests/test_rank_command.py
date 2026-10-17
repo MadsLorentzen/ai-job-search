@@ -6,6 +6,7 @@ lint_skills.py enforces, and the persistence of scoring-agent gaps/strengths
 into seen_jobs.json (previously computed in Step 2 and thrown away after
 Step 5's terminal output).
 """
+import importlib.util
 import json
 import re
 import subprocess
@@ -57,6 +58,22 @@ class RankCommandSpec(unittest.TestCase):
             self.assertIn(field, empty_branch, f"the empty-run report must consume {field}")
         self.assertIn("Skip", empty_branch)
         self.assertIn("Steps 2-4", empty_branch, "an empty run must not fetch or score jobs")
+
+    def test_agent_status_contract_matches_the_state_helper(self):
+        """#534: `rank_state.py` owns the set of statuses a scoring agent may
+        return (`AGENT_STATUSES`), and Step 2's JSON contract must name exactly
+        that set. A status the spec offers but the tool lacks is rejected at
+        write-back; one the tool accepts but the spec omits is never produced."""
+        spec = importlib.util.spec_from_file_location("rank_state", REPO / "tools" / "rank_state.py")
+        rank_state = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(rank_state)
+
+        text = COMMAND.read_text(encoding="utf-8")
+        union = re.search(r'"status":\s*("[a-z_]+"(?:\s*\|\s*"[a-z_]+")+)', text)
+        self.assertIsNotNone(union, "Step 2's JSON contract must spell out the status union")
+        self.assertEqual(set(re.findall(r'"([a-z_]+)"', union.group(1))), set(rank_state.AGENT_STATUSES))
+        self.assertIn("unreachable", rank_state.AGENT_STATUSES)
+        self.assertIn('"fetch_error"', text, "an unreachable result names its failure for the report")
 
     def test_command_file_exists_with_lint_compliant_header(self):
         self.assertTrue(COMMAND.is_file(), "command spec missing")
