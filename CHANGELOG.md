@@ -29,6 +29,9 @@ per-file diff commands.
 
 ### Changed
 
+- **`tools/job_key.py` folds common Latin letters before slugging and offers an explicit state migration**
+  (#537, `.claude/skills/job-scraper/SKILL.md`, `tests/test_job_key.py`) - NFKD leaves letters such as `æ`, `ø`, `ß`, and `ł` unchanged, after which the ASCII slugger used to drop them. Distinct company or role names could then collapse to the same `seen_jobs.json` key. The helper folds common non-decomposing Latin letters while retaining an identity hash, and hash-disambiguates any other lost letters. Existing keys drift under the new rule, so `--audit --migrate` now requires an explicit request, creates an adjacent `.bak` copy first, and refuses key collisions rather than overwriting entries.
+
 - **`/apply` and `/rank` route matching portal URLs to installed CLI `detail` before `WebFetch`**
   (#535, `.claude/commands/apply.md` Step 0, `.claude/commands/rank.md` Step 2,
   `.claude/skills/job-application-assistant/09-web-research.md`) - job portal URLs pasted
