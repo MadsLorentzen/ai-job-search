@@ -324,6 +324,8 @@ per-file diff commands.
   unchanged, an absent one stays `""`. The JSON-LD test that pinned the raw `<p>...</p>` now
   expects the text, plus two new cases; the HTML case fails on master.
 
+- **Valid portal flag tests stay offline** (#581) - success controls use local fixtures instead of depending on live job portals or their credentials.
+
 - **`job_key.py` no longer gives two postings one key when a title or company is partly
   non-Latin** (`tools/job_key.py`, `tests/test_job_key.py`) - the hash fallbacks from #487
   and #502 fired only when the slug was completely empty, so a mixed-script name kept its
