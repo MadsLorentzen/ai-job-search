@@ -269,6 +269,8 @@ per-file diff commands.
   comma-separated value list containing only whitespace now returns `BAD_ARG` and
   exits 1 instead of silently dropping the filter and running a broader search.
 
+- **Salary lookups validate metadata before rendering** (#575) - malformed metadata produces an actionable error instead of a rendering traceback.
+
 - **The `/apply` host-check test derives its installed-portal hosts from the skills tree
   instead of a hand-copied set** (#497, `tests/test_apply_host_check.py`) - `SHIPPED_PORTAL_HOSTS`
   was six names typed into the test and nothing tied it to anything: a portal added by
