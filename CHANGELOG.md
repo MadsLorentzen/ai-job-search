@@ -68,6 +68,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/scrape` names `job_scraper/seen_jobs.json` by its full path in every step** (#608,
+  `.claude/skills/job-scraper/SKILL.md`, `tests/test_scrape_seen_jobs_path.py`) - seven references
+  after Step 0, including the Step 4 write instruction, used the bare filename, and an assistant
+  following them wrote the state file at the repository root, where the
+  `**/job_scraper/seen_jobs.json` ignore rule does not reach it; one fork committed its scrape
+  history that way. Every reference now carries the directory, and a test fails on any bare mention.
+
 - **`salary_lookup.py` accepts a BOM-prefixed `salary_data.json`** (#594, #602, `salary_lookup.py`,
   `tests/test_salary_lookup.py`) - the data file is opened with `utf-8-sig`, so a file saved by
   Windows PowerShell `Out-File`/`Set-Content` or by an editor that prepends a byte-order mark now
