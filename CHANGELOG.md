@@ -68,6 +68,8 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobindex-search` examples follow the search CLI contract** - the posted-today example includes a required query, unsupported flags are removed, and regression checks accept LF and CRLF checkouts (#579).
+
 - **`convert_salary_excel.py` converts the IDA workbook again** (#615, `tools/convert_salary_excel.py`,
   `tests/test_convert_salary_excel.py`) - the workbook heads its company column "Firmanavn og by",
   and since #75 made header matching whole-token only, "firma" no longer matched inside "Firmanavn",

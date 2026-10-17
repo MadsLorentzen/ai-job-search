@@ -47,8 +47,11 @@ async function search(args: string[]): Promise<URL[]> {
   }
 }
 
-test("the skill's posted-today example runs through the real search CLI", async () => {
-  const skill = await Bun.file(join(import.meta.dir, "../../SKILL.md")).text();
+test.each(["LF", "CRLF"])("the skill's posted-today example runs through the real search CLI with %s newlines", async (lineEnding) => {
+  const source = await Bun.file(join(import.meta.dir, "../../SKILL.md")).text();
+  const checkout = source.replace(/\r\n/g, "\n").replace(/\n/g, lineEnding === "CRLF" ? "\r\n" : "\n");
+  expect(checkout.includes("\r\n")).toBe(lineEnding === "CRLF");
+  const skill = checkout.replace(/\r\n/g, "\n");
   const example = skill.match(/### Jobs posted today[^\n]*\n\n```bash\n([\s\S]*?)```/)?.[1];
   expect(example).toBeDefined();
   // These concrete documentation examples contain only ordinary quoted or
