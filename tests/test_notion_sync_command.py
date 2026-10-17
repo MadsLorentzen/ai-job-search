@@ -49,7 +49,7 @@ class NotionSyncCommandSpec(unittest.TestCase):
         # lookup of `role` on the entry, which never matches, so one job became
         # two Notion rows with different Keys. The join is role-vs-title.
         text = COMMAND.read_text(encoding="utf-8")
-        line = next(l for l in text.splitlines() if "matched to `seen_jobs.json` entries" in l)
+        line = next(l for l in text.splitlines() if "matched to `job_scraper/seen_jobs.json` entries" in l)
         self.assertIn("company + title", line)
         self.assertIn("`title`", line)
         self.assertIn("`role`", line)
