@@ -211,6 +211,8 @@ per-file diff commands.
   RFC 9309 section 2.2.3, `$` is an end anchor only at the end of the pattern, and internal `$`
   characters are now matched literally.
 
+- **Salary workbook conversion prefers exact identity headers** (#571) - exact company column names take precedence over incidental substring matches in other headers.
+
 - **CV template guidance aligns geometry scale with master template** (#553,
   `.claude/skills/job-application-assistant/05-cv-templates.md`, `tests/test_latex_guidance.py`) -
   the preamble snippet in `05-cv-templates.md` specified `\usepackage[scale=0.77]{geometry}`,
