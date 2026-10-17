@@ -33,6 +33,16 @@ RUN_WRITES = {"scrape": {"seen"}, "rank": {"seen"}, "apply": {"seen", "tracker"}
 FILE_DIRS = ("cv", "cover_letters", "documents")
 CLAUDE_ARGS = os.environ.get("CLAUDE_UI_ARGS", "--permission-mode acceptEdits "
               "--allowedTools Bash Read Write Edit Glob Grep WebFetch WebSearch mcp__claude_ai_Gmail").split()
+# Claude Code write-protects every folder named .claude in headless runs, and no allow rule lifts
+# it. Profile files live under .claude/skills/, so runs stage new versions and the server installs
+# them (only known profile files, with a backup) when the run ends.
+STAGING_NOTE = (
+    "This workspace is managed by a local app, and files under .claude/ are write-protected here. "
+    "Whenever a task requires creating or changing a file under .claude/skills/, write that file's complete "
+    "new content to ui/staging/ using its path relative to .claude/ (for example "
+    ".claude/skills/job-scraper/search-queries.md -> ui/staging/skills/job-scraper/search-queries.md). "
+    "Never try to write the original path. The app installs staged files when the run ends, so treat them as saved.")
+INSTALLABLE = {p for p in profiles.PERSON_SEEDS if p.startswith(".claude/")}
 # Connectors an action cannot work without: (server name in Claude's init event, hint for the user).
 REQUIRED_MCP = {"gmail-sync": ("claude.ai Gmail", "Connect Gmail at claude.ai → Settings → Connectors, then run it again.")}
 MAX_BRIEF_BATCH = 12
@@ -131,7 +141,7 @@ def profile_summary(ws):
         return ""
     text = read_text(path)
     m = re.search(r"^## Candidate Profile\s*$(.*?)(?=^## (?!#))", text, re.S | re.M)
-    return (m.group(1) if m else "").strip()[:8000]
+    return re.sub(r"<!--.*?-->", "", m.group(1) if m else "", flags=re.S).strip()[:8000]
 
 
 def list_documents(ws):
@@ -446,6 +456,8 @@ ACTIONS = {  # name -> builder(args) -> prompt
     "followup": lambda a: "/outcome followup " + a,
     "gmail-sync": lambda a: "/gmail-sync " + a,
     "apply": lambda a: "/apply " + a,
+    "expand": lambda a: "/expand " + a,
+    "setup-section": lambda a: "/setup --section " + a,
 }
 SAFE_ARGS = re.compile(r"^[\w\s\-.:/?=&%#@,+()'äöüßæøåÆØÅçğıİşÇĞŞ]*$")
 ARTIFACT_EXT = (".pdf", ".md")
@@ -474,7 +486,7 @@ RUN_WRITES.update({"cover-letter": {"tracker"}, "cv": {"tracker"}, "interview": 
 # Extra CLI flags per action. Briefs are read-only: Claude returns JSON and the server stores it.
 RUN_FLAGS = {"brief": ["--disallowedTools", "Write", "Edit", "NotebookEdit"]}
 # Runs that rewrite the profile itself: nothing else may run in that profile meanwhile.
-EXCLUSIVE = {"setup", "merge"}
+EXCLUSIVE = {"setup", "merge", "expand", "setup-section"}
 for _a in EXCLUSIVE:
     RUN_WRITES[_a] = {"tracker", "seen", "briefs", "profile"}
 
@@ -598,6 +610,9 @@ def summarize(ev, run):
             elif c.get("type") == "tool_use":
                 inp = c.get("input", {})
                 brief = inp.get("description") or inp.get("command") or inp.get("file_path") or inp.get("url") or inp.get("query") or ""
+                ws = WS.get(run.get("ws"))
+                if ws:   # paths inside the profile read better relative to it
+                    brief = str(brief).replace(os.path.realpath(ws.root) + "/", "").replace(ws.root + "/", "")
                 out.append(("tool", f"{c.get('name')}: {str(brief)[:160]}"))
         return out
     if t == "result":
@@ -608,9 +623,15 @@ def summarize(ev, run):
         out = []
         denied = {}
         for d in ev.get("permission_denials") or []:
-            denied[d.get("tool_name")] = denied.get(d.get("tool_name"), 0) + 1
-        for tool, n in denied.items():
-            out.append(("error", f"Permission denied: {tool}" + (f" ({n}×)" if n > 1 else "")
+            ti = d.get("tool_input") or {}
+            inp = json.dumps(ti)
+            if "/.claude/" in inp or '".claude/' in inp or ".claude/" in str(ti.get("command", "")):
+                continue   # expected: .claude/ is write-protected and the run stages instead (STAGING_NOTE)
+            what = str(ti.get("description") or ti.get("command") or ti.get("file_path") or ti.get("url") or "")[:120]
+            denied.setdefault(d.get("tool_name"), []).append(what)
+        for tool, items in denied.items():
+            out.append(("error", f"Permission denied: {tool}" + (f" ({len(items)}×)" if len(items) > 1 else "")
+                        + (f" - {items[0]}" if items[0] else "")
                         + " - Claude could not use this tool; add it to CLAUDE_UI_ARGS if the flow needs it."))
         if ev.get("is_error"):
             out.append(("error", f"Failed ({ev.get('subtype')})"))
@@ -683,8 +704,13 @@ def start_run(ws, action, prompt, label=None, resume=None, ref=None, targets=Non
 
 
 def _exec(run):
-    cmd = ["claude", "-p", run["prompt"], "--output-format", "stream-json", "--verbose"] + CLAUDE_ARGS
-    cmd += RUN_FLAGS.get(run["action"], [])
+    prompt = run["prompt"]
+    if run["resume"]:
+        # A resumed session keeps its original system prompt, so --append-system-prompt alone would not
+        # reach it (sessions started before the note existed never saw it). Repeat it in the message.
+        prompt += f"\n\n[Note from the app] {STAGING_NOTE}"
+    cmd = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose"] + CLAUDE_ARGS
+    cmd += RUN_FLAGS.get(run["action"], []) + ["--append-system-prompt", STAGING_NOTE]
     if run["resume"]:
         cmd += ["--resume", run["resume"]]
     ws = WS[run["ws"]]
@@ -699,7 +725,8 @@ def _exec(run):
             try:
                 items = summarize(json.loads(line), run)
             except json.JSONDecodeError:
-                items = [("text", line.strip())] if line.strip() else []
+                # Non-JSON lines are the CLI's own notices (stderr), not Claude talking.
+                items = [("tool", line.strip())] if line.strip() else []
             run["lines"].extend(items)
             if run.get("abort") and run["status"] == "running":
                 stop_run(run)   # nothing useful can happen without the connector; don't spend tokens
@@ -707,6 +734,7 @@ def _exec(run):
         p.stdout.close()
         if SHUTTING_DOWN.is_set():
             return
+        install_staged(ws, run)
         dur = round(time.time() - run["started"])
         info = f"{dur // 60}m {dur % 60}s" if dur >= 60 else f"{dur}s"
         if run.get("cost"):
@@ -751,6 +779,36 @@ def signal_group(p, sig):
             p.kill() if sig == SIGKILL else p.terminate()
     except (ProcessLookupError, PermissionError, OSError):
         pass
+
+
+def install_staged(ws, run):
+    """Move files a run staged under ui/staging/ into .claude/ - known profile files only."""
+    import shutil
+    staging = os.path.join(ws.ui, "staging")
+    if not os.path.isdir(staging):
+        return
+    installed, ignored = [], []
+    for dirpath, _, fns in os.walk(staging):
+        for fn in fns:
+            src = os.path.join(dirpath, fn)
+            target = ".claude/" + os.path.relpath(src, staging).replace(os.sep, "/")
+            if target not in INSTALLABLE:
+                ignored.append(target)
+                continue
+            dest = os.path.join(ws.root, target)
+            if os.path.exists(dest):
+                backup = os.path.join(ws.ui, "backups", run["id"], target.replace(".claude/", "claude/", 1))
+                os.makedirs(os.path.dirname(backup), exist_ok=True)
+                shutil.copy2(dest, backup)
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            shutil.copyfile(src, dest)
+            installed.append(target)
+    shutil.rmtree(staging, ignore_errors=True)
+    if installed:
+        run["lines"].append(("done", f"Saved {len(installed)} profile file{'s' if len(installed) > 1 else ''}: "
+                             + ", ".join(t.rsplit('/', 1)[-1] for t in sorted(installed))))
+    for t in ignored:
+        run["lines"].append(("tool", f"Ignored staged file {t} (not a profile file)"))
 
 
 def stop_run(run):
@@ -811,6 +869,7 @@ def profile_info(ws, detail=False):
         info.update({"missing": st["missing"], "optional": st["optional"], "documents": list_documents(ws),
                      "portals": list_portals(ws), "summary": profile_summary(ws), "path": ws.root,
                      "template": ws.meta.get("template"), "synced": ws.meta.get("synced"),
+                     "deps_missing": ws.meta.get("deps_missing") or [],
                      "has_answers": os.path.exists(os.path.join(ws.root, "documents", "setup_answers.md"))})
     return info
 

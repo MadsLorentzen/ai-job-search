@@ -7,8 +7,9 @@ that person's CLAUDE.md, tracker, documents and settings - and nothing else.
 Framework files are copied from a git ref of the app repo (JOBUI_TEMPLATE_REF, default
 `master`), never from the working tree: the app checkout may itself hold someone's personal
 data. Files are copied, not symlinked, because tools/*.py find their root with
-Path(__file__).resolve() and would otherwise read the app's data. Only the portal CLIs'
-node_modules (large, stateless) are symlinked.
+Path(__file__).resolve() and would otherwise read the app's data. Portal CLI dependencies are
+installed per profile with `bun install` (a few seconds; bun clones from its cache) - sharing
+the app's node_modules breaks as soon as the app's install is older than the template.
 """
 import json
 import os
@@ -139,12 +140,24 @@ def _is_person_file(rel):
     return rel in PERSON_SEEDS or rel.startswith(PERSON_DIRS)
 
 
-def _link_node_modules(root):
-    """Share the app's installed portal dependencies instead of installing ~1 GB per profile."""
-    for nm in (APP / ".agents" / "skills").glob("*/cli/node_modules"):
-        target = Path(root) / nm.relative_to(APP)
-        if target.parent.exists() and not target.exists() and not target.is_symlink():
-            target.symlink_to(nm, target_is_directory=True)
+def install_deps(root, only=None):
+    """bun install in each portal CLI of a profile. Returns the CLI folders that failed."""
+    bun = shutil.which("bun")
+    failed = []
+    for pkg in sorted(Path(root).glob(".agents/skills/*/cli/package.json")):
+        cli = pkg.parent
+        if only is not None and cli not in only:
+            continue
+        nm = cli / "node_modules"
+        if nm.is_symlink():   # left by an older version of this module
+            nm.unlink()
+        if not bun:
+            failed.append(str(cli.relative_to(root)))
+            continue
+        r = subprocess.run([bun, "install", "--silent"], cwd=cli, capture_output=True, timeout=300)
+        if r.returncode:
+            failed.append(str(cli.relative_to(root)))
+    return failed
 
 
 # ---------- create / sync ----------
@@ -163,9 +176,10 @@ def create(slug, name):
         dest.write_bytes(blob)
     for d in DATA_DIRS:
         (root / d).mkdir(parents=True, exist_ok=True)
-    _link_node_modules(root)
+    failed = install_deps(root)
     profile = {"slug": slug, "name": (name or slug).strip()[:80], "path": str(root),
-               "created": date.today().isoformat(), "template": template_sha(), "gmail": False}
+               "created": date.today().isoformat(), "template": template_sha(), "gmail": False,
+               "deps_missing": failed}
     reg = load_registry()
     reg["profiles"].append(profile)
     save_registry(reg)
@@ -227,8 +241,11 @@ def sync(slug, dry_run=False):
         if not dry_run:
             dest.write_bytes(blob)
     if not dry_run:
-        _link_node_modules(root)
-        update(slug, template=template_sha(), synced=time.strftime("%Y-%m-%d %H:%M"))
+        # Reinstall a portal's dependencies when its package.json changed or they were never installed.
+        stale = {(root / rel).parent for rel in report["updated"] + report["added"] if rel.endswith("cli/package.json")}
+        stale |= {p.parent for p in root.glob(".agents/skills/*/cli/package.json") if not (p.parent / "node_modules").is_dir()}
+        failed = install_deps(root, only=stale) if stale else []
+        update(slug, template=template_sha(), synced=time.strftime("%Y-%m-%d %H:%M"), deps_missing=failed)
     return report
 
 

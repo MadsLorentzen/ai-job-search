@@ -131,6 +131,8 @@ ul.plain{margin:0;padding-left:16px;color:var(--ink2);font-size:12.5px}
 #log .l-text a{color:var(--acc);text-decoration:underline}
 #log .l-text code{font:11.5px ui-monospace,monospace;background:var(--hover);padding:0 4px;border-radius:4px}
 #log .l-tool{color:var(--mut)}
+.steps-g{margin:4px 0;color:var(--mut)}.steps-g summary{cursor:pointer;font-size:11.5px;list-style:none}.steps-g summary:before{content:"▸ ";}.steps-g[open] summary:before{content:"▾ "}
+.steps-g .l-tool{padding-left:14px}
 #log .l-done,#log .l-error{font-weight:600;margin-top:6px}
 .gen{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .gen .btn{justify-content:flex-start}
@@ -181,16 +183,62 @@ dialog .btns{justify-content:flex-end}
 .day{font-size:11.5px;font-weight:600;color:var(--mut);margin:14px 2px 2px}
 .day:first-child{margin-top:0}
 
+/* profiles */
+.pswitch{display:flex;align-items:center;gap:9px;width:100%;padding:6px 8px;border:0;background:none;border-radius:9px;cursor:pointer;text-align:left}
+.pswitch:hover{background:var(--hover)}
+.pswitch .pn{display:flex;flex-direction:column;min-width:0;flex:1}.pswitch b{font-size:14px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pswitch small{font-size:11px;color:var(--mut)}
+.pmenu{position:absolute;left:10px;top:62px;width:250px;background:var(--panel);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.22);padding:6px;z-index:30}
+.pmenu .item{padding:8px 10px}.pmenu .item small{margin-left:auto;color:var(--mut);font-size:11px}
+.pmenu hr{border:0;border-top:1px solid var(--line);margin:6px 4px}
+.avatar{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px;flex:none;background:linear-gradient(135deg,var(--acc),var(--violet))}
+.item .warnb{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--amber);background:color-mix(in srgb,var(--amber) 15%,transparent);border-radius:5px;padding:0 6px;line-height:17px}
+.page{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.panel{background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 20px}
+.panel h3{margin:0 0 4px;font-size:15px}.panel>p.m{margin:0 0 12px}
+.hero{padding:28px 28px 24px;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 12%,var(--panel)),var(--panel) 65%)}
+.hero h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}.hero p{margin:0 0 16px;color:var(--ink2);max-width:600px;line-height:1.55}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.checks li{display:flex;gap:8px;align-items:center;font-size:12.5px}.checks .ok{color:var(--green);font-weight:700}.checks .no{color:var(--amber);font-weight:700}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.steps button{border:0;background:var(--hover);color:var(--ink2);border-radius:99px;padding:4px 11px;font-size:12px;cursor:pointer}
+.steps button.on{background:var(--acc);color:#fff;font-weight:600}.steps button.done{color:var(--green)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 14px}
+.form .full{grid-column:1/-1}
+.form label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:550;color:var(--ink2)}
+.form label small{font-weight:400;color:var(--mut)}
+.form .req:after{content:" *";color:var(--red)}
+.drop{border:1.5px dashed color-mix(in srgb,var(--acc) 40%,var(--line));border-radius:var(--r);padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;background:color-mix(in srgb,var(--acc) 4%,transparent)}
+.drop:hover,.drop.over{background:color-mix(in srgb,var(--acc) 10%,transparent)}
+.drop b{display:block}.drop .m{font-size:12px}
+.docs{display:flex;flex-direction:column;gap:6px}
+.doc{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:12.5px}
+.doc .tag{margin-left:auto}
+.langrow{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:6px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.switch:last-child{border-bottom:0}.switch .m{font-size:12px}
+.tg{width:34px;height:20px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;border:0;flex:none;transition:.15s}
+.tg:after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:.15s}
+.tg.on{background:var(--green)}.tg.on:after{left:16px}
+.md{font-size:12.5px;line-height:1.6;color:var(--ink2)}.md h4{margin:10px 0 2px;font-size:13px;color:var(--ink)}
+.wiznav{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+#con.chat{height:62vh}
+.l-you{margin:10px 0 6px auto;max-width:75%;width:fit-content;background:var(--acc);color:#fff;padding:7px 12px;border-radius:12px 12px 2px 12px;font:12.5px/1.5 -apple-system,system-ui,sans-serif;white-space:pre-wrap}
+.askhint{display:flex;align-items:center;gap:8px;padding:8px 22px;background:color-mix(in srgb,var(--amber) 14%,transparent);color:var(--ink);font-size:12.5px;font-weight:550}
+
 @media (max-width:900px){body{grid-template-columns:1fr;grid-template-rows:auto 1fr}aside{flex-direction:row;overflow-x:auto;padding:10px;gap:6px}aside .group h6,.runbox,.brand span{display:none}.group{display:flex;gap:4px}
   .kpis{grid-template-columns:repeat(2,1fr)}#insp.open{position:fixed;inset:0;width:100%;z-index:10}.iw{width:100%}.search{width:auto;flex:1}.hide-sm{display:none}}
 </style></head><body>
 
 <aside>
-  <div class="brand"><div class="logo"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div><span>Job Search</span></div>
+  <button class="pswitch" id="pswitch" title="Switch job search"><span class="avatar" id="pav">·</span><span class="pn"><b id="pname">Job Search</b><small id="pstat"></small></span>
+    <svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button>
+  <div class="pmenu" id="pmenu" hidden></div>
   <div class="group" id="nav">
     <button class="item on" data-view="apps"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Applications<span class="n" id="n-apps"></span></button>
     <button class="item" data-view="jobs"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Discovered<span class="n" id="n-jobs"></span></button>
     <button class="item" data-view="runs"><svg viewBox="0 0 24 24"><path d="M4 17l6-6-6-6M12 19h8"/></svg>Activity<span class="n" id="n-runs"></span></button>
+    <button class="item" data-view="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Profile<span class="n" id="n-prof"></span></button>
   </div>
   <div class="group" id="filters"><h6 id="fh">STATUS</h6><div id="stlist"></div></div>
   <div class="group"><h6>RUN WITH CLAUDE</h6>
@@ -212,7 +260,8 @@ dialog .btns{justify-content:flex-end}
   <div class="scroll" id="scroll"></div>
   <div id="con"><div class="ch"><span class="dot" id="cdot"></span><b id="ctitle" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%">Activity</b><span class="m" id="cstat"></span><span style="flex:1"></span>
     <button class="btn danger" id="cancel" hidden>Stop</button><button class="x" id="cclose" title="Hide"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button></div><div class="arts" id="arts" hidden></div><div id="log"></div>
-    <form class="reply" id="reply" hidden><input class="field" id="replyI" placeholder="Reply to Claude… (continues the same session)" autocomplete="off">
+    <div class="askhint" id="askhint" hidden>💬 Claude is waiting for your answer — reply below to continue.</div>
+    <form class="reply" id="reply" hidden><textarea class="field" id="replyI" rows="1" placeholder="Reply to Claude… (Enter to send, Shift+Enter for a new line)" style="resize:none;max-height:140px"></textarea>
       <button type="button" class="btn q" data-q="Yes, proceed.">Yes, proceed</button><button class="btn pri">Send</button></form></div>
 </main>
 
@@ -223,15 +272,21 @@ dialog .btns{justify-content:flex-end}
   <p>Paste the posting URL, or the full posting text if the site blocks automated access (LinkedIn often does). Runs the full /apply flow: fit evaluation first, then CV and cover letter after you confirm.</p>
   <textarea class="field" id="naI" rows="10" placeholder="https://… or the full job description"></textarea>
   <div class="btns"><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn pri" value="ok">Start /apply</button></div></form></dialog>
+<dialog id="np"><form method="dialog"><h4>New job search</h4>
+  <p>Each job search has its own profile, documents, applications and job list — nothing is shared with the others.</p>
+  <input class="field" id="npI" placeholder="Whose job search? e.g. Anna Berg" autocomplete="off" maxlength="80">
+  <div class="btns"><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn pri" value="ok">Create</button></div></form></dialog>
+<input type="file" id="fileI" hidden accept=".pdf,.tex,.txt,.md">
 <div class="toast" id="toast"><span id="toastT"></span><button id="toastU">Undo</button></div>
 
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const api=async(p,b)=>{const r=await fetch(p,b?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}:{});const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j};
+const P=()=>'/p/'+encodeURIComponent(S.profile||'_');
+const api=async(p,b)=>{if(p.startsWith('/api/')&&!p.startsWith('/api/profiles'))p=P()+p;const r=await fetch(p,b?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}:{});const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j};
 const toast=(m,undo,btn='Undo')=>{const t=$('#toast');$('#toastT').textContent=m;$('#toastU').textContent=btn;t.classList.toggle('undo',!!undo);t.classList.add('on');
   $('#toastU').onclick=()=>{t.classList.remove('on');undo&&undo()};clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),undo?7000:2200)};
-const fileUrl=p=>'/file?path='+encodeURIComponent(p);
+const fileUrl=p=>P()+'/file?path='+encodeURIComponent(p);
 const fileName=p=>p.split('/').pop();
 function md(t){ // tiny, escape-first markdown for Claude's replies
   return esc(t).replace(/^#{1,4} (.*)$/gm,'<h4>$1</h4>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|[\s(])\*([^*\s][^*\n]*?)\*(?=[\s.,;:)!?]|$)/gm,'$1<i>$2</i>').replace(/`([^`]+)`/g,'<code>$1</code>')
@@ -262,7 +317,7 @@ function deadlineCell(s,open){const d=pdate(s);if(!d)return s&&s!=='open'?`<span
 const fitCell=f=>{if(!f)return '<span class="m">—</span>';if(/^\d+$/.test(f)){const n=+f;return `<span class="score" style="--c:var(${n>=70?'--green':n>=50?'--amber':'--red'})">${n}</span>`}
   return `<span class="tag">${esc(label(f))}</span>`};
 
-let S={view:'apps',open:true,status:'',q:'',sort:{k:'last_activity',d:-1},sel:null,rows:[],statuses:[],jobs:[],runs:[],run:null,seen:0,timer:null,
+let S={profile:null,profiles:[],pinfo:null,wiz:null,view:'apps',open:true,status:'',q:'',sort:{k:'last_activity',d:-1},sel:null,rows:[],statuses:[],jobs:[],runs:[],run:null,seen:0,timer:null,
   jg:'review',jsort:'score'};
 const inGroup=(j,g)=>g==='fresh'?j.fresh:j.group===g;
 const freshCount=()=>S.jobs.filter(j=>j.fresh).length;
@@ -278,11 +333,18 @@ function render(){
   $('#n-apps').textContent=S.rows.filter(r=>!r.final).length||'';$('#n-runs').textContent=S.runs.length||'';
   $('#n-jobs').className=fc?'badge':'n';$('#n-jobs').textContent=fc?fc+' new':(S.jobs.filter(j=>j.group==='review').length||'');
   $$('#nav .item').forEach(b=>b.classList.toggle('on',b.dataset.view===S.view));
-  $('#filters').hidden=S.view==='runs';$('#fh').textContent=S.view==='jobs'?'SHOW':'STATUS';
-  $('#seg').style.visibility=$('.search').style.visibility=S.view==='runs'?'hidden':'';
+  const plain=!S.profile||!['apps','jobs'].includes(S.view)||S.pinfo?.status==='new';
+  $('#filters').hidden=plain;$('#fh').textContent=S.view==='jobs'?'SHOW':'STATUS';
+  $('#seg').style.visibility=$('.search').style.visibility=plain?'hidden':'';
   $('#seg').innerHTML=S.view==='jobs'?`<button data-js="score" class="${S.jsort==='score'?'on':''}">Best match</button><button data-js="date" class="${S.jsort==='date'?'on':''}">Newest</button>`
     :`<button data-o="1" class="${S.open?'on':''}">Open</button><button data-o="0" class="${!S.open?'on':''}">All</button>`;
-  if(S.view==='apps')renderApps();else if(S.view==='jobs')renderJobs();else renderRuns();
+  const st=S.pinfo?.status;
+  $('#n-prof').className=st&&st!=='ready'?'warnb':'n';$('#n-prof').textContent=st==='new'?'Set up':st==='partial'?'Finish':'';
+  const gm=$('[data-run="gmail-sync"]');gm.disabled=!!S.pinfo&&!S.pinfo.gmail;gm.title=gm.disabled?'Off for this profile — see Profile → Gmail':'';
+  if(!S.profile){renderWelcome();return renderInspector()}
+  if((S.view==='apps'||S.view==='jobs')&&st==='new'){renderOnboard();return renderInspector()}
+  if(S.view==='apps')renderApps();else if(S.view==='jobs')renderJobs();else if(S.view==='profile')renderProfile();else if(S.view==='setup')renderSetup();else renderRuns();
+  if((S.view==='apps'||S.view==='jobs')&&st==='partial')$('#scroll').insertAdjacentHTML('afterbegin',`<div class="banner">${I.spark}<div><b>Profile setup isn't finished</b><div class="m">${S.pinfo.missing.length} part${S.pinfo.missing.length>1?'s':''} still hold template placeholders, so searches and documents may be off.</div></div><span style="flex:1"></span><button class="btn" data-go="profile">Finish setup</button></div>`);
   renderInspector();
 }
 function sideStatuses(){
@@ -362,6 +424,171 @@ function renderRuns(){
      <td class="num m">${r.ended?dur(r.ended-r.started):'…'}</td><td class="num m">${r.cost?'$'+r.cost.toFixed(2):'—'}</td></tr>`).join('')}</tbody></table>${S.runs.length?'':'<div class="empty">No runs yet. Use the actions in the sidebar.</div>'}</div>`;
 }
 
+// ---------- profiles ----------
+const initials=n=>(n||'?').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const PST={new:['Not set up','--amber'],partial:['Setup unfinished','--amber'],ready:['Ready','--green']};
+async function loadProfiles(){const j=await api('/api/profiles');S.profiles=j.profiles;S.home=j.home;renderSwitcher();return j.profiles}
+async function loadProfile(){if(!S.profile)return;try{S.pinfo=await api('/api/profile')}catch(e){S.pinfo=null}renderSwitcher();render()}
+function renderSwitcher(){
+  const p=S.profiles.find(x=>x.slug===S.profile);
+  $('#pav').textContent=p?initials(p.name):'+';$('#pname').textContent=p?p.name:'Job Search';
+  $('#pstat').textContent=p?(PST[S.pinfo?.status||p.status]||[''])[0]:'No job search yet';
+  $('#pmenu').innerHTML=S.profiles.map(x=>`<button class="item ${x.slug===S.profile?'on':''}" data-prof="${esc(x.slug)}"><span class="avatar" style="width:22px;height:22px;font-size:10px">${esc(initials(x.name))}</span>${esc(x.name)}
+      <small>${x.live?'● running':(PST[x.status]||[''])[0]}</small></button>`).join('')+
+    `${S.profiles.length?'<hr>':''}<button class="item" data-newprof><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New job search</button>`;
+}
+async function switchProfile(slug,view){
+  S.profile=slug;try{localStorage.setItem('jobui.profile',slug)}catch{}
+  Object.assign(S,{rows:[],jobs:[],runs:[],sel:null,run:null,prev:{},sig:'',status:'',q:'',wiz:null});$('#q').value='';
+  clearInterval(S.timer);$('#con').classList.remove('open','chat');$('#runbox').hidden=true;
+  await loadProfile();
+  S.view=view||(S.pinfo?.status==='new'?'setup':S.view==='setup'?'apps':S.view);
+  await Promise.all([loadApps(),loadJobs()]);
+  const r=await api('/api/runs');S.prev=Object.fromEntries(r.map(x=>[x.id,x.status]));const live=r.find(x=>isLive(x.status));if(live)attach(live.id);watch();render()}
+function newProfile(){$('#pmenu').hidden=true;$('#npI').value='';$('#np').showModal();setTimeout(()=>$('#npI').focus(),0)}
+$('#np').onclose=async()=>{const name=$('#npI').value.trim();if($('#np').returnValue!=='ok'||!name)return;
+  try{const p=await api('/api/profiles',{name});await loadProfiles();await switchProfile(p.slug,'setup');toast(`Created “${p.name}”`)}catch(e){toast(e.message)}};
+$('#pswitch').onclick=e=>{e.stopPropagation();loadProfiles();$('#pmenu').hidden=!$('#pmenu').hidden};
+$('#pmenu').onclick=e=>{e.stopPropagation();const b=e.target.closest('[data-prof]');if(b){$('#pmenu').hidden=true;if(b.dataset.prof!==S.profile)switchProfile(b.dataset.prof)}
+  if(e.target.closest('[data-newprof]'))newProfile()};
+document.addEventListener('click',()=>{$('#pmenu').hidden=true});
+
+function renderWelcome(){
+  $('#title').textContent='Welcome';$('#subtitle').textContent='';
+  $('#scroll').innerHTML=`<div class="page"><div class="panel hero"><h2>Start a job search</h2>
+    <p>Each job search gets its own profile: your CV and answers, the jobs found for you, your applications and the documents Claude writes. Several people can each have one, and nothing is shared between them.</p>
+    <button class="btn pri" data-newprof>${I.spark}New job search</button></div></div>`}
+function renderOnboard(){
+  const p=S.pinfo;$('#title').textContent=p.name;$('#subtitle').textContent='';
+  $('#scroll').innerHTML=`<div class="page"><div class="panel hero"><h2>Let's set up ${esc(p.name.split(' ')[0])}'s job search</h2>
+    <p>A few minutes of questions and a CV upload. Claude then reads the CV, builds the profile, chooses search terms and job boards, and asks only where something is unclear.</p>
+    <button class="btn pri" data-go="setup">${I.spark}Start setup</button></div>
+    <div class="panel"><h3>What you'll need</h3><ul class="checks"><li><span class="ok">1</span>A CV (PDF, LaTeX or text) — or paste it</li><li><span class="ok">2</span>Optional: a LinkedIn profile PDF (Profile → More → Save to PDF)</li>
+    <li><span class="ok">3</span>The kind of roles you want, where, and what's a no-go</li></ul>
+    <p class="m" style="margin:12px 0 0">Stored only on this computer, in <code>${esc(p.path||'')}</code>.</p></div></div>`}
+
+// ----- profile page -----
+function renderProfile(){
+  const p=S.pinfo;if(!p)return;$('#title').textContent='Profile';$('#subtitle').textContent=p.name;
+  const setupRun=S.runs.find(r=>['setup','expand','setup-section','merge'].includes(r.action)&&isLive(r.status));
+  const asking=S.runs.find(r=>['setup','setup-section'].includes(r.action)&&r.id===S.lastAsk);
+  const docs=p.documents.map(d=>`<div class="doc">${I.doc}<a href="${fileUrl(d.path)}" target="_blank">${esc(d.name)}</a><span class="tag">${esc(d.folder)}</span><button class="x" style="margin:0" data-deldoc="${esc(d.folder)}/${esc(d.name)}" title="Remove">${I.x}</button></div>`).join('');
+  $('#scroll').innerHTML=`<div class="page">
+   ${setupRun?`<div class="banner">${I.spark}<div><b>${esc(setupRun.label)} in progress</b><div class="m">Claude is working on this profile. Other actions wait until it finishes.</div></div><span style="flex:1"></span><button class="btn" data-open-run="${setupRun.id}">Open conversation</button></div>`:''}
+   ${asking&&!setupRun?`<div class="banner">💬<div><b>Claude asked something</b><div class="m">Answer in the conversation to finish setup.</div></div><span style="flex:1"></span><button class="btn pri" data-open-run="${asking.id}">Answer</button></div>`:''}
+   <div class="panel"><div style="display:flex;align-items:center;gap:10px"><h3 style="margin:0">Setup</h3>${pill2(p.status)}</div>
+     ${p.status==='ready'?`<p class="m" style="margin:8px 0 0">Everything the commands need is filled in.</p>`:`<p class="m" style="margin:8px 0 10px">${p.status==='new'?'Not set up yet.':'These parts still hold template placeholders:'}</p>
+       <ul class="checks">${p.missing.map(m=>`<li><span class="no">!</span>${esc(m.label)} <span class="m">${esc(m.file)}</span></li>`).join('')}</ul>`}
+     ${p.optional.length?`<p class="m" style="margin:8px 0 0">Optional, not filled: ${p.optional.map(o=>esc(o.label)).join(', ')}</p>`:''}
+     <div class="btns" style="margin-top:14px"><button class="btn ${p.status==='ready'?'':'pri'}" data-go="setup">${I.spark}${p.status==='new'?'Start setup':p.has_answers?'Edit answers & run setup again':'Run setup'}</button>
+       ${p.status!=='new'?`<button class="btn" data-prun="setup-section" data-arg="search">Refresh search settings</button><button class="btn" data-prun="expand" data-arg="">Enrich from documents & web</button>`:''}</div></div>
+   <div class="panel"><h3>Documents</h3><p class="m">What Claude reads to build and update the profile.</p>
+     <div class="docs">${docs||'<span class="m">No documents yet.</span>'}</div>
+     <div class="btns" style="margin-top:10px">${['cv','linkedin','diplomas','references','projects'].map(f=>`<button class="btn" data-upload="${f}">+ ${label(f==='cv'?'CV':f==='linkedin'?'LinkedIn PDF':f)}</button>`).join('')}</div></div>
+   ${p.summary&&p.status!=='new'?`<div class="panel"><h3>Profile summary</h3><p class="m">From CLAUDE.md — what every command knows about ${esc(p.name.split(' ')[0])}.</p><div class="md">${md(p.summary)}</div></div>`:''}
+   <div class="panel"><h3>Job boards</h3><p class="m">Which portals “Scrape new jobs” searches for this profile.</p>
+     ${p.deps_missing.length?`<p class="bad" style="margin:0 0 8px">Tools for ${p.deps_missing.length} job board${p.deps_missing.length>1?'s':''} could not be installed (is <code>bun</code> installed?). Run “Update framework” to retry.</p>`:''}
+     ${p.portals.map(x=>`<div class="switch"><div><b>${esc(x.name.replace('-search',''))}</b><div class="m">${esc(x.description)}</div></div><button class="tg ${x.enabled?'on':''}" data-portal="${esc(x.name)}"></button></div>`).join('')}</div>
+   <div class="panel"><h3>Gmail</h3><div class="switch"><div><b>Sync application replies from Gmail</b><div class="m">The Gmail connector belongs to your Claude account, so every profile would read the same mailbox. Turn this on only for the person whose mailbox it is.</div></div><button class="tg ${p.gmail?'on':''}" data-gmail></button></div></div>
+   <div class="panel"><h3>Data & updates</h3><p class="m">Stored in <code>${esc(p.path)}</code>${p.external?' (a git checkout — update and back it up with git)':''}.</p>
+     ${p.external?'':`<div class="btns"><button class="btn" data-sync>${I.undo}Update framework</button><a class="btn" href="${P()}/api/export">${I.doc}Download backup (.zip)</a></div>
+     <p class="m" style="margin:8px 0 0">Framework version ${esc(p.template||'?')}${p.synced?' · last updated '+esc(p.synced):''}</p>`}</div>
+  </div>`}
+const pill2=s=>`<span class="pill" style="--c:var(${(PST[s]||['','--gray'])[1]})"><span class="dot"></span>${(PST[s]||[s])[0]}</span>`;
+
+// ----- setup wizard -----
+const WSTEPS=['Welcome','You','CV & documents','Languages','What to search','Goals & limits','Review'];
+const LEVELS=['Native','Fluent (C1–C2)','Professional working','Intermediate (B1–B2)','Basic (A1–A2)'];
+function wizLoad(){let a={};try{a=JSON.parse(localStorage.getItem('jobui.wiz.'+S.profile)||'{}')}catch{}
+  if(!a.full_name&&S.pinfo)a.full_name=S.pinfo.name;if(!a.languages)a.languages=[{language:'English',level:''}];return {step:0,a}}
+function wizSave(){try{localStorage.setItem('jobui.wiz.'+S.profile,JSON.stringify(S.wiz.a))}catch{}}
+function fld(k,lab,o={}){const v=esc(S.wiz.a[k]||'');return `<label class="${o.full?'full':''}"><span class="${o.req?'req':''}">${lab}</span>
+  ${o.area?`<textarea class="field" data-f="${k}" rows="${o.rows||3}" placeholder="${esc(o.ph||'')}">${v}</textarea>`:`<input class="field" data-f="${k}" value="${v}" placeholder="${esc(o.ph||'')}" ${o.list?`list="${o.list}"`:''}>`}
+  ${o.help?`<small>${o.help}</small>`:''}</label>`}
+function renderSetup(){
+  if(!S.wiz)S.wiz=wizLoad();const w=S.wiz,a=w.a,p=S.pinfo;
+  $('#title').textContent='Set up';$('#subtitle').textContent=p.name;
+  const nav=(next='Next')=>`<div class="wiznav"><button class="btn" data-wiz="${w.step-1}" ${w.step?'':'hidden'}>Back</button><span></span><button class="btn pri" data-wiz="${w.step+1}">${next}</button></div>`;
+  const docs=p.documents;let body='';
+  if(w.step===0)body=`<div class="panel hero"><h2>Set up ${esc(a.full_name||p.name)}'s job search</h2>
+    <p>Answer what you can — only fields with <span style="color:var(--red)">*</span> are required. Then Claude reads the CV, writes the profile, search terms and document templates, and asks only if something is unclear (for example two different dates for the same job).</p>
+    <p class="m">Takes about 5 minutes to fill in and a few minutes for Claude. Your answers are saved as you type.</p>${nav('Start')}</div>`;
+  if(w.step===1)body=`<div class="panel"><h3>About you</h3><p class="m">Used on the CV and cover letters.</p><div class="form">
+    ${fld('full_name','Full name',{req:1})}${fld('email','Email')}${fld('phone','Phone')}${fld('location','Home city / address',{ph:'e.g. Copenhagen, Denmark'})}
+    ${fld('linkedin','LinkedIn URL')}${fld('github','GitHub / portfolio URL',{help:'Leave blank if none'})}
+    ${fld('status','Current situation',{full:1,ph:'e.g. Available now — contract ended in September'})}</div>${nav()}</div>`;
+  if(w.step===2)body=`<div class="panel"><h3>CV & documents</h3><p class="m">Upload a CV, or paste it below. A LinkedIn PDF helps Claude cross-check dates and titles.</p>
+    <div class="docs" style="margin-bottom:10px">${docs.map(d=>`<div class="doc">${I.doc}${esc(d.name)}<span class="tag">${esc(d.folder)}</span><button class="x" style="margin:0" data-deldoc="${esc(d.folder)}/${esc(d.name)}">${I.x}</button></div>`).join('')}</div>
+    <div class="form"><div class="drop" data-upload="cv"><span style="font-size:22px">📄</span><div><b>Upload CV</b><span class="m">PDF, LaTeX, Markdown or text · up to 15 MB</span></div></div>
+    <div class="drop" data-upload="linkedin"><span style="font-size:22px">🔗</span><div><b>Upload LinkedIn PDF</b><span class="m">Profile → More → Save to PDF</span></div></div>
+    <div class="full btns">${['diplomas','references','projects'].map(f=>`<button class="btn" data-upload="${f}">+ ${label(f)}</button>`).join('')}</div>
+    ${fld('cv_text','…or paste the CV text',{full:1,area:1,rows:6,help:docs.some(d=>d.folder==='cv')?'Not needed — a CV is uploaded.':'Only needed if you did not upload a CV.'})}</div>${nav()}</div>`;
+  if(w.step===3)body=`<div class="panel"><h3>Languages</h3><p class="m">Postings that require a language you don't list are filtered out, so list every working language.</p>
+    ${(a.languages||[]).map((l,i)=>`<div class="langrow"><input class="field" data-lang="${i}" data-k="language" value="${esc(l.language)}" placeholder="Language">
+      <select class="field" data-lang="${i}" data-k="level"><option value="">Level…</option>${LEVELS.map(x=>`<option ${l.level===x?'selected':''}>${x}</option>`).join('')}</select>
+      <button class="x" style="margin:0" data-dellang="${i}">${I.x}</button></div>`).join('')}
+    <button class="btn" data-addlang>+ Add language</button>
+    <div class="form" style="margin-top:14px">${fld('cv_language','Language to write the CV in',{ph:'e.g. English'})}</div>${nav()}</div>`;
+  if(w.step===4)body=`<div class="panel"><h3>What to search for</h3><p class="m">This becomes the search queries and job boards.</p><div class="form">
+    ${fld('roles','Roles you want',{req:1,full:1,area:1,ph:'One per line, e.g.\nTravel coordinator\nGlobal mobility specialist',help:'3–8 job titles. Think about the day-to-day work you want.'})}
+    ${fld('skills','Key skills to search on',{area:1,ph:'e.g. visa processing, Amadeus, budget reporting'})}${fld('industries','Industries / sectors',{area:1,ph:'e.g. NGOs, UN agencies, pharma'})}
+    ${fld('market','Country / job market',{req:1,list:'markets',ph:'e.g. Denmark'})}${fld('areas','Cities or regions',{req:1,ph:'e.g. Copenhagen and Zealand'})}
+    ${fld('commute_ideal','Ideal commute',{ph:'e.g. under 30 min'})}${fld('commute_ok','Acceptable',{ph:'e.g. up to 45 min'})}
+    ${fld('commute_borderline','Borderline',{ph:'e.g. 1 hour, if hybrid'})}${fld('commute_no','Too far',{ph:'e.g. more than 1 hour'})}
+    ${fld('companies','Companies you would love to work for',{full:1,area:1,rows:2,help:'Optional'})}</div>
+    <datalist id="markets"><option>Denmark</option><option>Sweden</option><option>Norway</option><option>Germany</option><option>Netherlands</option><option>United Kingdom</option><option>Remote / international</option></datalist>${nav()}</div>`;
+  if(w.step===5)body=`<div class="panel"><h3>Goals & limits</h3><div class="form">
+    ${fld('goals','Career goals',{full:1,area:1,ph:'Where do you want to be in 2–3 years?'})}${fld('excites','What excites you at work',{full:1,area:1})}
+    ${fld('dealbreakers','Deal-breakers',{full:1,area:1,ph:'e.g. night shifts, relocation, fluent Danish required',help:'Jobs with these are excluded, not just ranked lower.'})}
+    ${fld('avoid','Environments to avoid',{area:1})}${fld('salary','Salary expectations',{help:'Optional'})}</div>
+    <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600">Working style <span class="m">(optional — helps tailor cover letters and interview prep)</span></summary><div class="form" style="margin-top:10px">
+      ${fld('b_thrive','Environments you thrive in',{area:1})}${fld('b_drains','What drains your energy',{area:1})}${fld('b_teams','How you like to work in teams',{area:1})}
+      ${fld('b_decisions','How you make decisions',{area:1})}${fld('b_communication','Your communication style',{area:1})}${fld('notes','Anything else Claude should know',{area:1})}</div></details>${nav('Review')}</div>`;
+  if(w.step===6){const miss=wizMissing();
+    const row=(k,l)=>a[k]?`<li><span class="ok">✓</span><b style="min-width:150px">${l}</b><span class="m" style="white-space:pre-wrap">${esc(String(a[k]).slice(0,160))}</span></li>`:'';
+    body=`<div class="panel"><h3>Review</h3><p class="m">Claude uses these answers and ${docs.length} uploaded document${docs.length===1?'':'s'}.</p>
+    <ul class="checks">${row('full_name','Name')}${row('roles','Roles')}${row('market','Market')}${row('areas','Where')}${row('dealbreakers','Deal-breakers')}
+      <li><span class="ok">✓</span><b style="min-width:150px">Languages</b><span class="m">${esc((a.languages||[]).filter(l=>l.language).map(l=>l.language+(l.level?' ('+l.level+')':'')).join(', ')||'—')}</span></li>
+      <li><span class="${docs.some(d=>['cv','linkedin'].includes(d.folder))||a.cv_text?'ok':'no'}">${docs.some(d=>['cv','linkedin'].includes(d.folder))||a.cv_text?'✓':'!'}</span><b style="min-width:150px">CV</b><span class="m">${docs.filter(d=>d.folder==='cv').map(d=>esc(d.name)).join(', ')||(a.cv_text?'pasted text':'missing')}</span></li></ul>
+    ${miss.length?`<p class="bad" style="margin:12px 0 0">Still needed: ${miss.join(', ')}</p>`:''}
+    ${p.status!=='new'?`<p class="m" style="margin:12px 0 0">This profile is already set up. Running setup again updates it; Claude asks before replacing anything you have.</p>`:''}
+    <div class="wiznav"><button class="btn" data-wiz="5">Back</button><span class="m">Takes a few minutes · usually $1–3</span><button class="btn pri" data-startsetup ${miss.length?'disabled':''}>${I.spark}Start setup</button></div></div>`}
+  $('#scroll').innerHTML=`<div class="page"><div class="steps">${WSTEPS.map((t,i)=>`<button data-wiz="${i}" class="${i===w.step?'on':i<w.step?'done':''}">${i<w.step?'✓ ':''}${t}</button>`).join('')}</div>${body}</div>`}
+function wizMissing(){const a=S.wiz.a,docs=S.pinfo.documents,m=[];
+  if(!(a.full_name||'').trim())m.push('name');if(!(a.roles||'').trim())m.push('roles');if(!(a.market||'').trim())m.push('country');if(!(a.areas||'').trim())m.push('cities');
+  if(!docs.some(d=>['cv','linkedin'].includes(d.folder))&&!(a.cv_text||'').trim())m.push('a CV');return m}
+async function startSetup(){try{const r=await api('/api/setup',{answers:S.wiz.a});S.view='profile';attach(r.id,true);toast('Setup started — Claude is reading your documents');await watch();await loadProfile()}catch(e){toast(e.message)}}
+function upload(folder){const f=$('#fileI');f.value='';f.onchange=async()=>{const file=f.files[0];if(!file)return;
+  if(file.size>15*1024*1024)return toast('That file is larger than 15 MB');
+  const data=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result.split(',')[1]);r.onerror=no;r.readAsDataURL(file)});
+  try{toast('Uploading…');await api('/api/upload',{folder,name:file.name,data});await loadProfile();toast(`Added ${file.name}`)}catch(e){toast(e.message)}};f.click()}
+$('#scroll').addEventListener('input',e=>{const t=e.target;if(!S.wiz||S.view!=='setup')return;
+  if(t.dataset.f){S.wiz.a[t.dataset.f]=t.value;wizSave()}
+  if(t.dataset.lang!=null){S.wiz.a.languages[+t.dataset.lang][t.dataset.k]=t.value;wizSave()}});
+$('#scroll').addEventListener('change',e=>{const t=e.target;if(S.wiz&&t.dataset.lang!=null){S.wiz.a.languages[+t.dataset.lang][t.dataset.k]=t.value;wizSave()}});
+$('#scroll').addEventListener('dragover',e=>{const d=e.target.closest('.drop');if(d){e.preventDefault();d.classList.add('over')}});
+$('#scroll').addEventListener('dragleave',e=>{e.target.closest('.drop')?.classList.remove('over')});
+$('#scroll').addEventListener('drop',async e=>{const d=e.target.closest('.drop');if(!d)return;e.preventDefault();d.classList.remove('over');const file=e.dataTransfer.files[0];if(!file)return;
+  const data=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result.split(',')[1]);r.readAsDataURL(file)});
+  try{await api('/api/upload',{folder:d.dataset.upload,name:file.name,data});await loadProfile();toast(`Added ${file.name}`)}catch(x){toast(x.message)}});
+async function profileClick(e){const t=e.target;
+  const go=t.closest('[data-go]');if(go){S.view=go.dataset.go;S.sel=null;if(S.view==='setup')S.wiz=wizLoad();render();return true}
+  if(t.closest('[data-newprof]')){newProfile();return true}
+  const wz=t.closest('[data-wiz]');if(wz){const n=+wz.dataset.wiz;if(n>=0&&n<WSTEPS.length){S.wiz.step=n;render();$('#scroll').scrollTop=0}return true}
+  if(t.closest('[data-addlang]')){S.wiz.a.languages.push({language:'',level:''});wizSave();render();return true}
+  const dl=t.closest('[data-dellang]');if(dl){S.wiz.a.languages.splice(+dl.dataset.dellang,1);wizSave();render();return true}
+  if(t.closest('[data-startsetup]')){startSetup();return true}
+  const up=t.closest('[data-upload]');if(up){upload(up.dataset.upload);return true}
+  const dd=t.closest('[data-deldoc]');if(dd){const [folder,...n]=dd.dataset.deldoc.split('/');if(confirm(`Remove ${n.join('/')}?`)){try{await api('/api/documents/delete',{folder,name:n.join('/')});await loadProfile()}catch(x){toast(x.message)}}return true}
+  const pt=t.closest('[data-portal]');if(pt){try{await api('/api/portals',{name:pt.dataset.portal,enabled:!pt.classList.contains('on')});await loadProfile()}catch(x){toast(x.message)}return true}
+  if(t.closest('[data-gmail]')){await api('/api/profile',{gmail:!S.pinfo.gmail});await loadProfile();await loadProfiles();return true}
+  const pr=t.closest('[data-prun]');if(pr){await run(pr.dataset.prun,pr.dataset.arg);return true}
+  const or=t.closest('[data-open-run]');if(or){attach(or.dataset.openRun,true);return true}
+  if(t.closest('[data-sync]')){try{const rep=await api('/api/sync',{});await loadProfile();
+    if(rep.needs_merge.length)toast(`${rep.updated.length} files updated · ${rep.needs_merge.length} need merging`,()=>api('/api/merge',{}).then(r=>{attach(r.id,true);watch()}).catch(x=>toast(x.message)),'Merge with Claude');
+    else toast(rep.updated.length||rep.added.length?`Updated ${rep.updated.length+rep.added.length} framework files`:'Already up to date')}catch(x){toast(x.message)}return true}
+  return false}
+
 // ---------- role brief ----------
 const briefBusy=id=>S.runs.some(r=>r.action==='brief'&&isLive(r.status)&&(r.brief_ids||[]).includes(id));
 const FIT={high:'--green',medium:'--amber',low:'--red'};
@@ -413,7 +640,7 @@ function renderInspector(){
       ${r.days_quiet!=null?`<dt>Waiting</dt><dd>${r.days_quiet} days${r.followups?` · ${r.followups} follow-up${r.followups>1?'s':''}`:''}</dd>`:''}
      </dl>
      <div class="btns">${r.source?`<a class="btn" href="${esc(r.source.trim())}" target="_blank" rel="noopener">${I.ext}Posting</a>`:''}
-      ${r.files.map(f=>`<a class="btn" href="/file?path=${encodeURIComponent(f.path)}" target="_blank">${I.doc}${f.label}${f.kind!=='pdf'?` <span class="m">.${f.kind}</span>`:''}</a>`).join('')}</div>
+      ${r.files.map(f=>`<a class="btn" href="${fileUrl(f.path)}" target="_blank">${I.doc}${f.label}${f.kind!=='pdf'?` <span class="m">.${f.kind}</span>`:''}</a>`).join('')}</div>
      ${briefBlock('app',r)}
      ${genBlock('app',r)}
      ${!r.final&&r.status!=='drafted'?`<div class="btns"><button class="btn" data-a="followup">${I.mail}Draft follow-up email</button></div>`:''}
@@ -440,7 +667,7 @@ function renderInspector(){
 }
 
 // ---------- events ----------
-$('#nav').onclick=e=>{const b=e.target.closest('[data-view]');if(!b)return;S.view=b.dataset.view;S.sel=null;$('#q').value=S.q='';
+$('#nav').onclick=e=>{const b=e.target.closest('[data-view]');if(!b||!S.profile)return;S.view=b.dataset.view;S.sel=null;$('#q').value=S.q='';if(S.view==='profile')loadProfile();
   if(S.view==='jobs'){if(freshCount())S.jg='fresh';loadJobs()}if(S.view==='runs')loadRuns();render()};
 $('#stlist').onclick=e=>{const b=e.target.closest('[data-st],[data-jg]');if(!b)return;if(b.dataset.jg){S.jg=b.dataset.jg;S.sel=null}else S.status=b.dataset.st;render()};
 $('#seg').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.js)S.jsort=b.dataset.js;else{S.open=b.dataset.o==='1';S.status=''}render()};
@@ -460,7 +687,8 @@ async function setJob(key,status){
   }catch(x){toast(x.message)}}
 async function markSeen(body){await api('/api/jobs/seen',body);await loadJobs()}
 
-$('#scroll').onclick=e=>{
+$('#scroll').onclick=async e=>{
+  if(await profileClick(e))return;
   const ja=e.target.closest('[data-ja]');if(ja){e.stopPropagation();return setJob(ja.closest('[data-key]').dataset.key,ja.dataset.ja)}
   if(e.target.closest('[data-brief-all]'))return summarize(S.needBrief);
   if(e.target.closest('[data-ja-all]'))return markSeen({all:true}).then(()=>toast('All caught up'));
@@ -496,15 +724,32 @@ async function run(action,args){try{const r=await api('/api/run',{action,args});
 const isLive=st=>st==='running'||st==='cancelling';
 
 // console: follows one run (S.run)
-function attach(id){S.run=id;S.seen=0;$('#log').innerHTML='';$('#con').classList.add('open');clearInterval(S.timer);S.timer=setInterval(poll,1000);poll()}
+const CHAT=['setup','setup-section','expand','merge','apply','interview','followup'];
+function logLines(lines){const log=$('#log');lines.forEach(([k,t])=>{
+  if(k==='tool'){ // consecutive tool steps fold into one expandable line, so Claude's messages stay readable
+    let g=log.lastElementChild;if(!g||!g.classList.contains('steps-g')){g=document.createElement('details');g.className='steps-g';g.innerHTML='<summary></summary>';g.n=0;log.append(g)}
+    const d=document.createElement('div');d.className='l-tool';d.textContent='› '+t;g.append(d);g.n++;g.firstChild.textContent=`${g.n} step${g.n>1?'s':''} · ${t.split(':')[0]}`;return}
+  const d=document.createElement('div');d.className='l-'+k;if(k==='text')d.innerHTML=md(t);else d.textContent=(k==='done'?'✓ ':k==='error'?'✕ ':'')+t;log.append(d)})}
+const youBubble=t=>{const d=document.createElement('div');d.className='l-you';d.textContent=t;$('#log').append(d)};
+async function attach(id,big){S.run=id;S.seen=0;$('#log').innerHTML='';$('#askhint').hidden=true;$('#con').classList.add('open');clearInterval(S.timer);
+  // A reply continues the same session: show the whole conversation, oldest first.
+  try{const chain=[];let cur=await api(`/api/runs/${id}`);const head=cur;
+    while(cur.parent&&chain.length<30){cur=await api(`/api/runs/${cur.parent}`);chain.unshift(cur)}
+    $('#con').classList.toggle('chat',!!big||CHAT.includes(head.action));
+    for(let i=0;i<chain.length;i++){if(i&&chain[i].parent)youBubble(chain[i].prompt);logLines(chain[i].lines)}
+    if(head.parent)youBubble(head.prompt);}catch{}
+  S.timer=setInterval(poll,1000);poll()}
 async function poll(){if(!S.run||S.polling)return;S.polling=true;try{await pollOnce()}finally{S.polling=false}}
 async function pollOnce(){let r;try{r=await api(`/api/runs/${S.run}?since=${S.seen}`)}catch{return}
   const log=$('#log'),stick=log.scrollTop+log.clientHeight>=log.scrollHeight-20;
-  r.lines.forEach(([k,t])=>{const d=document.createElement('div');d.className='l-'+k;if(k==='text')d.innerHTML=md(t);else d.textContent=(k==='tool'?'› ':k==='done'?'✓ ':k==='error'?'✕ ':'')+t;log.append(d)});
+  logLines(r.lines);
   if(stick)log.scrollTop=1e9;S.seen=r.total;
   $('#arts').hidden=!r.artifacts.length;$('#arts').innerHTML='<span class="m" style="align-self:center">Files created:</span>'+r.artifacts.map(p=>`<a class="btn" href="${fileUrl(p)}" target="_blank">${I.doc}${esc(fileName(p))}</a>`).join('');
   $('#reply').hidden=!r.can_reply;
   const live=isLive(r.status);
+  const lastText=[...$('#log').querySelectorAll('.l-text')].pop()?.textContent||'';
+  const asks=!live&&r.can_reply&&r.status==='done'&&/\?\s*$|\?\s*\n/.test(lastText.slice(-400));
+  $('#askhint').hidden=!asks;if(asks){S.lastAsk=r.id;if(document.activeElement?.tagName!=='TEXTAREA')$('#replyI').focus()}
   $('#cdot').style.setProperty('--c',`var(${SC[r.status]||'--gray'})`);$('#cdot').classList.toggle('pulse',live);
   $('#ctitle').textContent=r.label;$('#cstat').textContent=label(r.status)+(r.cost?` · $${r.cost.toFixed(2)}`:'');
   $('#cancel').hidden=!live;
@@ -512,7 +757,8 @@ async function pollOnce(){let r;try{r=await api(`/api/runs/${S.run}?since=${S.se
 
 // watcher: tracks every run, so parallel runs finishing in the background are noticed
 S.prev={};S.sig='';
-async function watch(){clearTimeout(S.wt);let runs;try{runs=await api('/api/runs')}catch{S.wt=setTimeout(watch,5000);return}
+async function watch(){clearTimeout(S.wt);if(!S.profile)return;const prof=S.profile;let runs;try{runs=await api('/api/runs')}catch{S.wt=setTimeout(watch,5000);return}
+  if(prof!==S.profile)return;   // switched profiles while this request was in flight
   const finished=runs.filter(r=>isLive(S.prev[r.id])&&!isLive(r.status));
   S.prev=Object.fromEntries(runs.map(r=>[r.id,r.status]));S.runs=runs;
   const live=runs.filter(r=>isLive(r.status)),last=runs[0];
@@ -527,6 +773,10 @@ async function watch(){clearTimeout(S.wt);let runs;try{runs=await api('/api/runs
   S.wt=setTimeout(watch,live.length?2000:8000)}
 async function onFinished(r){
   loadApps();await loadJobs();
+  if(['setup','setup-section','expand','merge'].includes(r.action)){await loadProfile();loadProfiles();
+    if(r.id===S.lastAsk)return toast('Claude asked something — answer in the conversation',()=>attach(r.id,true),'Answer');
+    if(r.action==='setup'&&r.status==='done'&&S.pinfo?.status==='ready'){S.view='profile';render();return toast('Profile ready — next: Scrape new jobs',()=>ask('scrape'),'Scrape')}
+    return toast(`${r.label}: ${label(r.status)}`,()=>attach(r.id,true),'View')}
   if(r.action==='brief'&&r.status==='done')return toast(r.brief_ids.length>1?`${r.brief_ids.length} job summaries ready`:'Summary ready');
   if(r.action==='scrape'&&r.status==='done'){const n=freshCount();
     if(n){S.view='jobs';S.jg='fresh';S.sel=null;render();return toast(`${n} new job${n>1?'s':''} found`)}return toast('Scrape finished — no new jobs')}
@@ -537,11 +787,13 @@ async function onFinished(r){
   if(r.can_reply&&r.status==='done')toast('Claude finished — reply below if it asked something')}
 
 $('#cancel').onclick=async()=>{$('#cancel').disabled=true;try{await api(`/api/runs/${S.run}/cancel`,{});toast('Stopping…')}catch(e){toast(e.message)}finally{$('#cancel').disabled=false}};
-async function reply(text){if(!text)return;try{const r=await api(`/api/runs/${S.run}/reply`,{text});$('#replyI').value='';
-  const keep=$('#log').innerHTML;attach(r.id);$('#log').innerHTML=keep+'<div class="l-tool">— you: '+esc(text)+'</div>';watch()}catch(e){toast(e.message)}}
+async function reply(text){if(!text)return;try{const r=await api(`/api/runs/${S.run}/reply`,{text});$('#replyI').value='';S.lastAsk=null;
+  await attach(r.id);watch()}catch(e){toast(e.message)}}
 $('#reply').onsubmit=e=>{e.preventDefault();reply($('#replyI').value.trim())};
+$('#replyI').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();reply($('#replyI').value.trim())}});
+$('#replyI').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=Math.min(140,e.target.scrollHeight)+'px'});
 $('#reply').onclick=e=>{const q=e.target.closest('[data-q]');if(q)reply(q.dataset.q)};
-$('#cclose').onclick=()=>$('#con').classList.remove('open');
+$('#cclose').onclick=()=>$('#con').classList.remove('open','chat');
 $('#runbox').onclick=()=>{const live=S.runs.find(r=>isLive(r.status))||S.runs[0];if(!live)return;if(S.run===live.id)$('#con').classList.toggle('open');else attach(live.id)};
 
 // new application: URL or pasted posting text
@@ -556,6 +808,6 @@ document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea'))re
   if(e.key==='j'||e.key==='k'){const keys=$$('#scroll [data-key]').map(t=>t.dataset.key);if(!keys.length)return;const i=keys.indexOf(S.sel);
     S.sel=keys[Math.max(0,Math.min(keys.length-1,i<0?0:i+(e.key==='j'?1:-1)))];render();$('#scroll .sel')?.scrollIntoView({block:'nearest'})}});
 
-loadApps();loadJobs();
-api('/api/runs').then(r=>{S.prev=Object.fromEntries(r.map(x=>[x.id,x.status]));const live=r.find(x=>isLive(x.status));if(live)attach(live.id);watch()});
+(async()=>{const list=await loadProfiles();let want=null;try{want=localStorage.getItem('jobui.profile')}catch{}
+  const p=list.find(x=>x.slug===want)||list[0];if(p)await switchProfile(p.slug);else render()})();
 </script></body></html>

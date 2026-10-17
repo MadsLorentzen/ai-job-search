@@ -165,6 +165,8 @@ Postings are treated as untrusted input (the workflow follows no instructions em
 
 Prefer a browser to the terminal? `python3 ui/server.py` opens a local console at `http://127.0.0.1:8765` (standard library only). It shows your tracker and scraped jobs as tables you can filter and update, and its buttons run the same commands headlessly through `claude -p` (`/scrape`, `/rank`, `/apply`, `/outcome followup`, `/gmail-sync`, `/interview`), streaming the output and linking the PDFs a run produces. When a command asks a question, you answer it in the console and the same Claude session continues. After a scrape it also writes a short brief for each new job (what the role is, its requirements, and strengths / concerns / gaps against your profile), so you can triage the backlog without opening every posting. Local state (`ui/state.json`, `ui/runs/`, `ui/briefs.json`) is gitignored.
 
+The console can also run **several independent job searches** (for example, one per family member). "New job search" creates a profile folder under `~/JobSearch/profiles/` (set `JOBUI_HOME` to move it) holding its own copy of the framework and that person's data, and walks through setup as a form: upload a CV, answer the search questions, and Claude runs `/setup` with those answers, asking only about genuine conflicts. Every Claude run happens inside one profile's folder, so profiles never see each other's documents, applications or job lists. "Update framework" on the Profile page copies a newer framework version into a profile without touching its personal files. A personalized checkout from before profiles existed is picked up as a profile in place.
+
 ## File structure
 
 ```

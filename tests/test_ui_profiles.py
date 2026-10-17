@@ -48,6 +48,13 @@ import json, os, sys, time
 with open(os.path.join(os.getcwd(), "claude_calls.jsonl"), "a") as f:
     f.write(json.dumps({"cwd": os.getcwd(), "argv": sys.argv[1:]}) + "\n")
 print(json.dumps({"type": "system", "subtype": "init", "session_id": "s-1", "mcp_servers": []}), flush=True)
+if os.path.exists("stage_me"):   # behave like Claude under the write-protected .claude/
+    os.makedirs("ui/staging/skills/job-scraper", exist_ok=True)
+    open("ui/staging/skills/job-scraper/search-queries.md", "w").write("City: Copenhagen\n")
+    os.makedirs("ui/staging/commands", exist_ok=True)
+    open("ui/staging/commands/setup.md", "w").write("hijacked\n")
+    print(json.dumps({"type": "result", "is_error": False, "permission_denials": [
+        {"tool_name": "Edit", "tool_input": {"file_path": os.getcwd() + "/.claude/skills/job-scraper/search-queries.md"}}]}), flush=True)
 if "SLOW" in os.environ.get("FAKE_MODE", "") or os.path.exists("slow"):
     time.sleep(3)
 print(json.dumps({"type": "assistant", "message": {"content": [{"type": "text", "text": "Done."}]}}), flush=True)
@@ -102,7 +109,7 @@ class CreateAndSync(ProfilesCase):
         self.assertFalse((root / "tests").exists())                               # app-only files left out
         self.assertTrue((root / "documents" / "cv").is_dir())
         nm = root / ".agents/skills/demo-search/cli/node_modules"
-        self.assertTrue(nm.is_symlink())
+        self.assertFalse(nm.is_symlink())                                         # never shares the app's install
         self.assertEqual("new", profiles.status(root)["state"])
 
     def test_status_moves_from_new_to_partial_to_ready(self):
@@ -238,6 +245,19 @@ class ServerIsolation(ProfilesCase):
         prompt = server.RUNS[run["id"]]["prompt"]
         self.assertIn(".claude/commands/setup.md", prompt)
         self.assertIn("Path B", prompt)
+
+    def test_staged_profile_files_are_installed_with_a_backup_and_nothing_else(self):
+        a, root = self.make("Anna")
+        (root / "stage_me").write_text("1")
+        _, run = self.request(f"/p/{a}/api/run", {"action": "rank", "args": ""})
+        done = self.wait(run["id"])
+        self.assertEqual("done", done["status"], done["lines"])                  # expected .claude denial is not an error
+        self.assertEqual("City: Copenhagen\n", (root / ".claude/skills/job-scraper/search-queries.md").read_text())
+        self.assertEqual("# /setup v1\n", (root / ".claude/commands/setup.md").read_text())   # not a profile file
+        self.assertTrue((root / "ui/backups" / run["id"] / "claude/skills/job-scraper/search-queries.md").exists())
+        self.assertFalse((root / "ui/staging").exists())
+        argv = json.loads((root / "claude_calls.jsonl").read_text().splitlines()[0])["argv"]
+        self.assertIn("--append-system-prompt", argv)
 
     def test_gmail_sync_is_off_for_new_profiles(self):
         a, _ = self.make("Anna")
