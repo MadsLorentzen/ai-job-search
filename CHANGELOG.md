@@ -332,6 +332,20 @@ per-file diff commands.
   `python3 tools/job_key.py --audit` reports those entries under
   `keys_not_matching_current_rule`; it never rewrites them.
 
+- **`search-queries.md` separates Portal CLI search terms from WebSearch `site:` fallback**
+  (#536, `.claude/skills/job-scraper/search-queries.md`, `.claude/skills/job-scraper/SKILL.md`,
+  `tests/test_scrape_query_translation.py`) - query templates were written in Google syntax
+  (`site:`, `OR`, quoted phrases) and sent to portal CLIs, which don't support `OR` or Google-style
+  quoting. The failure was silent: searches returned hits, just the wrong ones — `produktchef OR
+  "product owner"` matched 2,258 listings on jobindex because `OR` was treated as a literal word.
+  `search-queries.md` now lists plain Portal CLI search terms (one per call, no `OR`, no `site:`)
+  separately from the `site:` WebSearch fallback queries (labeled "Step 1c only"). SKILL.md Step 1b
+  documents the per-portal quoting rule: quote multi-word terms on `jobindex-search`,
+  `jobbank-search`, and `freehire-search` (phrase match); omit quotes on `jobnet-search` and
+  `linkedin-search` (quoted strings match literally or as loose words). Step 1c points at the
+  labeled fallback blocks and recommends one retry before concluding "nothing found". Eight tests
+  fail on master.
+
 ## [1.7.2] - 2026-09-29
 
 ### Added

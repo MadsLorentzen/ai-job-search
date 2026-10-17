@@ -65,7 +65,9 @@ Discover all installed portal CLI skills by reading every `SKILL.md` found under
 For each **enabled** portal skill:
 
 1. Read its `SKILL.md` to find the correct `bun run …` invocation and supported flags.
-2. Translate the query terms from `search-queries.md` into that portal's flag format (e.g. `--key`, `--search-string`, `--query`, filter codes — whatever the portal's SKILL.md specifies).
+2. Take the **Portal CLI search terms** from `search-queries.md` (the plain keyword phrases listed per priority section, not the `site:` WebSearch fallback queries). Run each as a separate call — one plain term per call, no `OR`, no combined strings. Match the `site:` target in the corresponding WebSearch fallback query to decide which portal CLI to invoke, then translate the term into that portal's flag format (e.g. `--key`, `--search-string`, `--query`, filter codes — whatever the portal's SKILL.md specifies).
+
+**Per-portal quoting rule:** quote multi-word terms on `jobindex-search`, `jobbank-search`, and `freehire-search` (their search treats quoted strings as phrase matches); omit quotes on `jobnet-search` and `linkedin-search` (their search does not honor phrase quoting — a quoted string is matched literally, including the quote characters, or passed through as loose words). A single-word term never needs quoting on any portal. Append your `[YOUR_CITY]` / `[YOUR_COUNTRY]` / `[YOUR_REGION]` location terms inline in `--query` for portals that take location as free text (jobindex, freehire), via the portal's location flag when documented (LinkedIn `--location`, jobnet `--postal-code`+`--radius`), or as an extra keyword for portals without a location flag (jobbank).
 3. Scope to the last 14 days using the portal's supported recency **filter** flag (`--jobage`, `--since <YYYY-MM-DD>`, etc. — as documented per portal). A portal with **no recency flag** (jobdanmark offers none) still gets scoped: every portal's search output carries a `date` field, so filter client-side — drop results whose `date` is older than 14 days after the call returns, and never invent a flag the portal's SKILL.md does not document (the CLIs reject unknown flags). `--order PublicationDate` is a sort, and a sort is not a filter — pairing it with a `--limit` is a defensible approximation on a portal that offers nothing better (jobnet), but apply the client-side date filter on top all the same.
 4. Cap results to ~20 per call using the portal's limit flag.
 5. Use `--format json` for machine-readable output.
@@ -81,7 +83,7 @@ Use `WebSearch` for:
 - Any portal whose CLI fails at runtime
 - When bun is unavailable (Step 1a failed)
 
-Use the site-specific query strings from `search-queries.md` directly as WebSearch queries for these portals.
+Use the **WebSearch fallback query** blocks from `search-queries.md` — the `site:` strings labeled "Step 1c only" in each priority section. WebSearch is not documented to honor `OR` or quoted phrases, so write one query per line, naming the site plainly. If a query returns no results, retry once with a broader phrasing before concluding "nothing found".
 
 Tag each fallback result as WebSearch-sourced, keeping the portal tag when the fallback stands in for an installed portal whose CLI failed. Step 4 persists this as the entry's `source`, and Step 5 reports which portals ran on the fallback this run.
 
