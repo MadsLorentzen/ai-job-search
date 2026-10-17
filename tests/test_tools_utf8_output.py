@@ -149,6 +149,28 @@ class ToolsWriteUtf8(unittest.TestCase):
         ])
         self.assert_clean_utf8(proc, 0, CYRILLIC)
 
+    def test_upstream_triage_handles_non_latin_commit_subjects(self):
+        repo = self.tmp / "repo"
+        repo.mkdir()
+        tools_dir = repo / "tools"
+        tools_dir.mkdir()
+        shutil.copy(TOOLS / "upstream_triage.py", tools_dir / "upstream_triage.py")
+        subprocess.run(["git", "init", "-b", "master"], cwd=repo, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=repo, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True, capture_output=True)
+        subprocess.run(["git", "remote", "add", "upstream", "https://github.com/MadsLorentzen/ai-job-search.git"], cwd=repo, check=True, capture_output=True)
+        (repo / "file.txt").write_text("hello\n", encoding="utf-8")
+        subprocess.run(["git", "add", "file.txt"], cwd=repo, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "init"], cwd=repo, check=True, capture_output=True)
+        (repo / "file.txt").write_text("change\n", encoding="utf-8")
+        subprocess.run(["git", "add", "file.txt"], cwd=repo, check=True, capture_output=True)
+        msg = f"feat: add support for {CYRILLIC}"
+        subprocess.run(["git", "commit", "-m", msg], cwd=repo, check=True, capture_output=True)
+        subprocess.run(["git", "update-ref", "refs/remotes/upstream/master", "HEAD"], cwd=repo, check=True, capture_output=True)
+        subprocess.run(["git", "reset", "--hard", "HEAD~1"], cwd=repo, check=True, capture_output=True)
+        proc = run_legacy_stdout([repo / "tools" / "upstream_triage.py"], cwd=repo)
+        self.assert_clean_utf8(proc, 0, CYRILLIC)
+
 
 if __name__ == "__main__":
     unittest.main()

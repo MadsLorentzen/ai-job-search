@@ -106,6 +106,39 @@ class FindNonAsciiDateRangesTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertEqual(find_non_ascii_date_ranges(text), [])
 
+    def test_numeric_range_with_year_shaped_ends_is_a_quantity_not_a_date(self):
+        # Four-digit numbers that are not both years: #512 bounded the year but
+        # a salary band or a throughput range still read as a date range.
+        for text in (
+            "Salary EUR 1500\u20132000 per month",
+            "Scaled the API to serve 2000\u20135000 requests per second",
+            "Grew users from 2000\u20135000",
+            "Budget 1.5\u20132.0M, headcount 20\u201325",
+        ):
+            with self.subTest(text=text):
+                self.assertEqual(find_non_ascii_date_ranges(text), [])
+
+    def test_numerically_formatted_date_ranges_are_still_caught(self):
+        # A composite token (slashed, dotted, hyphenated) is not a bare number,
+        # so the quantity rule does not apply and the year rule still fires.
+        # These are the Workday-drops-the-date shape the flag exists for.
+        for text in (
+            "03/2016\u201307/2024",
+            "01.2016 \u2013 12.2024",
+            "2016-03\u20132024-07",
+            "2016/17\u20132018/19",
+            "2016/03\u20132024/07",
+            "01.03.2016\u201331.07.2024",
+            "2016\u201307/2024",
+        ):
+            with self.subTest(text=text):
+                self.assertEqual(len(find_non_ascii_date_ranges(text)), 1)
+
+    def test_two_years_joined_by_a_dash_are_still_a_date_range(self):
+        for text in ("2016\u20132024", "1990\u20132010 programme", "Roles 2000\u20132024"):
+            with self.subTest(text=text):
+                self.assertEqual(len(find_non_ascii_date_ranges(text)), 1)
+
     def test_a_standalone_year_next_to_a_longer_number_is_still_caught(self):
         self.assertEqual(find_non_ascii_date_ranges("2016\u20132024 (120000 users)")[0][1], "\u2013")
 
