@@ -200,6 +200,8 @@ per-file diff commands.
   command that does not exist and prompted instead; the string now names the real path, matching
   the six shipped `SKILL.md` files.
 
+- **Salary workbook conversion accepts Unicode whitespace grouping** (#592) - numeric cells written as text with non-breaking or narrow non-breaking grouping spaces now parse without losing their values.
+
 - **`robots_check` unquotes incoming query strings and restricts `$` anchors to pattern end**
   (#543, `tools/robots_check.py`, `tests/test_robots_check.py`) - two path-matching edge cases in
   the robots.txt gate failed open. First, `gate(url)` called `unquote(parts.path)` but concatenated
