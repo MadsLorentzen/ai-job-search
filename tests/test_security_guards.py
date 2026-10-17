@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -13,11 +14,22 @@ sys.path.insert(0, str(REPO_ROOT / "tools"))
 import security_guards  # noqa: E402  (imported for its allowlist constants)
 
 
-def run_guards(root: Path) -> subprocess.CompletedProcess:
+def run_guards(root: Path, repository=None) -> subprocess.CompletedProcess:
+    """Run the guard script in ``root``.
+
+    ``repository`` pins GITHUB_REPOSITORY for the subprocess so results do not
+    depend on where the suite runs (CI on upstream sets it to the upstream slug).
+    """
+    env = dict(os.environ)
+    if repository is None:
+        env.pop("GITHUB_REPOSITORY", None)
+    else:
+        env["GITHUB_REPOSITORY"] = repository
     return subprocess.run(
         [sys.executable, str(root / "tools" / "security_guards.py")],
         capture_output=True,
         text=True,
+        env=env,
     )
 
 
@@ -355,6 +367,66 @@ class GitignoreNegationTests(GuardRepoFixture):
         )
         result = run_guards(self.root)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
+class LocalNegationsTests(GuardRepoFixture):
+    """`.github/security-guards-local.txt`: a fork-only extension of the negation allowlist."""
+
+    FORK = "someone-else/ai-job-search"
+
+    def write_local(self, text):
+        path = self.root / ".github" / "security-guards-local.txt"
+        path.parent.mkdir(exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def with_negation(self, negation):
+        self.write_gitignore(list(security_guards.REQUIRED_IGNORE_RULES) + [negation])
+
+    def test_listed_negation_passes(self):
+        self.with_negation("!leads/.gitkeep")
+        self.write_local("# fork-only tracked placeholder\n\n!leads/.gitkeep\n")
+        result = run_guards(self.root, self.FORK)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_unlisted_negation_still_fails(self):
+        self.with_negation("!salary_data.json")
+        self.write_local("!leads/.gitkeep\n")
+        result = run_guards(self.root, self.FORK)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("negation rule not in the reviewed allowlist", result.stdout)
+        self.assertIn("!salary_data.json", result.stdout)
+
+    def test_line_that_is_not_a_negation_is_rejected(self):
+        self.write_local("salary_data.json\n")
+        result = run_guards(self.root, self.FORK)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("is not a negation", result.stdout)
+        self.assertIn("security-guards-local.txt:1", result.stdout)
+
+    def test_file_absent_means_no_change(self):
+        self.write_gitignore(
+            list(security_guards.REQUIRED_IGNORE_RULES)
+            + sorted(security_guards.ALLOWED_IGNORE_NEGATIONS)
+        )
+        result = run_guards(self.root, self.FORK)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_file_must_be_absent_on_upstream(self):
+        self.write_local("!leads/.gitkeep\n")
+        self.with_negation("!leads/.gitkeep")
+        result = run_guards(self.root, security_guards.UPSTREAM_REPO)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("must not exist on the upstream template", result.stdout)
+
+    def test_upstream_checkout_ships_no_local_file(self):
+        # Direct assertion on the real tree: this repo, when it is the upstream
+        # template, must not carry the fork-only file.
+        sys.path.insert(0, str(REPO_ROOT))
+        from tests._upstream import is_upstream_checkout
+        if not is_upstream_checkout():
+            self.skipTest("fork checkout: the local negations file is allowed here")
+        self.assertFalse(security_guards.LOCAL_NEGATIONS_FILE.exists())
 
 
 class ManifestGuardTests(GuardRepoFixture):
