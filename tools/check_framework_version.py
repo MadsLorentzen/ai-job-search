@@ -81,7 +81,7 @@ def parse_frontmatter_text(text: str) -> dict:
 
 def has_non_trivial_changes(file_path: Path, base_commit: str) -> bool:
     # Get diff of the file from base_commit to HEAD
-    rel_path = str(file_path.relative_to(ROOT))
+    rel_path = file_path.relative_to(ROOT).as_posix()
     rc, stdout, stderr = run_git(["diff", "-U0", base_commit, "--", rel_path])
     if rc != 0:
         # If diff fails (e.g. file is new/untracked), it's a change
@@ -127,7 +127,7 @@ def main() -> int:
     
     # 1. Lint: Check that all framework files have framework_version in frontmatter
     for path in FRAMEWORK_FILES:
-        rel_path = str(path.relative_to(ROOT))
+        rel_path = path.relative_to(ROOT).as_posix()
         fm = parse_frontmatter(path)
         if "framework_version" not in fm:
             errors.append(f"{rel_path}: missing 'framework_version' in frontmatter")
@@ -137,7 +137,7 @@ def main() -> int:
     if base_commit:
         print(f"Comparing HEAD against base commit: {base_commit}")
         for path in FRAMEWORK_FILES:
-            rel_path = str(path.relative_to(ROOT))
+            rel_path = path.relative_to(ROOT).as_posix()
             if "framework_version" not in parse_frontmatter(path):
                 # Skip checking changes if it doesn't even have frontmatter (already reported above)
                 continue

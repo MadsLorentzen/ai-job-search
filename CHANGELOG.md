@@ -68,10 +68,7 @@ per-file diff commands.
 
 ### Fixed
 
-- **Version-line formatting no longer substitutes for a framework marker change**
-  (`tools/check_framework_version.py`) - re-quoting or spacing an unchanged
-  `framework_version` no longer lets an accompanying guidance edit pass the gate.
-  Formatting-only changes remain allowed, as do edits with a changed marker value.
+- **Framework version checks compare marker values using Git-compatible paths on every platform** (#578, `tools/check_framework_version.py`) - quoting or spacing an unchanged version no longer exempts an accompanying guidance edit, hardening a latent bypass without changing legitimate version bumps.
 
 - **`/reset documents` clears nested and hidden user entries while preserving scaffolds** - cleanup retains tracked `.gitkeep` files and the README, with the complete inventory shown before confirmation (#580).
 
