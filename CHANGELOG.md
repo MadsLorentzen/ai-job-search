@@ -296,6 +296,8 @@ per-file diff commands.
   the shipped headings, and a derived test in each command's suite reads the quoted section
   names and requires each to be a `##` heading of the shipped file; both fail on master.
 
+- **`freehire-search` rejects missing named-option values** (#568) - value-taking search options now reject a missing value or another flag before dispatch.
+
 - **`jobnet-search` and `jobdanmark-search` search results now carry the contract's `id`
   field** (`search.ts` and `search-normalization.test.ts` in both CLIs, both `SKILL.md`s) -
   `/add-portal`'s contract says every search result has at least `id`, `title`, `company`,
