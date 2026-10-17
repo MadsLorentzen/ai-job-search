@@ -46,10 +46,7 @@ per-file diff commands.
 
 ### Fixed
 
-- **Upstream triage checks patch identity instead of commit subjects**
-  (`tools/upstream_triage.py`) - unrelated fork and upstream commits can have the same
-  subject. A matching title no longer marks an unapplied upstream change as already
-  cherry-picked; actual patch-id matches still drop off the review list.
+- **Upstream triage distinguishes subject-only matches from verified patch matches** (#569, `tools/upstream_triage.py`) - matching subjects with different patches now name the fork commit and request verification instead of claiming an upstream change was already cherry-picked.
 
 - **`upstream_triage` forces UTF-8 stdout and decodes git output as UTF-8** (#544,
   `tools/upstream_triage.py`, `tests/test_tools_utf8_output.py`) - like the other Python tools,
