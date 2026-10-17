@@ -232,6 +232,8 @@ per-file diff commands.
   before changing rank metadata; current-day deadlines, explicit future
   extensions, invalid dates, dry runs, and scoring errors keep their behavior.
 
+- **Salary workbook conversion skips whitespace-only companies** (#576) - blank-looking company cells no longer produce empty company entries.
+
 - **`/reset profile` keeps the `framework_version` frontmatter on the two files it rewrites**
   (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - the full-file skeletons
   for `01-candidate-profile.md` and `02-behavioral-profile.md` started at the `#` title, while
