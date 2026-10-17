@@ -230,6 +230,8 @@ per-file diff commands.
   the shipped headings, and a derived test in each command's suite reads the quoted section
   names and requires each to be a `##` heading of the shipped file; both fail on master.
 
+- **`jobindex-search` examples follow the search CLI contract** - the posted-today example includes a required query, unsupported flags are removed, and regression checks accept LF and CRLF checkouts (#579).
+
 - **`jobnet-search` and `jobdanmark-search` search results now carry the contract's `id`
   field** (`search.ts` and `search-normalization.test.ts` in both CLIs, both `SKILL.md`s) -
   `/add-portal`'s contract says every search result has at least `id`, `title`, `company`,
