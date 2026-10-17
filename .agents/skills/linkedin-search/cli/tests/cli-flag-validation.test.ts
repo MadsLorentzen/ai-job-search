@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { runCLI } from "./helpers";
+import { runCLI, runSearchFixture } from "./helpers";
 
 const LOCATION = "Copenhagen, Denmark";
 
@@ -28,9 +28,15 @@ describe("LinkedIn CLI flag validation", () => {
     });
 
     test("valid integer passes validation", async () => {
-      const result = await runCLI(["search", "-l", LOCATION, "--jobage", "7", "--limit", "1"]);
-      const err = parsedStderr(result.stderr);
-      expect(err.code).not.toBe("BAD_ARG");
+      const { result, requests } = await runSearchFixture(["search", "-l", LOCATION, "--jobage", "7", "--limit", "1"]);
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toBe("");
+      expect(requests).toHaveLength(1);
+      expect(requests[0].searchParams.get("location")).toBe(LOCATION);
+      expect(requests[0].searchParams.get("f_TPR")).toBe("r604800");
+      const output = JSON.parse(result.stdout);
+      expect(output.meta.count).toBe(1);
+      expect(output.results.map((job: { id: string }) => job.id)).toEqual(["4425498329"]);
     });
 
     // Fractional values must be rejected, not truncated: parseInt("0.5") is 0,
@@ -126,12 +132,18 @@ describe("LinkedIn CLI flag validation", () => {
       expect(err.code).toBe("NO_LOCATION");
     });
 
-    test("all valid flags produce no BAD_ARG", async () => {
-      const result = await runCLI([
+    test("all valid flags construct the requested search offline", async () => {
+      const { result, requests } = await runSearchFixture([
         "search", "-l", LOCATION, "--jobage", "7", "--page", "1", "--limit", "5",
       ]);
-      const err = parsedStderr(result.stderr);
-      expect(err.code).not.toBe("BAD_ARG");
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toBe("");
+      expect(requests).toHaveLength(1);
+      expect(requests[0].searchParams.get("f_TPR")).toBe("r604800");
+      expect(requests[0].searchParams.get("start")).toBe("0");
+      const output = JSON.parse(result.stdout);
+      expect(output.meta).toEqual({ count: 2, page: 1 });
+      expect(output.results.map((job: { id: string }) => job.id)).toEqual(["4425498329", "4425494976"]);
     });
   });
 
