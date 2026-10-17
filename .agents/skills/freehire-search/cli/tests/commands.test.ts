@@ -183,6 +183,32 @@ describe("runSearch (mocked fetch)", () => {
     expect(JSON.parse(out.get()).results).toHaveLength(0);
   });
 
+  test("--region us is rejected with BAD_REGION before calling the API", async () => {
+    let fetchCalled = false;
+    globalThis.fetch = (async () => {
+      fetchCalled = true;
+      return new Response(JSON.stringify({ data: [], meta: { total: 0 } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const err = captureStderr();
+    const out = captureStdout();
+
+    const code = await runSearch({ ...searchOpts, query: "backend", regions: ["us"] });
+    err.restore();
+
+    expect(code).toBe(1);
+    expect(fetchCalled).toBe(false);
+    expect(out.get()).toBe("");
+    const parsed = JSON.parse(err.get());
+    expect(parsed.code).toBe("BAD_REGION");
+    expect(parsed.error).toMatch(/not a valid region code/);
+    expect(parsed.error).toMatch(/north_america/);
+    expect(parsed.error).toMatch(/--country us/);
+  });
+
   test("network failure exits 1 with SEARCH_FAILED", async () => {
     globalThis.fetch = (async () => {
       throw new Error("ECONNREFUSED");

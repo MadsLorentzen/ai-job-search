@@ -130,6 +130,53 @@ describe("freehire CLI flag validation", () => {
     });
   });
 
+  describe("--region validation", () => {
+    test("--region us exits 1 with BAD_REGION before calling the API", async () => {
+      const requests: string[] = [];
+      const server = Bun.serve({
+        hostname: "127.0.0.1",
+        port: 0,
+        fetch(request) {
+          requests.push(request.url);
+          return Response.json({ data: [], meta: { total: 0 } });
+        },
+      });
+      try {
+        const result = await runCLI(["search", "--region", "us"], { FREEHIRE_API_URL: server.url.toString() });
+        expect(result.exitCode).toBe(1);
+        expect(result.stdout).toBe("");
+        const error = JSON.parse(result.stderr);
+        expect(error.code).toBe("BAD_REGION");
+        expect(error.error).toMatch(/not a valid region code/);
+        expect(error.error).toMatch(/north_america/);
+        expect(error.error).toMatch(/--country us/);
+        expect(requests).toEqual([]);
+      } finally {
+        server.stop(true);
+      }
+    });
+
+    test("--region north_america passes through to the API", async () => {
+      const requests: URL[] = [];
+      const server = Bun.serve({
+        hostname: "127.0.0.1",
+        port: 0,
+        fetch(request) {
+          requests.push(new URL(request.url));
+          return Response.json({ data: [], meta: { total: 0 } });
+        },
+      });
+      try {
+        const result = await runCLI(["search", "--region", "north_america"], { FREEHIRE_API_URL: server.url.toString() });
+        expect(result.exitCode).toBe(0);
+        expect(requests).toHaveLength(1);
+        expect(requests[0].searchParams.getAll("regions")).toEqual(["north_america"]);
+      } finally {
+        server.stop(true);
+      }
+    });
+  });
+
   describe("--format validation", () => {
     test("search with an unsupported format exits 1 with BAD_ARG", async () => {
       const result = await runCLI(["search", "--format", "invalid"]);

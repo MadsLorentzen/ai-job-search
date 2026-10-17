@@ -110,7 +110,25 @@ function renderPlain(rows: JobResult[]): string {
   return rows.map(block).join("\n\n")
 }
 
+// `us` is advertised as a region code but is not a valid region facet value for
+// the freehire API — it returns an empty set. Fail loudly instead of silently
+// discarding the filter. Use `north_america` (continent-wide) instead, or
+// `--country us` for country-level ISO-3166 filtering.
+const BAD_REGION_CODE = "us"
+
+function invalidRegionCode(regions: string[]): string | undefined {
+  return regions.find((r) => r === BAD_REGION_CODE)
+}
+
 export async function runSearch(opts: SearchOpts): Promise<number> {
+  const bad = invalidRegionCode(opts.regions)
+  if (bad !== undefined) {
+    writeError(
+      `--region '${bad}' is not a valid region code. It returns an empty set — use 'north_america' (covers North America, continent-wide) or '--country us' for country-level ISO-3166 filtering.`,
+      "BAD_REGION",
+    )
+    return 1
+  }
   try {
     const env = await apiGet<FreehireJob[]>(`${SEARCH_PATH}?${buildQuery(opts).toString()}`)
     // A 404 here is a missing endpoint, not a missing job: a freehire instance
