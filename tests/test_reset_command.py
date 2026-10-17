@@ -28,13 +28,16 @@ tree, the profile files from /setup Step 3's own headings - so a new drop
 folder or a new /setup target fails this test until /reset covers it.
 """
 import re
+import shutil
 import subprocess
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 REPO = Path(__file__).resolve().parent.parent
 RESET = REPO / ".claude" / "commands" / "reset.md"
 SETUP = REPO / ".claude" / "commands" / "setup.md"
+BASH = shutil.which("bash")
 
 
 def tracked_document_subfolders():
@@ -73,16 +76,26 @@ class TestResetCoversEveryDocumentsSubfolder(unittest.TestCase):
             f"so the user confirms a deletion list that omits them: {missing}",
         )
 
+    @unittest.skipUnless(BASH, "requires Bash to replay the documented /reset command")
     def test_delete_block_removes_every_subfolder(self):
-        deleted = set(re.findall(r"rm -r?f documents/(\w+)/", self.text))
-        missing = sorted(self.folders - deleted)
-        self.assertEqual(
-            missing,
-            [],
-            "reset.md's delete block has no rm line for these documents/ "
-            'subfolders, yet the command then claims "The `documents/` '
-            f'folder is now empty.": {missing}',
-        )
+        # Exercise the deletion contract, rather than requiring one particular
+        # spelling of rm. Keep deriving the folder set from git so a newly
+        # tracked document root still has to be handled by the real command.
+        section = self.text.split("### Documents reset", 1)[1]
+        script = re.search(r"```bash\n(.*?)```", section, re.S).group(1)
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            for folder in self.folders:
+                path = root / "documents" / folder
+                path.mkdir(parents=True)
+                (path / ".gitkeep").write_text("Keep scaffold.\n")
+                (path / "user.txt").write_text("Remove document.\n")
+            result = subprocess.run([BASH, "-c", script], cwd=root, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            for folder in self.folders:
+                path = root / "documents" / folder
+                self.assertEqual([entry.name for entry in path.iterdir()], [".gitkeep"])
+                self.assertEqual((path / ".gitkeep").read_text(), "Keep scaffold.\n")
 
 
 def section(text: str, start: str, end: str) -> str:
