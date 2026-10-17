@@ -173,11 +173,14 @@ def normalize(s):
 
 
 def anglicize(s):
-    """Convert Danish/Nordic characters to anglicized equivalents."""
+    """Fold Nordic spellings first, then accents for ASCII-typed queries."""
     s = s.lower()
     for danish, english in SPELLING_VARIANTS.items():
         s = s.replace(danish, english)
-    return s
+    return "".join(
+        char for char in unicodedata.normalize("NFKD", s)
+        if not unicodedata.combining(char)
+    )
 
 
 def extract_core_words(s):
