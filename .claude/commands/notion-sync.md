@@ -39,9 +39,9 @@ The command is **silently optional**: when the destination is not reachable, the
 Validate the cheap, local precondition before creating anything external. A run with nothing to sync must exit with **zero side effects** - no database created, no state file written.
 
 1. Read `job_scraper/seen_jobs.json` and `job_search_tracker.csv` (either may be missing).
-2. Select `seen_jobs.json` entries with status `ranked` whose `rank_score` meets the threshold from Step 0. `--all` lifts the threshold entirely.
-3. Every tracker row joins the sync set (an applied-to job always syncs, ranked or not), matched to `seen_jobs.json` entries case-insensitively on company + title where possible (the tracker's `role` column against the entry's `title` field — entries carry `title`, not `role`). Tracker rows with no `seen_jobs.json` entry sync too - build their Key as `<company>_<role>` lowercased with underscores.
-4. **Status precedence:** the tracker wins. A job that is `ranked` in `seen_jobs.json` but `interview` in the tracker syncs as `interview`. Jobs only in `seen_jobs.json` keep their stored status. **Deadline precedence: the tracker wins too** - the tracker's `deadline` (written by `/apply` from the posting the application was actually built on) overrides the `seen_jobs.json` value; jobs only in `seen_jobs.json` keep the scraper's stored deadline. Omit the property when neither states one, and **never reconcile the two by picking the earlier or later date** - both were read from the posting at different times, and the safe-looking `min()` substitutes a date the user never applied against.
+2. Select `job_scraper/seen_jobs.json` entries with status `ranked` whose `rank_score` meets the threshold from Step 0. `--all` lifts the threshold entirely.
+3. Every tracker row joins the sync set (an applied-to job always syncs, ranked or not), matched to `job_scraper/seen_jobs.json` entries case-insensitively on company + title where possible (the tracker's `role` column against the entry's `title` field — entries carry `title`, not `role`). Tracker rows with no `job_scraper/seen_jobs.json` entry sync too - build their Key as `<company>_<role>` lowercased with underscores.
+4. **Status precedence:** the tracker wins. A job that is `ranked` in `job_scraper/seen_jobs.json` but `interview` in the tracker syncs as `interview`. Jobs only in `job_scraper/seen_jobs.json` keep their stored status. **Deadline precedence: the tracker wins too** - the tracker's `deadline` (written by `/apply` from the posting the application was actually built on) overrides the `job_scraper/seen_jobs.json` value; jobs only in `job_scraper/seen_jobs.json` keep the scraper's stored deadline. Omit the property when neither states one, and **never reconcile the two by picking the earlier or later date** - both were read from the posting at different times, and the safe-looking `min()` substitutes a date the user never applied against.
 5. **If the sync set is empty** (no ranked entries meet the threshold and there are no tracker rows), say "Nothing to sync - run `/scrape` and `/rank` first" (or, when jobs exist but all score below the threshold, say so and suggest `--min-score`/`--all`) and **stop**.
 6. State the counts before touching the destination: how many rows will be created or checked, and the threshold in effect.
 
@@ -64,15 +64,15 @@ Validate the cheap, local precondition before creating anything external. A run 
    | Verdict | select | Strong Fit / Good Fit / Moderate Fit / Weak Fit / Poor Fit |
    | Status | select | `ranked` / `drafted` / `applied` / `interview` / `offer` / `hired` / `rejected` / `no_response` / `offer_declined` / `withdrawn` / `expired` — canonical tracker spellings per **Tracker status vocabulary** in `/outcome`; Notion options grow to match as values appear |
    | Fit | select | high / medium / low (scraper quick-fit) |
-   | Deadline | date | tracker `deadline` column, falling back to `seen_jobs.json`'s `deadline` when the row has none; omit when neither states one |
+   | Deadline | date | tracker `deadline` column, falling back to `job_scraper/seen_jobs.json`'s `deadline` when the row has none; omit when neither states one |
    | First seen | date | |
-   | Ranked | date | `rank_date` from `seen_jobs.json`; omit when not ranked |
+   | Ranked | date | `rank_date` from `job_scraper/seen_jobs.json`; omit when not ranked |
    | Applied on | date | tracker `date` column; omit when not in the tracker, and omit when the status is `drafted` |
    | Channel | select | tracker `channel` column (e.g. portal / email / referral); options grow as values appear |
    | CV file | rich text | tracker `cv_file` column - the filename only, never document content |
    | Cover letter | rich text | tracker `cover_letter_file` column - the filename only, never document content |
    | URL | url | posting URL |
-   | Key | rich text | the job's key in `seen_jobs.json` - dedup anchor, never edited by hand |
+   | Key | rich text | the job's key in `job_scraper/seen_jobs.json` - dedup anchor, never edited by hand |
 
    The tracker-sourced properties (Applied on, Channel, CV file, Cover letter) stay empty for jobs that have no tracker row. CV file and Cover letter fill in once `/apply` records the draft; Applied on stays empty until `/outcome` records the submission. Only filenames ever sync; document contents stay local.
 
@@ -100,7 +100,7 @@ Batch politely: if the MCP server rate-limits, back off and continue; report any
 
 The page body is what makes a row worth clicking. Build it **only from stored data and actually fetched content**:
 
-1. **Fit summary** - a short section from `seen_jobs.json` fields: score, verdict, quick-fit level, first-seen and ranked dates. If the job is in the tracker, add the application timeline (date applied, channel, current status, dated notes from the `notes` column) and name the submitted documents from `cv_file`/`cover_letter_file` (filenames only - the documents themselves never sync). **When the status is `drafted`, write "drafted YYYY-MM-DD, not yet submitted" instead of a date applied, and call the files drafts rather than submitted documents** (page bodies are write-once - Step 4.3).
+1. **Fit summary** - a short section from `job_scraper/seen_jobs.json` fields: score, verdict, quick-fit level, first-seen and ranked dates. If the job is in the tracker, add the application timeline (date applied, channel, current status, dated notes from the `notes` column) and name the submitted documents from `cv_file`/`cover_letter_file` (filenames only - the documents themselves never sync). **When the status is `drafted`, write "drafted YYYY-MM-DD, not yet submitted" instead of a date applied, and call the files drafts rather than submitted documents** (page bodies are write-once - Step 4.3).
 2. **The posting** - WebFetch the job URL and write a readable digest: what the role is, key requirements, practical details (location, deadline, salary if stated). Retry a 403 with browser headers per `.claude/skills/job-application-assistant/09-web-research.md` first. If the fetch still fails or redirects to a listing page, write "Posting no longer available (checked YYYY-MM-DD)" - **never reconstruct a posting from memory**.
 3. **Links** - the posting URL; derive `<company>_<role>` by the **Subfolder naming** rule in `documents/README.md`, and if that archive exists locally, name its path (plain text - the destination cannot link into the filesystem).
 
@@ -130,7 +130,7 @@ Remind the user once (first run only): the repo files remain the source of truth
 
 ## Important Rules
 
-1. **One-way, always.** Destination content never flows back into `seen_jobs.json`, the tracker, or any repo file. This command reads repo state and writes the destination - both repo files are read-only to it, and the gitignored sync-state file is its **only** local write.
+1. **One-way, always.** Destination content never flows back into `job_scraper/seen_jobs.json`, the tracker, or any repo file. This command reads repo state and writes the destination - both repo files are read-only to it, and the gitignored sync-state file is its **only** local write.
 2. **Idempotent upsert on `Key`.** Re-running creates nothing twice; matching is on the stored key, never on fuzzy title comparison.
 3. **Page bodies are write-once.** Property updates keep rows current; bodies belong to the user after creation. Only `--rebuild` may rewrite them, and it says so before doing it.
 4. **Never fabricate.** A dead posting URL gets an explicit "unavailable" note, not a reconstruction. Every page claim traces to stored state or fetched content.

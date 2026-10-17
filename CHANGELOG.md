@@ -68,6 +68,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/rank`, `/notion-sync` and `/upskill` name `job_scraper/seen_jobs.json` by its full path**
+  (follow-up to #608, `.claude/commands/rank.md`, `.claude/commands/notion-sync.md`,
+  `.claude/skills/upskill/SKILL.md`, `tests/test_scrape_seen_jobs_path.py`) - #608 qualified the
+  path in `/scrape`, where the file is written; the three readers still said the bare
+  `seen_jobs.json`, which an agent can resolve to the repo root, outside the ignore rule. The
+  guard test now covers all four specs, and `test_notion_sync_command.py` pins the qualified
+  phrase.
+
 - **Framework version checks compare marker values using Git-compatible paths on every platform** (#578, `tools/check_framework_version.py`) - quoting or spacing an unchanged version no longer exempts an accompanying guidance edit, hardening a latent bypass without changing legitimate version bumps.
 
 - **`/reset documents` clears nested and hidden user entries while preserving scaffolds** - cleanup retains tracked `.gitkeep` files and the README, with the complete inventory shown before confirmation (#580).
