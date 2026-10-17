@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -188,7 +189,7 @@ def main() -> int:
     # answers "which upstream commits deserve review". Point at the companion.
     print(
         f"\nFor commit-level triage of upstream commits, run: "
-        f"python3 tools/upstream_triage.py --remote {remote}"
+        f"python3 tools/upstream_triage.py --remote {shlex.quote(remote)} --branch {shlex.quote(args.branch)}"
     )
     return 0
 

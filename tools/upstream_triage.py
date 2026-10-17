@@ -32,6 +32,7 @@ the upstream ref is unavailable, so a scheduled job degrades gracefully.
 from __future__ import annotations
 
 import argparse
+import shlex
 import subprocess
 import sys
 
@@ -148,7 +149,7 @@ def main() -> int:
     behind = rev_list(f"HEAD..{ref}")
     if not behind:
         print(f"Up to date with `{ref}`. Nothing to review. :white_check_mark:")
-        _print_crossref(ref)
+        _print_crossref(args.remote, args.branch)
         return 0
 
     fork_only = rev_list(f"{ref}..HEAD")
@@ -225,15 +226,15 @@ def main() -> int:
         lines.append("_None._")
 
     print("\n".join(lines))
-    _print_crossref(ref)
+    _print_crossref(args.remote, args.branch)
     return 0
 
 
-def _print_crossref(ref: str) -> None:
+def _print_crossref(remote: str, branch: str) -> None:
     print()
     print(
         "_For personalized-file version stamps (which methodology files changed), "
-        f"run `python tools/check_upstream_updates.py --remote {ref.split('/')[0]}`._"
+        f"run `python tools/check_upstream_updates.py --remote {shlex.quote(remote)} --branch {shlex.quote(branch)}`._"
     )
 
 
