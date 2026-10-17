@@ -121,6 +121,8 @@ per-file diff commands.
   against the upstream repo (https and ssh forms, optional `.git` suffix), and an
   undeterminable checkout assumes upstream. Tests only, no `framework_version` bump.
 
+- **Framework version checks compare marker values using Git-compatible paths on every platform** (#578, `tools/check_framework_version.py`) - quoting or spacing an unchanged version no longer exempts an accompanying guidance edit, hardening a latent bypass without changing legitimate version bumps.
+
 - **`linkedin-search` and `freehire-search` reject invalid `--format` flags with `BAD_ARG`** (#555,
   `.agents/skills/linkedin-search/cli/src/cli.ts`, `.agents/skills/freehire-search/cli/src/cli.ts`) -
   unrecognized `--format` flags previously fell back silently to `"json"` with exit code 0, masking

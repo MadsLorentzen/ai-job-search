@@ -18,7 +18,7 @@ import sys
 import tempfile
 import unittest
 import unittest.mock
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "tools" / "check_framework_version.py"
@@ -96,6 +96,26 @@ class FrameworkVersionGateTests(CheckerRepoFixture):
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_same_version_reformatted_does_not_count_as_a_bump(self):
+        for marker in ['framework_version: "1.0.0"', "framework_version:  1.0.0"]:
+            with self.subTest(marker=marker):
+                self.framework_file.write_text(
+                    FRONTMATTER.replace("framework_version: 1.0.0", marker)
+                    + BODY + "\nChanged guidance with the same version.\n",
+                    encoding="utf-8",
+                )
+                result = self.run_checker()
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn("modified without bumping 'framework_version'", result.stdout)
+
+    def test_reformatting_version_alone_remains_allowed(self):
+        self.framework_file.write_text(
+            FRONTMATTER.replace("framework_version: 1.0.0", 'framework_version: "1.0.0"') + BODY,
+            encoding="utf-8",
+        )
+        result = self.run_checker()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_file_without_version_marker_fails(self):
         (self.skill_dir / "02-unmarked.md").write_text(
             "# No frontmatter at all\n", encoding="utf-8"
@@ -105,6 +125,31 @@ class FrameworkVersionGateTests(CheckerRepoFixture):
 
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("missing 'framework_version'", result.stdout)
+
+class WindowsGitPathTests(unittest.TestCase):
+    def test_diff_and_show_use_posix_paths_for_windows_checkout(self):
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location("framework_windows_paths", SCRIPT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        root = PureWindowsPath("C:/checkout")
+        profile = root / ".claude/skills/job-application-assistant/01-test-profile.md"
+        relative = ".claude/skills/job-application-assistant/01-test-profile.md"
+        diff = '-framework_version: 1.0.0\n+framework_version: "1.0.0"\n-Old guidance\n+New guidance\n'
+        with unittest.mock.patch.object(module, "ROOT", root), \
+             unittest.mock.patch.object(module, "run_git", side_effect=[
+                 (0, diff, ""), (0, FRONTMATTER + BODY, "")
+             ]) as run_git, \
+             unittest.mock.patch.object(module, "parse_frontmatter", return_value={
+                 "framework_version": "1.0.0"
+             }):
+            self.assertTrue(module.has_non_trivial_changes(profile, "base"))
+        self.assertEqual(run_git.call_args_list, [
+            unittest.mock.call(["diff", "-U0", "base", "--", relative]),
+            unittest.mock.call(["show", f"base:{relative}"]),
+        ])
+
 
 class RunGitEncodingTests(unittest.TestCase):
     """run_git() must decode `git diff` output as UTF-8 explicitly, not via
