@@ -68,6 +68,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`salary_lookup.py` accepts a BOM-prefixed `salary_data.json`** (#594, #602, `salary_lookup.py`,
+  `tests/test_salary_lookup.py`) - the data file is opened with `utf-8-sig`, so a file saved by
+  Windows PowerShell `Out-File`/`Set-Content` or by an editor that prepends a byte-order mark now
+  validates and loads instead of exiting 1 with "Unexpected UTF-8 BOM". Plain UTF-8 files read
+  identically, and malformed JSON after a BOM still reports its line and column. Reported by
+  rahul05ranjan; same class as #485 and #509.
+
 - **Upstream triage emits cherry-pick suggestions in dependency order**
   (`tools/upstream_triage.py`) - ready-to-run commands now list ancestors before
   descendants, so a follow-up patch is not suggested before the change it edits.
