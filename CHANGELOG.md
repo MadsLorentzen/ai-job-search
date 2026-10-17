@@ -68,6 +68,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/rank`, `/notion-sync` and `/upskill` name `job_scraper/seen_jobs.json` by its full path**
+  (follow-up to #608, `.claude/commands/rank.md`, `.claude/commands/notion-sync.md`,
+  `.claude/skills/upskill/SKILL.md`, `tests/test_scrape_seen_jobs_path.py`) - #608 qualified the
+  path in `/scrape`, where the file is written; the three readers still said the bare
+  `seen_jobs.json`, which an agent can resolve to the repo root, outside the ignore rule. The
+  guard test now covers all four specs, and `test_notion_sync_command.py` pins the qualified
+  phrase.
+
 - **`convert_salary_excel.py` converts the IDA workbook again** (#615, `tools/convert_salary_excel.py`,
   `tests/test_convert_salary_excel.py`) - the workbook heads its company column "Firmanavn og by",
   and since #75 made header matching whole-token only, "firma" no longer matched inside "Firmanavn",
