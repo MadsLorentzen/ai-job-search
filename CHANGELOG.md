@@ -384,6 +384,8 @@ per-file diff commands.
   caused by a focus filter or tracker exclusion takes the same path. Pinned by
   `test_step1_empty_candidates_still_sweeps_and_reports`, which fails against master's `rank.md`.
 
+- **`linkedin-search` preserves description structure** (#567) - job descriptions retain paragraph and list breaks instead of flattening them into one text block.
+
 - **`robots_check` no longer reads a leading BOM or an undecodable rule as permission**
   (`tools/robots_check.py`, `tests/test_robots_check.py`) - two decoding edge cases failed
   open, both flagged as follow-ups in #506. A robots.txt saved with a UTF-8 byte-order mark
