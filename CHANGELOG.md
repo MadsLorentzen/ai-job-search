@@ -355,6 +355,8 @@ per-file diff commands.
   a longer number is still caught. Two new `test_verify_pdf.py` cases; the numeric one fails
   on the unbounded pattern.
 
+- **`jobbank-search` preserves repeated filter values** (#577) - repeated documented filter options now retain all supplied values instead of only the last value.
+
 - **`check_framework_version.py`'s git diff read no longer crashes on non-ASCII framework-file
   content** (`tools/check_framework_version.py`) - `run_git()` called
   `subprocess.run(text=True)` without an explicit `encoding`, so output decoded via the host
