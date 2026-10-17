@@ -199,6 +199,8 @@ per-file diff commands.
   renamed. The additive-contract test in each CLI now asserts `id` and its equality with the
   native key; both fail on master.
 
+- **Danish portal installation examples use the actual CLI directories** (#589) - documented install commands now include the `.agents/skills` prefix.
+
 - **`jobdanmark-search detail` renders a JSON-LD description as text instead of passing
   the markup through** (`.agents/skills/jobdanmark-search/cli/src/commands/detail.ts`,
   `tests/detail-jsonld.test.ts`) - the JSON-LD branch emitted `jobPosting.description`
