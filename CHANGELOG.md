@@ -179,6 +179,8 @@ per-file diff commands.
   (`json|table|plain` for search, `json|plain` for detail) and exit 1 with `{ error, code: "BAD_ARG" }`
   on invalid options.
 
+- **Upstream checks report incomplete comparisons** (#583) - missing base or head framework files now remain visible as incomplete comparisons instead of being reported as unchanged.
+
 - **`jobdanmark-search detail` no longer keeps a malformed closing tag as text on the
   rendered-HTML branch** (#525, `detail.ts`, `tests/detail-parsing.test.ts`) - a live page wrote
   its Jobtype item as `Fuldtid </ li >`, and because `node-html-parser` does not recognise a
