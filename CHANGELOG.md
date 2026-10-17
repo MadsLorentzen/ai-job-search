@@ -367,6 +367,8 @@ per-file diff commands.
   entries) this adds 15 reports, each a `[Job Title]` header at the foot of a page with its
   bullets overleaf, and the other 289 builds give the same output as before.
 
+- **Upstream version checks decode git output as UTF-8** (#587) - future non-Latin framework lines and non-Latin branch names no longer depend on the Windows code page, guarding a latent case absent from the shipped framework files.
+
 - **One posting on a portal without a numeric id no longer gets a second key when its
   title is re-listed with different casing** (#501, `tools/job_key.py`,
   `tests/test_job_key.py`) - the key hashed a slugified title alongside the URL whenever
