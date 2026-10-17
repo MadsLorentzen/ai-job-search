@@ -98,7 +98,7 @@ command (see its SKILL.md — do not guess flags) to extract **key requirements*
 `false` means the posting page itself renders LinkedIn's "No longer accepting
 applications" banner — the job died between being indexed and being fetched (expired
 LinkedIn URLs redirect to *similar live jobs*, so a search hit can be a ghost). Mark
-such a job, never silently drop it: write its entry to `seen_jobs.json` in Step 4 with
+such a job, never silently drop it: write its entry to `job_scraper/seen_jobs.json` in Step 4 with
 `"status": "expired"` and leave it out of the Step 5 presentation — an absent entry
 looks identical to a job never seen, and the recorded status is what makes a later
 ghost report self-triaging. `isActive: true` is only the absence of that banner, not
@@ -117,10 +117,10 @@ site for the role and store that URL instead, or drop the candidate rather than 
 fragment link.
 
 For every candidate:
-- Skip if the URL matches any existing `seen_jobs.json` entry, regardless of
+- Skip if the URL matches any existing `job_scraper/seen_jobs.json` entry, regardless of
   that entry's key. This preserves dedup continuity for postings stored under
   the pre-helper key rule while new entries use the canonical key from Step 4.
-- Otherwise, skip if the company+title combo already exists in `seen_jobs.json`
+- Otherwise, skip if the company+title combo already exists in `job_scraper/seen_jobs.json`
 - Skip if the company+role already appears in `job_search_tracker.csv`
 
 ### Step 2.5: Mass-Posting Detection (within this run)
@@ -149,7 +149,7 @@ python3 tools/job_key.py --company "<company>" --title "<title>" --url "<url>"
 
 It prints one line: the canonical key for that posting. The key must be a pure function of the posting, because two runs that slugify differently store the same job twice and defeat the dedup this step exists to provide. The helper also length-caps long titles and disambiguates the cap with a hash of the full slug, so a truncated title is stable across runs and two different long titles never collide. `python3 tools/job_key.py --audit` reports entries in an existing state file that predate this rule; it only reports, and never rewrites keys, since a rewritten key breaks the tracker's own company+role matching.
 
-2. Add ALL fetched jobs (new and skipped) to `seen_jobs.json` with structure:
+2. Add ALL fetched jobs (new and skipped) to `job_scraper/seen_jobs.json` with structure:
 ```json
 {
   "seen": {
@@ -213,7 +213,7 @@ Scraper-based portal CLIs rot silently: when a portal changes its markup, the pa
 **Free pass (no extra requests).** For each enabled portal that ran in Step 1b:
 
 - **Degraded scan:** inspect the results it returned this run. Flags: `company` null or empty on every result, empty titles, undecoded entities (`&amp;`) or HTML fragments in titles, URLs that do not point at the portal. Any of these means the parser is half-working and `/scrape` is silently collecting junk.
-- **Yield history:** if the portal returned zero results across all of this run's queries, check whether `seen_jobs.json` holds prior entries from it (via the `portal` field, or by matching URL domains for entries predating the field). A portal that produced jobs on earlier runs and produces nothing now is suspect - the same queries worked before.
+- **Yield history:** if the portal returned zero results across all of this run's queries, check whether `job_scraper/seen_jobs.json` holds prior entries from it (via the `portal` field, or by matching URL domains for entries predating the field). A portal that produced jobs on earlier runs and produces nothing now is suspect - the same queries worked before.
 
 **Escalation (bounded, on suspicion only).** A suspect portal gets **one** sentinel probe: run its documented `search` with the example query from its own SKILL.md (that query provably worked when the skill was registered), the portal's limit flag capped at 3, `--format json`. If that returns nothing, retry **once** with a single common word. Only then is the verdict **broken**. A 429 or block page is **never** evidence of breakage - record the portal as **inconclusive (rate-limited)**, back off, and do not retry.
 
@@ -273,7 +273,7 @@ After presenting, ask:
 
 If the user picks a number, invoke the **job-application-assistant** skill workflow (fit evaluation first, then CV + cover letter if approved).
 
-If the run found many new jobs (roughly 8+), also suggest `/rank` - it batch-scores all new postings against the full fit framework and returns a ranked shortlist, which beats eyeballing a long table. (`/rank` sets the `ranked`, `expired` and `unreachable` status values in `seen_jobs.json`; treat all three as already-seen for dedup purposes.)
+If the run found many new jobs (roughly 8+), also suggest `/rank` - it batch-scores all new postings against the full fit framework and returns a ranked shortlist, which beats eyeballing a long table. (`/rank` sets the `ranked`, `expired` and `unreachable` status values in `job_scraper/seen_jobs.json`; treat all three as already-seen for dedup purposes.)
 
 ### Step 6: Update Tracker (Optional)
 
@@ -284,7 +284,7 @@ If the user decides to apply to any job, the tracker row is written by **job-app
 ## Important Rules
 
 1. **Never fabricate job postings.** Only present jobs from actual CLI search/detail output or WebSearch/WebFetch results.
-2. **Respect deduplication.** Always check seen_jobs.json AND job_search_tracker.csv before presenting.
+2. **Respect deduplication.** Always check job_scraper/seen_jobs.json AND job_search_tracker.csv before presenting.
 3. **Focus on configured geographic area.** Skip jobs that require relocation or are clearly outside commute range.
 4. **Only open positions.** Skip postings with expired deadlines or those marked as closed.
 5. **Be efficient with detail fetches.** Don't run `detail` or WebFetch on every search hit — pre-filter by title/snippet, then fetch only promising matches.
