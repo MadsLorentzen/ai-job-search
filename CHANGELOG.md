@@ -194,6 +194,8 @@ per-file diff commands.
   the Jobtype item and a description paragraph (fails on master), and an entity-encoded
   `<div>` in a description that stays in the text.
 
+- **Upstream checks distinguish new files from fork deletions** (#585) - a path absent from the base is reported as newly added upstream instead of incorrectly treated as a deletion in the fork.
+
 - **`/add-portal` includes the `.agents` prefix in generated `allowed-tools`** (#545,
   `.claude/commands/add-portal.md`, `tests/test_add_portal_command.py`) - the specification template
   for the new portal's `SKILL.md` frontmatter wrote `allowed-tools: Bash(bun run skills/<name>/cli/src/cli.ts *)`
