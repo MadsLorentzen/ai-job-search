@@ -285,6 +285,8 @@ per-file diff commands.
   the fixed set it is; parsing `apply.md`'s example list was deliberately not done, since a
   parser keyed on prose wording is the next thing to go stale. Reported by Holo-Eter.
 
+- **Danish portal CLIs reject missing option values** (#573) - value-taking flags followed by another option now fail before search dispatch instead of treating the next flag as the value.
+
 - **`/expand` and `/setup` now append behavioral findings to sections `02-behavioral-profile.md`
   actually has** (`.claude/commands/expand.md` Step 5, `.claude/commands/setup.md` Step A7,
   `tests/test_expand_command.py`, `tests/test_setup_command.py`) - both told the model to add
