@@ -3,8 +3,11 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-async function occupations(format: "json" | "plain" | "table") {
-  const readme = await Bun.file(join(import.meta.dir, "../README.md")).text();
+async function occupations(format: "json" | "plain" | "table", lineEnding: "LF" | "CRLF") {
+  const source = await Bun.file(join(import.meta.dir, "../README.md")).text();
+  const checkout = source.replace(/\r\n/g, "\n").replace(/\n/g, lineEnding === "CRLF" ? "\r\n" : "\n");
+  expect(checkout.includes("\r\n")).toBe(lineEnding === "CRLF");
+  const readme = checkout.replace(/\r\n/g, "\n");
   const section = readme.split("## `occupations`")[1].split("\n---")[0];
   // Use the repository's documented API response unchanged, not a shortened
   // synthetic identifier that would conceal the formatting failure.
@@ -52,21 +55,21 @@ async function occupations(format: "json" | "plain" | "table") {
   }
 }
 
-test("occupation table preserves the documented full ESCO URI and UUID", async () => {
-  const { stdout, fixture } = await occupations("table");
+test.each(["LF", "CRLF"] as const)("occupation table preserves the documented full ESCO URI and UUID with %s newlines", async (lineEnding) => {
+  const { stdout, fixture } = await occupations("table", lineEnding);
   const uri = fixture[0].conceptUriDa;
   expect(uri.length).toBeGreaterThan(70);
   expect(stdout.trim().split("\n")[1].split(/\s+/)[0]).toBe(uri);
   expect(stdout).toContain(uri.split("/").at(-1));
 });
 
-test("occupation JSON retains the same complete identifier", async () => {
-  const { stdout, fixture } = await occupations("json");
+test.each(["LF", "CRLF"] as const)("occupation JSON retains the same complete identifier with %s newlines", async (lineEnding) => {
+  const { stdout, fixture } = await occupations("json", lineEnding);
   expect(JSON.parse(stdout)).toEqual(fixture);
 });
 
-test("occupation plain output retains the same complete identifier", async () => {
-  const { stdout, fixture } = await occupations("plain");
+test.each(["LF", "CRLF"] as const)("occupation plain output retains the same complete identifier with %s newlines", async (lineEnding) => {
+  const { stdout, fixture } = await occupations("plain", lineEnding);
   expect(stdout).toContain(`uri: ${fixture[0].conceptUriDa}`);
   expect(stdout).toContain(`label: ${fixture[0].preferredLabelDa}`);
 });

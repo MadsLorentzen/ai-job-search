@@ -46,6 +46,8 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobnet-search occupations` preserves full identifiers in table output** - ESCO URIs and UUIDs are no longer truncated, with documentation-based regression checks covering LF and CRLF checkouts (#586).
+
 - **`jobnet-search` routes external ads to employer `jobAdUrl` rather than broken `find-job` links**
   (#538, `.agents/skills/jobnet-search/cli/src/commands/search.ts`, `.agents/skills/jobnet-search/cli/README.md`,
   `.agents/skills/jobnet-search/cli/tests/search-normalization.test.ts`) - external job postings on
