@@ -103,6 +103,45 @@ _YEAR = r"(?<!\d)(?:19|20)\d{2}(?!\d)"
 NON_ASCII_DATE_RANGE = re.compile(
     rf"{_YEAR}[^\S\n]*[{NON_ASCII_DASHES}]|[{NON_ASCII_DASHES}][^\S\n]*{_YEAR}"
 )
+# The whitespace-delimited tokens touching the dash on either side. A range whose
+# two ends are both BARE numbers is a date only when both are years: `EUR 1500-2000`
+# and `2000-5000 requests/s` are quantities that happen to contain a year-shaped
+# number, and the guide tells users to keep `--` in exactly those. A composite
+# token (`03/2016`, `01.2016`, `2016-03`, `2016/17`) is not a bare number, so a
+# numerically formatted date range still falls through to the year rule.
+_TOKEN_BEFORE = re.compile(r"(\S+)[^\S\n]*$")
+_TOKEN_AFTER = re.compile(r"^[^\S\n]*(\S+)")
+_BARE_NUMBER = re.compile(r"\d+(?:[.,]\d+)*[kKmM%]?")
+_BARE_YEAR = re.compile(r"(?:19|20)\d{2}")
+_OUTER_PUNCTUATION = ".,;:!?()[]{}\"'"
+
+
+def _bare_number(token):
+    """The token with outer punctuation stripped, if it is a bare number, else None.
+
+    A dotted or comma-separated token whose groups include a year (`01.2016`,
+    `31.07.2024`) is a date written numerically, not a quantity, and is left to
+    the year rule; `1,234.56` and `2.0M` have no year group and stay numbers.
+    """
+    core = token.strip(_OUTER_PUNCTUATION)
+    if not _BARE_NUMBER.fullmatch(core):
+        return None
+    groups = re.split(r"[.,]", core.rstrip("kKmM%"))
+    if len(groups) > 1 and any(_BARE_YEAR.fullmatch(g) for g in groups):
+        return None
+    return core
+
+
+def _quantity_range(line, dash_index):
+    """True when both sides of the dash are bare numbers and not both years."""
+    before = _TOKEN_BEFORE.search(line[:dash_index])
+    after = _TOKEN_AFTER.search(line[dash_index + 1 :])
+    if not before or not after:
+        return False
+    left, right = _bare_number(before.group(1)), _bare_number(after.group(1))
+    if left is None or right is None:
+        return False
+    return not (_BARE_YEAR.fullmatch(left) and _BARE_YEAR.fullmatch(right))
 
 
 def find_non_ascii_date_ranges(text):
@@ -112,15 +151,21 @@ def find_non_ascii_date_ranges(text):
     maps U+2013 back to `-` so `--contains "2016-2024"` can match what the
     template renders, which is exactly why `--contains` cannot see this defect.
     A year on either side of the dash is enough ("Mar 2016 - Jul 2016",
-    "2016 - Present"), so the check is locale-agnostic; a numeric range with
-    no year ("EUR 600k-1M") is not a date and is left alone.
+    "2016 - Present"), so the check is locale-agnostic. A range whose two ends
+    are both bare numbers is a date only when both are years: "EUR 600k-1M",
+    "EUR 1500-2000" and "2000-5000 requests/s" are quantities and are left
+    alone, while a numerically formatted date ("03/2016-07/2024", "2016-03-2024-07")
+    is not a bare number on either side and is still caught.
     """
     hits = []
     for match in NON_ASCII_DATE_RANGE.finditer(text):
         dash = next(c for c in match.group(0) if c in NON_ASCII_DASHES)
         line_start = text.rfind("\n", 0, match.start()) + 1
         line_end = text.find("\n", match.end())
-        line = text[line_start : line_end if line_end != -1 else len(text)]
+        line_end = line_end if line_end != -1 else len(text)
+        line = text[line_start:line_end]
+        if _quantity_range(line, match.start() + match.group(0).index(dash) - line_start):
+            continue
         hits.append((" ".join(line.split()), dash))
     return hits
 

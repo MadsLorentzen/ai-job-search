@@ -64,6 +64,16 @@ sh /tmp/tinytex-install-bin-unix.sh /tmp --no-path
 export PATH="$HOME/Library/TinyTeX/bin/universal-darwin:$PATH"
 ```
 
+The `export` above only lasts for the current terminal window. Persist it, or every new window reports `zsh: command not found: lualatex` (or `xelatex`) even though TinyTeX installed fine:
+
+```bash
+echo 'export PATH="$HOME/Library/TinyTeX/bin/universal-darwin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+lualatex --version   # should print a version, not "command not found"
+```
+
+(Bash users: append to `~/.bash_profile` instead.)
+
 Then install the template dependencies:
 
 ```bash

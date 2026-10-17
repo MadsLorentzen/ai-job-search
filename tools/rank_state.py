@@ -14,7 +14,8 @@ This moves the state-file traffic into code. Three subcommands:
   sweep        rule 6's expiry pass over entries this run did not re-score -
                a stored-date comparison, no fetch, no agent
   apply        write scoring results back to seen_jobs.json and print the
-               ranked/vetoed/expired rows Step 5's report is built from
+               ranked/vetoed/expired/unreachable/gave_up rows Step 5's
+               report is built from
 
 Selection and projection follow Step 1's existing rules exactly (status
 filter, tracker exclusion, focus filter, `--limit`/`--all`); the write-back
@@ -30,7 +31,7 @@ this only removes the state file from the conversation.
 Usage:
   python3 tools/rank_state.py candidates [--all] [--focus TEXT] [--limit N]
   python3 tools/rank_state.py sweep [--write] [--exclude KEY,KEY]
-  python3 tools/rank_state.py apply --results results.json [--dry-run]
+  python3 tools/rank_state.py apply --results results.json [--dry-run] [--now ISO-DATETIME]
 
 Both subcommands print JSON on stdout. Exit 0 on success, 1 on a usage or
 state error, or on `apply` when any result could not be written.
@@ -43,7 +44,7 @@ import re
 import sys
 import tempfile
 import unicodedata
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -57,6 +58,22 @@ BANDS = ((75, "Strong Fit"), (60, "Good Fit"), (45, "Moderate Fit"), (30, "Weak 
 DEFAULT_LIMIT = 10
 URGENT_DAYS = 7
 ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+# The statuses a /rank scoring agent may return (rank.md Step 2). This module
+# owns the set; tests/test_rank_command.py asserts rank.md's JSON contract
+# names exactly these, so the spec and the tool cannot drift apart.
+AGENT_STATUSES = ("scored", "expired", "unreachable")
+
+# A posting that could not be fetched is `unreachable`, not `expired`, and is
+# retried on later runs (#534). It gives up to `expired` only after this many
+# failed attempts with at least this long between the first and the last, so a
+# scheduled run plus a manual one on the same day cannot burn every attempt on
+# one outage.
+UNREACHABLE_MAX_ATTEMPTS = 3
+UNREACHABLE_MIN_SPAN = timedelta(hours=48)
+FETCH_ERROR_MAX = 200
+RETRY_FIELDS = ("fetch_attempts", "first_unreachable", "last_fetch_error")
+TIMESTAMP = "%Y-%m-%dT%H:%M:%SZ"
 
 
 def load_state(path: Path) -> tuple[dict, dict]:
@@ -84,6 +101,24 @@ def save_state(path: Path, doc: dict) -> None:
     except BaseException:
         Path(tmp).unlink(missing_ok=True)
         raise
+
+
+def parse_timestamp(value) -> datetime | None:
+    """A stored UTC timestamp, or None for anything else (absent, malformed, a
+    bare date) - the defensive-parse rule again: never compared, never guessed."""
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.strptime(value.strip(), TIMESTAMP)
+    except ValueError:
+        return None
+    return parsed.replace(tzinfo=timezone.utc)
+
+
+def parse_now(value: str) -> datetime:
+    """--now: an ISO 8601 date-time; a naive value is taken as UTC."""
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    return parsed.astimezone(timezone.utc) if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
 def parse_iso(value) -> date | None:
@@ -143,7 +178,7 @@ def cmd_candidates(args) -> int:
         if args.all:
             if status == "skipped":
                 continue
-        elif status != "new":
+        elif status not in ("new", "unreachable"):
             continue
         if (norm(entry.get("company")), norm(entry.get("title"))) in excluded:
             skipped_tracker += 1
@@ -259,6 +294,7 @@ def band(score: int) -> str:
 def cmd_apply(args) -> int:
     doc, seen = load_state(args.state)
     today = args.today
+    now = args.now
     try:
         results = json.loads(Path(args.results).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -268,7 +304,7 @@ def cmd_apply(args) -> int:
     if not isinstance(results, list):
         sys.exit("results file must be a JSON array of scoring objects")
 
-    rows, expired, errors = [], [], []
+    rows, expired, unreachable, gave_up, errors = [], [], [], [], []
     for result in results:
         key = result.get("key")
         entry = seen.get(key)
@@ -276,8 +312,63 @@ def cmd_apply(args) -> int:
             errors.append({"key": key, "error": "no such key in seen_jobs.json"})
             continue
 
-        if result.get("status") == "expired":
+        # A missing status is a score, as it always was; a misspelt one is an
+        # error rather than a fall-through that reports a "missing score".
+        status = result.get("status", "scored")
+        if status not in AGENT_STATUSES:
+            errors.append(
+                {"key": key, "error": f"unknown status {status!r}; expected one of {', '.join(AGENT_STATUSES)}"}
+            )
+            continue
+
+        if status == "unreachable":
+            # A stored deadline that has already passed is positive evidence the
+            # posting is closed, whatever the fetch did: expire it, as the scored
+            # path and rule 6 would, instead of retrying it and later listing it
+            # as possibly live.
+            deadline = parse_iso(entry.get("deadline"))
+            if deadline is not None and deadline < today:
+                entry["status"] = "expired"
+                for field in (*RETRY_FIELDS, "expired_reason"):
+                    entry.pop(field, None)
+                expired.append(
+                    {"key": key, "title": entry.get("title"), "company": entry.get("company"), "url": entry.get("url")}
+                )
+                continue
+
+            previous = entry.get("fetch_attempts")
+            valid = isinstance(previous, int) and not isinstance(previous, bool)
+            attempts = (previous if valid else 0) + 1
+            first = parse_timestamp(entry.get("first_unreachable")) or now
+            # Plain, bounded text: it is shown in the report, never acted on.
+            error = " ".join(str(result.get("fetch_error") or "").split())[:FETCH_ERROR_MAX]
+            entry["fetch_attempts"] = attempts
+            entry["first_unreachable"] = first.strftime(TIMESTAMP)
+            if error:
+                entry["last_fetch_error"] = error
+            row = {
+                "key": key,
+                "title": entry.get("title"),
+                "company": entry.get("company"),
+                "url": entry.get("url"),
+                "fetch_attempts": attempts,
+                "last_fetch_error": entry.get("last_fetch_error"),
+            }
+            if attempts >= UNREACHABLE_MAX_ATTEMPTS and now - first >= UNREACHABLE_MIN_SPAN:
+                # The retry fields stay on the entry as its history; `--all`
+                # can still revive it, like any other expired entry.
+                entry["status"] = "expired"
+                entry["expired_reason"] = "unreachable"
+                gave_up.append(row)
+            else:
+                entry["status"] = "unreachable"
+                unreachable.append(row)
+            continue
+
+        if status == "expired":
             entry["status"] = "expired"
+            for field in (*RETRY_FIELDS, "expired_reason"):
+                entry.pop(field, None)
             expired.append(
                 {"key": key, "title": entry.get("title"), "company": entry.get("company"), "url": entry.get("url")}
             )
@@ -295,6 +386,8 @@ def cmd_apply(args) -> int:
         parsed = parse_iso(result.get("deadline") or entry.get("deadline"))
         if parsed is not None and parsed < today:
             entry["status"] = "expired"
+            for field in (*RETRY_FIELDS, "expired_reason"):
+                entry.pop(field, None)  # fetched after all: closed on its deadline
             if result.get("deadline"):
                 entry["deadline"] = result["deadline"]
             expired.append(
@@ -305,6 +398,8 @@ def cmd_apply(args) -> int:
         legacy = entry_location_verdict(entry)
         if entry.get("location") in ("PASS", "FAIL", "FLAG"):
             entry.pop("location", None)  # legacy verdict, never a place
+        for field in (*RETRY_FIELDS, "expired_reason"):
+            entry.pop(field, None)  # fetched after all: the retry history is moot
         entry["status"] = "ranked"
         entry["rank_score"] = score
         entry["rank_verdict"] = band(score)
@@ -358,6 +453,8 @@ def cmd_apply(args) -> int:
                 "ranked": ranked,
                 "vetoed": vetoed,
                 "expired": expired,
+                "unreachable": unreachable,
+                "gave_up": gave_up,
                 "errors": errors,
                 "written": not args.dry_run,
             },
@@ -386,6 +483,10 @@ def main() -> int:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--state", type=Path, default=STATE)
     common.add_argument("--today", type=date.fromisoformat, default=date.today())
+    common.add_argument(
+        "--now", type=parse_now, default=datetime.now(timezone.utc),
+        help="date-time for the unreachable retry floor (default: now, UTC)",
+    )
 
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="command", required=True)
