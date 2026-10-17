@@ -1,10 +1,10 @@
-# Job Application Assistant for [YOUR_NAME]
+# Job Application Assistant for Usama Ramzan
 
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+<!-- Personal profile is maintained locally and should only be pushed to a private repository. -->
+<!-- Personalized from the candidate's resume, LinkedIn profile, and public GitHub projects. -->
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Usama Ramzan, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,79 +13,92 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
+<!-- Profile facts are sourced from the candidate's resume, LinkedIn profile, and GitHub repositories. -->
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
+- **Name:** Usama Ramzan
+- **Location:** Lahore, Punjab, Pakistan (Lahore for on-site/hybrid roles; remote roles also welcome)
+- **Phone:** 0308-1638573
+- **Email:** usamaramzan2008@gmail.com
+- **LinkedIn:** https://www.linkedin.com/in/usama-ramzan-861370369
+- **GitHub:** https://github.com/usama236a
 - **Languages:**
   | Language | Level |
   |----------|-------|
-  | [LANGUAGE] | [LEVEL] |
+  | Urdu | Native |
+  | English | Professional working proficiency |
   <!-- Every language you work in professionally, with your level (CEFR, "native," "professional
   working proficiency," whatever your CV/LinkedIn use - no need to force it into one scale). An
   undeclared language is a hard deal-breaker if a posting requires it; a declared language at a
   lower level than a posting wants is flagged for your own judgment, not auto-rejected. See
   04-job-evaluation.md's Language Gate. -->
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+- **CV language:** English
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Computer Science undergraduate (5th semester); open to part-time Data Analyst, Junior ML, and Data Science Intern opportunities
+- **LinkedIn headline:** "Machine Learning | Data Engineer | End-to-End ML Pipelines, Predictive Modeling | LLM Application Architecture"
 
 ### Education
 <!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **BS in Computer Science** (Sep 2024–expected Oct 2028) - The University of Lahore
+  - In progress; current LinkedIn profile lists the 5th semester.
+  - LinkedIn lists a CGPA of 3.11; the grading scale was not specified.
+  - Relevant interests: machine learning, pattern recognition, data science, and software engineering.
+- **Intermediate** - Punjab College, Township
+- **Matriculation** - Punjab Group of Colleges, Haroonabad
 
 ### Professional Experience
 <!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Inventory Manager** (Jan 2025–Feb 2026) - **SCH HUB Pvt Ltd** (Lahore, Pakistan; part-time)
+  - Tracked incoming and outgoing stock and maintained accurate inventory ledgers in Excel.
+  - Prepared and organized invoices, created invoice formats, and kept product records current.
+  - Analyzed sales trends to identify fast- and slow-moving products and support reorder planning.
+  - Presented inventory and sales insights to business owners at university showcases.
+- **Founder and Operator** (Ongoing) - **ALL-in, Retail & Online Store** (Lahore, Pakistan)
+  - Run a small retail and online store, tracking sales and using the data to inform stock decisions.
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Python, applied machine learning, data analysis, pandas, NumPy, scikit-learn, LightGBM, SQL, Excel
+- **Secondary:** XGBoost, CatBoost, spaCy, C++, Streamlit, SQLite, Ollama, Groq LLM APIs, RAG, tool calling, pytest
+- **Domain:** Ecommerce and inventory analytics, demand forecasting, predictive modeling, LLM-powered applications
+- **Software:** JupyterLab, Git/GitHub, Microsoft Excel, Streamlit
 
 ### Certifications
 <!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- **Foundations of Machine Learning** - Coursera, issued Sep 2026 (credential ID: KURB6K3VAWGY)
+- **Intro to Machine Learning** - Kaggle course; completion shared on LinkedIn, date not specified
 
 ### Publications
 <!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- No publications listed.
 
 ### Awards
 <!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- Top 15% (rank 240/1,592), Kaggle Spaceship Titanic competition; CatBoost/LightGBM/XGBoost ensemble.
+- 3rd place, university business pitch competition (Pitlane auto-parts delivery project; year not listed).
+- Represented SCH HUB at university data/business showcases (FAST, LGU, UOL).
 
 ### Behavioral Profile
 <!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- **Self-assessment:** No formal behavioral assessment provided.
+- **Work preferences:** User reports benefiting from structured mentorship, independent problem-solving, collaborative projects, and fast-moving experimentation.
+- **Strengths:** Analytical problem-solving, careful data cleaning and validation, practical ML development, and explaining findings to non-technical stakeholders.
+- **Growth areas:** Not specified; do not infer without asking.
+- **Thrives in:** Learning-oriented teams that combine clear goals, useful collaboration, room for independent work, and practical experimentation.
 
 ### What Excites You
 <!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Building applied AI/ML and LLM-powered tools that produce useful, verifiable results.
+- Using data to improve inventory, ecommerce, and business decisions.
 
 ### Target Sectors
 <!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- AI, machine learning, and data science: internships and junior roles.
+- Ecommerce, retail, and business analytics: data analyst and inventory analytics roles.
 
 ### Deal-breakers
 <!-- Hard constraints on job search. Language requirements are handled separately and
 automatically from your Languages table above - don't duplicate them here. -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- No other deal-breakers have been confirmed yet; do not assume salary, schedule, or company constraints.
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

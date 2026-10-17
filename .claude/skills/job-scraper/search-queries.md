@@ -1,6 +1,6 @@
 # Search Queries for Job Scraper
 
-<!-- SETUP: Customize these queries based on your skills, target roles, and location -->
+<!-- Configured for Usama Ramzan; adjust priorities as the search evolves. -->
 
 ## Installed portal CLIs (primary for `/scrape`)
 
@@ -12,11 +12,10 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Primary (installed portal skills):
+- **LinkedIn** - covered by the `linkedin-search` CLI; prioritize Lahore and remote listings.
+- **Rozee.pk** - covered by the `rozee-search` CLI; prioritize Lahore and use low-volume personal searches.
+- **Freehire.me** - covered by the `freehire-search` CLI for international and remote technology roles.
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for known target companies
@@ -27,34 +26,42 @@ Queries are grouped by priority. Write **each category in every language from yo
 
 **Organize by function, not job title.** The same underlying work carries different titles across companies and markets (a "Data Scientist" role at one employer may be posted as "Insights Analyst" or "Data Consultant" at another). Name each priority category after the function it covers, and list several plausible job titles as query variants within that category rather than betting an entire priority tier on one exact title string.
 
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
+### Priority 1: AI and machine learning internships
 
 These match your strongest and most desired career direction.
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE_1]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE_2]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE_1]" [YOUR_COUNTRY]
+site:rozee.pk "AI ML Intern" Lahore
+site:rozee.pk "Machine Learning Intern" Lahore
+site:rozee.pk "Artificial Intelligence Intern" Lahore
+site:linkedin.com/jobs "AI/ML Intern" Lahore Pakistan
+site:linkedin.com/jobs "Machine Learning Intern" remote Pakistan
+site:rozee.pk "مشین لرننگ انٹرن" لاہور
 ```
 
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
+### Priority 2: Data science and analytics
 
-These match your domain expertise.
+These match your data and business-analysis skills.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:rozee.pk "Data Science Intern" Lahore
+site:rozee.pk "Data Analyst" "Part Time" Lahore
+site:linkedin.com/jobs "Data Science Intern" Lahore Pakistan
+site:linkedin.com/jobs "Junior Data Analyst" Lahore
+site:linkedin.com/jobs "Data Analyst" remote Pakistan
+site:rozee.pk "ڈیٹا تجزیہ کار" لاہور
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
+### Priority 3: Junior machine learning and applied AI
 
 Adjacent roles you could pivot into.
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
+site:rozee.pk "Junior Machine Learning Engineer" Lahore Python
+site:rozee.pk "AI Engineer Intern" Lahore Python
+site:linkedin.com/jobs "Junior ML Engineer" Lahore
+site:linkedin.com/jobs "AI Engineer Intern" remote Pakistan Python
+site:rozee.pk "ڈیٹا سائنس انٹرن" لاہور
 ```
 
 ### Priority 4: Broader Technical / Consulting
@@ -62,19 +69,19 @@ site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
 Wider net for general technical roles.
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:rozee.pk Python data analyst Lahore intern
+site:linkedin.com/jobs Python data intern Lahore Pakistan
+site:linkedin.com/jobs "Business Intelligence Intern" Lahore
+site:rozee.pk "Excel SQL" data analyst Lahore part time
+site:rozee.pk "ڈیٹا اینالسٹ" لاہور پارٹ ٹائم
 ```
 
 ## Location Filter
 
 When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+- Lahore, Punjab, Pakistan: preferred for on-site/hybrid roles.
+- Remote roles: acceptable.
+- Other cities or relocation: not specified; flag and confirm before treating as a match.
 
 ## Language Filter
 

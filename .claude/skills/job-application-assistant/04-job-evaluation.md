@@ -60,9 +60,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** Python, pandas, NumPy, scikit-learn, LightGBM, SQL/SQLite, Excel, data cleaning, feature engineering, model evaluation, and Streamlit dashboards.
+**Moderate match areas:** LLM applications with Ollama/Groq, tool calling, policy retrieval/RAG, XGBoost, CatBoost, spaCy, pytest, and Git/GitHub.
+**Not yet evidenced in supplied materials:** production-scale model serving, cloud-native MLOps, and senior-level data engineering. Treat these as evidence gaps, not confirmed deficiencies.
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for? Match on the function and nature of the work performed, not the literal job title - a "Data Consultant" and a "Data Scientist" role can be functionally identical.
@@ -74,9 +74,9 @@ Does work history align with what they're looking for? Match on the function and
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** Ecommerce inventory operations, sales/stock analysis, applied ML projects, and demand forecasting.
+**Moderate:** LLM application architecture, data science, and dashboard development (primarily project-based).
+**Entry-level:** AI/ML intern, Data Science Intern, Junior ML, and part-time Junior Data Analyst roles.
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -91,9 +91,9 @@ Does the role and company culture match the behavioral profile?
 **Red flags to research:** Department disorganization, work dominated by maintenance over development, poor chemistry with leadership, culture mismatches. Check reviews, media coverage, LinkedIn connections, and network contacts for insider perspective.
 
 ### 4. Location & Logistics (Pass/Fail + Notes)
-- Within commute range: PASS
-- Remote with occasional office: PASS
-- Requires relocation: FAIL (deal-breaker)
+- Lahore on-site/hybrid: PASS
+- Remote: PASS
+- On-site/hybrid outside Lahore: FLAG; confirm with the user before treating as a fit
 - Frequent international travel: FLAG (discuss with user)
 
 ### 5. Career Alignment & Motivation (0-100)
@@ -107,19 +107,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Gain practical AI/ML and data science experience through internships or junior roles while completing a Computer Science degree.
+- Build and evaluate useful end-to-end ML and LLM applications.
+- Apply data analysis and predictive modeling to real business problems, especially ecommerce and inventory.
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: Python/SQL data work, cleaning and feature engineering, model building/evaluation, dashboards, LLM applications, and explaining insights.
+- Tasks that drain: Not specified; ask the user instead of inferring.
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: Not specified.
+- **Flexibility**: Candidate is studying and is targeting part-time roles and internships; confirm availability and hours for each opportunity.
+- **Professional development**: Mentorship, practical project work, and opportunities to develop ML engineering skills.
 
 ### 6. Salary Benchmark (Optional)
 

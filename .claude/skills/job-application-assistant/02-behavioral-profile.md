@@ -4,51 +4,49 @@ framework_version: 1.0.0
 
 # Behavioral Profile
 
-<!-- SETUP: This file is populated by running /setup -->
-<!-- You can use results from PI, DISC, Myers-Briggs, StrengthsFinder, or a self-assessment -->
+<!-- Self-assessment only; no formal behavioral assessment was supplied. -->
 
 ## Overview
-[YOUR_NAME]'s behavioral assessment identifies them as a **[PROFILE_TYPE]** pattern. [1-2 SENTENCE_SUMMARY].
+Usama has not supplied results from a formal behavioral assessment. In a self-assessment, he said he benefits from structured guidance, independent problem-solving, collaborative work, and fast-moving experimentation. Treat this as a broad preference rather than a fixed personality type.
 
 ## Core Behavioral Drives
 
 | Drive | Level | Meaning |
 |-------|-------|---------|
-| [DRIVE_1] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_2] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_3] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_4] | [LEVEL] | [DESCRIPTION] |
+| Clear direction | Appreciated | Structured goals and mentorship help him learn and deliver. |
+| Autonomy | Appreciated | He also values independent problem-solving and ownership. |
+| Collaboration | Appreciated | He is comfortable contributing to team projects and explaining results. |
+| Experimentation | Appreciated | Fast-moving practical projects are also welcome. |
 
 ## Strongest Behaviors
-- **[BEHAVIOR_1]:** [DESCRIPTION]
-- **[BEHAVIOR_2]:** [DESCRIPTION]
-- **[BEHAVIOR_3]:** [DESCRIPTION]
+- **Analytical:** Uses data to investigate practical questions and compare model results against baselines.
+- **Careful with data:** Resume and projects describe cleaning, validation, read-only query protections, and evidence-backed output.
+- **Practical communicator:** Has presented inventory and sales insights to business owners and built interfaces for non-technical users.
 
 ## How You Work Best
-- [ENVIRONMENT_PREFERENCE_1]
-- [ENVIRONMENT_PREFERENCE_2]
-- [ENVIRONMENT_PREFERENCE_3]
+- A learning-oriented team with clear goals and access to mentorship.
+- Work that includes independent implementation as well as useful collaboration.
+- Practical experimentation with feedback and real user or business needs.
 
 ## Growth Areas (frame positively in applications)
-- **[AREA_1]:** [HOW_TO_FRAME_IT_POSITIVELY]
-- **[AREA_2]:** [HOW_TO_FRAME_IT_POSITIVELY]
+- No growth area has been self-reported. Ask before describing one in an application or interview.
 
 ## Mapping to Job Posting Language
 
 When a job posting mentions these keywords, it's a **strong behavioral fit**:
-- [KEYWORD_OR_PHRASE_THAT_MATCHES_YOUR_STYLE]
-- [ANOTHER_KEYWORD]
+- Learning-oriented mentorship
+- Collaborative problem-solving
+- Ownership and experimentation
 
 When a job posting mentions these, flag as **potential friction** (not deal-breaker):
-- [KEYWORD_OR_PHRASE_THAT_MIGHT_CLASH]
-- [ANOTHER_KEYWORD]
+- No specific culture friction has been identified; flag only concrete evidence in the posting or company research.
 
 ## Management Style Preferences
-- [WHAT_MANAGEMENT_STYLE_WORKS_FOR_YOU]
-- [WHAT_DOESN'T_WORK]
+- Helpful: clear goals, mentorship, room for independent problem-solving, and regular feedback.
+- Not specified: management styles or work conditions to avoid.
 
 ## Using This in Applications
-- **Cover letters:** [HOW_TO_WEAVE_IN_BEHAVIORAL_STRENGTHS]
-- **CV:** [WHAT_TO_EMPHASIZE]
-- **Interviews:** [WHAT_STAR_EXAMPLES_TO_USE]
-- **Don't overstate:** [WHAT_NOT_TO_CLAIM]
+- **Cover letters:** Emphasize evidence-based problem-solving, careful data work, and practical communication when relevant to the role.
+- **CV:** Highlight projects with measurable evaluation and business context.
+- **Interviews:** Use Inventory Copilot, demand forecasting, and Kaggle modeling examples.
+- **Don't overstate:** Do not imply a formal assessment, unreported leadership style, or unverified production-scale experience.
