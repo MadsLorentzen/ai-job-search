@@ -94,6 +94,8 @@ per-file diff commands.
   is not a bare number on either side and is still caught. Three new `test_verify_pdf.py`
   cases; the quantity one fails on master.
 
+- **Upstream triage distinguishes subject-only matches from verified patch matches** (#569, `tools/upstream_triage.py`) - matching subjects with different patches now name the fork commit and request verification instead of claiming an upstream change was already cherry-picked.
+
 - **`upstream_triage` forces UTF-8 stdout and decodes git output as UTF-8** (#544,
   `tools/upstream_triage.py`, `tests/test_tools_utf8_output.py`) - like the other Python tools,
   the triage report now calls `_force_utf8_output()` on startup and decodes git subprocess
