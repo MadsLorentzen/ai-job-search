@@ -149,7 +149,7 @@ def read_raw_data():
         print("step will be skipped during /apply.", file=sys.stderr)
         sys.exit(1)
     try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
+        with open(DATA_FILE, "r", encoding="utf-8-sig") as f:
             data = json.load(f)
     except json.JSONDecodeError as exc:
         fail_data_error(f"invalid JSON at line {exc.lineno}, column {exc.colno}: {exc.msg}")
