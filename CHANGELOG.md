@@ -125,6 +125,8 @@ per-file diff commands.
   before changing rank metadata; current-day deadlines, explicit future
   extensions, invalid dates, dry runs, and scoring errors keep their behavior.
 
+- **`/reset documents` clears nested and hidden user entries while preserving scaffolds** - cleanup retains tracked `.gitkeep` files and the README, with the complete inventory shown before confirmation (#580).
+
 - **`/reset profile` keeps the `framework_version` frontmatter on the two files it rewrites**
   (`.claude/commands/reset.md` Step 3, `tests/test_reset_command.py`) - the full-file skeletons
   for `01-candidate-profile.md` and `02-behavioral-profile.md` started at the `#` title, while
