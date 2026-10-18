@@ -79,6 +79,8 @@ at the hosted API.
 bun run .agents/skills/freehire-search/cli/src/cli.ts search [-q "<keywords>"] [facet flags]
 ```
 
+Query syntax: phrase quoting honoured; no OR.
+
 Key flags:
 - `--query <text>` / `-q <text>` — keyword search (title, skill, role). Full-text; optional.
 - `--jobage <days>` — posted within N days (maps to `posted_within_days`).
