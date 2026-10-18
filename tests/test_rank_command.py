@@ -57,7 +57,9 @@ class RankCommandSpec(unittest.TestCase):
         self.assertIn('"guard"', step2, "Step 2's JSON must carry the gate verdict")
         step4 = sections["Step 4: Update State"]
         self.assertIn("guard", step4, "Step 4 must persist the gate verdict")
-        step5 = sections["Step 5: Present the Shortlist"]
+        # Step 5 embeds an example report whose "## Job Ranking" line would split
+        # _sections early, so anchor on the next real heading instead.
+        step5 = re.search(r"## Step 5: Present the Shortlist(.*?)\n## Important Rules", text, re.DOTALL).group(1)
         self.assertIn("guard", step5, "Step 5 must surface a flagged posting")
         self.assertIn("⚠", step5)
 
