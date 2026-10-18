@@ -4,22 +4,31 @@
 
 ## Installed portal CLIs (primary for `/scrape`)
 
-`/scrape` discovers every portal skill under `.agents/skills/*/SKILL.md` and runs its CLI first. Shipped country-agnostic CLIs include `linkedin-search` and `freehire-search`; Danish demos and any skill you add with `/add-portal` are included the same way. You do **not** need a matching `site:` line below for those CLIs to run.
+`/scrape` discovers every portal skill under `.agents/skills/*/SKILL.md` and runs its CLI first. This fork targets **Spain**. Each portal below states its own flags in its `SKILL.md`; the table is only what you need to translate a query into the right call.
 
-The `site:` query templates in this file are the **WebSearch fallback** — for portals without a CLI, company career pages, or when a CLI fails.
+| Portal skill | Location argument | Recency (`--jobage`) | Detail | Notes |
+|---|---|---|---|---|
+| `infoempleo-search` | `-l Toledo` (province or city, plain Spanish) | 1 / 7 / 15 days | yes (exact date, deadline, salary) | General board, strong in industry and engineering. Keyword matching is loose, so pre-filter by title |
+| `indeed-search` | `-l Toledo` (plain Spanish) | 1 / 3 / 7 / 14 days | **none** (robots.txt) - judge from the card's `snippet` | Highest volume. Max 10 pages. Space requests out; `BLOCKED` means wait |
+| `linkedin-search` | `-l "Toledo, Castilla-La Mancha, Spain"` (**English** place names, with the region) | 1 / 7 / 14 / 30 days | yes | `-l "Toledo, Spain"` alone resolves to Madrid and `-l "España"` returns US results - always use the English region form. Also `-l "Spain"` for national, `--remote remote` for remote |
+| `ingenieros-search` | `-l Valencia` (substring of the offer's place) | client-side | yes | Small engineering board: one page of the latest offers, usually under ten |
+| `infojobs-search` | `-l Toledo` (province) or `--city Illescas` | 24 h / 7 / 15 days | yes | Official API, needs `INFOJOBS_API_TOKEN`; ships **disabled** until you set it up |
+| `freehire-search` | per its SKILL.md | per its SKILL.md | yes | Tech-focused aggregator; mostly relevant for software roles |
 
-**Language scope:** write every query category in every language listed in your CLAUDE.md Languages table (typically 1-2, sometimes more). A posting requiring a language you have *not* declared, as a job condition, is excluded before scoring; a posting requiring a *higher level* than you declared in a language you *do* work in is flagged for your own judgment, not excluded — see `04-job-evaluation.md`'s Language Gate, the single source of truth for this rule. Translate each category's keywords rather than machine-translating word-for-word (e.g. "Frontend Developer" -> "Desarrollador Frontend", not a literal word-for-word translation) if you work in more than one language.
+You do **not** need a matching `site:` line below for those CLIs to run.
+
+The `site:` query templates in this file are the **WebSearch fallback** - for portals without a CLI, company career pages, or when a CLI fails.
+
+**Language scope:** write every query category in every language listed in your CLAUDE.md Languages table (for a Spanish market that is normally Spanish first, plus English for multinational employers). A posting requiring a language you have *not* declared, as a job condition, is excluded before scoring; a posting requiring a *higher level* than you declared in a language you *do* work in is flagged for your own judgment, not excluded - see `04-job-evaluation.md`'s Language Gate, the single source of truth for this rule. Translate each category's keywords rather than machine-translating word-for-word. Spanish job titles vary a lot by employer and carry gender markers, so list several variants per category (e.g. "Responsable de producción", "Jefe de producción", "Jefe/a de planta"; "Ingeniero/a de procesos", "Ingeniero de mejora continua").
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Primary (job boards, each covered by a CLI above):
+- **infoempleo.com**, **es.indeed.com**, **ingenieros.es**, **infojobs.net** (via API) and **linkedin.com/jobs** (filter: Spain / your province).
 
-Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for known target companies
+Secondary (WebSearch fallback, for company career pages and boards without a CLI):
+- Direct Google searches with `site:` filters for known target companies (their `careers` / `empleo` / `trabaja-con-nosotros` pages).
+- Other Spanish boards worth a `site:` query when the CLIs come up thin: `site:tecnoempleo.com` (IT; its robots.txt blocks AI agents, so use it for search-result snippets only, never fetch it), `site:jooble.org`, `site:trabajos.com`, `site:empleate.gob.es` (SEPE public service).
 
 ## Query Categories
 

@@ -192,9 +192,11 @@ class ApplyHostVerificationSpecTests(unittest.TestCase):
         # A regional subdomain and the bare apex must both pass for every portal;
         # the derived set is what makes this hold for a portal added by /add-portal.
         urls = [
-            "https://www.jobindex.dk/jobannonce/12345",
-            "https://dk.linkedin.com/jobs/view/999999",
-            "https://jobnet.dk/find-job/8888",
+            "https://es.indeed.com/viewjob?jk=eb247b2ca3c566bf",
+            "https://es.linkedin.com/jobs/view/999999",
+            "https://www.infoempleo.com/ofertasdetrabajo/ingeniero/toledo/3204839/",
+            "https://www.infojobs.net/toledo/ingeniero/of-ieb371a01c14f97838d790d19d606ce",
+            "https://www.ingenieros.es/bolsa_de_trabajo/detalles_oferta/3509",
             "https://freehire.me/jobs/golang-zensar-2bxu6dxm",
         ]
         for url in urls:

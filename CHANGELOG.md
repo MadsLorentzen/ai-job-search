@@ -15,6 +15,18 @@ per-file diff commands.
 
 ### Added
 
+- **Fork: Spanish job market.** Four portal skills for Spain, all zero-dependency and covered by
+  offline tests: `infoempleo-search` (search + detail from the page's `JobPosting` JSON-LD, with the
+  posting's exact date and deadline), `indeed-search` (search only: Indeed's robots.txt disallows
+  `/viewjob`, so `detail` exits `DETAIL_UNAVAILABLE` by design; pagination capped at the 10 pages
+  robots.txt allows; a refused request is retried once through the system `curl`, same honest
+  User-Agent), `ingenieros-search` (the small Ingenieros.es engineering board, client-side filter)
+  and `infojobs-search` (the official InfoJobs API; credentials only via `INFOJOBS_API_TOKEN`; ships
+  `enabled: false` because it has not been run against the live API). `/scrape` documents portals
+  with no usable `detail`, and `search-queries.md` lists each portal's location and recency
+  arguments, including LinkedIn's need for English place names with the region
+  (`"Toledo, Castilla-La Mancha, Spain"`).
+
 - **One cross-platform command installs every portal CLI: `python3 tools/install_portal_clis.py`**
   (#540, `README.md` quick start step 2, `SETUP.md` section 3,
   `tests/test_install_portal_clis.py`) - the README and SETUP.md each carried a PowerShell and a
@@ -26,6 +38,13 @@ per-file diff commands.
   with a message naming the reason - any manifest that declares a lifecycle script or
   `trustedDependencies`, the same set `security_guards.py` forbids in-tree, so a borrowed portal
   carrying one is read before it runs. `--dry-run` lists what it would install.
+
+### Removed
+
+- **Fork: the four Danish portal demos** (`jobindex-search`, `jobnet-search`, `jobdanmark-search`,
+  `jobbank-search`), their permission-allowlist entries in `.claude/settings.json` and
+  `tools/security_guards.py`, and the Danish examples in the setup, apply and rank docs. They remain
+  in git history and upstream.
 
 ### Changed
 
