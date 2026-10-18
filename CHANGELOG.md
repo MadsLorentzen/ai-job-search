@@ -498,6 +498,18 @@ per-file diff commands.
 
 - **Salary lookups preserve Unicode company identities and match ASCII-typed accented names such as `Nestle` to `Nestlé`, while retaining Nordic spelling variants** (#570).
 
+### Removed
+
+- **The `gemini-research-expert` subagent** (`.claude/agents/gemini-research-expert.md`) - it
+  shipped with the initial release and nothing in the framework has referenced it since: no
+  command, skill or doc delegates to it. Its open-ended description ("use this agent when the user
+  needs to perform research tasks") still made it a candidate for automatic delegation during
+  company research, and it carried no `tools:` restriction and none of the trust-boundary rules
+  the research steps follow. Delegating meant composing a `gemini -p "<prompt>"` shell string
+  from posting-derived text and sending that context to a second model vendor, which sits badly
+  with `SECURITY.md`'s data boundaries and the Claude Code-native scope in `CONTRIBUTING.md`.
+  Research goes through `09-web-research.md` as before.
+
 ## [1.7.2] - 2026-09-29
 
 ### Added
