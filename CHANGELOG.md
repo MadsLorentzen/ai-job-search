@@ -103,6 +103,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`freehire-search detail` rejects `--description-format` instead of ignoring it**
+  (`.agents/skills/freehire-search/cli/src/cli.ts`, `tests/detail-flags.test.ts`) - the flag
+  was on `detail`'s known-flag list, but `runDetail` never reads it and always prints the detail
+  endpoint's HTML body stripped to plain text. So `detail <slug> --description-format markdown`
+  passed the unknown-flag guard, exited 0 and printed text, which is the silently ignored flag
+  that guard exists to prevent. `detail` now answers it with `UNKNOWN_FLAG` before any request;
+  `search`, where the flag is documented and used, is unchanged.
+
 - **`.gitignore` ignores `node_modules` without a trailing slash, and `security_guards.py` fails on any tracked `node_modules` path** (`.gitignore`, `tools/security_guards.py`, `tests/test_security_guards.py`) - the old `node_modules/` rule matched directories only, so a symlink named `node_modules` pointing at a contributor's absolute path was committed in a PR, broke `bun install` in CI with a dangling link and checked out as a text file on Windows. The rule loses its slash, and the guard now lists every tracked path with a `node_modules` component (skipped quietly outside a git checkout). Also qualifies the one bare `seen_jobs.json` mention left in `README.md` after #617.
 
 - **`job_key.py --audit` reports a state file that is not an object of entries** (#626) (`tools/job_key.py`,

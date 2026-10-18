@@ -131,13 +131,15 @@ function parseIntFlag(name: string, raw: string | boolean | string[]): number | 
 
 // Long-form flag names each command accepts (parseFlags resolves the short
 // aliases q/n to these before validation). "help"/"h" pass so `search --help`
-// still prints usage.
+// still prints usage. detail takes no --description-format: it always prints
+// the detail endpoint's HTML body stripped to text, so accepting the flag
+// there ignored it silently.
 const KNOWN_FLAGS: Record<string, Set<string>> = {
   search: new Set([
     "query", "category", "city", "company", "country", "facet", "format", "jobage", "limit",
     "page", "region", "remote", "seniority", "skill", "description-format", "no-description", "help", "h",
   ]),
-  detail: new Set(["format", "description-format", "help", "h"]),
+  detail: new Set(["format", "help", "h"]),
 }
 
 async function main(): Promise<number> {
