@@ -259,6 +259,19 @@ class Sweep(RankStateCase):
         self.assertEqual(out["swept"], 1)
         self.assertEqual(self.read_state()["new_past"]["status"], "new")
 
+    def test_excluded_keys_tolerate_spaces_after_commas(self):
+        self.write_state(
+            {
+                "a": entry(status="ranked", deadline="2026-09-01"),
+                "b": entry(status="ranked", deadline="2026-09-01"),
+                "other": entry(status="ranked", deadline="2026-09-01"),
+            }
+        )
+        out = self.run_tool("sweep", "--write", "--exclude", "a, b")
+        self.assertEqual([r["key"] for r in out["newly_expired"]], ["other"])
+        self.assertEqual(out["swept"], 1)
+        self.assertEqual(self.read_state()["b"]["status"], "ranked", "a key scored this run is never swept")
+
     def test_without_write_nothing_is_persisted(self):
         self.write_state({"past": entry(status="ranked", deadline="2026-09-01")})
         out = self.run_tool("sweep")

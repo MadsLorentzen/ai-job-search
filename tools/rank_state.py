@@ -230,7 +230,9 @@ def cmd_candidates(args) -> int:
 def cmd_sweep(args) -> int:
     doc, seen = load_state(args.state)
     today = args.today
-    exclude = {k for k in (args.exclude or "").split(",") if k}
+    # "a_b, c_d" is as natural a comma-separated list as "a_b,c_d"; keys never
+    # carry surrounding whitespace, so a space must not un-exclude a key.
+    exclude = {k.strip() for k in (args.exclude or "").split(",") if k.strip()}
 
     expired, closing, unparseable, checked = [], [], [], 0
     for key, entry in seen.items():
