@@ -122,8 +122,41 @@ class DetectColumnTypeTests(unittest.TestCase):
         ])
         companies = parse_sheet(ws)
         self.assertEqual(len(companies), 1)
-        self.assertEqual(companies[0]["company"], "Example A/S, Aarhus")
+        self.assertEqual(companies[0]["company"], "Example A/S")
+        self.assertEqual(companies[0]["city"], "Aarhus")
         self.assertEqual(companies[0]["categories"]["all_employees"], {"count": 12, "index": 105.0})
+
+    def test_parse_sheet_does_not_split_a_comma_in_a_company_only_column(self):
+        # A "Company" header is not a combined name-and-city column. "Acme, Inc."
+        # stays the company; splitting it would invent a city named "Inc.".
+        ws = FakeWorksheet([
+            ("Company", "Antal", "Indeks"),
+            ("Acme, Inc.", 12, 105.0),
+        ])
+        companies = parse_sheet(ws)
+        self.assertEqual(len(companies), 1)
+        self.assertEqual(companies[0]["company"], "Acme, Inc.")
+        self.assertEqual(companies[0]["city"], "")
+
+    def test_parse_sheet_splits_english_combined_company_and_city_header(self):
+        ws = FakeWorksheet([
+            ("Company and City", "Count", "Index"),
+            ("Ørsted A/S, Kongens Lyngby", 200, 105.2),
+        ])
+        companies = parse_sheet(ws)
+        self.assertEqual(len(companies), 1)
+        self.assertEqual(companies[0]["company"], "Ørsted A/S")
+        self.assertEqual(companies[0]["city"], "Kongens Lyngby")
+
+    def test_parse_sheet_keeps_a_combined_cell_with_no_comma_as_company_only(self):
+        ws = FakeWorksheet([
+            ("Firmanavn og by", "Antal", "Indeks"),
+            ("Example A/S", 12, 105.0),
+        ])
+        companies = parse_sheet(ws)
+        self.assertEqual(len(companies), 1)
+        self.assertEqual(companies[0]["company"], "Example A/S")
+        self.assertEqual(companies[0]["city"], "")
 
     def test_parse_sheet_detects_city_column_with_token_header(self):
         # City headers are matched with the same token-based header_matches()
