@@ -29,9 +29,28 @@ export interface Envelope<T> {
   error?: string
 }
 
+// The longest server-requested wait honored. freehire's rate limits are per
+// minute, so a longer Retry-After is not expected; capping it keeps a confused
+// header from parking the CLI indefinitely.
+const MAX_RETRY_AFTER_MS = 60_000
+
+/**
+ * The wait a 429/503 asks for via `Retry-After`, in ms, or null when absent or
+ * unreadable. Accepts both RFC 9110 forms: delta-seconds and an HTTP-date.
+ */
+export function retryAfterMs(header: string | null, now = Date.now()): number | null {
+  if (!header) return null
+  const value = header.trim()
+  if (/^\d+$/.test(value)) return Math.min(Number(value) * 1000, MAX_RETRY_AFTER_MS)
+  const date = Date.parse(value)
+  if (Number.isNaN(date)) return null
+  return Math.min(Math.max(date - now, 0), MAX_RETRY_AFTER_MS)
+}
+
 /**
  * GET a JSON envelope from the freehire API. Retries 429/5xx (transient server
- * states) with backoff; returns `null` on a 404. A connection failure fails fast
+ * states) with backoff, waiting at least as long as a `Retry-After` header asks;
+ * returns `null` on a 404. A connection failure fails fast
  * with a clear message — no retry, so an outage degrades this source quickly
  * rather than hanging the caller (the graceful-degradation contract).
  */
@@ -59,7 +78,8 @@ export async function apiGet<T>(path: string): Promise<Envelope<T> | null> {
       if (attempt === maxRetries) {
         throw new Error(`freehire API request failed: ${response.status} ${response.statusText}`)
       }
-      await sleep(delay + Math.floor(Math.random() * 500))
+      const backoff = delay + Math.floor(Math.random() * 500)
+      await sleep(Math.max(backoff, retryAfterMs(response.headers.get("Retry-After")) ?? 0))
       delay = Math.min(delay * 2, 8000)
       continue
     }
