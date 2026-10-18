@@ -129,7 +129,7 @@ Facet filters (values come from freehire's controlled vocabularies; comma-separa
 - `--category <cats>` — `backend`, `frontend`, `fullstack`, `devops`, `ml_ai`, `qa`, …
 - `--skill <names>` — canonical skill(s), e.g. `--skill go,kubernetes`
 - `--company <slug>` — company slug (from a result's `company_slug`)
-- `--remote <mode>` — `remote` | `hybrid` | `onsite` (`work_mode` facet)
+- `--remote <mode>` — `remote` | `hybrid` | `onsite` (`work_mode` facet). A bare `--remote` means `remote`. Any other value exits 1 with `BAD_ARG`.
 - `--facet <key=value>` — any other facet param (repeatable), e.g. `--facet salary_min=100000`
 
 > **Location is a facet, not free text.** Unlike `linkedin-search`'s `--location`,
