@@ -805,6 +805,34 @@ class Unreachable(RankStateCase):
         self.assertIn("unknown status 'unreachble'", out["errors"][0]["error"])
         self.assertEqual(self.read_state()["a"]["status"], "new", "a rejected result never half-writes an entry")
 
+    def test_malformed_results_are_errors_not_a_traceback(self):
+        self.write_state({"a": entry(), "b": entry(title="Other")})
+        out = self.run_tool(
+            "apply",
+            "--results",
+            self.results(
+                [
+                    7,
+                    "a",
+                    {"key": ["a"], "scores": {}},
+                    {"key": "a", "scores": [90, 80]},
+                    {"key": "b", "scores": {"technical": 80, "experience": 80, "behavioral": 80, "career": 80}},
+                ]
+            ),
+            expect=1,
+        )
+        self.assertEqual(
+            [e["error"] for e in out["errors"]],
+            [
+                "result is not an object",
+                "result is not an object",
+                "no such key in seen_jobs.json",
+                "scores must be an object",
+            ],
+        )
+        self.assertEqual([r["key"] for r in out["ranked"]], ["b"], "valid results in the same batch still apply")
+        self.assertEqual(self.read_state()["a"]["status"], "new")
+
 
 if __name__ == "__main__":
     unittest.main()

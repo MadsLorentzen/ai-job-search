@@ -150,6 +150,12 @@ per-file diff commands.
 
 ### Fixed
 
+- **`rank_state.py apply` reports a malformed scoring result instead of crashing** (`tools/rank_state.py`,
+  `tests/test_rank_state.py`) - a result that is not an object, a `key` that is not a string, or a
+  `scores` value that is not an object raised an `AttributeError`/`TypeError` traceback and discarded the
+  whole batch, although `apply` already collects per-result problems in `errors`. Each now becomes an
+  `errors` row (exit 1) and the valid results in the same file are still written.
+
 - **`.gitignore` ignores `node_modules` without a trailing slash, and `security_guards.py` fails on any tracked `node_modules` path** (`.gitignore`, `tools/security_guards.py`, `tests/test_security_guards.py`) - the old `node_modules/` rule matched directories only, so a symlink named `node_modules` pointing at a contributor's absolute path was committed in a PR, broke `bun install` in CI with a dangling link and checked out as a text file on Windows. The rule loses its slash, and the guard now lists every tracked path with a `node_modules` component (skipped quietly outside a git checkout). Also qualifies the one bare `seen_jobs.json` mention left in `README.md` after #617.
 
 - **`job_key.py --audit` reports a state file that is not an object of entries** (#626) (`tools/job_key.py`,

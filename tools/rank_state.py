@@ -273,6 +273,8 @@ def cmd_sweep(args) -> int:
 
 
 def overall_score(scores: dict) -> int:
+    if not isinstance(scores, dict):
+        raise ValueError("scores must be an object")
     total = 0.0
     for dim, weight in WEIGHTS.items():
         value = scores.get(dim)
@@ -306,8 +308,11 @@ def cmd_apply(args) -> int:
 
     rows, expired, unreachable, gave_up, errors = [], [], [], [], []
     for result in results:
+        if not isinstance(result, dict):
+            errors.append({"key": None, "error": "result is not an object"})
+            continue
         key = result.get("key")
-        entry = seen.get(key)
+        entry = seen.get(key) if isinstance(key, str) else None
         if entry is None:
             errors.append({"key": key, "error": "no such key in seen_jobs.json"})
             continue
