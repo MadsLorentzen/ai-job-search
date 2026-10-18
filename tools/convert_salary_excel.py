@@ -162,6 +162,7 @@ def parse_sheet(ws, sheet_label=None):
         return [str(cell.value).strip() for cell in row if cell.value]
 
     header_row = None
+    corroborated = True
     for row_idx, row in enumerate(rows, start=1):
         cell_texts = _cell_texts(row)
         company_idxs = {i for i, t in enumerate(cell_texts) if header_matches(t, COMPANY_PATTERNS)}
@@ -177,6 +178,7 @@ def parse_sheet(ws, sheet_label=None):
             break
 
     if header_row is None:
+        corroborated = False
         for row_idx, row in enumerate(rows, start=1):
             if any(header_matches(t, COMPANY_PATTERNS) for t in _cell_texts(row)):
                 header_row = row_idx
@@ -281,6 +283,18 @@ def parse_sheet(ws, sheet_label=None):
     # Untyped columns become standalone
     for col_idx, col_header in untyped_cols:
         categories.append({"name": col_header.lower().replace(" ", "_"), "value_col": col_idx})
+
+    if not categories and not corroborated:
+        # The fallback pass matched a lone company word and no salary column
+        # sits beside it: this is prose (a "Notes" or "About the data" tab
+        # mentioning "company"), not a table. Reading it would turn every
+        # sentence below that line into a company entry.
+        print(
+            f"Warning: Skipping sheet '{ws.title}': no table header found "
+            "(a company word appears only in text, with no salary columns).",
+            file=sys.stderr,
+        )
+        return []
 
     if not categories:
         print(
