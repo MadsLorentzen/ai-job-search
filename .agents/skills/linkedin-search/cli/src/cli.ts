@@ -114,6 +114,15 @@ async function main(): Promise<number> {
       )
       return 1
     }
+    // --query is optional, but a present one needs keywords: parseFlags stores
+    // a bare -q as true and -q "" as "", and both used to be treated as unset,
+    // returning every posting in the location as if it matched.
+    if (flags.query !== undefined && (typeof flags.query !== "string" || !flags.query.trim())) {
+      process.stderr.write(
+        JSON.stringify({ error: "--query requires a non-empty value", code: "BAD_ARG" }) + "\n",
+      )
+      return 1
+    }
     const fmt = flags.format !== undefined ? String(flags.format) : "json"
     if (!["json", "table", "plain"].includes(fmt)) {
       process.stderr.write(
