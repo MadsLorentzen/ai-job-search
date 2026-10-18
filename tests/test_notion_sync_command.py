@@ -63,6 +63,18 @@ class NotionSyncCommandSpec(unittest.TestCase):
             "spec lost the rule that CV/cover-letter content never syncs to Notion",
         )
 
+    def test_step2_includes_expired_entries_in_sync_set(self):
+        # #597: expired entries were excluded from the sync set, so a job that
+        # was synced while ranked and later retired by /rank could never have
+        # its Status updated to "expired" (rule 4.4). Step 2 must include them.
+        text = COMMAND.read_text(encoding="utf-8")
+        step2_line = next(
+            l for l in text.splitlines()
+            if l.startswith("2. Select `job_scraper/seen_jobs.json`")
+        )
+        self.assertIn("expired", step2_line,
+            "Step 2 must include expired entries so rule 4.4 can fire")
+
     @unittest.skipUnless(
         _HAVE_YAML,
         "PyYAML not installed (the CI Python-test job omits it; the lint job runs lint_skills.py directly)",
