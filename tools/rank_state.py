@@ -64,6 +64,10 @@ ISO = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # names exactly these, so the spec and the tool cannot drift apart.
 AGENT_STATUSES = ("scored", "expired", "unreachable")
 
+# The values the two veto gates may take (rank.md Step 2). Step 5's veto is an
+# exact match on "FAIL", so any other spelling would shortlist a deal-breaker.
+GATE_VERDICTS = ("PASS", "FAIL", "FLAG")
+
 # A posting that could not be fetched is `unreachable`, not `expired`, and is
 # retried on later runs (#534). It gives up to `expired` only after this many
 # failed attempts with at least this long between the first and the last, so a
@@ -378,6 +382,15 @@ def cmd_apply(args) -> int:
             score = overall_score(result.get("scores") or {})
         except ValueError as exc:
             errors.append({"key": key, "error": str(exc)})
+            continue
+        bad_gate = next(
+            (f for f in ("location_verdict", "language_gate") if result.get(f) and result[f] not in GATE_VERDICTS),
+            None,
+        )
+        if bad_gate:
+            errors.append(
+                {"key": key, "error": f"unknown {bad_gate} {result[bad_gate]!r}; expected one of {', '.join(GATE_VERDICTS)}"}
+            )
             continue
 
         # A missing deadline from the fresh fetch is not a correction to the

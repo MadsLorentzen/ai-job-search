@@ -740,6 +740,17 @@ class Unreachable(RankStateCase):
         self.assertIn("unknown status 'unreachble'", out["errors"][0]["error"])
         self.assertEqual(self.read_state()["a"]["status"], "new", "a rejected result never half-writes an entry")
 
+    def test_an_unknown_gate_verdict_is_an_error_not_a_shortlisted_job(self):
+        scores = {dimension: 90 for dimension in ("technical", "experience", "behavioral", "career")}
+        for field, value in (("location_verdict", "Fail"), ("language_gate", "fail"), ("location_verdict", "REJECT")):
+            with self.subTest(field=field, value=value):
+                self.write_state({"a": entry()})
+                result = {"key": "a", "status": "scored", "scores": scores, field: value}
+                out = self.run_tool("apply", "--results", self.results([result]), expect=1)
+                self.assertEqual(out["ranked"], [], "a deal-breaker spelled differently must not reach the shortlist")
+                self.assertIn(f"unknown {field} {value!r}", out["errors"][0]["error"])
+                self.assertEqual(self.read_state()["a"]["status"], "new", "a rejected result never half-writes an entry")
+
 
 if __name__ == "__main__":
     unittest.main()
