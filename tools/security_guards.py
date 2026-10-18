@@ -569,7 +569,7 @@ def check_agent_tool_grants() -> None:
         if data is None:
             errors.append(f"{rel}: missing or unterminated frontmatter (expected --- ... ---)")
             continue
-        if "tools" not in data:
+        if "tools" not in data or not _tool_entries(data.get("tools")):
             errors.append(
                 f"{rel}: no `tools:` key - an agent without one gets every tool, including "
                 "Edit, Write and Bash. Shipped agents read untrusted posting text; declare "

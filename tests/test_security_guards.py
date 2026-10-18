@@ -367,6 +367,12 @@ class AgentGrantGuardTests(GuardRepoFixture):
         self.assertIn("every tool", result.stdout)
         self.assertIn("agents/example.md", result.stdout.replace("\\", "/"))
 
+    def test_agent_with_empty_tools_value_fails(self):
+        self.write_agent("")
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("every tool", result.stdout)
+
     def test_agent_with_edit_or_write_fails(self):
         for tool in ("Edit", "Write", "NotebookEdit", "Agent"):
             with self.subTest(tool=tool):

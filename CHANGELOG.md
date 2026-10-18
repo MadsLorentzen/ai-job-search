@@ -564,7 +564,16 @@ per-file diff commands.
   this posting?" only when it is flagged; `/rank` scorers return it as `guard`, `rank_state.py`
   stores it additively and Step 5 marks flagged rows; `/interview` gates the archived posting. The
   archive keeps the cleaned text plus counts, never the removed excerpts. It advises; it never
-  blocks, and a clean posting costs one output line and no prompt.
+  blocks, and a clean posting costs one output line and no prompt. Removal is the defense and the
+  ⚠ is for the user: it fires only on instruction-shaped lines, invisible characters inside words,
+  bidi overrides and mixed-script words, while hidden blocks and hidden URLs are reported in
+  parentheses as context - navigation chrome is hidden on nearly every real page (a dry run on
+  python.org's jobs page removed eight such blocks). The HTML walker keeps a name stack with HTML5
+  implied end tags, so a stray closer, an unquoted `style`, a `/>` on a `<div>`, an unterminated
+  comment or an unclosed `<li>` inside a hidden element can neither leak hidden text under a
+  "clean" line nor swallow the rest of the posting; each case is a named test. The skill's own
+  conversational Step 1 (`SKILL.md` `framework_version: 1.3.5 -> 1.3.6`), `/outcome` Step 3.2's
+  fresh fetch and `/interview`'s fetch fallback gate too, so every entry point names the gate.
 
 - **The agents that read postings can no longer edit or write** (`.claude/agents/posting-fetcher.md`,
   `posting-scorer.md`, `application-reviewer.md`, `tools/security_guards.py` check 5,

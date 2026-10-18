@@ -423,9 +423,20 @@ def cmd_apply(args) -> int:
         # Additive and optional: an agent on an older prompt returns none, and
         # nothing is written. Stored so a later reader can see why a row carried
         # a marker without re-fetching the posting.
+        # Normalised so Step 5's "anything other than clean" rule holds whether
+        # the agent returned "clean" or the gate's first line verbatim: any clean
+        # verdict (with or without its context parenthetical) stores as "clean";
+        # a ⚠ verdict stores without the "posting_guard:" prefix. A rescoring
+        # result without a guard drops a stale one - absence means "not run",
+        # and last run's verdict would mislabel this run's fetch.
         guard = result.get("guard")
         if isinstance(guard, str) and guard.strip():
-            entry["guard"] = guard.strip()[:200]
+            text = guard.strip()
+            if text.lower().startswith("posting_guard:"):
+                text = text[len("posting_guard:"):].strip()
+            entry["guard"] = "clean" if text.lower().startswith("clean") else text[:200]
+        else:
+            entry.pop("guard", None)
 
         rows.append(
             {
