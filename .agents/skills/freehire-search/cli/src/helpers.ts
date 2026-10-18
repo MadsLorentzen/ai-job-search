@@ -16,7 +16,11 @@ export function writeError(error: string, code: string): void {
   process.stderr.write(JSON.stringify({ error, code }) + "\n")
 }
 
-const UA = "freehire-search-skill/1.0 (+https://freehire.me)"
+// Names this project, the shape freehire's API docs ask for (owner/project/version
+// plus a contact URL), so the API's operators can reach the maintainer before a
+// limit or a field changes. The old value linked to freehire.me itself, which
+// identified the API, not the caller.
+const UA = "MadsLorentzen/ai-job-search/1.0 (+https://github.com/MadsLorentzen/ai-job-search; freehire-search)"
 
 /** The shared API response envelope: {data, meta, error}. */
 export interface Envelope<T> {

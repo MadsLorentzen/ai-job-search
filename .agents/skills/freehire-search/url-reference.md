@@ -138,8 +138,8 @@ points users to (`?q=<role>` scopes the counts). Example:
   serves HTML, which `cleanHtml` (`cli/src/helpers.ts`) strips into readable text.
   Search descriptions arrive already rendered by the API and are passed through
   verbatim — stripping them again would undo the Markdown structure.
-- Fetch uses a browser-ish User-Agent, `Accept: application/json`, and exponential
-  backoff with jitter on 429/5xx (max 6 retries). A connection error (API
+- Fetch sends `User-Agent: MadsLorentzen/ai-job-search/1.0 (+https://github.com/MadsLorentzen/ai-job-search; freehire-search)`
+  and `Accept: application/json`, and uses exponential backoff with jitter on 429/5xx (max 6 retries). A connection error (API
   unreachable) fails fast with a clear message — no retry, since it is not
   transient server load — which is the graceful-degradation contract: an outage
   degrades this source quickly instead of hanging the caller.
