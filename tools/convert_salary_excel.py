@@ -186,10 +186,12 @@ def parse_sheet(ws, sheet_label=None):
         print(f"Warning: Could not find header row in sheet '{ws.title}'. Skipping.", file=sys.stderr)
         return []
 
-    # Read headers
+    # Read headers. Wrapped header cells carry a line break ("Median\nsalary"),
+    # which would survive into the category name and keep the column from
+    # pairing with its count, so collapse every whitespace run to one space.
     headers = []
     for cell in ws[header_row]:
-        headers.append(str(cell.value).strip() if cell.value else "")
+        headers.append(" ".join(str(cell.value).split()) if cell.value else "")
 
     # Find company and city columns
     company_col = None
