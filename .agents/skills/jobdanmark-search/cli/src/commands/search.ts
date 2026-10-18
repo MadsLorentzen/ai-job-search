@@ -34,6 +34,22 @@ interface ApiSearchResponse {
   totalPages: number
 }
 
+// Current live ads carry fuldtid or deltid. The settings API also offers
+// fleksjob, elev, studiejob and praktik, but no live ads currently carry
+// those tags, so selecting them silently returns an empty successful search.
+export const JOB_TYPES = ["fuldtid", "deltid"] as const
+
+export function parseJobTypes(value: string | undefined): string[] {
+  const types = value ? value.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean) : []
+  const unknown = types.filter((t) => !(JOB_TYPES as readonly string[]).includes(t))
+  if (unknown.length > 0) {
+    throw new Error(
+      `unsupported --job-type ${unknown.join(", ")}: current live ads carry only ${JOB_TYPES.join(", ")}; the settings API also offers fleksjob, elev, studiejob and praktik, but no live ads currently carry those tags; use --text (for example elevplads) instead`,
+    )
+  }
+  return types
+}
+
 export function toContractDate(value: string | null): string | null {
   const match = value?.match(/^(\d{2})-(\d{2})-(\d{4})$/)
   return match ? `${match[3]}-${match[2]}-${match[1]}` : (value ?? null)
@@ -111,7 +127,7 @@ export const search = defineCommand({
       description: "Administrative region from locations (category administrativeRegion), e.g. Region Midtjylland",
     }),
     "job-type": option(z.string().optional(), {
-      description: "Comma-separated job types: fuldtid,deltid,fleksjob,elev,studiejob,praktik",
+      description: "Comma-separated job types: fuldtid,deltid",
     }),
     page: option(z.coerce.number().int().min(1).default(1), {
       description: "Page number (30 items per page, server-enforced)",
@@ -153,9 +169,13 @@ export const search = defineCommand({
       filters.push({ type: "administrativeRegion", value, displayText: value })
     }
 
-    const jobTypes = flags["job-type"]
-      ? flags["job-type"].split(",").map((t) => t.trim()).filter(Boolean)
-      : []
+    let jobTypes: string[]
+    try {
+      jobTypes = parseJobTypes(flags["job-type"])
+    } catch (err) {
+      writeError(err instanceof Error ? err.message : String(err), "BAD_ARG")
+      process.exit(1)
+    }
 
     const body = {
       jobTypes,

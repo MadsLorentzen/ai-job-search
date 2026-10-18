@@ -38,10 +38,8 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 |-------|--------|---------|
 | `fuldtid` | Fuldtid | Full-time |
 | `deltid` | Deltid | Part-time |
-| `fleksjob` | Fleksjob | Flex job |
-| `elev` | Elev | Apprentice |
-| `studiejob` | Studiejob | Student job |
-| `praktik` | Praktik | Internship |
+
+The settings API also offers `fleksjob`, `elev`, `studiejob` and `praktik` as filters, but no live ads currently carry those tags. The CLI rejects these values (`BAD_ARG`, exit 1) to avoid a misleading empty search. Use `--text` for student jobs, apprenticeships (`elevplads`), internships or fleksjob.
 
 ---
 
@@ -81,7 +79,7 @@ bun run src/cli.ts search [flags]
 | `--zip` | string | — | Zip code, e.g. `5000` |
 | `--region` | string | — | Landsdel: a `locations` item with category `region`, e.g. `Sjælland`, `Østjylland` |
 | `--administrative-region` | string | — | Administrative region: a `locations` item with category `administrativeRegion`, e.g. `Region Midtjylland` |
-| `--job-type` | string | — | Comma-separated job types: `fuldtid,deltid,fleksjob,elev,studiejob,praktik` |
+| `--job-type` | string | — | Comma-separated job types: `fuldtid`, `deltid` |
 | `--page` | number | `1` | Page number (30 items per page, server-enforced) |
 | `--limit` | number | — | Cap total results returned by CLI (client-side) |
 | `--format` | string | `json` | Output format: `json`, `table`, `plain` |
