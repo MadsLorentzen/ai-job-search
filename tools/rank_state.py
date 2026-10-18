@@ -149,11 +149,16 @@ def tracker_pairs(path: Path) -> set[tuple[str, str]]:
     import csv
 
     pairs = set()
-    with path.open(encoding="utf-8-sig", newline="") as fh:
-        for row in csv.DictReader(fh):
-            company, role = norm(row.get("company")), norm(row.get("role"))
-            if company:
-                pairs.add((company, role))
+    try:
+        with path.open(encoding="utf-8-sig", newline="") as fh:
+            for row in csv.DictReader(fh):
+                company, role = norm(row.get("company")), norm(row.get("role"))
+                if company:
+                    pairs.add((company, role))
+    except UnicodeDecodeError:
+        # A spreadsheet's plain "CSV" save writes the ANSI code page (cp1252 on
+        # most Western installs), so any accented company name stops decoding.
+        sys.exit(f"{path} is not UTF-8 text - re-save it as CSV UTF-8")
     return pairs
 
 

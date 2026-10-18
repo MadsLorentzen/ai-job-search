@@ -160,6 +160,19 @@ class Candidates(RankStateCase):
                 )
                 self.assertEqual(out["excluded_by_tracker"], int(excluded))
 
+    def test_tracker_saved_in_a_legacy_code_page_is_reported_not_a_traceback(self):
+        # A spreadsheet's plain "CSV" save on Windows writes cp1252, not UTF-8.
+        self.write_state({"a": entry()})
+        tracker = self.tmp / "tracker.csv"
+        tracker.write_bytes("date,company,role\r\n2026-08-01,Ørsted,SOC Analyst\r\n".encode("cp1252"))
+        proc = subprocess.run(
+            [sys.executable, str(TOOL), "candidates", "--state", str(self.state), "--tracker", str(tracker)],
+            capture_output=True, text=True, encoding="utf-8",
+        )
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("is not UTF-8 text - re-save it as CSV UTF-8", proc.stderr)
+        self.assertNotIn("Traceback", proc.stderr)
+
     def test_focus_filters_on_title_company_and_stored_fit_notes(self):
         self.write_state(
             {
