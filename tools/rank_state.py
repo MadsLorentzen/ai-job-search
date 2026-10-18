@@ -419,6 +419,13 @@ def cmd_apply(args) -> int:
             value = result.get(field)
             if isinstance(value, list):
                 entry[field] = [str(b) for b in value][:3]
+        # The scoring agent's posting_guard verdict line ("clean" or the ⚠ line).
+        # Additive and optional: an agent on an older prompt returns none, and
+        # nothing is written. Stored so a later reader can see why a row carried
+        # a marker without re-fetching the posting.
+        guard = result.get("guard")
+        if isinstance(guard, str) and guard.strip():
+            entry["guard"] = guard.strip()[:200]
 
         rows.append(
             {
@@ -437,6 +444,7 @@ def cmd_apply(args) -> int:
                 "urgent": bool(parsed and today <= parsed <= today + timedelta(days=URGENT_DAYS)),
                 "strengths": entry.get("strengths", []),
                 "gaps": entry.get("gaps", []),
+                "guard": entry.get("guard"),
             }
         )
 

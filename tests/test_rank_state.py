@@ -260,6 +260,47 @@ class Apply(RankStateCase):
         path.write_text(json.dumps(payload), encoding="utf-8")
         return str(path)
 
+    def _scored(self, **extra):
+        base = {"key": "a", "status": "scored", "deadline": None,
+                "scores": {d: 80 for d in ("technical", "experience", "behavioral", "career")},
+                "location_verdict": "PASS", "language_gate": "PASS", "language": "en",
+                "strengths": ["s"], "gaps": ["g"]}
+        base.update(extra)
+        return base
+
+    def test_apply_persists_guard_verdict(self):
+        # The scoring agent runs tools/posting_guard.py on each fetched body and
+        # returns the verdict line as `guard`; it is stored additively and echoed
+        # in the rows so Step 5 can show a ⚠ marker without re-reading state.
+        verdict = "posting_guard: ⚠ 1 hidden block removed, 1 hidden URL - review before continuing"
+        self.write_state({"a": entry(status="new"), "b": entry(status="new")})
+        out = self.run_tool("apply", "--results", self.results([
+            self._scored(guard=verdict),
+            self._scored(key="b", guard="clean", location_verdict="FAIL"),
+        ]))
+        self.assertEqual(self.read_state()["a"]["guard"], verdict)
+        self.assertEqual(out["ranked"][0]["guard"], verdict)
+        self.assertEqual(self.read_state()["b"]["guard"], "clean")
+        self.assertEqual(out["vetoed"][0]["guard"], "clean")
+
+    def test_apply_without_guard_key_unchanged(self):
+        # An agent on the old prompt returns no `guard`: nothing is written and
+        # the row carries None, exactly as before the field existed.
+        self.write_state({"a": entry(status="new")})
+        out = self.run_tool("apply", "--results", self.results([self._scored()]))
+        self.assertNotIn("guard", self.read_state()["a"])
+        self.assertIsNone(out["ranked"][0]["guard"])
+
+    def test_apply_truncates_and_rejects_non_string_guard(self):
+        self.write_state({"a": entry(status="new"), "b": entry(status="new")})
+        out = self.run_tool("apply", "--results", self.results([
+            self._scored(guard="x" * 500),
+            self._scored(key="b", guard={"not": "a string"}),
+        ]))
+        self.assertEqual(len(self.read_state()["a"]["guard"]), 200)
+        self.assertNotIn("guard", self.read_state()["b"])
+        self.assertIsNone(out["ranked"][1]["guard"])
+
     def test_scored_keys_keep_past_deadlines_out_of_the_shortlist(self):
         for status in ("new", "ranked", "expired"):
             with self.subTest(status=status):
