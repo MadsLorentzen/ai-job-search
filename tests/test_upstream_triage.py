@@ -132,6 +132,37 @@ class RelevanceFilterTests(TriageRepoFixture):
         self.assertEqual(git(self.root, "status", "--porcelain"), before)
         self.assertFalse((self.root / "tools/new_workflow.py").exists())
 
+    def test_new_file_in_removed_directory_is_skipped(self):
+        # #586's shape: upstream adds a test file to a portal the fork dropped.
+        self.write("portals/gone/cli/src/cli.ts", "run()\n")
+        self.commit("shared: add portal")
+        self.write("portals/gone/cli/tests/new.test.ts", "test()\n")
+        self.commit("upstream: add a test to the portal")
+        self.set_upstream_to_head()
+        git(self.root, "reset", "--hard", "HEAD~1")
+        git(self.root, "rm", "-r", "portals/gone")
+        self.commit("fork: remove demo portal")
+
+        result = self.run_triage()
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("**0** worth reviewing", result.stdout)
+        self.assertIn("touches only files not in this fork", result.stdout)
+
+    def test_new_directory_inside_kept_directory_is_worth_reviewing(self):
+        self.write("portals/kept/cli.ts", "run()\n")
+        self.commit("shared: add portal")
+        self.write("portals/kept/tests/new/case.test.ts", "test()\n")
+        added = self.commit("upstream: add nested tests to a kept portal")
+        self.set_upstream_to_head()
+        git(self.root, "reset", "--hard", "HEAD~1")
+
+        result = self.run_triage()
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("**1** worth reviewing", result.stdout)
+        self.assertIn(f"git cherry-pick {added}", result.stdout)
+
     def test_new_tool_with_changelog_is_not_changelog_only(self):
         self.write("CHANGELOG.md", "- base\n")
         self.commit("shared: add changelog")
