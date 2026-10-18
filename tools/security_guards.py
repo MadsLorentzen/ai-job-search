@@ -31,6 +31,12 @@ Checks:
    so the frontmatter is a second permission allowlist. Catches bare Bash and
    glob grants. The settings.json `ask` and `deny` lists are also required to
    keep every rule in REQUIRED_ASK_RULES / REQUIRED_DENY_RULES.
+5. Agent definitions — every .claude/agents/*.md must declare `tools:` (a
+   missing key means every tool) and each entry must be in
+   ALLOWED_AGENT_TOOLS, which has no Edit, Write, NotebookEdit or Agent: the
+   shipped agents read untrusted postings. `tools:` is tool-name granularity
+   (a `Bash(pattern)` entry resolves to plain Bash), so a patterned entry is
+   rejected as misleading; settings.json's allow list is what scopes Bash.
 
 Stdlib only. Exit 0 on success, 1 with a failure list otherwise.
 """
@@ -77,6 +83,10 @@ ALLOWED_PERMISSIONS = {
     "Bash(python3 tools/robots_check.py:*)",
     "Bash(python tools/fetch_page.py:*)",
     "Bash(python3 tools/fetch_page.py:*)",
+    # The posting integrity gate (/apply Step 0, /rank Step 2, /interview Step 1).
+    # Reads a file or stdin, writes only to an explicit --out, never fetches.
+    "Bash(python tools/posting_guard.py:*)",
+    "Bash(python3 tools/posting_guard.py:*)",
 }
 
 # Rules that must stay in .claude/settings.json permissions.ask. An ask rule
@@ -233,6 +243,13 @@ ALLOWED_SKILL_TOOLS = {
     "Bash(python tools/job_key.py:*)",
     "Bash(python3 tools/job_key.py:*)",
 }
+
+# The tools a shipped .claude/agents/*.md may list. These agents read untrusted
+# posting text, so nothing that edits or writes files, and no Agent (a subagent
+# that could spawn a wider one). Bash is scoped by settings.json's allow list,
+# not here: `tools:` is tool-name granularity, verified empirically - a
+# `Bash(echo *)` entry gives the agent plain Bash.
+ALLOWED_AGENT_TOOLS = {"Read", "Glob", "Grep", "WebFetch", "WebSearch", "Bash"}
 
 _FRONTMATTER_KEY = re.compile(r"^([A-Za-z0-9_-]+):\s*(.*)$")
 
@@ -541,12 +558,50 @@ def check_tracked_node_modules() -> None:
             )
 
 
+def check_agent_tool_grants() -> None:
+    for path in sorted((ROOT / ".claude" / "agents").glob("*.md")):
+        rel = path.relative_to(ROOT).as_posix()
+        try:
+            data = _frontmatter(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError) as exc:
+            errors.append(f"{rel}: unreadable (must be UTF-8): {exc}")
+            continue
+        if data is None:
+            errors.append(f"{rel}: missing or unterminated frontmatter (expected --- ... ---)")
+            continue
+        if "tools" not in data:
+            errors.append(
+                f"{rel}: no `tools:` key - an agent without one gets every tool, including "
+                "Edit, Write and Bash. Shipped agents read untrusted posting text; declare "
+                f"an explicit list drawn from {sorted(ALLOWED_AGENT_TOOLS)}."
+            )
+            continue
+        for entry in _tool_entries(data.get("tools")):
+            if entry in ALLOWED_AGENT_TOOLS:
+                continue
+            if "(" in entry:
+                errors.append(
+                    f"{rel}: tools entry {entry!r} looks scoped but is not - an agent's "
+                    "`tools:` list is tool-name granularity (a `Bash(pattern)` entry gives "
+                    "the agent plain Bash). List the bare tool and let settings.json's "
+                    "allow list scope it."
+                )
+                continue
+            errors.append(
+                f"{rel}: tools entry not in the reviewed allowlist: {entry!r}. Shipped agent "
+                "definitions read untrusted posting text, so they may not edit or write "
+                "files or spawn further agents. If the grant is intentional, add it to "
+                "ALLOWED_AGENT_TOOLS in tools/security_guards.py in the same PR."
+            )
+
+
 def main() -> int:
     check_permissions()
     check_gitignore()
     check_package_manifests()
     check_tracked_node_modules()
     check_skill_tool_grants()
+    check_agent_tool_grants()
     if errors:
         print(f"security_guards: {len(errors)} failure(s)")
         for err in errors:
@@ -554,7 +609,7 @@ def main() -> int:
         return 1
     print(
         "security_guards: OK (permissions allowlist, hooks allowlist, gitignore rules, "
-        "package manifests, no tracked node_modules, skill/command allowed-tools)"
+        "package manifests, no tracked node_modules, skill/command allowed-tools, agent tools)"
     )
     return 0
 

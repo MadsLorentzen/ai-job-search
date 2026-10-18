@@ -60,6 +60,20 @@ class GuardRepoFixture(unittest.TestCase):
         self.command.parent.mkdir(parents=True)
         self.command.write_text("# /example - A command with no frontmatter\n", encoding="utf-8")
 
+        # One agent definition with a least-privilege tools list. Passes as written.
+        self.agent = self.root / ".claude" / "agents" / "example.md"
+        self.agent.parent.mkdir(parents=True)
+        self.write_agent("Read, Grep, WebFetch, WebSearch, Bash")
+
+    def write_agent(self, tools, path=None, omit_tools=False):
+        path = path or self.agent
+        tools_line = "" if omit_tools else f"tools: {tools}\n"
+        path.write_text(
+            "---\nname: example\ndescription: An example agent that reads postings.\n"
+            f"{tools_line}model: sonnet\n---\n\nYou read postings and report.\n",
+            encoding="utf-8",
+        )
+
     def write_skill(self, path, allowed_tools, extra_frontmatter=""):
         allowed = (
             f"allowed-tools: {allowed_tools}\n"
@@ -194,6 +208,9 @@ class AskDenyRuleTests(GuardRepoFixture):
         # would be pre-approved for bare Bash.
         self.assertIn("Edit(.claude/commands/*.md)", security_guards.REQUIRED_ASK_RULES)
         self.assertIn("Bash(git push:*)", security_guards.REQUIRED_ASK_RULES)
+        # The posting integrity gate runs inside fetch agents with no prompt.
+        self.assertIn("Bash(python tools/posting_guard.py:*)", security_guards.ALLOWED_PERMISSIONS)
+        self.assertIn("Bash(python3 tools/posting_guard.py:*)", security_guards.ALLOWED_PERMISSIONS)
 
     def test_malformed_ask_or_deny_shape_fails_cleanly(self):
         for permissions, message in [
@@ -335,6 +352,50 @@ class SkillGrantGuardTests(GuardRepoFixture):
         self.assertEqual(result.returncode, 1)
         self.assertIn("frontmatter", result.stdout)
         self.assertNotIn("Traceback", result.stderr)
+
+
+class AgentGrantGuardTests(GuardRepoFixture):
+    """A .claude/agents/*.md definition's `tools:` list is an allowlist at tool-name
+    granularity (verified empirically: a `Bash(echo *)` entry resolves to plain
+    Bash). A missing key means every tool. These agents read untrusted postings,
+    so none may edit or write."""
+
+    def test_agent_without_tools_key_fails(self):
+        self.write_agent("", omit_tools=True)
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("every tool", result.stdout)
+        self.assertIn("agents/example.md", result.stdout.replace("\\", "/"))
+
+    def test_agent_with_edit_or_write_fails(self):
+        for tool in ("Edit", "Write", "NotebookEdit", "Agent"):
+            with self.subTest(tool=tool):
+                self.write_agent(f"Read, {tool}")
+                result = run_guards(self.root)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn(f"'{tool}'", result.stdout)
+
+    def test_agent_with_bash_pattern_fails(self):
+        self.write_agent("Read, Bash(python tools/fetch_page.py *)")
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("name granularity", result.stdout)
+
+    def test_allowlisted_agent_passes(self):
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_agent_frontmatter_missing_fails_cleanly(self):
+        self.agent.write_text("No frontmatter here.\n", encoding="utf-8")
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("frontmatter", result.stdout)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_no_agents_directory_passes(self):
+        shutil.rmtree(self.agent.parent)
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
 class HookGuardTests(GuardRepoFixture):
