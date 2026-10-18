@@ -9,6 +9,7 @@
 
 import { runSearch, type SearchOpts } from "./commands/search.js"
 import { runDetail, type DetailOpts } from "./commands/detail.js"
+import { workTypeFlag } from "./helpers.js"
 
 interface Flags {
   _: string[]
@@ -117,6 +118,17 @@ async function main(): Promise<number> {
     if (!["json", "table", "plain"].includes(fmt)) {
       process.stderr.write(
         JSON.stringify({ error: `--format must be one of json|table|plain, got "${fmt}"`, code: "BAD_ARG" }) + "\n",
+      )
+      return 1
+    }
+
+    // workTypeFlag() maps a mode it does not know to null and the request then
+    // carries no f_WT, so "remote,hybrid", a misspelling or a bare --remote
+    // searched every workplace type, onsite included, with exit 0.
+    if (flags.remote !== undefined && (typeof flags.remote !== "string" || workTypeFlag(flags.remote) === null)) {
+      const got = typeof flags.remote === "string" ? `"${flags.remote}"` : "no value"
+      process.stderr.write(
+        JSON.stringify({ error: `--remote must be one of remote|hybrid|onsite, got ${got}`, code: "BAD_ARG" }) + "\n",
       )
       return 1
     }

@@ -188,6 +188,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`linkedin-search` rejects a `--remote` mode it does not recognise instead of searching every
+  workplace type** (`.agents/skills/linkedin-search/cli/src/cli.ts`, `tests/remote-mode.test.ts`) -
+  `workTypeFlag()` maps an unknown mode to `null` and the request then carries no `f_WT`, so
+  `--remote remote,hybrid`, a misspelt mode or a bare `--remote` returned onsite postings too,
+  with exit 0 and an empty stderr. Anything other than `remote`, `hybrid` or `onsite` (and the
+  accepted `on-site` spelling) now exits 1 with `BAD_ARG` before any request is sent.
+
 - **`.gitignore` ignores `node_modules` without a trailing slash, and `security_guards.py` fails on any tracked `node_modules` path** (`.gitignore`, `tools/security_guards.py`, `tests/test_security_guards.py`) - the old `node_modules/` rule matched directories only, so a symlink named `node_modules` pointing at a contributor's absolute path was committed in a PR, broke `bun install` in CI with a dangling link and checked out as a text file on Windows. The rule loses its slash, and the guard now lists every tracked path with a `node_modules` component (skipped quietly outside a git checkout). Also qualifies the one bare `seen_jobs.json` mention left in `README.md` after #617.
 
 - **`job_key.py --audit` reports a state file that is not an object of entries** (#626) (`tools/job_key.py`,
