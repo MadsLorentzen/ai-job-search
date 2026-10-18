@@ -74,6 +74,7 @@ bun run src/cli.ts search [flags]
 | `--job-type` | string | — | Announcement type: `Ordinaert`, `Efterloenner`, `Foertidspension` |
 | `--occupation-area` | string | — | Occupation area identifier, e.g. `10000` |
 | `--occupation-group` | string | — | Occupation group identifier, e.g. `10060` |
+| `--occupation` | string | — | One ESCO occupation: the `conceptUriDa` from `occupations`, or its trailing UUID (sent as `occupations`) |
 | `--page` | number | `1` | Page number (1-indexed) |
 | `--per-page` | number | `10` | Results per page |
 | `--limit` | number | — | Cap total results returned by CLI |
@@ -263,7 +264,7 @@ bun run src/cli.ts detail 9ef43bce-d82b-4ea1-a098-7ff6520f99be --format plain
 bun run src/cli.ts occupations --search-string <text> [flags]
 ```
 
-Use this command to find occupation identifiers (ESCO concept URIs) to pass as filters to `search`.
+Use this command to find occupation identifiers (ESCO concept URIs) to pass to `search --occupation`.
 
 ### Flags
 
@@ -297,7 +298,7 @@ bun run src/cli.ts occupations --search-string "sygeplejerske" --per-page 5
 ]
 ```
 
-> **Note**: `conceptUriDa` is the full ESCO concept URI. The UUID portion (last path segment) can be used to build occupation filters for `search`.
+> **Note**: `conceptUriDa` is the full ESCO concept URI. Pass it, or its UUID (last path segment), to `search --occupation`. The numeric `--occupation-area` / `--occupation-group` codes are a different taxonomy and match no ads for a UUID.
 
 ---
 
@@ -384,4 +385,4 @@ Example: `https://jobnet.dk/bff/SharedComponents/JobAdCard/CompanyLogo/ByJobAdId
 - Pagination is 1-indexed (`--page 1` is the first page).
 - `search` results intentionally omit the HTML `description` field — use `detail` to fetch it.
 - `body` in `detail` responses is raw HTML; use `--format plain` to get stripped text.
-- The `occupations` command helps discover ESCO occupation URIs usable as `--occupation-area` / `--occupation-group` seeds for narrowing search results.
+- The `occupations` command helps discover ESCO occupation URIs to pass to `search --occupation` for narrowing search results.
