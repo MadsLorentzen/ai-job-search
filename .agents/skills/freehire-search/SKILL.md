@@ -196,6 +196,7 @@ dictionaries never guess). So:
   live values (with counts) for a query before filtering.
 - The API retries 429/5xx with exponential backoff; an unreachable API exits
   non-zero with a clear message (best-effort service, see the dependency note above).
-- `search` calls `/api/v1/agent/jobs/search` (public, like the rest). A self-hosted
+- `search` calls `/api/v1/agent/jobs/search` (public, like the rest); `--no-description`
+  calls the lighter `/api/v1/jobs/search`, which serves no full bodies. A self-hosted
   instance older than that endpoint answers 404, and the CLI reports it as an error
   naming the endpoint — never as an empty result set.

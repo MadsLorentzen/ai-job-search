@@ -3,7 +3,7 @@
 CLI for searching the [freehire.me](https://freehire.me) job aggregator across
 **many markets** (tech-focused), via its public JSON API.
 
-**Data source**: freehire.me REST API (`/api/v1/agent/jobs/search`, `/api/v1/jobs/facets`, `/api/v1/jobs/{slug}`).
+**Data source**: freehire.me REST API (`/api/v1/agent/jobs/search`, `/api/v1/jobs/search` for `--no-description`, `/api/v1/jobs/facets`, `/api/v1/jobs/{slug}`).
 **Authentication**: None required — reads are public (only tracking mutations need a key, and those are out of scope here).
 **Dependencies**: None (plain `bun` + `fetch`). `bun install` is optional and only pulls dev type defs.
 
