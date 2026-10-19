@@ -13,6 +13,16 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Added
+
+- **CI runs the Python suite on Windows** (`.github/workflows/ci.yml` `python-tests-windows`) - every
+  job ran on Ubuntu, so a Windows-only failure reached master with all checks green: #480's test
+  (an atomic rename that Windows file locking refuses) and #486's (a tool printing non-ASCII JSON
+  to a piped cp1252 stdout) both passed every Linux leg and failed on Windows 11. The new job runs
+  the full suite on `windows-latest` with Python 3.14 under Git Bash, the shell Claude Code uses
+  on Windows, and leaves stdout at the Windows default encoding so the same failures show up in
+  CI. The five Linux legs keep their names, so required checks are unchanged.
+
 ### Changed
 
 - **`freehire-search` documents the `OR` and `title:` query operators** (#674,
