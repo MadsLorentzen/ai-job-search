@@ -89,6 +89,13 @@ per-file diff commands.
   "Ørsted" raised a `UnicodeDecodeError` traceback and stopped `/rank` at Step 1. It now exits 1 with a
   one-line message naming the file and asking for a CSV UTF-8 save, as `load_state` does for invalid JSON.
 
+- **`rank_state.py sweep --exclude` ignores spaces after the commas** (#641, `tools/rank_state.py`,
+  `tests/test_rank_state.py`) - rank.md asks for the keys scored this run as a comma-separated list, and
+  `"a_b, c_d"` kept every key after the first in the sweep, because `" c_d"` matched no entry. On an
+  `--all` run, a re-scored entry whose stored deadline had passed was written `expired` and reported under
+  "newly expired" by the sweep, then re-ranked by `apply` from its fresh deadline, so the same job appeared
+  as both expired and shortlisted. Keys are now stripped before matching.
+
 ## [1.7.3] - 2026-10-19
 
 ### Added
@@ -161,13 +168,6 @@ per-file diff commands.
   not gate on it.
 
 ### Fixed
-
-- **`rank_state.py sweep --exclude` ignores spaces after the commas** (`tools/rank_state.py`,
-  `tests/test_rank_state.py`) - rank.md asks for the keys scored this run as a comma-separated list, and
-  `"a_b, c_d"` kept every key after the first in the sweep, because `" c_d"` matched no entry. On an
-  `--all` run, a re-scored entry whose stored deadline had passed was written `expired` and reported under
-  "newly expired" by the sweep, then re-ranked by `apply` from its fresh deadline, so the same job appeared
-  as both expired and shortlisted. Keys are now stripped before matching.
 
 - **`.gitignore` ignores `node_modules` without a trailing slash, and `security_guards.py` fails on any tracked `node_modules` path** (`.gitignore`, `tools/security_guards.py`, `tests/test_security_guards.py`) - the old `node_modules/` rule matched directories only, so a symlink named `node_modules` pointing at a contributor's absolute path was committed in a PR, broke `bun install` in CI with a dangling link and checked out as a text file on Windows. The rule loses its slash, and the guard now lists every tracked path with a `node_modules` component (skipped quietly outside a git checkout). Also qualifies the one bare `seen_jobs.json` mention left in `README.md` after #617.
 
