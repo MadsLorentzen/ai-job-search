@@ -40,10 +40,25 @@ describe("--remote work_mode validation", () => {
     expect(requests).toEqual([]);
   });
 
-  test("--remote remote,hybrid exits 1 instead of forwarding a compound value", async () => {
-    const { result, requests } = await searchRemote(["--remote", "remote,hybrid"]);
+  test("comma-separated modes are normalised and re-joined", async () => {
+    for (const [flag, expected] of [
+      ["remote,hybrid", "remote,hybrid"],
+      ["remote,on-site", "remote,onsite"],
+    ] as const) {
+      const { result, requests } = await searchRemote(["--remote", flag]);
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toBe("");
+      expect(requests).toHaveLength(1);
+      expect(requests[0].searchParams.get("work_mode")).toBe(expected);
+    }
+  });
+
+  test("--remote remote,foo exits 1 with BAD_ARG naming foo and does not call the API", async () => {
+    const { result, requests } = await searchRemote(["--remote", "remote,foo"]);
     expect(result.exitCode).toBe(1);
+    expect(result.stdout).toBe("");
     expect(parsedStderr(result.stderr).code).toBe("BAD_ARG");
+    expect(parsedStderr(result.stderr).error).toContain('"foo"');
     expect(requests).toEqual([]);
   });
 

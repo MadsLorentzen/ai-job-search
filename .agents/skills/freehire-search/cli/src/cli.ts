@@ -101,7 +101,7 @@ FACET FILTERS (values from freehire.me's controlled vocabularies; comma = OR)
   --skill <names>         Canonical skill(s), e.g. --skill go,kubernetes
   --company <slug>        Company slug (from a result's company_slug).
   --remote <mode>         remote | hybrid | onsite (work_mode facet).
-                          A bare --remote means remote. Other values exit 1.
+                          A bare --remote means remote. Comma = OR. Unknown values exit 1.
   --facet <key=value>     Any other facet param (repeatable), e.g. --facet salary_min=100000
 
 DETAIL
@@ -124,25 +124,34 @@ type WorkMode = (typeof WORK_MODES)[number]
 /**
  * Map --remote to the work_mode facet.
  * A bare --remote (boolean true) is the documented "remote" shortcut.
- * `on-site` is the hyphenated spelling of `onsite`. Any other string is
- * rejected: the API treats an unknown work_mode as a filter that matches
- * nothing, so `--remote foo` exited 0 with an empty result set.
+ * Comma-separated values are OR: each item is normalised (`on-site` ->
+ * `onsite`) and re-joined. An unknown item is rejected — the API treats it
+ * as a filter that matches nothing — and `bad` names that item.
  */
-function parseWorkMode(raw: FlagValue): WorkMode | undefined | null {
-  if (raw === undefined) return undefined
-  if (raw === true) return "remote"
-  if (typeof raw !== "string" || !raw.trim()) return null
-  switch (raw.trim().toLowerCase()) {
-    case "remote":
-      return "remote"
-    case "hybrid":
-      return "hybrid"
-    case "onsite":
-    case "on-site":
-      return "onsite"
-    default:
-      return null
+function parseWorkMode(raw: FlagValue): { value?: string; bad?: string } {
+  if (raw === undefined) return {}
+  if (raw === true) return { value: "remote" }
+  if (typeof raw !== "string" || !raw.trim()) return { bad: String(raw) }
+  const modes: WorkMode[] = []
+  for (const item of raw.split(",")) {
+    const token = item.trim()
+    if (!token) continue
+    switch (token.toLowerCase()) {
+      case "remote":
+        modes.push("remote")
+        break
+      case "hybrid":
+        modes.push("hybrid")
+        break
+      case "onsite":
+      case "on-site":
+        modes.push("onsite")
+        break
+      default:
+        return { bad: token }
+    }
   }
+  return modes.length > 0 ? { value: modes.join(",") } : { bad: raw.trim() }
 }
 
 function parseIntFlag(name: string, raw: string | boolean | string[]): number | null {
@@ -262,11 +271,11 @@ async function main(): Promise<number> {
       facets[key] = (facets[key] ?? []).concat(vals)
     }
 
-    const workMode = parseWorkMode(flags.remote)
-    if (workMode === null) {
+    const parsedRemote = parseWorkMode(flags.remote)
+    if (parsedRemote.bad !== undefined) {
       process.stderr.write(
         JSON.stringify({
-          error: `--remote must be one of remote|hybrid|onsite, got "${String(flags.remote)}"`,
+          error: `--remote must be one of remote|hybrid|onsite, got "${parsedRemote.bad}"`,
           code: "BAD_ARG",
         }) + "\n",
       )
@@ -288,7 +297,7 @@ async function main(): Promise<number> {
       category: commaList(flags.category),
       skills: commaList(flags.skill),
       company: stringFlag(flags.company),
-      workMode,
+      workMode: parsedRemote.value,
       facets,
     }
     return runSearch(opts)
