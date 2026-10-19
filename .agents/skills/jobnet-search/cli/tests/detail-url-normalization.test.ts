@@ -3,6 +3,32 @@ import { normalizeJobId } from "../src/helpers.js"
 import { runCLI } from "./helpers.js"
 
 describe("jobnet-search normalizeJobId", () => {
+  test("rejects foreign hosts, non-web schemes and job paths only in a query", () => {
+    for (const value of [
+      "https://example.com/find-job/6123456/",
+      "https://jobnet.dk.example.com/find-job/6123456/",
+      "ftp://jobnet.dk/find-job/6123456/",
+      "https://jobnet.dk/?next=/find-job/6123456/",
+    ]) expect(normalizeJobId(value)).toBeNull()
+  })
+
+  test("accepts the portal's www host and HTTP links", () => {
+    expect(normalizeJobId("http://www.jobnet.dk/find-job/6123456/")).toBe("6123456")
+  })
+
+  test("CLI rejects another site's matching job path before any fetch", async () => {
+    const proc = Bun.spawn([
+      process.execPath, "--preload", `${import.meta.dir}/reject-network.ts`,
+      `${import.meta.dir}/../src/cli.ts`, "detail", "https://example.com/find-job/6123456/",
+    ], { stdout: "pipe", stderr: "pipe" })
+    const [stdout, stderr, code] = await Promise.all([
+      new Response(proc.stdout).text(), new Response(proc.stderr).text(), proc.exited,
+    ])
+    expect(code).toBe(1)
+    expect(stdout).toBe("")
+    expect(JSON.parse(stderr).code).toBe("BAD_ID")
+  })
+
   test("accepts bare numeric ID", () => {
     expect(normalizeJobId("6123456")).toBe("6123456")
     expect(normalizeJobId("  6123456  ")).toBe("6123456")
