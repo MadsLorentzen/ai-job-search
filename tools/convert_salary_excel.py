@@ -398,6 +398,9 @@ def main():
     )
     args = parser.parse_args()
 
+    if not math.isfinite(args.baseline):
+        parser.error("--baseline must be a finite number")
+
     excel_path = Path(args.excel_file)
     if not excel_path.exists():
         print(f"Error: File not found: {excel_path}", file=sys.stderr)
