@@ -27,7 +27,11 @@ Follow these steps **in order**.
 Never read `job_scraper/seen_jobs.json` into the conversation. It holds every job the workspace has ever seen - most of it `skipped` - while a run only ever touches the handful of entries being scored, so a manual read costs the whole backlog on every run and grows for the life of the workspace. Selecting candidates is a query, so run the query:
 
 ```bash
-python3 tools/rank_state.py candidates --limit 10          # add --all / --focus "<text>" per Step 0
+# Resolve the interpreter once: `python3` is a non-functional Microsoft Store
+# alias on a stock Windows python.org install (exit 49, no output), and bare
+# `python` is missing on distros that ship only `python3`. See SETUP.md section 2.
+PY="$(for c in python3 python py; do "$c" -c '' >/dev/null 2>&1 && { echo "$c"; break; }; done)"
+"$PY" tools/rank_state.py candidates --limit 10          # add --all / --focus "<text>" per Step 0
 ```
 
 It applies the status filter (`new` and `unreachable`, or any status with `--all`), the tracker exclusion (any company+role already in `job_search_tracker.csv` is out of scope regardless of flags - it has been applied to or consciously tracked), the focus filter, and `--limit`, then prints one compact object per candidate (`key`, `title`, `company`, `url`, `portal`, `deadline`, `posted_date`) plus the counts: `eligible`, `deferred` (eligible beyond the limit, kept at their current status so a later run continues the backlog), `excluded_by_tracker`.
@@ -37,7 +41,7 @@ If it exits with "not found", tell the user to run `/scrape` first and stop.
 If it reports no candidates, there is nothing to score, but already-ranked jobs still need Step 3's rule 6 expiry sweep. Run:
 
 ```bash
-python3 tools/rank_state.py sweep --write
+"$PY" tools/rank_state.py sweep --write
 ```
 
 Skip profile loading and Steps 2-4 on this path: no jobs need fetching or scoring. Present a sweep-only Step 5 summary: say "Nothing new to rank", report `swept` and `newly_expired`, list `closing_soon` with deadlines and posting URLs, and report any `unparseable_deadlines` with their portals. Apply rule 6's same reporting and defensive-date rules. Then suggest `/scrape` for fresh postings and stop. An empty candidate batch, including one caused by a focus filter or tracker exclusion, never skips this sweep.
@@ -97,7 +101,7 @@ Back in the main context, for each scored job:
 6. **Expiry sweep over already-ranked entries.** Before presenting, check the stored `deadline` of every `ranked` entry this run did not re-score:
 
    ```bash
-   python3 tools/rank_state.py sweep --write --exclude "<keys scored this run, comma-separated>"
+   "$PY" tools/rank_state.py sweep --write --exclude "<keys scored this run, comma-separated>"
    ```
 
    Any whose deadline has passed becomes `expired`; any within 7 days comes back under `closing_soon` and is listed under a short **Closing soon** heading in Step 5 with its 🔥 marker. This needs no fetch and no agent - it is a date comparison against values already on disk, and it is what finally enforces `/scrape`'s "only open positions" rule beyond the moment of fetching. **An entry with no stored `deadline` is left alone, never guessed at** - most entries predate the column, and inferring a deadline from `first_seen` would retire jobs on a date nobody set. **Parse stored deadlines defensively:** a stored value that is not a `YYYY-MM-DD` date is treated exactly like an absent one - left alone, never compared, never guessed at - and returned under `unparseable_deadlines` with its portal, so the bad value gets traced to its source instead of silently steering the sweep (portals have shipped `"ASAP"`, `DD.MM.YYYY`, and free-text deadline shapes into stored data). Report it once in the Step 5 summary. `--all` re-scores entries of any status including `expired`, so a job the sweep retired - or one Step 4 gave up on as `unreachable` - can still be revived by a later `--all` that re-fetches it and finds the posting live: both automated status changes are reversible, which is what makes them acceptable here at all.
@@ -127,7 +131,7 @@ Sort by overall score (descending), urgency as tiebreaker.
 Concatenate the Step 2 agents' JSON arrays into one temporary file - a scratch or working-directory path outside the repo tree, never committed - rather than restating them in prose, then write the results back with the tool. It reads `job_scraper/seen_jobs.json`, edits the entries and writes it atomically, so the state never passes through the conversation in either direction:
 
 ```bash
-python3 tools/rank_state.py apply --results "<path to that temporary file>"
+"$PY" tools/rank_state.py apply --results "<path to that temporary file>"
 ```
 
 What it writes per entry - all additive to the scraper's schema:

@@ -24,6 +24,15 @@ python3 --version
 
 On Windows, `py --version` is often the most reliable check. If your system exposes Python as `python` instead of `python3`, use `python` in the commands below.
 
+Neither spelling works everywhere, so resolve the interpreter once and reuse it. `python3` is a non-functional Microsoft Store **App execution alias** on a stock Windows python.org install (the installer ships `python.exe` and `py.exe`, never `python3.exe`), and a non-interactive shell runs the stub to an empty exit 49 - no stdout, no stderr. Bare `python` fails the mirror-image way on distros that ship only `python3`. `command -v` cannot tell them apart, because the alias exists on disk; the probe has to run the candidate:
+
+```bash
+PY="$(for c in python3 python py; do "$c" -c '' >/dev/null 2>&1 && { echo "$c"; break; }; done)"
+"$PY" --version
+```
+
+`/rank`, `/apply`, `/scrape` and the web-research workflow each run that probe in their first code block and invoke every tool as `"$PY" tools/...`.
+
 ### Bun (for job search tools)
 
 The job portal CLIs (four Danish portals plus the country-agnostic `linkedin-search` and `freehire-search` tools) are written in TypeScript and run with Bun.

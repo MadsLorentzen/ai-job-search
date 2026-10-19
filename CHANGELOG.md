@@ -68,6 +68,21 @@ per-file diff commands.
 
 ### Fixed
 
+- **Every workflow spec resolves its Python interpreter instead of hardcoding one spelling**
+  (#669, `.claude/commands/rank.md`, `.claude/commands/apply.md`,
+  `.claude/skills/job-scraper/SKILL.md`,
+  `.claude/skills/job-application-assistant/09-web-research.md`, `.claude/settings.json`,
+  `SETUP.md` section 2, `tests/test_python_command_specs.py`) - `/rank` (`x4`), `/scrape`,
+  `09-web-research` and `/apply` each ran their tools under a fixed `python3` or `python`,
+  and the two spellings break on opposite platforms. On a stock Windows python.org install
+  `python3` is Microsoft's Store App execution alias, so every one of those commands exits 49
+  with no output and the agent has to diagnose it blind, once per command, per run; on a distro
+  without `python-is-python3` the bare `python` form fails the same way. `.claude/settings.json`
+  already allowed both spellings, so no single literal was ever safe. Each spec now probes
+  `python3` -> `python` -> `py` by *running* it (`command -v` cannot help - the alias exists on
+  disk) and invokes `"$PY" tools/...`, which also matches the new `"$PY"` permission entries.
+  `tests/test_python_command_specs.py` fails the build if a spec reintroduces a bare spelling.
+
 - **`.gitignore` ignores `node_modules` without a trailing slash, and `security_guards.py` fails on any tracked `node_modules` path** (`.gitignore`, `tools/security_guards.py`, `tests/test_security_guards.py`) - the old `node_modules/` rule matched directories only, so a symlink named `node_modules` pointing at a contributor's absolute path was committed in a PR, broke `bun install` in CI with a dangling link and checked out as a text file on Windows. The rule loses its slash, and the guard now lists every tracked path with a `node_modules` component (skipped quietly outside a git checkout). Also qualifies the one bare `seen_jobs.json` mention left in `README.md` after #617.
 
 - **`job_key.py --audit` reports a state file that is not an object of entries** (#626) (`tools/job_key.py`,

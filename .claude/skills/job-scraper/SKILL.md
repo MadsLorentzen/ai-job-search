@@ -5,7 +5,7 @@ description: >
   (LinkedIn, local job boards, and any skills added with /add-portal). Deduplicates
   across runs. Triggers on: job scrape, find jobs, search jobs, new jobs, job search,
   scrape jobs, /scrape
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run .agents/skills/*/cli/src/cli.ts *), Bash(python tools/job_key.py:*), Bash(python3 tools/job_key.py:*), WebFetch, WebSearch, Agent, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(bun run .agents/skills/*/cli/src/cli.ts *), Bash(python tools/job_key.py:*), Bash(python3 tools/job_key.py:*), Bash("$PY" tools/job_key.py:*), WebFetch, WebSearch, Agent, AskUserQuestion
 ---
 
 # Job Scraper
@@ -144,10 +144,14 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
 1. Derive each entry's key with the helper, never by slugifying in the moment:
 
 ```bash
-python3 tools/job_key.py --company "<company>" --title "<title>" --url "<url>"
+# Resolve the interpreter once: `python3` is a non-functional Microsoft Store
+# alias on a stock Windows python.org install (exit 49, no output), and bare
+# `python` is missing on distros that ship only `python3`. See SETUP.md section 2.
+PY="$(for c in python3 python py; do "$c" -c '' >/dev/null 2>&1 && { echo "$c"; break; }; done)"
+"$PY" tools/job_key.py --company "<company>" --title "<title>" --url "<url>"
 ```
 
-It prints one line: the canonical key for that posting. The key must be a pure function of the posting, because two runs that slugify differently store the same job twice and defeat the dedup this step exists to provide. The helper also length-caps long titles and disambiguates the cap with a hash of the full slug, so a truncated title is stable across runs and two different long titles never collide. `python3 tools/job_key.py --audit` reports entries in an existing state file that predate this rule; it only reports, and never rewrites keys, since a rewritten key breaks the tracker's own company+role matching.
+It prints one line: the canonical key for that posting. The key must be a pure function of the posting, because two runs that slugify differently store the same job twice and defeat the dedup this step exists to provide. The helper also length-caps long titles and disambiguates the cap with a hash of the full slug, so a truncated title is stable across runs and two different long titles never collide. `"$PY" tools/job_key.py --audit` reports entries in an existing state file that predate this rule; it only reports, and never rewrites keys, since a rewritten key breaks the tracker's own company+role matching.
 
 2. Add ALL fetched jobs (new and skipped) to `job_scraper/seen_jobs.json` with structure:
 ```json

@@ -35,7 +35,11 @@ Do **not** respond to a 403 by softening the cover letter to vague generalities,
 Check it first. It is one cheap fetch, and the repo ships the check:
 
 ```bash
-python3 tools/robots_check.py '<URL>'
+# Resolve the interpreter once: `python3` is a non-functional Microsoft Store
+# alias on a stock Windows python.org install (exit 49, no output), and bare
+# `python` is missing on distros that ship only `python3`. See SETUP.md section 2.
+PY="$(for c in python3 python py; do "$c" -c '' >/dev/null 2>&1 && { echo "$c"; break; }; done)"
+"$PY" tools/robots_check.py '<URL>'
 ```
 
 Exit status `0` means the retry may proceed; `1` means it must not, so go to escalation step 4. The rules it applies are deliberately on the cautious side: longest-match wins, a tie between `Allow` and `Disallow` goes to `Disallow`, and a disallow for **either** `*` or `Claude-User` blocks the retry. A `404` means the site publishes no policy, which is permission; **any other failure to read `robots.txt` leaves permission unconfirmed and the retry does not happen.**
@@ -65,7 +69,11 @@ Write to the session scratchpad directory, never into the repo. `--compressed` i
 `WebFetch` converts to markdown for you; curl does not. Strip the tags:
 
 ```bash
-cd "${SCRATCHPAD:?set this to the session scratchpad directory from your system prompt}" && python3 -c "
+# Resolve the interpreter once: `python3` is a non-functional Microsoft Store
+# alias on a stock Windows python.org install (exit 49, no output), and bare
+# `python` is missing on distros that ship only `python3`. See SETUP.md section 2.
+PY="$(for c in python3 python py; do "$c" -c '' >/dev/null 2>&1 && { echo "$c"; break; }; done)"
+cd "${SCRATCHPAD:?set this to the session scratchpad directory from your system prompt}" && "$PY" -c "
 import re, html
 h = open('page.html', encoding='utf-8', errors='replace').read()
 h = re.sub(r'(?is)<(script|style|noscript|svg)[^>]*>.*?</\1>', ' ', h)

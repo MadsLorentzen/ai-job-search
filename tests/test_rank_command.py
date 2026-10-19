@@ -49,7 +49,7 @@ class RankCommandSpec(unittest.TestCase):
         step1 = _sections(COMMAND.read_text(encoding="utf-8"))["Step 1: Load State"]
         empty_branch = step1.partition("If it reports no candidates")[2].partition("Then read")[0]
         self.assertIn(
-            "python3 tools/rank_state.py sweep --write",
+            '"$PY" tools/rank_state.py sweep --write',
             empty_branch,
             "an empty candidate batch must still persist rule 6's expiry sweep",
         )
@@ -666,7 +666,8 @@ class RankStateToolSpec(unittest.TestCase):
         settings = json.loads((REPO / ".claude" / "settings.json").read_text(encoding="utf-8"))
         allow = settings["permissions"]["allow"]
         guards = (REPO / "tools" / "security_guards.py").read_text(encoding="utf-8")
-        for entry in ("Bash(python tools/rank_state.py:*)", "Bash(python3 tools/rank_state.py:*)"):
+        for entry in ("Bash(python tools/rank_state.py:*)", "Bash(python3 tools/rank_state.py:*)",
+                     'Bash("$PY" tools/rank_state.py:*)'):
             self.assertIn(entry, allow, f"{entry} missing from .claude/settings.json")
             self.assertIn(entry, guards, f"{entry} missing from security_guards.py's reviewed allowlist")
 

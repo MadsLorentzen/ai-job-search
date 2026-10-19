@@ -18,7 +18,12 @@
       "Bash(python3 tools/verify_pdf.py:*)",
       "Bash(python tools/verify_layout.py:*)",
       "Bash(python3 tools/verify_layout.py:*)",
-      "Bash(pdftotext:*)"
+      "Bash(pdftotext:*)",
+      "Bash(\"$PY\" salary_lookup.py:*)",
+      "Bash(\"$PY\" tools/rank_state.py:*)",
+      "Bash(\"$PY\" tools/job_key.py:*)",
+      "Bash(\"$PY\" tools/verify_pdf.py:*)",
+      "Bash(\"$PY\" tools/verify_layout.py:*)"
     ]
   }
 }

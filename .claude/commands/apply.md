@@ -45,7 +45,11 @@ Read the evaluation framework:
 Using the framework from `04-job-evaluation.md`, evaluate the job posting against the candidate's profile. If the salary lookup tool is configured, run:
 
 ```bash
-python salary_lookup.py "<Company Name>" --json
+# Resolve the interpreter once: `python3` is a non-functional Microsoft Store
+# alias on a stock Windows python.org install (exit 49, no output), and bare
+# `python` is missing on distros that ship only `python3`. See SETUP.md section 2.
+PY="$(for c in python3 python py; do "$c" -c '' >/dev/null 2>&1 && { echo "$c"; break; }; done)"
+"$PY" salary_lookup.py "<Company Name>" --json
 ```
 
 If the posting specifies a city, add `--city "<City>"` to narrow results. Parse the JSON output and include the salary benchmark in the evaluation. If the tool is not configured or returns an error, skip the salary benchmark.
@@ -254,10 +258,10 @@ If either compile fails, fix the error and re-compile until clean.
 **Measure first, then look.** A visual read catches gross breakage but cannot tell you that a page is 40% empty, and the failure below survives both a clean compile and a correct page count:
 
 ```bash
-python tools/verify_pdf.py cv/main_<company>_<role>.pdf --pages 2
-python tools/verify_pdf.py cover_letters/cover_<company>_<role>.pdf --pages 1
-python tools/verify_layout.py cv/main_<company>_<role>.pdf
-python tools/verify_layout.py cover_letters/cover_<company>_<role>.pdf
+"$PY" tools/verify_pdf.py cv/main_<company>_<role>.pdf --pages 2
+"$PY" tools/verify_pdf.py cover_letters/cover_<company>_<role>.pdf --pages 1
+"$PY" tools/verify_layout.py cv/main_<company>_<role>.pdf
+"$PY" tools/verify_layout.py cover_letters/cover_<company>_<role>.pdf
 ```
 
 The two `--pages` lines are the page-count check: exactly 2 pages for the CV and exactly 1 for the cover letter (the hard limits in `05-cv-templates.md` and `06-cover-letter-templates.md`), exit 1 otherwise. With a custom template active, substitute its declared **Page limit** from the `ACTIVE-TEMPLATE` block. Nothing else runs this check - `verify_layout.py` deliberately leaves page count to it, and Step 5d's extraction call passes no `--pages` - so if these lines are skipped, the page budget is enforced by nothing but the visual read below.
@@ -299,12 +303,12 @@ Do not proceed to Step 6 until both PDFs pass inspection.
 
 An ATS parser reads the PDF's embedded **text layer**, not the rendered page — a CV that passed visual inspection can still extract as garbage (icon glyphs where the contact details should be, scrambled reading order in multi-column layouts). This step verifies what a parser actually sees. It applies to the **CV only**; cover letters rarely go through keyword screening.
 
-**Availability check:** extract with `python tools/verify_pdf.py` (tries **pypdf** first — BSD, `pip install pypdf` — then Poppler `pdftotext`). If both are missing, print a one-line warning that the mechanical parse check is skipped, do the keyword-coverage check (item 3 below) against your visual Read of the PDF instead, and note the degraded mode in the Step 6 report. Same graceful-skip pattern as the salary lookup. If a documented fallback still shells out to `pdftotext -layout`, keep the `-enc UTF-8` flag: Xpdf-based builds default to Latin-1 output, and without it a correct non-ASCII CV fails the replacement-character check below.
+**Availability check:** extract with `"$PY" tools/verify_pdf.py` (tries **pypdf** first — BSD, `pip install pypdf` — then Poppler `pdftotext`). If both are missing, print a one-line warning that the mechanical parse check is skipped, do the keyword-coverage check (item 3 below) against your visual Read of the PDF instead, and note the degraded mode in the Step 6 report. Same graceful-skip pattern as the salary lookup. If a documented fallback still shells out to `pdftotext -layout`, keep the `-enc UTF-8` flag: Xpdf-based builds default to Latin-1 output, and without it a correct non-ASCII CV fails the replacement-character check below.
 
 **1. Extract the text layer:**
 
 ```bash
-python tools/verify_pdf.py cv/main_<company>_<role>.pdf --ascii-dates --dump-text cv/main_<company>_<role>.txt
+"$PY" tools/verify_pdf.py cv/main_<company>_<role>.pdf --ascii-dates --dump-text cv/main_<company>_<role>.txt
 ```
 
 `--ascii-dates` is the date-range check from `05-cv-templates.md` ("Date fields must be ASCII ranges"): it exits 1 if the raw text layer has a year joined to a Unicode dash - the en-dash LaTeX makes from `--`, which a Workday import dropped together with the date - naming each hit and its code point. It reads the raw layer, not the folded comparison `--contains` uses, which is why `--contains "2016-2024"` cannot catch this. The dump is written before the check runs, so a failure still leaves the `.txt`. Fix a hit in the `<CV_EXT>` date argument (a single ASCII hyphen), then re-run 5a-5c and re-extract.
