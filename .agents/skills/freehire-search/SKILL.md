@@ -81,6 +81,7 @@ bun run .agents/skills/freehire-search/cli/src/cli.ts search [-q "<keywords>"] [
 
 Key flags:
 - `--query <text>` / `-q <text>` — keyword search (title, skill, role). Full-text; optional.
+  Supports `OR` and `title:` (see "Query operators" below).
 - `--jobage <days>` — posted within N days (maps to `posted_within_days`).
 - `--page <n>` — 1-indexed page. Default 1.
 - `--limit <n>` / `-n <n>` — results per page (API limit). Default 25.
@@ -88,6 +89,26 @@ Key flags:
 - `--description-format markdown|text|html` — how each result's full description is
   rendered. Default `markdown`, which keeps the posting's headings and requirement
   lists intact. `json` output only.
+
+**Query operators.** `-q` understands two operators; the CLI passes the text through
+unchanged and the API parses it:
+
+- `OR` between alternatives returns jobs matching **any** of them, e.g.
+  `-q "golang OR rust"`. Uppercase only: a lowercase `or` is an ordinary search
+  word. Plain space-separated words are **not** a union (`-q "golang rust"` returns
+  fewer jobs than `-q golang` alone), so use `OR` for synonyms and alternative stacks
+  instead of running one search per keyword. At most 5 alternatives; a 6th is
+  rejected with an error. An `OR` inside double quotes is literal text.
+- A leading `title:` restricts that alternative to the job **title**, e.g.
+  `-q "title:staff engineer"` skips postings that merely mention the words in their
+  description. It applies per alternative, so repeat it on each one:
+  `-q "title:staff engineer OR title:principal engineer"`. It only counts at the start
+  of an alternative; `title:` in the middle is searched as text. Quotes work inside it:
+  `-q 'title:"staff engineer"'` matches the phrase.
+
+Facet flags, `--jobage`, `--page` and `--limit` apply to the combined result: every
+alternative is filtered the same way, and a job matching several alternatives
+appears once.
 
 **Search results already carry the full description.** This skill queries freehire's
 agent search endpoint, which replaces the index's truncated preview with each
@@ -138,6 +159,12 @@ just returned only re-reads a description you already have.
 ```bash
 # Senior backend roles, table view
 bun run .agents/skills/freehire-search/cli/src/cli.ts search -q "backend engineer" --seniority senior --limit 10 --format table
+
+# Go or Rust roles, one search (OR must be uppercase)
+bun run .agents/skills/freehire-search/cli/src/cli.ts search -q "golang OR rust" --remote remote --format table
+
+# Staff or principal titles only, not postings that mention them in passing
+bun run .agents/skills/freehire-search/cli/src/cli.ts search -q "title:staff engineer OR title:principal engineer" --format table
 
 # Remote React roles in the EU
 bun run .agents/skills/freehire-search/cli/src/cli.ts search -q "react" --remote remote --region eu --format table

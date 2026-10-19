@@ -74,7 +74,7 @@ See `../SKILL.md` for the full flag reference and the hosted-dependency note.
 
 | Flag | Alias | Description |
 |------|-------|-------------|
-| `--query` | `-q` | Keywords (title / skill / role). Full-text; optional. |
+| `--query` | `-q` | Keywords (title / skill / role). Full-text; optional. `a OR b` matches either (uppercase `OR`, max 5 alternatives); a leading `title:` searches the job title only. |
 | `--jobage` | | Posted within N days (`posted_within_days`). |
 | `--page` | | 1-indexed page. Default 1. |
 | `--limit` | `-n` | Results per page (API limit). Default 25. |

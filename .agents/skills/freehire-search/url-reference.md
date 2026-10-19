@@ -64,7 +64,7 @@ Query parameters used by the skill:
 
 | Param | Maps to CLI flag | Notes |
 |-------|------------------|-------|
-| `q` | `--query` / `-q` | Keyword full-text query. |
+| `q` | `--query` / `-q` | Keyword full-text query. Uppercase `OR` separates up to 5 alternatives (more is a 400); a leading `title:` restricts an alternative to the title. |
 | `limit` | `--limit` / `-n` | Page size. Default 25 in the CLI. |
 | `offset` | (derived) | `offset = (page - 1) * limit`. |
 | `posted_within_days` | `--jobage` | Restrict to postings from the last N days. |

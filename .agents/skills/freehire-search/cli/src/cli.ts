@@ -79,6 +79,8 @@ USAGE
 
 SEARCH FLAGS
   --query, -q <text>      Keywords (title, skill, role). Full-text; optional.
+                          "a OR b" matches either (uppercase OR, max 5);
+                          a leading title: searches the job title only.
   --jobage <days>         Posted within N days (maps to posted_within_days).
   --page <n>              1-indexed page. Default 1.
   --limit, -n <n>         Results per page (API limit). Default 25.
