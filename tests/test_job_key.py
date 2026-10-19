@@ -33,6 +33,12 @@ class Slugify(unittest.TestCase):
         self.assertEqual(slugify("시큐리온"), "")
         self.assertEqual(slugify("Код Безопасности"), "")
 
+    def test_danish_letters_are_transliterated(self):
+        self.assertEqual(slugify("Ørsted"), "oersted")
+        self.assertEqual(slugify("Ærø"), "aeroe")
+        self.assertEqual(slugify("Åben"), "aaben")
+        self.assertEqual(slugify("Æ Ø Å"), "ae-oe-aa")
+
 
 class MakeKey(unittest.TestCase):
     def test_shape(self):
@@ -159,12 +165,10 @@ class MixedScriptNamesKeepTheirIdentity(unittest.TestCase):
         # NFKD folds these without dropping a letter, so existing keys stay put.
         self.assertEqual(make_key("Zürich Versicherung", "Ingénieur ﬁnance"), "zurich-versicherung_ingenieur-finance")
 
-    def test_latin_letters_without_a_decomposition_do_not_re_key(self):
-        # "ø" and "æ" have no NFKD decomposition and are dropped by the fold,
-        # but they are Latin letters: "Ørsted" has keyed as "rsted" since the
-        # rule existed, and a live Danish seen_jobs.json must not re-key.
-        self.assertEqual(make_key("Ørsted A/S", "Senior Engineer"), "rsted-a-s_senior-engineer")
-        self.assertEqual(make_key("Mærsk", "Søfarende"), "mrsk_sfarende")
+    def test_danish_letters_are_preserved_in_keys(self):
+        self.assertEqual(make_key("Ørsted A/S", "Senior Engineer"), "oersted-a-s_senior-engineer")
+        self.assertEqual(make_key("Mærsk", "Søfarende"), "maersk_soefarende")
+        self.assertNotEqual(make_key("Ærø", "x"), make_key("Rø", "x"))
 
 
 class CompanyFallbackCLI(unittest.TestCase):
