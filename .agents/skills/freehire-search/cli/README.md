@@ -75,7 +75,7 @@ See `../SKILL.md` for the full flag reference and the hosted-dependency note.
 | `--jobage` | | Posted within N days (`posted_within_days`). |
 | `--page` | | 1-indexed page. Default 1. |
 | `--limit` | `-n` | Results per page (API limit). Default 25. |
-| `--region` | | Source-side region bucket(s), comma = OR (e.g. `eu,north_america`) — not a geography; scope a country with `--country`. |
+| `--region` | | Macro-region bucket(s), comma = OR (e.g. `eu,north_america`) — not a geography, not a country; scope a country with `--country`. |
 | `--country` | | ISO-3166 alpha-2 code(s). |
 | `--city` | | City name(s). |
 | `--seniority` | | Seniority level(s). |

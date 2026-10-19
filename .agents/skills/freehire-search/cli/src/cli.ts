@@ -89,9 +89,10 @@ SEARCH FLAGS
                           full description is rendered (json output only).
 
 FACET FILTERS (values from freehire.me's controlled vocabularies; comma = OR)
-  --region <codes>        Source-side region bucket (not a geography): global, eu,
-                          north_america, apac, latam, cis, ...  e.g. --region eu,north_america
-                          Scope a country with --country instead.
+  --region <codes>        Macro-region bucket, not a geography: global, north_america,
+                          latam, eu, uk, mena, africa, apac, cis, none.
+                          e.g. --region eu,north_america. Scope a country with
+                          --country instead. Other values exit 1.
   --country <codes>       ISO-3166 alpha-2, e.g. --country DE,GB
   --city <names>          City name(s), e.g. --city Berlin
   --seniority <levels>    junior, middle, senior, staff, principal, lead, ...
@@ -114,6 +115,27 @@ EXAMPLES
 Reads are public (no API key). Source: ${baseUrl()} — a personal project,
 best-effort, no SLA. Override with FREEHIRE_API_URL to use a self-hosted backend.
 `
+
+// freehire's `regions` facet is a closed vocabulary of macro-regions, not a
+// geography: `us` is not one of them (country scope is `--country`, and US
+// postings sit under `north_america`). The API accepts any string and matches
+// the raw index tags, so an unknown value filters the whole result set away and
+// the search still exits 0 — `--region us` reads as "no postings" rather than
+// "wrong parameter". Validate against the documented list instead, like
+// `--remote` does for work_mode (#616).
+const REGIONS = ["global", "north_america", "latam", "eu", "uk", "mena", "africa", "apac", "cis", "none"] as const
+
+/**
+ * Split `--region` on commas and keep only documented bucket values.
+ * `null` means at least one value is unknown, and the caller exits 1 with
+ * BAD_ARG before any request.
+ */
+function parseRegions(raw: FlagValue): string[] | null {
+  const values = commaList(raw)
+  const unknown = values.filter((v) => !(REGIONS as readonly string[]).includes(v.toLowerCase()))
+  if (unknown.length > 0) return null
+  return values.map((v) => v.toLowerCase())
+}
 
 function parseIntFlag(name: string, raw: string | boolean | string[]): number | null {
   // Number(), not parseInt(): parseInt truncates, so "--jobage 0.5" became 0,
@@ -230,6 +252,17 @@ async function main(): Promise<number> {
       facets[key] = (facets[key] ?? []).concat(vals)
     }
 
+    const regions = parseRegions(flags.region)
+    if (regions === null) {
+      process.stderr.write(
+        JSON.stringify({
+          error: `--region must be a comma-separated list of ${REGIONS.join("|")}, got "${String(flags.region)}" - regions are macro-region buckets, not countries; scope a country with --country`,
+          code: "BAD_ARG",
+        }) + "\n",
+      )
+      return 1
+    }
+
     const opts: SearchOpts = {
       query: stringFlag(flags.query),
       jobage: flags.jobage ? parseInt(flags.jobage as string, 10) : 9999,
@@ -238,7 +271,7 @@ async function main(): Promise<number> {
       format: fmt as SearchOpts["format"],
       descriptionFormat: descFmt as DescriptionFormat,
       includeDescription: flags["no-description"] === undefined,
-      regions: commaList(flags.region),
+      regions,
       countries: commaList(flags.country),
       cities: commaList(flags.city),
       seniority: commaList(flags.seniority),
