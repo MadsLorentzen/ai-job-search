@@ -68,6 +68,14 @@ class UpstreamCheckerRepoFixture(unittest.TestCase):
             text=True,
         )
 
+    def run_checker_with_fetch(self, *args) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [sys.executable, str(self.root / "tools" / "check_upstream_updates.py"), *args],
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+        )
+
 
 class ForkWithoutUpstreamRemoteTests(UpstreamCheckerRepoFixture):
     def setUp(self):
@@ -130,6 +138,23 @@ class UpstreamRemotePresentTests(UpstreamCheckerRepoFixture):
         self.assertNotIn("Falling back to 'origin'", result.stdout)
         self.assertNotIn("does not point to the ai-job-search template repo", result.stdout)
         self.assertIn("up to date with upstream/master", result.stdout)
+
+
+class FailedFetchTests(UpstreamCheckerRepoFixture):
+    def test_cached_ref_after_failed_fetch_is_not_reported_as_current(self):
+        # Normal CLI path: a fork has a previous upstream/master ref, but its
+        # remote is unavailable today. The cached comparison can be useful,
+        # but it cannot establish whether the fork is currently up to date.
+        self.add_remote("upstream", str(self.root / "unavailable-remote"))
+        self.materialize_remote_ref("upstream")
+
+        result = self.run_checker_with_fetch()
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Failed to fetch", result.stdout)
+        self.assertIn("cached", result.stdout.lower())
+        self.assertIn("[WARNING]", result.stdout)
+        self.assertNotIn("[OK]", result.stdout)
 
 
 class UpstreamRefMissingFileTests(UpstreamCheckerRepoFixture):

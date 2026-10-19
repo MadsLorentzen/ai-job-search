@@ -97,10 +97,12 @@ def main() -> int:
             f"  git remote add upstream https://github.com/{UPSTREAM_REPO_SLUG}.git"
         )
 
+    fetch_failed = False
     if not args.no_fetch:
         print(f"Fetching latest from remote '{remote}'...")
         rc, _, stderr = run_git(["fetch", remote])
         if rc != 0:
+            fetch_failed = True
             print(f"Warning: Failed to fetch from remote '{remote}': {stderr.strip()}")
             print("Proceeding with cached remote tracking branches.")
 
@@ -184,8 +186,13 @@ def main() -> int:
                 f"{len(errors)} configuration error(s), {len(missing_upstream)} file(s) missing upstream. "
                 "Review the messages above before assuming you are up to date."
             )
-        else:
+        elif not fetch_failed:
             print(f"[OK] All framework files are up to date with {ref}!")
+    if fetch_failed:
+        print(
+            f"[WARNING] Compared against cached {ref} because the fetch failed; "
+            "the current upstream state could not be checked."
+        )
     # Version stamps answer "which of my files changed"; commit-level triage
     # answers "which upstream commits deserve review". Point at the companion.
     print(
