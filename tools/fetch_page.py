@@ -153,7 +153,21 @@ def _inside_repo(path: Path) -> bool:
     return True
 
 
+def _force_utf8_output() -> None:
+    """Write UTF-8 whatever the host's default encoding is.
+
+    A piped stdout on Windows defaults to the ANSI code page (cp1252 on most
+    Western installs), so printing a page with characters outside it raised
+    UnicodeEncodeError before the workflow saw any output.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)  # absent on a StringIO under test
+        if reconfigure:
+            reconfigure(encoding="utf-8")
+
+
 def main(argv=None) -> int:
+    _force_utf8_output()
     parser = argparse.ArgumentParser(
         prog="fetch_page.py",
         description="GET a page with browser headers (robots.txt enforced); see module docstring.",
