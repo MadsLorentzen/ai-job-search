@@ -96,6 +96,12 @@ per-file diff commands.
   "newly expired" by the sweep, then re-ranked by `apply` from its fresh deadline, so the same job appeared
   as both expired and shortlisted. Keys are now stripped before matching.
 
+- **Salary workbook conversion handles wrapped header cells** (#643, `tools/convert_salary_excel.py`,
+  `tests/test_salary_wrapped_header_cli.py`) - a header cell with a line break inside it
+  ("Median⏎salary", "Løn-⏎indeks") kept the break in the derived category name, so the column no
+  longer paired with its count column and `salary_lookup.py` printed the label across two lines.
+  Header whitespace runs now collapse to one space, so a wrapped header converts like its one-line spelling.
+
 ## [1.7.3] - 2026-10-19
 
 ### Added
@@ -168,12 +174,6 @@ per-file diff commands.
   not gate on it.
 
 ### Fixed
-
-- **Salary workbook conversion handles wrapped header cells** (#643, `tools/convert_salary_excel.py`,
-  `tests/test_salary_wrapped_header_cli.py`) - a header cell with a line break inside it
-  ("Median⏎salary", "Løn-⏎indeks") kept the break in the derived category name, so the column no
-  longer paired with its count column and `salary_lookup.py` printed the label across two lines.
-  Header whitespace runs now collapse to one space, so a wrapped header converts like its one-line spelling.
 
 - **`.gitignore` ignores `node_modules` without a trailing slash, and `security_guards.py` fails on any tracked `node_modules` path** (`.gitignore`, `tools/security_guards.py`, `tests/test_security_guards.py`) - the old `node_modules/` rule matched directories only, so a symlink named `node_modules` pointing at a contributor's absolute path was committed in a PR, broke `bun install` in CI with a dangling link and checked out as a text file on Windows. The rule loses its slash, and the guard now lists every tracked path with a `node_modules` component (skipped quietly outside a git checkout). Also qualifies the one bare `seen_jobs.json` mention left in `README.md` after #617.
 
