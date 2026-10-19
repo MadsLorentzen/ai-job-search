@@ -59,6 +59,7 @@ suite needs neither Poppler nor a compiled PDF.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
 import subprocess
@@ -183,12 +184,49 @@ class Page:
         return max((tops[i + 1] - tops[i], tops[i]) for i in range(len(tops) - 1))
 
 
+def find_pdftotext() -> str | None:
+    """Find a pdftotext binary that supports Poppler's -bbox flag.
+
+    Git for Windows prepends Git's mingw64\\bin to PATH under Git Bash (used by
+    Claude Code), shipping an xpdf pdftotext without -bbox. If a working Poppler
+    is installed further down PATH (e.g. MiKTeX, Chocolatey, Scoop), probe each
+    candidate with -h and pick the first that advertises -bbox (#655). Falls back
+    to the first candidate if none advertises -bbox, so the caller keeps today's
+    skip message on failure. Returns None if no pdftotext is found at all.
+    """
+    candidates: list[str] = []
+    seen: set[str] = set()
+    for entry in os.get_exec_path():
+        candidate = shutil.which("pdftotext", path=entry)
+        if candidate and candidate not in seen:
+            seen.add(candidate)
+            candidates.append(candidate)
+    if not candidates:
+        return None
+    for candidate in candidates:
+        try:
+            res = subprocess.run(
+                [candidate, "-h"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            output = (res.stdout or "") + (res.stderr or "")
+            if "-bbox" in output:
+                return candidate
+        except (subprocess.SubprocessError, OSError):
+            continue
+    return candidates[0]
+
+
 def parse_pdf(path: Path) -> list[Page]:
-    if not shutil.which("pdftotext"):
+    binary = find_pdftotext()
+    if not binary:
         raise RuntimeError("pdftotext (Poppler) not found; install poppler-utils")
     try:
         out = subprocess.run(
-            ["pdftotext", "-bbox", "-enc", "UTF-8", str(path), "-"],
+            [binary, "-bbox", "-enc", "UTF-8", str(path), "-"],
             capture_output=True,
             text=True,
             # pdftotext emits UTF-8; without this Windows decodes it as cp1252 and
