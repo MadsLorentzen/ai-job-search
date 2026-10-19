@@ -13,6 +13,8 @@ per-file diff commands.
 
 ## [Unreleased]
 
+## [1.7.3] - 2026-10-19
+
 ### Added
 
 - **One cross-platform command installs every portal CLI: `python3 tools/install_portal_clis.py`**
@@ -65,6 +67,22 @@ per-file diff commands.
   an agent following it cannot write a 403 off as closed. No migration: no existing entry
   carries the new status. Reported by @ai-tvang, who also proposed the time floor and the
   give-up listing.
+
+- **`freehire-search --no-description` calls the lighter web search, and `search` stops sending two
+  parameters the API ignores** (#631, `.agents/skills/freehire-search/cli/src/commands/search.ts`,
+  `SKILL.md`, `cli/README.md`, `url-reference.md`) - `semantic_ratio` and `include_description`
+  came back in `meta.ignored_params`, so `--no-description` still made the API read every hit's
+  full description and then dropped it client-side. It now calls `/api/v1/jobs/search` (same
+  query, facets, ranking and pagination, preview-only hits), measured at roughly half the bytes
+  per page and inside freehire's wider public rate budget. Default search is unchanged.
+
+- **`freehire-search` names this project in its User-Agent** (#633,
+  `.agents/skills/freehire-search/cli/src/helpers.ts`, `url-reference.md`) - the old
+  `freehire-search-skill/1.0 (+https://freehire.me)` pointed at the API itself, so freehire's
+  operators could not tell whose client it was. It now sends
+  `MadsLorentzen/ai-job-search/1.0 (+https://github.com/MadsLorentzen/ai-job-search; freehire-search)`,
+  the `owner/project` form freehire's API docs ask for. Nothing behaves differently; the API does
+  not gate on it.
 
 ### Fixed
 
@@ -501,7 +519,7 @@ per-file diff commands.
 ### Security
 
 - **Skill frontmatter no longer grants bare `Bash` or a portal-CLI glob**
-  (`.claude/skills/job-application-assistant/SKILL.md` `framework_version: 1.3.4 -> 1.3.5`,
+  (#642, `.claude/skills/job-application-assistant/SKILL.md` `framework_version: 1.3.4 -> 1.3.5`,
   `.claude/skills/job-scraper/SKILL.md`, `.claude/commands/add-portal.md` Step 5) - a skill's
   `allowed-tools` pre-approves the listed tools for the turn that invokes it, with no prompt and
   regardless of workspace trust. The job-application skill granted `Bash`, `Edit`, `Write`
@@ -517,7 +535,7 @@ per-file diff commands.
   portal is pre-approved only once its own entry is there and in `ALLOWED_PERMISSIONS`.
 
 - **`.claude/settings.json` ships `ask` and `deny` rules, and the guard requires them**
-  (`tools/security_guards.py` `REQUIRED_ASK_RULES` / `REQUIRED_DENY_RULES`,
+  (#642, `tools/security_guards.py` `REQUIRED_ASK_RULES` / `REQUIRED_DENY_RULES`,
   `tests/test_security_guards.py`) - deny rules block in every permission mode including
   `bypassPermissions` and override any allow rule or skill grant; ask rules force a prompt even
   when a skill's `allowed-tools` would pre-approve the call. Denied: `curl`/`wget` with data,
@@ -527,7 +545,7 @@ per-file diff commands.
   `git push` - the files whose content is the permission surface cannot be widened silently from
   inside a session. Prefix rules are tripwires, not walls; `SECURITY.md` says so.
 
-- **The security guard now reads skill and command frontmatter** (`tools/security_guards.py`
+- **The security guard now reads skill and command frontmatter** (#642, `tools/security_guards.py`
   check 4, `ALLOWED_SKILL_TOOLS`) - it allowlisted `settings.json` permissions and hooks but never
   looked at `allowed-tools`, so the narrow settings allowlist sat next to a bare `Bash` grant it
   could not see. Every `.claude/skills/*/SKILL.md`, `.agents/skills/*/SKILL.md` and
@@ -537,7 +555,7 @@ per-file diff commands.
   frontmatter this check reports two failures.
 
 - **The browser-header 403 retry is `python3 tools/fetch_page.py`, not a documented `curl`**
-  (`tools/fetch_page.py`, `tests/test_fetch_page.py`,
+  (#642, `tools/fetch_page.py`, `tests/test_fetch_page.py`,
   `.claude/skills/job-application-assistant/09-web-research.md` `framework_version: 1.1.3 -> 1.1.4`,
   `.claude/commands/apply.md` Step 0 and Step 3, `.claude/commands/rank.md` Step 2,
   `.claude/skills/job-scraper/SKILL.md` Step 2) - the retry was a curl command plus an inline
@@ -550,7 +568,7 @@ per-file diff commands.
   permission layer does not do (no sandbox on native Windows, WebFetch unrestricted by domain,
   subagents unrestricted - the latter is the next change).
 
-- **Every posting passes a deterministic integrity gate before it is used** (`tools/posting_guard.py`,
+- **Every posting passes a deterministic integrity gate before it is used** (#654, `tools/posting_guard.py`,
   `tests/test_posting_guard.py`, `tests/test_posting_gate_wiring.py`, `.claude/commands/apply.md`
   Steps 0, 1 and 6b, `.claude/commands/rank.md` Steps 2, 4 and 5, `.claude/commands/interview.md`
   Step 1, `tools/rank_state.py`, `.claude/skills/job-application-assistant/09-web-research.md`
@@ -575,7 +593,7 @@ per-file diff commands.
   conversational Step 1 (`SKILL.md` `framework_version: 1.3.5 -> 1.3.6`), `/outcome` Step 3.2's
   fresh fetch and `/interview`'s fetch fallback gate too, so every entry point names the gate.
 
-- **The agents that read postings can no longer edit or write** (`.claude/agents/posting-fetcher.md`,
+- **The agents that read postings can no longer edit or write** (#654, `.claude/agents/posting-fetcher.md`,
   `posting-scorer.md`, `application-reviewer.md`, `tools/security_guards.py` check 5,
   `tests/test_security_guards.py`) - the `/apply` reviewer and the `/rank` scorers ran as
   `general-purpose`, with every tool, while holding untrusted posting text. Three shipped definitions
@@ -589,10 +607,12 @@ per-file diff commands.
 
 ### Removed
 
-- **`.claude/agents/gemini-research-expert.md`** - a personal helper that shipped in the initial
-  release with no `tools:` list (every tool) and whose only function is piping arbitrary text to a
-  third-party model via `gemini -p`. Nothing in the tree referenced it, and guard check 5 would
-  reject it. Restore it in your own fork from git history if you used it.
+- **`.claude/agents/gemini-research-expert.md`** (#654; found independently by @MaverickHQ in #659) -
+  a personal helper that shipped in the initial release with no `tools:` list (every tool) and whose
+  only function is piping arbitrary text to a third-party model via `gemini -p`. Nothing in the tree
+  referenced it, yet Claude Code registered it in every session opened in a clone, where its
+  open-ended description made it a candidate for automatic delegation during company research.
+  Guard check 5 would reject it. Restore it in your own fork from git history if you used it.
 
 ## [1.7.2] - 2026-09-29
 
@@ -2209,7 +2229,8 @@ At this baseline the framework provides:
 - **Cross-runtime support** - a root `AGENTS.md` pointer so Codex and Antigravity can
   discover the portable portal skills, with Claude Code as the reference runtime.
 
-[Unreleased]: https://github.com/MadsLorentzen/ai-job-search/compare/v1.7.2...HEAD
+[Unreleased]: https://github.com/MadsLorentzen/ai-job-search/compare/v1.7.3...HEAD
+[1.7.3]: https://github.com/MadsLorentzen/ai-job-search/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/MadsLorentzen/ai-job-search/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/MadsLorentzen/ai-job-search/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/MadsLorentzen/ai-job-search/compare/v1.6.0...v1.7.0
