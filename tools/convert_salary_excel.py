@@ -68,6 +68,8 @@ def _finite_float(value):
 
 def parse_numeric_cell(value):
     """Parse numeric Excel values, including localized string cells."""
+    if isinstance(value, bool):
+        raise ValueError("not numeric")
     if isinstance(value, (int, float)):
         return _finite_float(value)
     if not isinstance(value, str):
