@@ -156,6 +156,15 @@ per-file diff commands.
   `administrativeRegion` filter (2,486 jobs for `Region Midtjylland`), and the docs map each `locations`
   category to its flag and give `--region` examples that exist.
 
+- **`upstream_triage.py` skips a new upstream file inside a directory the fork removed**
+  (#656, follow-up to #585, `tools/upstream_triage.py`, `tests/test_upstream_triage.py`) - #585 counted
+  every path absent from both HEAD and the merge base as new upstream work, so a file added
+  inside a removed tree landed under "Worth reviewing": on a fork that dropped
+  `.agents/skills/jobnet-search/`, #586 (which adds a test file there and edits a source file
+  that is also gone) was listed with a ready-to-run cherry-pick that can only conflict. A new
+  path now counts as removed when its nearest ancestor directory exists at the base but not
+  in HEAD; a new file or subdirectory under a directory the fork kept is still worth reviewing.
+
 ## [1.7.3] - 2026-10-19
 
 ### Added
@@ -228,15 +237,6 @@ per-file diff commands.
   not gate on it.
 
 ### Fixed
-
-- **`upstream_triage.py` skips a new upstream file inside a directory the fork removed**
-  (follow-up to #585, `tools/upstream_triage.py`, `tests/test_upstream_triage.py`) - #585 counted
-  every path absent from both HEAD and the merge base as new upstream work, so a file added
-  inside a removed tree landed under "Worth reviewing": on a fork that dropped
-  `.agents/skills/jobnet-search/`, #586 (which adds a test file there and edits a source file
-  that is also gone) was listed with a ready-to-run cherry-pick that can only conflict. A new
-  path now counts as removed when its nearest ancestor directory exists at the base but not
-  in HEAD; a new file or subdirectory under a directory the fork kept is still worth reviewing.
 
 - **`.gitignore` ignores `node_modules` without a trailing slash, and `security_guards.py` fails on any tracked `node_modules` path** (`.gitignore`, `tools/security_guards.py`, `tests/test_security_guards.py`) - the old `node_modules/` rule matched directories only, so a symlink named `node_modules` pointing at a contributor's absolute path was committed in a PR, broke `bun install` in CI with a dangling link and checked out as a text file on Windows. The rule loses its slash, and the guard now lists every tracked path with a `node_modules` component (skipped quietly outside a git checkout). Also qualifies the one bare `seen_jobs.json` mention left in `README.md` after #617.
 
