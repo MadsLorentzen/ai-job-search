@@ -205,6 +205,14 @@ per-file diff commands.
 
 - **`freehire-search` rejects an unknown `--remote` mode instead of searching a facet that matches nothing** (#661, `.agents/skills/freehire-search/cli/src/cli.ts`, `cli/tests/remote-mode.test.ts`) - `--remote foo` was forwarded as `work_mode=foo` and the CLI exited 0 with an empty result set, so a typo looked like "no jobs". The documented `remote` / `hybrid` / `onsite` values, mixed case, and `on-site` now map to the facet; a bare `--remote` still means `remote`. Comma-separated modes are validated per item and re-joined (`remote,hybrid`, `remote,on-site` → `remote,onsite`); an unknown item such as `foo` in `remote,foo` exits 1 with `BAD_ARG` and does not call the API.
 
+- **`check_upstream_updates.py` no longer reports "up to date" after a failed fetch** (#681,
+  `tools/check_upstream_updates.py`, `tests/test_check_upstream_updates.py`) - when fetching upstream
+  failed but a cached `upstream/master` existed, the checker warned about the fetch, compared against
+  the stale cache and could still end with `[OK] All framework files are up to date`, an all-clear it
+  could not establish. The cached comparison still runs, but a failed fetch now ends with a
+  `[WARNING]` that the result used cached data, and never with `[OK]`. A successful fetch and
+  `--no-fetch` are unchanged.
+
 ### Security
 
 - **CI no longer leaves the job token in `.git/config` or expands a PR-controlled name into a
