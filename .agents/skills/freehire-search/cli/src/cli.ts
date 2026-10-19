@@ -89,8 +89,8 @@ SEARCH FLAGS
                           full description is rendered (json output only).
 
 FACET FILTERS (values from freehire.me's controlled vocabularies; comma = OR)
-  --region <codes>        Macro-region: global, eu, north_america, latam, apac, mena,
-                          africa, cis  e.g. --region eu,north_america
+  --region <codes>        Macro-region: global, eu, uk, north_america, latam, apac,
+                          mena, africa, cis  e.g. --region eu,uk
                           (a country such as us goes in --country, not here)
   --country <codes>       ISO-3166 alpha-2, e.g. --country DE,GB
   --city <names>          City name(s), e.g. --city Berlin

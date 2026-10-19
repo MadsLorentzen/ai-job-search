@@ -75,7 +75,7 @@ See `../SKILL.md` for the full flag reference and the hosted-dependency note.
 | `--jobage` | | Posted within N days (`posted_within_days`). |
 | `--page` | | 1-indexed page. Default 1. |
 | `--limit` | `-n` | Results per page (API limit). Default 25. |
-| `--region` | | Macro-region(s), comma = OR (e.g. `eu,us`). |
+| `--region` | | Macro-region(s), comma = OR: `global`, `eu`, `uk`, `north_america`, `latam`, `apac`, `mena`, `africa`, `cis` (e.g. `eu,uk`). A country such as `us` goes in `--country`. |
 | `--country` | | ISO-3166 alpha-2 code(s). |
 | `--city` | | City name(s). |
 | `--seniority` | | Seniority level(s). |
