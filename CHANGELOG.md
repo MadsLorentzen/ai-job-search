@@ -38,6 +38,13 @@ per-file diff commands.
   that guard exists to prevent. `detail` now answers it with `UNKNOWN_FLAG` before any request;
   `search`, where the flag is documented and used, is unchanged.
 
+- **`freehire-search` honours `Retry-After` on 429 and 503 within a 30-second budget** (#632,
+  `.agents/skills/freehire-search/cli/src/helpers.ts`) - the retry loop backed off on its own
+  schedule whatever the server asked for. It now waits for the longer of its backoff and
+  `Retry-After`, under a 30-second total sleep budget per request, and a wait that would exceed the
+  budget fails the request at once with a message naming the requested wait. Giving up on a
+  persistent 5xx still takes about 25 s over 7 calls, as before.
+
 ## [1.7.3] - 2026-10-19
 
 ### Added
