@@ -172,6 +172,13 @@ per-file diff commands.
   requires every shipped heading to appear in order, so an added section passes and a renamed,
   dropped or reordered one still fails; upstream keeps the exact comparison.
 
+- **`verify_layout.py` uses a `pdftotext` that supports `-bbox` wherever it sits on PATH** (#668,
+  fixes #655, `tools/verify_layout.py`, `tests/test_verify_layout.py`, `.claude/commands/apply.md`) -
+  under Git Bash, which Claude Code uses on Windows, Git's xpdf `pdftotext` 4.00 (no `-bbox`) sits
+  ahead of MiKTeX's Poppler, so the layout check skipped on the standard Windows setup even with
+  Poppler installed. It now probes each distinct `pdftotext` on PATH with `-h`, runs the first that
+  lists `-bbox` by its full path, and keeps the `skipped:` exit 2 for when none does.
+
 ## [1.7.3] - 2026-10-19
 
 ### Added
