@@ -108,6 +108,13 @@ per-file diff commands.
   in `salary_data.json` and `--list-all`. A fallback-detected header with no salary column beside it
   now skips the sheet with a warning; strictly detected headers are unchanged.
 
+- **`convert_salary_excel.py` rejects a non-finite `--baseline`** (#665,
+  `tools/convert_salary_excel.py`, `tests/test_salary_baseline_cli.py`) - `nan`, `inf`, `-inf` and
+  an overflow such as `1e309` were accepted with exit 0 and written as `index_baseline`,
+  overwriting a good `salary_data.json` with one that `salary_lookup.py --validate` rejects; every
+  lookup then failed and `/apply` quietly dropped the benchmark. The converter now exits 2 before
+  reading the workbook or opening the output, and `0` or a finite custom baseline still converts.
+
 ## [1.7.3] - 2026-10-19
 
 ### Added
