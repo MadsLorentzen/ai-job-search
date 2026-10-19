@@ -165,6 +165,13 @@ per-file diff commands.
   path now counts as removed when its nearest ancestor directory exists at the base but not
   in HEAD; a new file or subdirectory under a directory the fork kept is still worth reviewing.
 
+- **The `/reset` skeleton test lets a fork's profile carry its own `##` sections** (#676,
+  `tests/test_reset_command.py`) - it compared `/reset`'s `##` headings with
+  `01-candidate-profile.md` and `02-behavioral-profile.md` exactly, so a fork that added a section
+  to its own profile failed its CI and local runs although `/reset` worked. Off upstream it now
+  requires every shipped heading to appear in order, so an added section passes and a renamed,
+  dropped or reordered one still fails; upstream keeps the exact comparison.
+
 ## [1.7.3] - 2026-10-19
 
 ### Added
