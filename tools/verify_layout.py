@@ -59,6 +59,7 @@ suite needs neither Poppler nor a compiled PDF.
 from __future__ import annotations
 
 import argparse
+import functools
 import os
 import re
 import shutil
@@ -184,6 +185,7 @@ class Page:
         return max((tops[i + 1] - tops[i], tops[i]) for i in range(len(tops) - 1))
 
 
+@functools.cache
 def find_pdftotext() -> str | None:
     """Find a pdftotext binary that supports Poppler's -bbox flag.
 
@@ -193,6 +195,9 @@ def find_pdftotext() -> str | None:
     candidate with -h and pick the first that advertises -bbox (#655). Falls back
     to the first candidate if none advertises -bbox, so the caller keeps today's
     skip message on failure. Returns None if no pdftotext is found at all.
+
+    Cached at module level to avoid re-probing candidates with subprocesses on
+    every parse_pdf call within a process.
     """
     candidates: list[str] = []
     seen: set[str] = set()
