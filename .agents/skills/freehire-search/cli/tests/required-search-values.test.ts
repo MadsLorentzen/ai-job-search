@@ -48,7 +48,9 @@ describe("named search flags require their documented values", () => {
       ], { FREEHIRE_API_URL: server.url.toString() });
       expect(result.exitCode).toBe(0);
       expect(result.stderr).toBe("");
-      expect(requests).toHaveLength(1);
+      // An empty page may be followed by the facets probe that explains a region
+      // bucket holding nothing; nothing else rides along with the search.
+      expect(requests.filter((u) => u.pathname !== "/api/v1/jobs/facets")).toHaveLength(1);
       const params = requests[0].searchParams;
       expect(params.get("q")).toBe("backend engineer");
       expect(params.getAll("countries")).toEqual(["DE", "GB"]);

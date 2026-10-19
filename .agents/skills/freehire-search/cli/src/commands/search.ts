@@ -110,6 +110,47 @@ function renderPlain(rows: JobResult[]): string {
   return rows.map(block).join("\n\n")
 }
 
+// The live facet vocabulary, used only to explain an empty result set: `regions` is
+// an open-ended, source-side tagging bucket rather than a geography, so a value can
+// be accepted by the API and still hold too few postings to ever match a query.
+const FACETS_PATH = "/api/v1/jobs/facets"
+
+// A region bucket holding fewer postings than this matches what any keyword plus a
+// short freshness window leaves behind, so an empty result set on such a bucket
+// reads as a wrong parameter rather than "no postings".
+const NEAR_ZERO = 100
+
+/** The counts `/api/v1/jobs/facets` reports per facet value; the CLI reads one facet. */
+interface FacetCounts {
+  facets?: { regions?: Record<string, number> }
+}
+
+/**
+ * Name the `--region` values that hold (near) nothing when a search came back
+ * empty, so the caller is not left reading "no postings" for a wrong parameter.
+ * One line on stderr; stdout stays the clean payload. Any surprise from the
+ * facets endpoint — a failure, an unrecognised shape — stays silent: a note is a
+ * courtesy, never a reason to fail or slow a search that already answered.
+ */
+async function warnOnThinRegions(opts: SearchOpts, rows: JobResult[]): Promise<void> {
+  if (rows.length > 0 || opts.regions.length === 0) return
+  let counts: Record<string, number> | undefined
+  try {
+    counts = (await apiGet<FacetCounts>(FACETS_PATH))?.data?.facets?.regions
+  } catch {
+    return
+  }
+  if (!counts || typeof counts !== "object") return
+  const thin = opts.regions.filter((value) => {
+    const count = counts[value]
+    return typeof count !== "number" || count < NEAR_ZERO
+  })
+  if (thin.length === 0) return
+  process.stderr.write(
+    `note: --region ${thin.join(",")} matched no postings: freehire's region values are a source-side bucket, not a geography (US postings sit in north_america). Scope a country with --country, or read the live values at ${FACETS_PATH}.\n`,
+  )
+}
+
 export async function runSearch(opts: SearchOpts): Promise<number> {
   try {
     const path = opts.includeDescription === false ? LEAN_SEARCH_PATH : SEARCH_PATH
@@ -146,6 +187,7 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
         ) + "\n",
       )
     }
+    await warnOnThinRegions(opts, rows)
     return 0
   } catch (e) {
     writeError(e instanceof Error ? e.message : String(e), "SEARCH_FAILED")

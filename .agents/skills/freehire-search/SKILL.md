@@ -101,7 +101,9 @@ field and drops the bodies entirely (fetch a shortlisted job's body with
 `detail`, or re-run the search without the flag).
 
 Facet filters (values come from freehire's controlled vocabularies; comma-separate for OR within a facet):
-- `--region <codes>` — macro-region, e.g. `global`, `eu`, `us`, `apac`, `latam`, `cis`. `--region eu,us`. Use `none` to match jobs whose region could **not** be resolved (see "Partial data" below).
+- `--region <codes>` — a coarse, **source-side bucket**, not a geography: `global`, `eu`, `north_america`, `apac`, `latam`, `cis`, … `--region eu,north_america`.
+  `north_america` is continent-wide, and US postings sit there rather than under a `us` value; scope a country with `--country US` instead. A bucket holding almost no postings yields an empty set, and the CLI says so on stderr.
+  Use `none` to match jobs whose region could **not** be resolved (see "Partial data" below).
 - `--country <codes>` — ISO-3166 alpha-2, e.g. `--country DE,GB`
 - `--city <names>` — city name(s), e.g. `--city Berlin`
 - `--seniority <levels>` — `junior`, `middle`, `senior`, `staff`, `principal`, `lead`, …
