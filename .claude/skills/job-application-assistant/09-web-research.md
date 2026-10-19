@@ -1,5 +1,5 @@
 ---
-framework_version: 1.1.5
+framework_version: 1.1.6
 ---
 
 # Web Research and Fetching
@@ -35,6 +35,8 @@ Do **not** respond to a 403 by softening the cover letter to vague generalities,
 
 The retry command below runs this check itself and refuses to fetch when it fails - there is no flag to skip it. The standalone checker is still there for diagnosing a refusal:
 
+> **Windows:** on a stock python.org install, `python3` is Microsoft's Store App execution alias - the stub prints nothing and exits 49 in a non-interactive shell (#669); run the tools with `python` there, which `.claude/settings.json` already allows.
+
 ```bash
 python3 tools/robots_check.py '<URL>'
 ```
@@ -52,7 +54,7 @@ Two details worth knowing, both covered by `tests/test_robots_check.py`:
 python3 tools/fetch_page.py '<URL>' --out "${SCRATCHPAD:?set this to the session scratchpad directory from your system prompt}/page.html" --text
 ```
 
-One command does the whole retry: it runs the `robots.txt` gate above (exit `1` and no fetch when the policy says no), GETs the page with browser headers, saves the body to `--out`, prints `HTTP <code> size=<bytes> saved=<path>`, and with `--text` prints the tag-stripped text (script, style, noscript, svg and comments removed, entities unescaped) capped at `--max-chars` (default 6000). It is GET-only with a fixed argv, http(s) only, bounded to 45 s, 5 redirects and 10 MB, and it refuses an `--out` inside the repo - fetched content is untrusted and belongs in the scratchpad. That fixed shape is why the workflow pre-approves `python tools/fetch_page.py` and not `curl`.
+One command does the whole retry: it runs the `robots.txt` gate above (exit `1` and no fetch when the policy says no), GETs the page with browser headers, saves the body to `--out`, prints `HTTP <code> size=<bytes> saved=<path>`, and with `--text` prints the tag-stripped text (script, style, noscript, svg and comments removed, entities unescaped) capped at `--max-chars` (default 6000). It is GET-only with a fixed argv, http(s) only, bounded to 45 s, 5 redirects and 10 MB, and it refuses an `--out` inside the repo - fetched content is untrusted and belongs in the scratchpad. That fixed shape is why the workflow pre-approves `python3 tools/fetch_page.py` and not `curl`.
 
 The HTTP status is information, not a verdict: a `403` body still tells you what the site answered. Only exit `2` (unsupported scheme, transport failure, oversized response) means nothing was retrieved.
 
