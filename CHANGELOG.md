@@ -45,6 +45,15 @@ per-file diff commands.
   budget fails the request at once with a message naming the requested wait. Giving up on a
   persistent 5xx still takes about 25 s over 7 calls, as before.
 
+- **`freehire-search` docs list the real `--region` buckets and send a country to `--country`**
+  (#630, `.agents/skills/freehire-search/SKILL.md`, `url-reference.md`, `cli/README.md`, `--help`) -
+  the docs and `--help` offered `us` as a region, but in freehire's vocabulary `us` is a country code
+  and the macro-region that holds US postings is `north_america`. `--region us` returned 168
+  software-engineer postings where `--country us` returned about 100,000, with nothing in the output
+  to say why (reported in #616). The docs now list the nine buckets (`global`, `eu`, `uk`,
+  `north_america`, `latam`, `apac`, `mena`, `africa`, `cis`) plus `none`, note that `eu` excludes
+  the UK, and point single-country searches at `--country`.
+
 ## [1.7.3] - 2026-10-19
 
 ### Added
