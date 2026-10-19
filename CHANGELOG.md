@@ -13,6 +13,15 @@ per-file diff commands.
 
 ## [Unreleased]
 
+### Changed
+
+- **`freehire-search` documents the `OR` and `title:` query operators** (#674,
+  `.agents/skills/freehire-search/SKILL.md`, `url-reference.md`, `cli/README.md`, `--help`) -
+  freehire's search parses an uppercase `OR` between up to five alternatives and a leading `title:`
+  per alternative, but nothing told the agent, so "Go or Rust" became two searches merged by hand
+  or `-q "golang rust"`, which returns fewer jobs than `golang` alone. Measured live: `golang`
+  3,550, `golang OR rust` 6,805. The CLI already passes `-q` through unchanged.
+
 ### Fixed
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
