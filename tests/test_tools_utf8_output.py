@@ -91,6 +91,19 @@ class ToolsWriteUtf8(unittest.TestCase):
         self.assertNotIn(b"UnicodeEncodeError", proc.stderr)
         self.assertIn(CYRILLIC, proc.stdout.decode("utf-8"))
 
+    def test_cv_import_parses_a_non_latin_cv(self):
+        cv = self.tmp / "cv.txt"
+        cv.write_text(
+            f"{CYRILLIC} {CJK}\nivan@example.com\n+7 900 123 4567\n"
+            f"linkedin.com/in/ivanov\n\nExperience\nEngineer - {CYRILLIC} (2022 - Present)\n"
+            f"- Built {CJK} pipelines serving 40 managers\n- Automated weekly reports with Python\n\n"
+            "Education\nB.Sc in Statistics (2018-2022) - Moscow State University\n\n"
+            "Technical Skills\n- Python (pandas, scikit-learn)\n- SQL, Excel\n",
+            encoding="utf-8",
+        )
+        proc = run_legacy_stdout([TOOLS / "cv_import.py", "--in", cv])
+        self.assert_clean_utf8(proc, 0, CYRILLIC, CJK)
+
     def test_salary_lookup_prints_a_company_outside_cp1252(self):
         shutil.copy(REPO / "salary_lookup.py", self.tmp / "salary_lookup.py")
         (self.tmp / "salary_data.json").write_text(json.dumps({

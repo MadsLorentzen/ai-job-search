@@ -87,6 +87,10 @@ ALLOWED_PERMISSIONS = {
     # Reads a file or stdin, writes only to an explicit --out, never fetches.
     "Bash(python tools/posting_guard.py:*)",
     "Bash(python3 tools/posting_guard.py:*)",
+    # The Path B CV paste parser (/setup Path B). Same shape as posting_guard:
+    # reads a file or stdin, writes only to an explicit --out, never fetches.
+    "Bash(python tools/cv_import.py:*)",
+    "Bash(python3 tools/cv_import.py:*)",
 }
 
 # Rules that must stay in .claude/settings.json permissions.ask. An ask rule
