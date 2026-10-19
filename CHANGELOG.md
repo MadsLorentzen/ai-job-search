@@ -187,6 +187,12 @@ per-file diff commands.
   under `--rebuild`, and a first run with only such entries stops before creating the database. An expired posting with a
   tracker row still syncs as an ordinary row.
 
+- **`/rank` Step 2 no longer forbids the web search its own escalation requires** (#638) (`.claude/commands/rank.md`) - the
+  escalation bullet ends with a search for the employer's own careers site (step 4 of `09-web-research.md` is `WebSearch`),
+  and the next bullet said "no web searches", in the same prompt every scoring agent receives. The scope bullet now allows a
+  web search only for that last escalation step, finding the employer's own copy of the posting; company research and salary
+  lookups stay out of `/rank`.
+
 ## [1.7.3] - 2026-10-19
 
 ### Added
