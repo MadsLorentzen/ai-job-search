@@ -16,11 +16,14 @@ export function writeError(error: string, code: string): void {
   process.stderr.write(JSON.stringify({ error, code }) + "\n")
 }
 
-// Names this project, the shape freehire's API docs ask for (owner/project/version
-// plus a contact URL), so the API's operators can reach the maintainer before a
-// limit or a field changes. The old value linked to freehire.me itself, which
-// identified the API, not the caller.
-const UA = "MadsLorentzen/ai-job-search/1.0 (+https://github.com/MadsLorentzen/ai-job-search; freehire-search)"
+// Names this project in the owner/project/version shape freehire's API docs ask
+// for, so the API's operators can find the maintainer before a limit or a field
+// changes. The contact URL the docs make optional is left out on purpose: /apply
+// learns which hosts a portal serves by reading the host literals in its
+// cli/src, so a github.com URL here made every github.com link classify as an
+// installed job board instead of an unverified host. The owner/project name
+// already identifies the repo on GitHub.
+const UA = "MadsLorentzen/ai-job-search/1.0 (freehire-search)"
 
 /** The shared API response envelope: {data, meta, error}. */
 export interface Envelope<T> {

@@ -292,6 +292,11 @@ class InstalledPortalsAreVerifiedTests(unittest.TestCase):
             "https://myworkdayjobs.com.phishing.net/login",
             "https://lever.co.attacker.org/apply",
             "https://unknown-board.example.com/posting/123",
+            # Anyone can publish a "job posting" in a GitHub repo or gist. A
+            # contact URL in a portal CLI's User-Agent string once made
+            # github.com an installed-portal host (#633), so pin it here.
+            "https://github.com/acme-careers/jobs/blob/main/README.md",
+            "https://gist.github.com/someone/0123456789abcdef",
         ]
         for url in suspicious:
             tier, host = classify_posting_host(url)
