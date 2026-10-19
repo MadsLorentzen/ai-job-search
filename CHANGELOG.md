@@ -203,6 +203,8 @@ per-file diff commands.
   web search only for that last escalation step, finding the employer's own copy of the posting; company research and salary
   lookups stay out of `/rank`.
 
+- **`freehire-search` rejects an unknown `--remote` mode instead of searching a facet that matches nothing** (#661, `.agents/skills/freehire-search/cli/src/cli.ts`, `cli/tests/remote-mode.test.ts`) - `--remote foo` was forwarded as `work_mode=foo` and the CLI exited 0 with an empty result set, so a typo looked like "no jobs". The documented `remote` / `hybrid` / `onsite` values, mixed case, and `on-site` now map to the facet; a bare `--remote` still means `remote`. Comma-separated modes are validated per item and re-joined (`remote,hybrid`, `remote,on-site` → `remote,onsite`); an unknown item such as `foo` in `remote,foo` exits 1 with `BAD_ARG` and does not call the API.
+
 ### Security
 
 - **CI no longer leaves the job token in `.git/config` or expands a PR-controlled name into a
@@ -290,8 +292,6 @@ per-file diff commands.
   not gate on it.
 
 ### Fixed
-
-- **`freehire-search` rejects an unknown `--remote` mode instead of searching a facet that matches nothing** (`.agents/skills/freehire-search/cli/src/cli.ts`, `cli/tests/remote-mode.test.ts`) - `--remote foo` was forwarded as `work_mode=foo` and the CLI exited 0 with an empty result set, so a typo looked like "no jobs". The documented `remote` / `hybrid` / `onsite` values, mixed case, and `on-site` now map to the facet; a bare `--remote` still means `remote`. Comma-separated modes are validated per item and re-joined (`remote,hybrid`, `remote,on-site` → `remote,onsite`); an unknown item such as `foo` in `remote,foo` exits 1 with `BAD_ARG` and does not call the API.
 
 - **`.gitignore` ignores `node_modules` without a trailing slash, and `security_guards.py` fails on any tracked `node_modules` path** (`.gitignore`, `tools/security_guards.py`, `tests/test_security_guards.py`) - the old `node_modules/` rule matched directories only, so a symlink named `node_modules` pointing at a contributor's absolute path was committed in a PR, broke `bun install` in CI with a dangling link and checked out as a text file on Windows. The rule loses its slash, and the guard now lists every tracked path with a `node_modules` component (skipped quietly outside a git checkout). Also qualifies the one bare `seen_jobs.json` mention left in `README.md` after #617.
 

@@ -125,8 +125,8 @@ type WorkMode = (typeof WORK_MODES)[number]
  * Map --remote to the work_mode facet.
  * A bare --remote (boolean true) is the documented "remote" shortcut.
  * Comma-separated values are OR: each item is normalised (`on-site` ->
- * `onsite`) and re-joined. An unknown item is rejected — the API treats it
- * as a filter that matches nothing — and `bad` names that item.
+ * `onsite`) and re-joined. An unknown item is rejected (the API treats it
+ * as a filter that matches nothing) and `bad` names that item.
  */
 function parseWorkMode(raw: FlagValue): { value?: string; bad?: string } {
   if (raw === undefined) return {}
