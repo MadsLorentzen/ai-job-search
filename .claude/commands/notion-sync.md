@@ -39,10 +39,11 @@ The command is **silently optional**: when the destination is not reachable, the
 Validate the cheap, local precondition before creating anything external. A run with nothing to sync must exit with **zero side effects** - no database created, no state file written.
 
 1. Read `job_scraper/seen_jobs.json` and `job_search_tracker.csv` (either may be missing).
-2. Select `job_scraper/seen_jobs.json` entries with status `ranked` whose `rank_score` meets the threshold from Step 0. `--all` lifts the threshold entirely. Entries with status `expired` join the sync set regardless of score — a job that was synced while `ranked` and later retired by `/rank`'s sweep must remain reachable so Step 4 can set its Status to `expired` (rule 4.4).
+2. Select `job_scraper/seen_jobs.json` entries with status `ranked` whose `rank_score` meets the threshold from Step 0. `--all` lifts the threshold entirely.
+2a. Entries with status `expired` join the sync set regardless of score - a job that was synced while `ranked` and later retired by `/rank`'s sweep must remain reachable so Step 4 can set its Status to `expired` (rule 4.4).
 3. Every tracker row joins the sync set (an applied-to job always syncs, ranked or not), matched to `job_scraper/seen_jobs.json` entries case-insensitively on company + title where possible (the tracker's `role` column against the entry's `title` field — entries carry `title`, not `role`). Tracker rows with no `job_scraper/seen_jobs.json` entry sync too - build their Key as `<company>_<role>` lowercased with underscores.
 4. **Status precedence:** the tracker wins. A job that is `ranked` in `job_scraper/seen_jobs.json` but `interview` in the tracker syncs as `interview`. Jobs only in `job_scraper/seen_jobs.json` keep their stored status. **Deadline precedence: the tracker wins too** - the tracker's `deadline` (written by `/apply` from the posting the application was actually built on) overrides the `job_scraper/seen_jobs.json` value; jobs only in `job_scraper/seen_jobs.json` keep the scraper's stored deadline. Omit the property when neither states one, and **never reconcile the two by picking the earlier or later date** - both were read from the posting at different times, and the safe-looking `min()` substitutes a date the user never applied against.
-5. **If the sync set is empty** (no ranked entries meet the threshold and there are no tracker rows), say "Nothing to sync - run `/scrape` and `/rank` first" (or, when jobs exist but all score below the threshold, say so and suggest `--min-score`/`--all`) and **stop**.
+5. **If the sync set is empty** (no ranked entries meet the threshold and there are no tracker rows), say "Nothing to sync - run `/scrape` and `/rank` first" (or, when jobs exist but all score below the threshold, say so and suggest `--min-score`/`--all`) and **stop**. **Exception: if the sync set contains only `expired` entries, stop too** - there is nothing to create (Step 4.2 skips expired entries with no match) and nothing to update (no existing pages). Do not create the database for an expired-only first run.
 6. State the counts before touching the destination: how many rows will be created or checked, and the threshold in effect.
 
 ---
@@ -86,7 +87,7 @@ Validate the cheap, local precondition before creating anything external. A run 
 For each job in the sync set:
 
 1. Query the database for a page whose `Key` equals the job's key.
-2. **No match** → create the page with all properties from the Step 3 table, then write its body (Step 5).
+2. **No match** → create the page with all properties from the Step 3 table, then write its body (Step 5). **Exception: if the job's status is `expired`, skip it entirely** - an expired entry with no existing page was never synced while ranked, so there is nothing to update and creating a page for a dead job would pollute the database. This applies even under `--rebuild`.
 3. **Match** → update **properties only**: Status, Score, Verdict, Deadline, Ranked, Applied on, Channel, CV file, Cover letter. Properties are the always-current surface (bodies are write-once), so tracker updates recorded by `/outcome` reach the destination exclusively through them. Do not touch the page body - the user may have added their own notes there, and clobbering them breaks trust in the whole view. (`--rebuild` is the sole exception.)
 4. Never delete or archive pages, even for jobs that turned `expired` - set Status to `expired` instead. Rows the user added to the database by hand (no `Key` value) are invisible to this command.
 
@@ -98,7 +99,7 @@ Batch politely: if the MCP server rate-limits, back off and continue; report any
 
 ## Step 5: Write the Detail Page (new pages only)
 
-The page body is what makes a row worth clicking. Build it **only from stored data and actually fetched content**:
+The page body is what makes a row worth clicking. Build it **only from stored data and actually fetched content**. **Never write a body for a job whose status is `expired`, including under `--rebuild`** - a dead job has no posting worth reading, and the body is write-once so a later rebuild cannot fix it.
 
 1. **Fit summary** - a short section from `job_scraper/seen_jobs.json` fields: score, verdict, quick-fit level, first-seen and ranked dates. If the job is in the tracker, add the application timeline (date applied, channel, current status, dated notes from the `notes` column) and name the submitted documents from `cv_file`/`cover_letter_file` (filenames only - the documents themselves never sync). **When the status is `drafted`, write "drafted YYYY-MM-DD, not yet submitted" instead of a date applied, and call the files drafts rather than submitted documents** (page bodies are write-once - Step 4.3).
 2. **The posting** - WebFetch the job URL and write a readable digest: what the role is, key requirements, practical details (location, deadline, salary if stated). Retry a 403 with browser headers per `.claude/skills/job-application-assistant/09-web-research.md` first. If the fetch still fails or redirects to a listing page, write "Posting no longer available (checked YYYY-MM-DD)" - **never reconstruct a posting from memory**.

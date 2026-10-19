@@ -68,12 +68,61 @@ class NotionSyncCommandSpec(unittest.TestCase):
         # was synced while ranked and later retired by /rank could never have
         # its Status updated to "expired" (rule 4.4). Step 2 must include them.
         text = COMMAND.read_text(encoding="utf-8")
-        step2_line = next(
-            l for l in text.splitlines()
-            if l.startswith("2. Select `job_scraper/seen_jobs.json`")
-        )
-        self.assertIn("expired", step2_line,
+        step2_lines = [l for l in text.splitlines()
+                       if l.startswith("2. Select `job_scraper/seen_jobs.json`")
+                       or l.startswith("2a.")]
+        combined = " ".join(step2_lines)
+        self.assertIn("expired", combined,
             "Step 2 must include expired entries so rule 4.4 can fire")
+
+    def test_step2a_expired_entries_are_a_separate_bullet(self):
+        # The expired-entries rule must be its own numbered bullet, not buried
+        # inside the ranked-entries bullet - a reader scanning Step 2 for the
+        # expired rule must find it as a distinct step.
+        text = COMMAND.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        expired_bullet = next(
+            (l for l in lines if l.startswith("2a.") and "expired" in l),
+            None,
+        )
+        self.assertIsNotNone(expired_bullet,
+            "Step 2a must exist as a separate bullet for expired entries")
+        self.assertIn("expired", expired_bullet or "")
+
+    def test_step4_skips_expired_entries_with_no_match(self):
+        # An expired entry with no existing page was never synced while ranked,
+        # so creating a page for it would pollute the database. Step 4.2 must
+        # skip expired entries on the no-match branch.
+        text = COMMAND.read_text(encoding="utf-8")
+        no_match_line = next(
+            l for l in text.splitlines()
+            if l.startswith("2. **No match**")
+        )
+        self.assertIn("expired", no_match_line,
+            "Step 4.2 must skip expired entries with no match")
+
+    def test_step5_never_writes_body_for_expired(self):
+        # Page bodies are write-once, so a body written for an expired job
+        # can never be fixed by a later rebuild. Step 5 must refuse to write
+        # a body for expired entries, including under --rebuild.
+        text = COMMAND.read_text(encoding="utf-8")
+        step5_section = text.split("## Step 5")[1].split("## Step 6")[0]
+        self.assertIn("expired", step5_section,
+            "Step 5 must refuse to write a body for expired entries")
+        self.assertIn("--rebuild", step5_section,
+            "Step 5 must explicitly cover the --rebuild case for expired")
+
+    def test_step2_stops_on_expired_only_sync_set(self):
+        # An expired-only sync set on a first run has nothing to create (Step
+        # 4.2 skips expired with no match) and nothing to update (no existing
+        # pages), so the command must stop without creating the database.
+        text = COMMAND.read_text(encoding="utf-8")
+        step2_lines = [l for l in text.splitlines()
+                       if l.startswith("5. **If the sync set is empty**")]
+        self.assertTrue(step2_lines,
+            "Step 2.5 must exist")
+        self.assertIn("expired", step2_lines[0],
+            "Step 2.5 must stop on an expired-only sync set")
 
     @unittest.skipUnless(
         _HAVE_YAML,
