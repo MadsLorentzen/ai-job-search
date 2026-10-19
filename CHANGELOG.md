@@ -102,6 +102,12 @@ per-file diff commands.
   longer paired with its count column and `salary_lookup.py` printed the label across two lines.
   Header whitespace runs now collapse to one space, so a wrapped header converts like its one-line spelling.
 
+- **Salary workbook conversion skips prose notes tabs** (#644, `tools/convert_salary_excel.py`,
+  `tests/test_salary_notes_sheet_cli.py`) - a "Notes" tab mentioning "company" in a sentence was
+  taken as a header row by the fallback pass, and every following sentence was emitted as a company
+  in `salary_data.json` and `--list-all`. A fallback-detected header with no salary column beside it
+  now skips the sheet with a warning; strictly detected headers are unchanged.
+
 ## [1.7.3] - 2026-10-19
 
 ### Added
@@ -174,12 +180,6 @@ per-file diff commands.
   not gate on it.
 
 ### Fixed
-
-- **Salary workbook conversion skips prose notes tabs** (#644, `tools/convert_salary_excel.py`,
-  `tests/test_salary_notes_sheet_cli.py`) - a "Notes" tab mentioning "company" in a sentence was
-  taken as a header row by the fallback pass, and every following sentence was emitted as a company
-  in `salary_data.json` and `--list-all`. A fallback-detected header with no salary column beside it
-  now skips the sheet with a warning; strictly detected headers are unchanged.
 
 - **`.gitignore` ignores `node_modules` without a trailing slash, and `security_guards.py` fails on any tracked `node_modules` path** (`.gitignore`, `tools/security_guards.py`, `tests/test_security_guards.py`) - the old `node_modules/` rule matched directories only, so a symlink named `node_modules` pointing at a contributor's absolute path was committed in a PR, broke `bun install` in CI with a dangling link and checked out as a text file on Windows. The rule loses its slash, and the guard now lists every tracked path with a `node_modules` component (skipped quietly outside a git checkout). Also qualifies the one bare `seen_jobs.json` mention left in `README.md` after #617.
 
