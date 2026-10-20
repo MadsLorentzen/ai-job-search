@@ -34,6 +34,19 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/reset documents` deletes the documents again under zsh** (`.claude/commands/reset.md`
+  Step 3, `tests/test_reset_documents.py`) - the block merged in #580 used the bash-only builtin
+  `shopt -s dotglob nullglob`. Claude Code's Bash tool runs the user's shell, which is zsh on
+  macOS, where the line fails with `command not found: shopt`, and under `set -e` the subshell
+  exits 127 before its deletion loop: the reset reported success and deleted nothing. The
+  replay tests ran the block under `bash` only, so they stayed green. The block is now POSIX
+  shell - explicit directory names instead of brace expansion, and
+  `find <dir> -mindepth 1 -maxdepth 1 ! -name .gitkeep -exec rm -rf -- {} +`, which lists
+  hidden entries and nested folders without any glob setting, skipping a folder that is
+  missing instead of stopping the loop there - and the replay tests run it under every shell
+  present on the machine (bash, zsh, sh, dash), with a missing-folder case and a guard that no
+  bashism returns. The zsh subtests fail on master.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
