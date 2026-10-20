@@ -34,6 +34,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobnet-search` keeps canonical portal URLs for external ads and emits destination in `applyUrl`**
+  (fixes #701, `.agents/skills/jobnet-search/cli/src/commands/search.ts`,
+  `tests/search-normalization.test.ts`) - external job ads in search results emitted the
+  external employer ATS link directly in `url` (#557), which tripped `/scrape`'s Step 4.75 degraded
+  scan ("URLs that do not point at the portal") and caused `/apply` and `/rank`'s host-based routing
+  (#562) to send the posting to `WebFetch` on an ATS application form rather than `jobnet detail`.
+  `createSearchOutput` now keeps `url` canonical as `https://jobnet.dk/find-job/<id>` across all
+  ads (preserving identity, deduplication, and portal routing to `detail`), while emitting the
+  external employer ATS destination in `applyUrl` (matching `jobindex` and `jobdanmark`) alongside
+  `jobAdUrl`.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from

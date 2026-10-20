@@ -140,6 +140,9 @@ export function createSearchOutput(data: SearchApiResponse, flags: SearchFlags) 
       // /scrape contract aliases (add-portal.md: every result carries at least
       // id, title, company, location, date, url). `id` is the jobAdId - the
       // value `detail` takes - under the name every other portal CLI uses.
+      // `url` stays canonical on jobnet.dk for all postings (internal and external)
+      // so deduplication, health checks, and /apply host routing (#562) identify
+      // the portal correctly; external ATS destinations are emitted as `applyUrl`.
       id: job.jobAdId,
       company: job.hiringOrgName,
       location: job.postalDistrictName ?? job.municipality ?? null,
@@ -147,7 +150,8 @@ export function createSearchOutput(data: SearchApiResponse, flags: SearchFlags) 
       deadline: job.applicationDeadline && !job.applicationDeadline.startsWith("1900-01-01")
         ? job.applicationDeadline.slice(0, 10)
         : null,
-      url: destination ?? `https://jobnet.dk/find-job/${job.jobAdId}`,
+      url: `https://jobnet.dk/find-job/${job.jobAdId}`,
+      applyUrl: destination,
     }
   })
 
