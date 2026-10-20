@@ -25,6 +25,7 @@ install failed.
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -34,6 +35,67 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from security_guards import FORBIDDEN_SCRIPTS  # noqa: E402
+
+
+# Real-path-only candidates: locations bun is documented to land in, plus
+# package-manager installs. We do not consult $PATH here - shutil.which already
+# did. Each entry is checked for executability; the first hit wins. No platform
+# branching beyond what is already on disk: a candidate that does not exist is
+# simply skipped, so this list is safe to scan on Windows even though most
+# entries are Unix-shaped.
+_BUN_FALLBACK_CANDIDATES = (
+    "~/.bun/bin/bun",                              # https://bun.sh/install
+    "/home/linuxbrew/.linuxbrew/bin/bun",          # Linuxbrew, system-wide
+    "/opt/homebrew/bin/bun",                       # Homebrew on Apple Silicon
+    "/usr/local/bin/bun",                          # Homebrew on Intel macOS, manual Linux installs
+    "/usr/bin/bun",                                # apt/equivalent distro packages
+    "~/.local/bin/bun",                            # pip-style user installs (bun-bin)
+)
+
+
+def _expand_candidate(raw: str) -> list[Path]:
+    """Return [path] if a documented bun install location is executable, else [].
+
+    `~` expands to $HOME; the rest is treated as a literal path. Returning a
+    list (rather than a Path) keeps `resolve_bun` a flat loop and leaves room
+    for glob expansion if a future candidate needs it.
+    """
+    expanded = Path(os.path.expanduser(raw))
+    if expanded.is_file() and os.access(expanded, os.X_OK):
+        return [expanded]
+    return []
+
+
+def resolve_bun() -> str | None:
+    """Absolute path to the bun binary, or None if no candidate exists.
+
+    Checks $PATH first via shutil.which, then the documented install locations.
+    The fallback exists because the official installer only writes to
+    ~/.bashrc/~/.zshrc: in non-interactive shells (CI, subprocesses, Debian
+    logins that source ~/.profile) ~/.bun/bin is on disk but not on $PATH, and
+    the script used to abort even though bun was installed. See #707.
+    """
+    which = shutil.which("bun")
+    if which:
+        return which
+    for candidate in _BUN_FALLBACK_CANDIDATES:
+        for path in _expand_candidate(candidate):
+            return str(path)
+    return None
+
+
+def _bun_install_hint() -> str:
+    """Actionable next-step message when no bun binary can be found."""
+    return (
+        "No bun binary was found. Install one and re-run:\n"
+        "  - bun.sh installer: curl -fsSL https://bun.sh/install | bash "
+        "(installs to ~/.bun/bin, then `export PATH=\"$HOME/.bun/bin:$PATH\"` "
+        "in your shell's login rc and open a new shell)\n"
+        "  - Homebrew: brew install bun\n"
+        "  - Linuxbrew: brew install bun (add brew to PATH the same way)\n"
+        "  - apt (if your distro ships it): see your package manager\n"
+        "Bun's docs: https://bun.sh"
+    )
 
 
 def discover(root: Path = ROOT) -> list[Path]:
@@ -101,10 +163,16 @@ def main() -> int:
     if not cli_dirs:
         print("No portal CLIs found under .agents/skills/*/cli/ - nothing to install.")
         return 0
-    bun = shutil.which("bun")
+    bun = resolve_bun()
     if not bun and not args.dry_run:
-        print("bun is not on PATH. Install it from https://bun.sh, open a new shell, and re-run.")
+        print(_bun_install_hint())
         return 1
+    if bun and Path(bun).parent.as_posix() not in os.environ.get("PATH", "").split(os.pathsep):
+        # bun found off $PATH (e.g. ~/.bun/bin in a non-interactive shell).
+        # Prepend its directory to PATH so subprocesses it spawns (and any
+        # postinstall the manifest runs, though we forbid those) behave the
+        # same as in an interactive shell where ~/.bashrc was sourced.
+        os.environ["PATH"] = f"{Path(bun).parent}{os.pathsep}{os.environ.get('PATH', '')}"
     return install(cli_dirs, bun or "bun", args.dry_run)
 
 
