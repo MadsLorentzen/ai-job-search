@@ -946,7 +946,7 @@ per-file diff commands.
 - **`freehire-search detail` keeps the salary period, so a yearly figure no longer reads as
   monthly** (`.agents/skills/freehire-search/cli/src/helpers.ts`, `SKILL.md`) - `formatSalary`
   printed only the currency and amounts, although freehire's enrichment records the period:
-  `detail software-developer-trainee-codifi-fra635ux` printed `INR 300000–300000` while the
+https://github.com/balancer/balancer-v3-monorepo.git  `detail software-develohttps://github.com/balancer/balancer-v3-monorepo.githttps://github.com/joaobrunoah/site-casamento.gitper-trainee-codifi-fra635ux` printed `INR 300000–300000` while the
   API returns `salary_period: "year"` for that posting, so anyone screening pay against a
   monthly figure read a yearly salary as a monthly one, twelve times its real monthly value.
   The period is now appended when freehire records one (`INR 300000–300000/year`,
