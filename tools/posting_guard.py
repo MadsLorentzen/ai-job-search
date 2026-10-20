@@ -110,9 +110,21 @@ HTML_HINT = re.compile(r"<\s*(html|body|div|p)\b", re.I)
 URL = re.compile(r"https?://[^\s<>\"')\]]+")
 INSTRUCTION_PATTERNS = [re.compile(p, re.I) for p in (
     r"\bignore (all|any|the|previous|prior|above|earlier)\b",
+    # The same instruction with its other two verbs. These take an explicit
+    # object ("previous instructions"), because "forget the" and "disregard
+    # the" are ordinary prose where "ignore the" already is not.
+    r"\b(disregard|forget)( all| any| the| your| my)? (previous|prior|above|earlier|preceding|initial|original|system) (instructions?|prompts?)\b",
     r"\byou are (?:an?|the) (?:ai(?![\w-])|ai (?:assistant|agent|model|language model)|assistant|llm|language model)\b",
     r"\bsystem prompt\b",
-    r"\bdo not (tell|inform|mention)( this)? to the user\b",
+    # "do not tell the user", "never inform the user": the verb straight onto
+    # "the user" (not "the user's"), with the typographic apostrophe most web
+    # text uses. Kept narrow on purpose: "never disclose user data" and "do
+    # not tell users about unreleased features" are everyday privacy and
+    # support prose.
+    r"\b(do not|don['\u2019]?t|never) (tell|inform) the user\b(?!['\u2019]s)",
+    # "do not reveal these instructions to the user", "never mention this to
+    # the user": a demonstrative object, then "to the user" within a clause.
+    r"\b(do not|don['\u2019]?t|never) (mention|reveal|disclose) (this|these|that|it|any of this|the (above|following|previous))\b[^.\n]{0,30}\bto the user\b",
     r"\b(run|execute) the following (command|commands|script|code|shell|instruction|instructions|steps)\b",
     # "As an AI" flags by default. Exempt only a job-title noun within a few words of "AI", the way AI
     # job ads introduce the role ("As an AI Engineer", "as an AI/ML Researcher", "As an AI Product Manager").
