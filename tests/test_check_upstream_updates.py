@@ -68,6 +68,14 @@ class UpstreamCheckerRepoFixture(unittest.TestCase):
             text=True,
         )
 
+    def run_checker_with_fetch(self, *args) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [sys.executable, str(self.root / "tools" / "check_upstream_updates.py"), *args],
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+        )
+
 
 class ForkWithoutUpstreamRemoteTests(UpstreamCheckerRepoFixture):
     def setUp(self):
@@ -132,6 +140,23 @@ class UpstreamRemotePresentTests(UpstreamCheckerRepoFixture):
         self.assertIn("up to date with upstream/master", result.stdout)
 
 
+class FailedFetchTests(UpstreamCheckerRepoFixture):
+    def test_cached_ref_after_failed_fetch_is_not_reported_as_current(self):
+        # Normal CLI path: a fork has a previous upstream/master ref, but its
+        # remote is unavailable today. The cached comparison can be useful,
+        # but it cannot establish whether the fork is currently up to date.
+        self.add_remote("upstream", str(self.root / "unavailable-remote"))
+        self.materialize_remote_ref("upstream")
+
+        result = self.run_checker_with_fetch()
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Failed to fetch", result.stdout)
+        self.assertIn("cached", result.stdout.lower())
+        self.assertIn("[WARNING]", result.stdout)
+        self.assertNotIn("[OK]", result.stdout)
+
+
 class UpstreamRefMissingFileTests(UpstreamCheckerRepoFixture):
     """Simulates upstream renaming/deleting one framework file while the
     fork still has its own copy: git show then fails, and the checker used
@@ -158,6 +183,38 @@ class UpstreamRefMissingFileTests(UpstreamCheckerRepoFixture):
         self.assertIn("AGENTS.md", result.stdout)
         self.assertNotIn("[OK] All framework files are up to date", result.stdout)
         self.assertIn("[WARNING]", result.stdout)
+
+
+class IncompleteComparisonTests(UpstreamCheckerRepoFixture):
+    def setUp(self):
+        super().setUp()
+        self.add_remote("upstream", TEMPLATE_URL)
+        self.materialize_remote_ref("upstream")
+
+    def test_missing_local_file_does_not_report_all_files_up_to_date(self):
+        (self.root / "AGENTS.md").unlink()
+
+        result = self.run_checker()
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("AGENTS.md", result.stdout)
+        self.assertIn("[WARNING] Framework check incomplete", result.stdout)
+        self.assertNotIn("[OK]", result.stdout)
+
+    def test_missing_upstream_marker_does_not_report_all_files_up_to_date(self):
+        agents = self.root / "AGENTS.md"
+        agents.write_text("# Upstream guidelines without a version marker\n", encoding="utf-8")
+        subprocess.run(["git", "add", "AGENTS.md"], cwd=self.root, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-qm", "remove upstream version marker"], cwd=self.root, check=True, capture_output=True)
+        self.materialize_remote_ref("upstream")
+        agents.write_text(FRONTMATTER, encoding="utf-8")
+
+        result = self.run_checker()
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("AGENTS.md", result.stdout)
+        self.assertIn("[WARNING] Framework check incomplete", result.stdout)
+        self.assertNotIn("[OK]", result.stdout)
 
 
 if __name__ == "__main__":

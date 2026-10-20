@@ -162,7 +162,18 @@ export function parseRssDescription(desc: string): ParsedDescription {
 export function normalizeJobId(input: string): string | null {
   const trimmed = input.trim()
   if (/^\d+$/.test(trimmed)) return trimmed
-  const match = trimmed.match(/\/job\/(\d+)(?:\/|$|\?|#)/)
+  let url: URL
+  try {
+    const hostLike = /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(trimmed)
+    url = new URL(hostLike ? `https://${trimmed}` : trimmed)
+  } catch {
+    return null
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null
+  if (url.hostname !== "jobbank.dk" && !url.hostname.endsWith(".jobbank.dk")) return null
+  // A matching path on a different site is not a Jobbank posting. Read only
+  // the parsed pathname, so a job URL embedded in a query is not an ID either.
+  const match = url.pathname.match(/^\/job\/(\d+)(?:\/|$)/)
   return match ? match[1] : null
 }
 

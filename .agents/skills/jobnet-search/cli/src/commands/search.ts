@@ -59,6 +59,7 @@ export interface SearchFlags {
   radius: number
   "occupation-area"?: string
   "occupation-group"?: string
+  occupation?: string
   limit?: number
 }
 
@@ -80,8 +81,19 @@ export function buildSearchParams(flags: SearchFlags): Record<string, string> {
   }
   if (flags["occupation-area"]) params["occupationAreas"] = flags["occupation-area"]
   if (flags["occupation-group"]) params["occupationGroups"] = flags["occupation-group"]
+  if (flags.occupation) params["occupations"] = occupationId(flags.occupation)
 
   return params
+}
+
+/**
+ * The search API filters one ESCO occupation by the UUID that ends the
+ * `conceptUriDa` printed by `occupations`. Accept that full URI as well as the
+ * bare UUID, so the value can be copied from either output unchanged.
+ */
+export function occupationId(value: string): string {
+  const trimmed = value.trim().replace(/\/+$/, "")
+  return trimmed.slice(trimmed.lastIndexOf("/") + 1)
 }
 
 /**
@@ -200,6 +212,9 @@ export const search = defineCommand({
     }),
     "occupation-group": option(z.string().optional(), {
       description: "Occupation group identifier, e.g. 10060",
+    }),
+    occupation: option(z.string().optional(), {
+      description: "ESCO occupation UUID or conceptUriDa from the occupations command",
     }),
     limit: option(z.coerce.number().int().min(1).optional(), {
       description: "Cap total results returned by CLI",

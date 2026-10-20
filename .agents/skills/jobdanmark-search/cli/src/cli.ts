@@ -62,6 +62,26 @@ if (invoked) {
       if (!knownShorts.has(flag)) rejectFlag(`-${flag}`)
     }
   }
+  // Every declared portal option takes a value; only the built-in help and
+  // version flags are switches. Bunli drops a bare known option before schema
+  // validation, so an optional filter disappears or a default is used instead.
+  // Check after unknown flags so negative tokens keep their existing error.
+  for (let i = 1; i < argv.length; i++) {
+    const token = argv[i]
+    if (token === "--") break
+    if (!token.startsWith("-") || token.includes("=")) continue
+    const name = token.replace(/^-+/, "")
+    const isOption = token.startsWith("--")
+      ? options[name] !== undefined
+      : Object.values(options).some((o) => o?.short === name)
+    if (!isOption) continue
+    const next = argv[i + 1]
+    if (next === undefined || next.startsWith("-")) {
+      writeError(`option ${token} requires a value`, "BAD_ARG")
+      process.exit(1)
+    }
+  }
+
 }
 
 await cli.run()

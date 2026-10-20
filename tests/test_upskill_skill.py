@@ -19,6 +19,7 @@ except ImportError:
 
 REPO = Path(__file__).resolve().parent.parent
 SKILL = REPO / ".claude" / "skills" / "upskill" / "SKILL.md"
+SCRAPER = REPO / ".claude" / "skills" / "job-scraper" / "SKILL.md"
 
 
 def _sections(text: str) -> dict[str, str]:
@@ -68,7 +69,7 @@ class UpskillSkillSpec(unittest.TestCase):
     def test_step3_documents_dedupe_and_gap_precedence(self):
         sections = _sections(SKILL.read_text(encoding="utf-8"))
         step3 = sections.get("Step 3: Pass 1 — Hard Skill Diff", "")
-        self.assertIn("case-insensitive company + role", step3, "Step 3 must specify the dedupe key")
+        self.assertIn("case-insensitive company + title", step3, "Step 3 must specify the dedupe key")
         self.assertIn(
             "/notion-sync",
             step3,
@@ -81,6 +82,24 @@ class UpskillSkillSpec(unittest.TestCase):
         )
         self.assertIn("(100 - fit_rating) / 100", step3)
         self.assertIn("(100 - rank_score) / 100", step3)
+
+    def test_step3_dedupe_names_the_field_ranked_entries_actually_carry(self):
+        # The tracker has a `role` column; a seen_jobs.json entry has `title`
+        # (job-scraper SKILL.md schema) and no `role` key at all. Step 3 told
+        # the reader to match on "company + role" with "casefold + strip on
+        # both fields", which reads as a literal lookup of `role` on the entry:
+        # that never matches, so the dedupe silently failed and Step 3.2's
+        # "one weight per job" counted the same job twice. The join is
+        # role-vs-title, as tools/rank_state.py implements it.
+        schema = SCRAPER.read_text(encoding="utf-8")
+        schema_block = schema[schema.index('"<key from tools/job_key.py>"'): schema.index("```", schema.index('"<key from tools/job_key.py>"'))]
+        self.assertIn('"title"', schema_block)
+        self.assertNotIn('"role"', schema_block, "if entries gain a role key, revisit the join wording")
+        step3 = _sections(SKILL.read_text(encoding="utf-8")).get("Step 3: Pass 1 — Hard Skill Diff", "")
+        dedupe = step3[step3.index("**Dedupe.**"): step3.index("2. **Recorded gaps")]
+        self.assertIn("`title`", dedupe, "the dedupe must name the entry field, title")
+        self.assertIn("`role`", dedupe, "the dedupe must name the tracker column, role")
+        self.assertNotIn("company + role", dedupe, "entries have no role field to match on")
 
     def test_step3_handles_blank_fit_rating(self):
         """/outcome creates tracker rows for applications made outside the

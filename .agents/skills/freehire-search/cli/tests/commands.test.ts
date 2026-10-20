@@ -98,7 +98,7 @@ describe("runSearch (mocked fetch)", () => {
     expect(parsed.meta).toEqual({ count: 1, page: 1, total: 42 });
     expect(parsed.results).toHaveLength(1);
     expect(parsed.results[0].id).toBe("backend-engineer-acme-ab12cd34");
-    expect(parsed.results[0].date).toBe("2026-07-06T00:00:00Z");
+    expect(parsed.results[0].date).toBe("2026-07-06");
   });
 
   test("queries the agent endpoint asking for full descriptions", async () => {
@@ -108,8 +108,10 @@ describe("runSearch (mocked fetch)", () => {
     await runSearch({ ...searchOpts, query: "backend" });
 
     expect(new URL(mock.url()).pathname).toBe("/api/v1/agent/jobs/search");
-    expect(requestedParams(mock).get("include_description")).toBe("true");
     expect(requestedParams(mock).get("description_format")).toBe("markdown");
+    // Neither is read by the API (it lists both in meta.ignored_params).
+    expect(requestedParams(mock).get("include_description")).toBeNull();
+    expect(requestedParams(mock).get("semantic_ratio")).toBeNull();
   });
 
   test("skips description hydration when includeDescription is false", async () => {
@@ -122,10 +124,11 @@ describe("runSearch (mocked fetch)", () => {
     const out = captureStdout();
     await runSearch({ ...searchOpts, query: "backend", includeDescription: false });
 
-    expect(requestedParams(mock).get("include_description")).toBe("false");
+    // The agent endpoint hydrates every body regardless of what it is asked, so
+    // the lean pass goes to the web search, which serves only the preview.
+    expect(new URL(mock.url()).pathname).toBe("/api/v1/jobs/search");
     expect(requestedParams(mock).get("description_format")).toBeNull();
-    // The live API ignores include_description=false and sends bodies anyway
-    // (verified 2026-08-19), so the lean guarantee is enforced client-side.
+    // The preview is still a description, so the lean guarantee is enforced client-side.
     const parsed = JSON.parse(out.get());
     expect(parsed.results[0].description).toBeNull();
   });
@@ -230,5 +233,22 @@ describe("runDetail (mocked fetch)", () => {
 
     expect(code).toBe(1);
     expect(JSON.parse(err).code).toBe("NOT_FOUND");
+  });
+});
+
+describe("detail input on the real handler path", () => {
+  test("a search result's own apply URL is rejected with BAD_ID before any request", async () => {
+    // Every freehire search result carries the employer's apply link in `url`
+    // (the fixture's is a Greenhouse board). Pasting it back into detail used
+    // to request /api/v1/jobs/1 and report NOT_FOUND for a URL that was never
+    // a freehire posting.
+    const mock = mockFetch(404, { error: "not found" });
+    const err = captureStderr();
+
+    const code = await runDetail({ id: job().url, format: "json" });
+
+    expect(code).toBe(1);
+    expect(mock.url()).toBe("");
+    expect(JSON.parse(err.get())).toMatchObject({ code: "BAD_ID" });
   });
 });
