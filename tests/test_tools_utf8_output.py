@@ -171,6 +171,65 @@ class ToolsWriteUtf8(unittest.TestCase):
         proc = run_legacy_stdout([repo / "tools" / "upstream_triage.py"], cwd=repo)
         self.assert_clean_utf8(proc, 0, CYRILLIC)
 
+    def test_fetch_page_prints_non_latin_text(self):
+        import http.server
+        import threading
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):  # noqa: N802
+                if self.path == "/robots.txt":
+                    self.send_response(404)
+                    self.end_headers()
+                    return
+                body = f"<html><body><h1>{POLISH}</h1><p>{CYRILLIC}</p></body></html>".encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *args):
+                pass
+
+        server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            port = server.server_address[1]
+            out = self.tmp / "saved.html"
+            proc = run_legacy_stdout([
+                TOOLS / "fetch_page.py", f"http://127.0.0.1:{port}/posting", "--text", "--out", out,
+            ])
+            self.assert_clean_utf8(proc, 0, POLISH, CYRILLIC)
+        finally:
+            server.shutdown()
+            server.server_close()
+
+    def test_robots_check_runs_cleanly(self):
+        import http.server
+        import threading
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):  # noqa: N802
+                self.send_response(404)
+                self.end_headers()
+
+            def log_message(self, *args):
+                pass
+
+        server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            port = server.server_address[1]
+            proc = run_legacy_stdout([
+                TOOLS / "robots_check.py", f"http://127.0.0.1:{port}/jobs/{POLISH}",
+            ])
+            self.assert_clean_utf8(proc, 0, "ALLOWED")
+        finally:
+            server.shutdown()
+            server.server_close()
+
 
 if __name__ == "__main__":
     unittest.main()

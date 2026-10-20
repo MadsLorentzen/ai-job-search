@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { cleanHtml, normalizeSlug, toResult, toDetail, type FreehireJob } from "../src/helpers";
+import { cleanHtml, contractDate, normalizeSlug, toResult, toDetail, type FreehireJob } from "../src/helpers";
 
 function job(overrides: Partial<FreehireJob> = {}): FreehireJob {
   return {
@@ -28,7 +28,8 @@ describe("toResult — reshape into the portal-skill contract", () => {
   test("maps public_slug -> id and posted_at -> date", () => {
     const r = toResult(job());
     expect(r.id).toBe("backend-engineer-acme-ab12cd34");
-    expect(r.date).toBe("2026-07-06T00:00:00Z");
+    // The contract shape is the date part only, like every other portal CLI.
+    expect(r.date).toBe("2026-07-06");
   });
 
   test("carries the required contract fields", () => {
@@ -118,6 +119,23 @@ describe("cleanHtml", () => {
   });
 });
 
+describe("contractDate", () => {
+  test("cuts the API's ISO timestamp to YYYY-MM-DD", () => {
+    expect(contractDate("2026-07-06T00:00:00Z")).toBe("2026-07-06");
+    expect(contractDate("2026-07-06T15:30:00+02:00")).toBe("2026-07-06");
+    expect(contractDate("2026-07-06")).toBe("2026-07-06");
+  });
+  test("is null for an absent or non-date value", () => {
+    expect(contractDate(null)).toBeNull();
+    expect(contractDate(undefined)).toBeNull();
+    expect(contractDate("")).toBeNull();
+    expect(contractDate("soon")).toBeNull();
+  });
+  test("detail carries the same shape as search", () => {
+    expect(toDetail(job()).date).toBe("2026-07-06");
+  });
+});
+
 describe("normalizeSlug", () => {
   test("accepts a bare slug", () => {
     expect(normalizeSlug("golang-zensar-2bxu6dxm")).toBe("golang-zensar-2bxu6dxm");
@@ -128,5 +146,45 @@ describe("normalizeSlug", () => {
   test("rejects a non-slug string", () => {
     expect(normalizeSlug("not a slug!")).toBeNull();
     expect(normalizeSlug("")).toBeNull();
+  });
+  test("accepts subdomains, a scheme-less host, a trailing slash and a query string", () => {
+    expect(normalizeSlug("https://www.freehire.me/jobs/golang-zensar-2bxu6dxm/")).toBe("golang-zensar-2bxu6dxm");
+    expect(normalizeSlug("freehire.me/jobs/golang-zensar-2bxu6dxm?utm_source=x")).toBe("golang-zensar-2bxu6dxm");
+  });
+  test("rejects a /jobs/ URL on another host instead of asking the API for its last segment", () => {
+    // The search fixture's own `url` is a Greenhouse apply link; pasting it
+    // back into detail used to request /api/v1/jobs/1 and report NOT_FOUND.
+    expect(normalizeSlug("https://boards.greenhouse.io/acme/jobs/1")).toBeNull();
+    expect(normalizeSlug("https://jobs.lever.co/acme/jobs/abc")).toBeNull();
+  });
+  test("rejects look-alike and userinfo hosts", () => {
+    expect(normalizeSlug("https://freehire.me.evil.io/jobs/x")).toBeNull();
+    expect(normalizeSlug("https://notfreehire.me/jobs/x")).toBeNull();
+    expect(normalizeSlug("https://freehire.me@evil.io/jobs/x")).toBeNull();
+  });
+  test("rejects a freehire.me URL that is not a job page", () => {
+    expect(normalizeSlug("https://freehire.me/companies/acme")).toBeNull();
+    expect(normalizeSlug("https://freehire.me/jobs/")).toBeNull();
+  });
+  test("requires the path to be exactly /jobs/<slug>", () => {
+    // The slug is the whole path after /jobs/: a nested path, a prefix before
+    // /jobs/, or a slug with characters outside the slug alphabet is not a
+    // freehire job page, even on the right host.
+    expect(normalizeSlug("https://freehire.me/jobs/my-slug/apply")).toBeNull();
+    expect(normalizeSlug("https://freehire.me/en/jobs/my-slug")).toBeNull();
+    expect(normalizeSlug("https://freehire.me/jobs/my_slug")).toBeNull();
+    expect(normalizeSlug("https://freehire.me/jobs/my-slug#details")).toBe("my-slug");
+  });
+
+  test("accepts the self-hosted base URL's host", () => {
+    const saved = process.env.FREEHIRE_API_URL;
+    process.env.FREEHIRE_API_URL = "http://localhost:8080";
+    try {
+      expect(normalizeSlug("http://localhost:8080/jobs/my-slug")).toBe("my-slug");
+      expect(normalizeSlug("https://boards.greenhouse.io/acme/jobs/1")).toBeNull();
+    } finally {
+      if (saved === undefined) delete process.env.FREEHIRE_API_URL;
+      else process.env.FREEHIRE_API_URL = saved;
+    }
   });
 });

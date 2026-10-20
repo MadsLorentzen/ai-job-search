@@ -23,11 +23,27 @@ Checks:
 3. .agents/**/package.json — no npm/bun lifecycle scripts (preinstall,
    install, postinstall, prepare, prepack) and no trustedDependencies.
    Catches code execution smuggled into `bun install`.
+4. Skill and command frontmatter — every `allowed-tools` entry in
+   .claude/skills/*/SKILL.md, .agents/skills/*/SKILL.md and
+   .claude/commands/*.md must be in ALLOWED_SKILL_TOOLS (a portal skill may
+   instead grant exactly its own CLI). Claude Code pre-approves these for the
+   turn that invokes the skill, with no prompt, regardless of workspace trust,
+   so the frontmatter is a second permission allowlist. Catches bare Bash and
+   glob grants. The settings.json `ask` and `deny` lists are also required to
+   keep every rule in REQUIRED_ASK_RULES / REQUIRED_DENY_RULES.
+5. Agent definitions — every .claude/agents/*.md must declare `tools:` (a
+   missing key means every tool) and each entry must be in
+   ALLOWED_AGENT_TOOLS, which has no Edit, Write, NotebookEdit or Agent: the
+   shipped agents read untrusted postings. `tools:` is tool-name granularity
+   (a `Bash(pattern)` entry resolves to plain Bash), so a patterned entry is
+   rejected as misleading; settings.json's allow list is what scopes Bash.
 
 Stdlib only. Exit 0 on success, 1 with a failure list otherwise.
 """
 
 import json
+import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -60,7 +76,70 @@ ALLOWED_PERMISSIONS = {
     "Bash(python tools/verify_layout.py:*)",
     "Bash(python3 tools/verify_layout.py:*)",
     "Bash(pdftotext:*)",
+    # The browser-header retry in 09-web-research.md. fetch_page.py is GET-only
+    # with a fixed argv and refuses to write inside the repo, which is why the
+    # grant names the script and not `curl`.
+    "Bash(python tools/robots_check.py:*)",
+    "Bash(python3 tools/robots_check.py:*)",
+    "Bash(python tools/fetch_page.py:*)",
+    "Bash(python3 tools/fetch_page.py:*)",
+    # The posting integrity gate (/apply Step 0, /rank Step 2, /interview Step 1).
+    # Reads a file or stdin, writes only to an explicit --out, never fetches.
+    "Bash(python tools/posting_guard.py:*)",
+    "Bash(python3 tools/posting_guard.py:*)",
 }
+
+# Rules that must stay in .claude/settings.json permissions.ask. An ask rule
+# forces a prompt even when an allow rule or a skill's allowed-tools grant
+# would otherwise pre-approve the call. These are the files whose content IS
+# the permission surface: a session that could edit them silently could widen
+# its own grants. Plus the one outbound git action. Extra ask rules are fine;
+# removing one of these fails.
+REQUIRED_ASK_RULES = [
+    "Edit(.claude/settings.json)",
+    "Edit(.claude/settings.local.json)",
+    "Edit(.claude/skills/*/SKILL.md)",
+    # A command's frontmatter may carry allowed-tools too (check 4 reads it).
+    "Edit(.claude/commands/*.md)",
+    "Edit(.claude/agents/**)",
+    "Edit(.github/**)",
+    "Edit(tools/security_guards.py)",
+    "Bash(git push:*)",
+]
+
+# Rules that must stay in .claude/settings.json permissions.deny. A deny rule
+# blocks in every permission mode, bypassPermissions included, and overrides
+# any allow rule or skill grant. Two groups: shell that uploads data or opens a
+# remote shell (nothing in the workflow does either), and reads of credential
+# stores (Read denies also cover Bash cat/head/tail/sed on the path). Prefix
+# rules are tripwires, not walls: `curl -sS -d` is not caught by `curl -d`.
+# SECURITY.md says so. Extra deny rules are fine; removing one of these fails.
+REQUIRED_DENY_RULES = [
+    "Read(.env)",
+    "Read(.env.*)",
+    "Read(~/.ssh/**)",
+    "Read(~/.aws/**)",
+    "Read(~/.gnupg/**)",
+    "Bash(curl -d:*)",
+    "Bash(curl --data:*)",
+    "Bash(curl -F:*)",
+    "Bash(curl --form:*)",
+    "Bash(curl -T:*)",
+    "Bash(curl --upload-file:*)",
+    "Bash(curl -X POST:*)",
+    "Bash(curl -X PUT:*)",
+    "Bash(curl -XPOST:*)",
+    "Bash(curl --request POST:*)",
+    "Bash(wget --post-data:*)",
+    "Bash(wget --post-file:*)",
+    "Bash(wget --method=POST:*)",
+    "Bash(scp:*)",
+    "Bash(sftp:*)",
+    "Bash(ssh:*)",
+    "Bash(nc:*)",
+    "Bash(ncat:*)",
+    "Bash(netcat:*)",
+]
 
 # Personal-data ignore rules that must never disappear from .gitignore.
 REQUIRED_IGNORE_RULES = [
@@ -142,6 +221,159 @@ ALLOWED_HOOKS: set[str] = set()
 
 FORBIDDEN_SCRIPTS = {"preinstall", "install", "postinstall", "prepare", "prepack"}
 
+# The exact `allowed-tools` entries a skill or command frontmatter may carry.
+# Claude Code pre-approves these for the turn that invokes the skill, with no
+# prompt, and workspace trust never gates it - so the frontmatter is a second
+# permission allowlist and is held to the same bar as settings.json. Tool-level
+# entries only: path-scoped Read/Edit rules live in settings.json, and every
+# Bash the skills document is allowlisted per command there. A portal skill
+# under .agents/skills/<name>/ may additionally grant exactly its own CLI
+# (checked structurally below, so no portal name appears here).
+ALLOWED_SKILL_TOOLS = {
+    "Read",
+    "Glob",
+    "Grep",
+    "WebFetch",
+    "WebSearch",
+    "Edit",
+    "Write",
+    "AskUserQuestion",
+    "Agent",
+    "Bash(bun --version)",
+    "Bash(python tools/job_key.py:*)",
+    "Bash(python3 tools/job_key.py:*)",
+}
+
+# The tools a shipped .claude/agents/*.md may list. These agents read untrusted
+# posting text, so nothing that edits or writes files, and no Agent (a subagent
+# that could spawn a wider one). Bash is scoped by settings.json's allow list,
+# not here: `tools:` is tool-name granularity, verified empirically - a
+# `Bash(echo *)` entry gives the agent plain Bash.
+ALLOWED_AGENT_TOOLS = {"Read", "Glob", "Grep", "WebFetch", "WebSearch", "Bash"}
+
+_FRONTMATTER_KEY = re.compile(r"^([A-Za-z0-9_-]+):\s*(.*)$")
+
+
+def _frontmatter(text: str):
+    """Parse the YAML-ish frontmatter the repo's skills use, stdlib only.
+
+    Returns a dict, or None when the file has no frontmatter. Handles
+    `key: value`, folded/literal scalars (`key: >` / `key: |` followed by
+    indented lines), and `key:` followed by `- item` lines. Indented lines
+    never start a key, so a folded description mentioning "Bash" cannot be
+    mistaken for a grant. Anything fancier than that is not used here, and
+    an unrecognised shape surfaces as a missing key rather than a crash.
+    """
+    text = text.lstrip("﻿")  # a BOM from a Windows editor is not content
+    if not text.startswith("---"):
+        return None
+    lines = text.splitlines()
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+    if end is None:
+        return None
+    data: dict = {}
+    key = None
+    for raw in lines[1:end]:
+        if raw[:1] in (" ", "\t"):
+            if key is None:
+                continue
+            stripped = raw.strip()
+            if stripped.startswith("- "):
+                if not isinstance(data[key], list):
+                    data[key] = []
+                data[key].append(stripped[2:].strip())
+            elif isinstance(data[key], str):
+                data[key] = (data[key] + " " + stripped).strip()
+            continue
+        match = _FRONTMATTER_KEY.match(raw)
+        if not match:
+            key = None
+            continue
+        key, value = match.group(1), match.group(2).strip()
+        data[key] = "" if value in (">", "|", ">-", "|-") else value
+    return data
+
+
+def _tool_entries(value) -> list:
+    """Split an `allowed-tools` value into entries (string or list form)."""
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    if not isinstance(value, str):
+        return []
+    value = value.strip()
+    if value.startswith("[") and value.endswith("]"):  # YAML flow list
+        value = value[1:-1]
+    entries, depth, current = [], 0, []
+    for char in value:
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth = max(depth - 1, 0)
+        if char == "," and depth == 0:
+            entries.append("".join(current).strip())
+            current = []
+        else:
+            current.append(char)
+    entries.append("".join(current).strip())
+    return [entry for entry in entries if entry]
+
+
+def _own_cli_grant(path: Path) -> set:
+    """The two spellings of 'this portal skill may run its own CLI'."""
+    try:
+        rel = path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return set()
+    parts = rel.split("/")
+    if len(parts) == 4 and parts[:2] == [".agents", "skills"] and parts[3] == "SKILL.md":
+        cli = f"bun run .agents/skills/{parts[2]}/cli/src/cli.ts"
+        return {f"Bash({cli} *)", f"Bash({cli}:*)"}
+    return set()
+
+
+def check_skill_tool_grants() -> None:
+    skills = sorted(ROOT.glob(".claude/skills/*/SKILL.md")) + sorted(
+        ROOT.glob(".agents/skills/*/SKILL.md")
+    )
+    commands = sorted((ROOT / ".claude" / "commands").glob("*.md"))
+    for path in skills + commands:
+        rel = path.relative_to(ROOT).as_posix()
+        try:
+            data = _frontmatter(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError) as exc:
+            errors.append(f"{rel}: unreadable (must be UTF-8): {exc}")
+            continue
+        if data is None:
+            if path in commands:
+                continue  # commands may omit frontmatter entirely
+            errors.append(f"{rel}: missing or unterminated frontmatter (expected --- ... ---)")
+            continue
+        # A portal skill may grant exactly its own CLI and nothing else - that is
+        # the promise SECURITY.md makes.
+        own_cli = _own_cli_grant(path)
+        permitted = own_cli if own_cli else ALLOWED_SKILL_TOOLS
+        for entry in _tool_entries(data.get("allowed-tools", "")):
+            if entry in permitted:
+                continue
+            if "*" in entry and not (
+                entry.endswith((" *)", ":*)")) and "*" not in entry[:-2]
+            ):
+                errors.append(
+                    f"{rel}: allowed-tools entry uses a wildcard inside the pattern: "
+                    f"{entry!r}. A glob here pre-approves whatever lands at that path, "
+                    "including code added later; name the exact command instead."
+                )
+                continue
+            errors.append(
+                f"{rel}: allowed-tools entry not in the reviewed allowlist: {entry!r}. "
+                "Claude Code pre-approves allowed-tools for the turn that invokes the "
+                "skill, with no prompt and regardless of workspace trust, so this line is "
+                "a permission allowlist like settings.json. Bare Bash means any command. "
+                "If the grant is intentional, add it to ALLOWED_SKILL_TOOLS in "
+                "tools/security_guards.py in the same PR; a portal skill may grant only "
+                "its own .agents/skills/<name>/cli/src/cli.ts."
+            )
+
 
 def _hook_commands(event: str, entries: object):
     """Yield "<Event>:<command>" for every command a hook event would run.
@@ -218,6 +450,25 @@ def check_permissions() -> None:
         # allowlist entry that no longer exists should be pruned.
         print(f"note: allowlisted permission not present in settings.json: {entry!r}")
 
+    for key, required, effect in (
+        ("ask", REQUIRED_ASK_RULES, "an ask rule forces a prompt even over a skill grant"),
+        ("deny", REQUIRED_DENY_RULES, "a deny rule blocks in every mode, bypass included"),
+    ):
+        rules = permissions.get(key, [])
+        if not isinstance(rules, list) or not all(isinstance(entry, str) for entry in rules):
+            errors.append(f".claude/settings.json: permissions.{key} must be a list of strings")
+            continue
+        present = set(rules)
+        for rule in required:
+            if rule not in present:
+                errors.append(
+                    f".claude/settings.json: required {key} rule missing: {rule!r}. "
+                    f"Removing it silently re-opens what it closed ({effect}). If the "
+                    f"change is intentional, update REQUIRED_{key.upper()}_RULES in "
+                    "tools/security_guards.py in the same PR so the widening is explicit "
+                    "and reviewable."
+                )
+
 
 def check_gitignore() -> None:
     path = ROOT / ".gitignore"
@@ -279,10 +530,78 @@ def check_package_manifests() -> None:
             )
 
 
+def check_tracked_node_modules() -> None:
+    """Fail on any tracked path with a ``node_modules`` component.
+
+    ``.gitignore``'s old ``node_modules/`` rule matched directories only, so a
+    symlink or plain file named ``node_modules`` (a contributor's local symlink
+    to an absolute path, #623) was committed, broke ``bun install`` in CI with a
+    dangling link, and checked out as a text file on Windows. The rule now has
+    no trailing slash; this check catches what the rule cannot, such as a copy
+    force-added or inherited from before the rule changed. Skipped quietly when
+    the tree is not a git checkout (the guard also runs from a bare copy).
+    """
+    try:
+        proc = subprocess.run(
+            ["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=False
+        )
+    except OSError:
+        return
+    if proc.returncode != 0:
+        return
+    for rel in proc.stdout.decode("utf-8", errors="replace").split("\x00"):
+        if rel and "node_modules" in rel.split("/"):
+            errors.append(
+                f"tracked path inside node_modules: {rel!r}. Installed dependencies "
+                "(or a symlink standing in for them) must never be committed: run "
+                "`git rm --cached` on it; .gitignore's `node_modules` rule keeps it out."
+            )
+
+
+def check_agent_tool_grants() -> None:
+    for path in sorted((ROOT / ".claude" / "agents").glob("*.md")):
+        rel = path.relative_to(ROOT).as_posix()
+        try:
+            data = _frontmatter(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError) as exc:
+            errors.append(f"{rel}: unreadable (must be UTF-8): {exc}")
+            continue
+        if data is None:
+            errors.append(f"{rel}: missing or unterminated frontmatter (expected --- ... ---)")
+            continue
+        if "tools" not in data or not _tool_entries(data.get("tools")):
+            errors.append(
+                f"{rel}: no `tools:` key - an agent without one gets every tool, including "
+                "Edit, Write and Bash. Shipped agents read untrusted posting text; declare "
+                f"an explicit list drawn from {sorted(ALLOWED_AGENT_TOOLS)}."
+            )
+            continue
+        for entry in _tool_entries(data.get("tools")):
+            if entry in ALLOWED_AGENT_TOOLS:
+                continue
+            if "(" in entry:
+                errors.append(
+                    f"{rel}: tools entry {entry!r} looks scoped but is not - an agent's "
+                    "`tools:` list is tool-name granularity (a `Bash(pattern)` entry gives "
+                    "the agent plain Bash). List the bare tool and let settings.json's "
+                    "allow list scope it."
+                )
+                continue
+            errors.append(
+                f"{rel}: tools entry not in the reviewed allowlist: {entry!r}. Shipped agent "
+                "definitions read untrusted posting text, so they may not edit or write "
+                "files or spawn further agents. If the grant is intentional, add it to "
+                "ALLOWED_AGENT_TOOLS in tools/security_guards.py in the same PR."
+            )
+
+
 def main() -> int:
     check_permissions()
     check_gitignore()
     check_package_manifests()
+    check_tracked_node_modules()
+    check_skill_tool_grants()
+    check_agent_tool_grants()
     if errors:
         print(f"security_guards: {len(errors)} failure(s)")
         for err in errors:
@@ -290,7 +609,7 @@ def main() -> int:
         return 1
     print(
         "security_guards: OK (permissions allowlist, hooks allowlist, gitignore rules, "
-        "package manifests)"
+        "package manifests, no tracked node_modules, skill/command allowed-tools, agent tools)"
     )
     return 0
 

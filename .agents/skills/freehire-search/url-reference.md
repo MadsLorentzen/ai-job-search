@@ -15,7 +15,7 @@ Verified against the live API:
 | Endpoint | Status |
 |----------|--------|
 | `GET /api/v1/agent/jobs/search` | 200 |
-| `GET /api/v1/jobs/search` | 200 (the web variant; not used by this skill) |
+| `GET /api/v1/jobs/search` | 200 (the web variant; used by `--no-description`) |
 | `GET /api/v1/jobs/facets` | 200 |
 | `GET /api/v1/jobs/{slug}` | 200 |
 | `GET /api/v1/auth/me` | 401 (auth required — not used here) |
@@ -34,15 +34,16 @@ jobs, returning `data: [job, …]` with `meta.total` = the estimated match count
 
 It runs the **same query** as the web-facing `/api/v1/jobs/search` — same `q`, same
 facets, same ranking, same pagination guard (`offset + limit ≤ 10000`) — and differs
-in one respect: asked to, it replaces the search index's truncated `description`
+in one respect: it replaces the search index's truncated `description`
 preview with the posting's **full** description read from the database. That is what
 lets a search of N roles stay one request instead of N + 1.
 
-Two extra parameters control it:
+It always does so - there is no parameter to turn hydration off - so the skill's
+`--no-description` mode calls `/api/v1/jobs/search` instead. One extra parameter
+controls the rendering:
 
 | Param | Maps to CLI flag | Notes |
 |-------|------------------|-------|
-| `include_description` | (always `true`) | Without it the endpoint serves the index preview, same as the web search. |
 | `description_format` | `--description-format` | `markdown` (the skill's default), `text`, or `html`. **An unrecognized value is not an error** — the API falls back to `html`, so the CLI validates the flag itself. |
 
 Hydration is best-effort per hit: a result whose row has vanished from the database
@@ -56,19 +57,18 @@ error naming the path rather than as an empty result set.
 ## `GET /api/v1/jobs/search`
 
 The web variant of the same search — identical query surface, but `description` is
-always the index's truncated preview. The skill does not call it; it is listed here
-because the shared parameters below are documented against both.
+always the index's truncated preview. The skill calls it for `--no-description`,
+where reading every full body from the database would be wasted work.
 
 Query parameters used by the skill:
 
 | Param | Maps to CLI flag | Notes |
 |-------|------------------|-------|
-| `q` | `--query` / `-q` | Keyword full-text query. |
+| `q` | `--query` / `-q` | Keyword full-text query. Uppercase `OR` separates up to 5 alternatives (more is a 400); a leading `title:` restricts an alternative to the title. |
 | `limit` | `--limit` / `-n` | Page size. Default 25 in the CLI. |
 | `offset` | (derived) | `offset = (page - 1) * limit`. |
-| `semantic_ratio` | (fixed `0`) | Keyword search; the semantic index is opt-in. |
 | `posted_within_days` | `--jobage` | Restrict to postings from the last N days. |
-| `regions` | `--region` | Repeatable; OR within the facet. Values like `global`, `eu`, `us`, `apac`, `latam`, `cis`. |
+| `regions` | `--region` | Repeatable; OR within the facet. Values: `global`, `eu`, `uk`, `north_america`, `latam`, `apac`, `mena`, `africa`, `cis`. `us` is a country (`countries`), not a region. |
 | `countries` | `--country` | Repeatable; ISO-3166 alpha-2 (lowercased). |
 | `cities` | `--city` | Repeatable; display-name city. |
 | `seniority` | `--seniority` | Repeatable; `junior`, `middle`, `senior`, `staff`, … |
@@ -138,8 +138,9 @@ points users to (`?q=<role>` scopes the counts). Example:
   serves HTML, which `cleanHtml` (`cli/src/helpers.ts`) strips into readable text.
   Search descriptions arrive already rendered by the API and are passed through
   verbatim — stripping them again would undo the Markdown structure.
-- Fetch uses a browser-ish User-Agent, `Accept: application/json`, and exponential
-  backoff with jitter on 429/5xx (max 6 retries). A connection error (API
+- Fetch sends `User-Agent: MadsLorentzen/ai-job-search/1.0 (freehire-search)` (no contact
+  URL: a host literal in `cli/src` makes `/apply` treat that host as this portal's board)
+  and `Accept: application/json`, and uses exponential backoff with jitter on 429/5xx (max 6 retries). A connection error (API
   unreachable) fails fast with a clear message — no retry, since it is not
   transient server load — which is the graceful-degradation contract: an outage
   degrades this source quickly instead of hanging the caller.

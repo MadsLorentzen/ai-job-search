@@ -64,9 +64,12 @@ export const occupations = defineCommand({
 })
 
 function outputTable(data: Occupation[]): void {
-  console.log("conceptUriDa                                                            preferredLabelDa")
+  // The full URI is an identifier: truncating it cuts the UUID used to build
+  // search filters. Widen the column instead of abbreviating its value.
+  const uriWidth = data.reduce((width, o) => Math.max(width, o.conceptUriDa.length), 70)
+  console.log(`${"conceptUriDa".padEnd(uriWidth)} preferredLabelDa`)
   for (const o of data) {
-    const uri = o.conceptUriDa.substring(0, 70).padEnd(70)
+    const uri = o.conceptUriDa.padEnd(uriWidth)
     const label = o.preferredLabelDa
     console.log(`${uri} ${label}`)
   }

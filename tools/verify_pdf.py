@@ -132,8 +132,18 @@ def _bare_number(token):
     return core
 
 
+_TWO_DIGIT_YEAR = re.compile(r"\d{2}")
+
+
 def _quantity_range(line, dash_index):
-    """True when both sides of the dash are bare numbers and not both years."""
+    """True when both sides of the dash are bare numbers and not a date pair.
+
+    A date pair is two years (`2016-2024`) or a year and a two-digit year
+    (`2016-17`, `2019-20`): the short form is how academic years and seasons
+    are written, and it was caught before the quantity rule existed. Anything
+    else with bare numbers on both sides is a quantity (`1500-2000`,
+    `2000-5000`) and is left alone.
+    """
     before = _TOKEN_BEFORE.search(line[:dash_index])
     after = _TOKEN_AFTER.search(line[dash_index + 1 :])
     if not before or not after:
@@ -141,7 +151,9 @@ def _quantity_range(line, dash_index):
     left, right = _bare_number(before.group(1)), _bare_number(after.group(1))
     if left is None or right is None:
         return False
-    return not (_BARE_YEAR.fullmatch(left) and _BARE_YEAR.fullmatch(right))
+    if _BARE_YEAR.fullmatch(left) and (_BARE_YEAR.fullmatch(right) or _TWO_DIGIT_YEAR.fullmatch(right)):
+        return False
+    return True
 
 
 def find_non_ascii_date_ranges(text):

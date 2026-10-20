@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -96,10 +97,12 @@ def main() -> int:
             f"  git remote add upstream https://github.com/{UPSTREAM_REPO_SLUG}.git"
         )
 
+    fetch_failed = False
     if not args.no_fetch:
         print(f"Fetching latest from remote '{remote}'...")
         rc, _, stderr = run_git(["fetch", remote])
         if rc != 0:
+            fetch_failed = True
             print(f"Warning: Failed to fetch from remote '{remote}': {stderr.strip()}")
             print("Proceeding with cached remote tracking branches.")
 
@@ -119,7 +122,7 @@ def main() -> int:
     for rel_path in FRAMEWORK_FILES:
         local_path = ROOT / rel_path
         if not local_path.exists():
-            print(f"Local file missing: {rel_path}")
+            errors.append(f"Local file missing: {rel_path}")
             continue
 
         # Get local version
@@ -145,6 +148,7 @@ def main() -> int:
             errors.append(f"Local file {rel_path} is missing 'framework_version' in frontmatter.")
             continue
         if not upstream_ver:
+            errors.append(f"Upstream file {rel_path} is missing 'framework_version' in frontmatter.")
             continue
             
         if parse_semver(upstream_ver) > parse_semver(local_ver):
@@ -182,13 +186,18 @@ def main() -> int:
                 f"{len(errors)} configuration error(s), {len(missing_upstream)} file(s) missing upstream. "
                 "Review the messages above before assuming you are up to date."
             )
-        else:
+        elif not fetch_failed:
             print(f"[OK] All framework files are up to date with {ref}!")
+    if fetch_failed:
+        print(
+            f"[WARNING] Compared against cached {ref} because the fetch failed; "
+            "the current upstream state could not be checked."
+        )
     # Version stamps answer "which of my files changed"; commit-level triage
     # answers "which upstream commits deserve review". Point at the companion.
     print(
         f"\nFor commit-level triage of upstream commits, run: "
-        f"python3 tools/upstream_triage.py --remote {remote}"
+        f"python3 tools/upstream_triage.py --remote {shlex.quote(remote)} --branch {shlex.quote(args.branch)}"
     )
     return 0
 

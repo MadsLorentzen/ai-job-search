@@ -43,6 +43,18 @@ class NotionSyncCommandSpec(unittest.TestCase):
             "notion_sync.json is personal state and must never be committable",
         )
 
+    def test_step2_join_names_the_field_ranked_entries_actually_carry(self):
+        # seen_jobs.json entries carry `title` (job-scraper SKILL.md schema), the
+        # tracker carries `role`. "matched ... on company + role" read as a
+        # lookup of `role` on the entry, which never matches, so one job became
+        # two Notion rows with different Keys. The join is role-vs-title.
+        text = COMMAND.read_text(encoding="utf-8")
+        line = next(l for l in text.splitlines() if "matched to `job_scraper/seen_jobs.json` entries" in l)
+        self.assertIn("company + title", line)
+        self.assertIn("`title`", line)
+        self.assertIn("`role`", line)
+        self.assertNotIn("company + role", line)
+
     def test_privacy_rule_documents_never_sync(self):
         text = COMMAND.read_text(encoding="utf-8")
         self.assertIn(
@@ -50,6 +62,23 @@ class NotionSyncCommandSpec(unittest.TestCase):
             text,
             "spec lost the rule that CV/cover-letter content never syncs to Notion",
         )
+
+    def test_expired_jobs_are_update_only_and_never_create_or_rebuild_pages(self):
+        text = COMMAND.read_text(encoding="utf-8")
+        step2 = text.split("## Step 2:", 1)[1].split("## Step 3:", 1)[0]
+        step3 = text.split("## Step 3:", 1)[1].split("## Step 4:", 1)[0]
+        step4 = text.split("## Step 4:", 1)[1].split("## Step 5:", 1)[0]
+        step5 = text.split("## Step 5:", 1)[1].split("## Step 6:", 1)[0]
+
+        self.assertIn("entries with status `expired` join the sync set regardless of score as update-only candidates", step2)
+        self.assertIn("An entry selected only because it is `expired` and has no matching tracker row", step2)
+        self.assertIn("If a matching tracker row exists, it remains an ordinary sync item and tracker status precedence applies.", step2)
+        self.assertIn("sync set contains only expired-only entries", step3)
+        self.assertIn("stop without asking where to create a database", step3)
+        self.assertIn("without creating the database or writing `job_scraper/notion_sync.json`", step3)
+        self.assertIn("if the job is an expired-only entry, skip it - do not create a page or write a body", step4)
+        self.assertIn("Match, expired-only entry** → update **Status only** to `expired`", step4)
+        self.assertIn("Never write or rebuild a body for an expired-only entry, including when `--rebuild` is set.", step5)
 
     @unittest.skipUnless(
         _HAVE_YAML,

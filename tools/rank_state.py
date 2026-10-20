@@ -149,11 +149,16 @@ def tracker_pairs(path: Path) -> set[tuple[str, str]]:
     import csv
 
     pairs = set()
-    with path.open(encoding="utf-8-sig", newline="") as fh:
-        for row in csv.DictReader(fh):
-            company, role = norm(row.get("company")), norm(row.get("role"))
-            if company:
-                pairs.add((company, role))
+    try:
+        with path.open(encoding="utf-8-sig", newline="") as fh:
+            for row in csv.DictReader(fh):
+                company, role = norm(row.get("company")), norm(row.get("role"))
+                if company:
+                    pairs.add((company, role))
+    except UnicodeDecodeError:
+        # A spreadsheet's plain "CSV" save writes the ANSI code page (cp1252 on
+        # most Western installs), so any accented company name stops decoding.
+        sys.exit(f"{path} is not UTF-8 text - re-save it as CSV UTF-8")
     return pairs
 
 
@@ -225,7 +230,9 @@ def cmd_candidates(args) -> int:
 def cmd_sweep(args) -> int:
     doc, seen = load_state(args.state)
     today = args.today
-    exclude = {k for k in (args.exclude or "").split(",") if k}
+    # "a_b, c_d" is as natural a comma-separated list as "a_b,c_d"; keys never
+    # carry surrounding whitespace, so a space must not un-exclude a key.
+    exclude = {k.strip() for k in (args.exclude or "").split(",") if k.strip()}
 
     expired, closing, unparseable, checked = [], [], [], 0
     for key, entry in seen.items():
@@ -273,6 +280,8 @@ def cmd_sweep(args) -> int:
 
 
 def overall_score(scores: dict) -> int:
+    if not isinstance(scores, dict):
+        raise ValueError("scores must be an object")
     total = 0.0
     for dim, weight in WEIGHTS.items():
         value = scores.get(dim)
@@ -306,8 +315,11 @@ def cmd_apply(args) -> int:
 
     rows, expired, unreachable, gave_up, errors = [], [], [], [], []
     for result in results:
+        if not isinstance(result, dict):
+            errors.append({"key": None, "error": "result is not an object"})
+            continue
         key = result.get("key")
-        entry = seen.get(key)
+        entry = seen.get(key) if isinstance(key, str) else None
         if entry is None:
             errors.append({"key": key, "error": "no such key in seen_jobs.json"})
             continue
@@ -419,6 +431,24 @@ def cmd_apply(args) -> int:
             value = result.get(field)
             if isinstance(value, list):
                 entry[field] = [str(b) for b in value][:3]
+        # The scoring agent's posting_guard verdict line ("clean" or the ⚠ line).
+        # Additive and optional: an agent on an older prompt returns none, and
+        # nothing is written. Stored so a later reader can see why a row carried
+        # a marker without re-fetching the posting.
+        # Normalised so Step 5's "anything other than clean" rule holds whether
+        # the agent returned "clean" or the gate's first line verbatim: any clean
+        # verdict (with or without its context parenthetical) stores as "clean";
+        # a ⚠ verdict stores without the "posting_guard:" prefix. A rescoring
+        # result without a guard drops a stale one - absence means "not run",
+        # and last run's verdict would mislabel this run's fetch.
+        guard = result.get("guard")
+        if isinstance(guard, str) and guard.strip():
+            text = guard.strip()
+            if text.lower().startswith("posting_guard:"):
+                text = text[len("posting_guard:"):].strip()
+            entry["guard"] = "clean" if text.lower().startswith("clean") else text[:200]
+        else:
+            entry.pop("guard", None)
 
         rows.append(
             {
@@ -437,6 +467,7 @@ def cmd_apply(args) -> int:
                 "urgent": bool(parsed and today <= parsed <= today + timedelta(days=URGENT_DAYS)),
                 "strengths": entry.get("strengths", []),
                 "gaps": entry.get("gaps", []),
+                "guard": entry.get("guard"),
             }
         )
 

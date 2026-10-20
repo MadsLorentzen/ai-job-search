@@ -1,5 +1,5 @@
 # Dependencies
-node_modules/
+node_modules
 bun.lock
 
 # Python
@@ -113,7 +113,7 @@ company_research/*.json
 
 # Agent skills: track the source, ignore only deps and logs.
 # (A blanket `.agents/` ignore silently drops the job-search CLI skills from the repo.)
-.agents/**/node_modules/
+.agents/**/node_modules
 .agents/**/*.log
 .agents/usage/
 
