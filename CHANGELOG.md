@@ -34,6 +34,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`verify_pdf.py --ascii-dates` catches the `2016–17` form again** - the quantity rule from
+  #533 treated `17` as a bare non-year number, so `MSc Physics, 2016–17`, `Sep 2016–17` and
+  `2019–20 season` passed `/apply` Step 5d although the guide says a year on either side of the
+  dash is enough, and all three were caught before #533. A year followed by a two-digit year is
+  now a date pair; `1500–2000` and `2000–5000` stay quantities. Two new `test_verify_pdf.py`
+  cases; the date-pair one fails on master.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
