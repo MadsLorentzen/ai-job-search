@@ -3,9 +3,8 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-// Runs the real CLI with fetch pointed at a local server that records each
-// search body. Every live ad carries jobTypes ["fuldtid"] or ["deltid"], and the
-// API answers any other jobTypes value with zero items and HTTP 200.
+// Runs the real CLI against a local HTTP server and records its actual request.
+// Unknown type strings return a successful empty search on the real API.
 async function search(args: string[]) {
   const bodies: Array<{ jobTypes: string[] }> = [];
   const server = Bun.serve({
@@ -44,7 +43,7 @@ async function search(args: string[]) {
   }
 }
 
-test.each(["elev", "studiejob", "fleksjob", "praktik", "fuldtid,elev"])(
+test.each(["fulltime", "student", "fuldtid,typo"])(
   "--job-type %s exits 1 before searching instead of returning an empty result",
   async (value) => {
     const result = await search(["--job-type", value]);
@@ -63,3 +62,15 @@ test("--job-type fuldtid,deltid is sent as the jobTypes array", async () => {
   expect(result.exitCode).toBe(0);
   expect(result.bodies.map((b) => b.jobTypes)).toEqual([["fuldtid", "deltid"]]);
 });
+
+// All six are listed by /api/jobsearch/settings. A live 2026-10-20 search
+// returned a deltid+fleksjob ad, despite fleksjob having no ads on 2026-10-18.
+test.each(["fleksjob", "elev", "studiejob", "praktik"])(
+  "settings-offered --job-type %s remains usable even when currently empty",
+  async (value) => {
+    const result = await search(["--job-type", value]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toBe("");
+    expect(result.bodies.map((b) => b.jobTypes)).toEqual([[value]]);
+  },
+);

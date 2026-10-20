@@ -46,7 +46,7 @@ per-file diff commands.
 
 ### Fixed
 
-- **`jobdanmark-search search --job-type` avoids misleading empty searches** (#652) - the settings API offers `fleksjob`, `elev`, `studiejob` and `praktik`, but no live ads currently carry those tags; the CLI reports `BAD_ARG` and the examples use `--text`, including `elevplads` for apprenticeships.
+- **`jobdanmark-search search --job-type` rejects unknown filters before making a request** (#652) - all six values offered by the settings API remain accepted even when currently empty, and the examples show `--text elevplads` as a keyword fallback for apprenticeships.
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,

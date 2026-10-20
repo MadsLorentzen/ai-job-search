@@ -32,7 +32,7 @@ Invoke this skill when the user wants to:
 
 - Search for job listings in Denmark (by keyword, location, category, or job type)
 - Browse available jobs in a specific Danish city, municipality, zip code, or region
-- Filter jobs by employment type (full-time/part-time; use `--text` for student jobs or apprenticeships)
+- Filter jobs by employment type (full-time, part-time, fleksjob, student jobs, apprenticeships and internships; use `--text` as a keyword fallback)
 - Look up the full details of a specific job posting including description and deadline
 - List all job categories with current live job counts
 - Resolve a job search term into a job title ID or category ID for precise filtering
@@ -54,7 +54,7 @@ Key flags:
 - `--zip <code>` — zip code, e.g. `5000`, `8000`, `2100`
 - `--region <name>` — landsdel (`locations` category `region`), e.g. `Sjælland`, `Østjylland`, `Fyn`
 - `--administrative-region <name>` — one of the five regions (`locations` category `administrativeRegion`), e.g. `Region Midtjylland`
-- `--job-type <types>` — comma-separated: `fuldtid`, `deltid` (the tags on current live ads; the settings API also offers `fleksjob`, `elev`, `studiejob` and `praktik`, but no live ads currently carry them - use `--text`, e.g. `elevplads`, instead)
+- `--job-type <types>` — comma-separated settings-offered filters: `fuldtid`, `deltid`, `fleksjob`, `elev`, `studiejob`, `praktik`; availability varies with current ads. If a type returns zero jobs, try `--text` (e.g. `elevplads`) for keyword matches.
 - `--page <n>` — page number (30 items per page, server-enforced)
 - `--limit <n>` — cap total results returned by CLI
 - `--format json|table|plain`

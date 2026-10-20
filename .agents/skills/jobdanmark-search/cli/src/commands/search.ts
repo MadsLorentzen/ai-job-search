@@ -34,17 +34,16 @@ interface ApiSearchResponse {
   totalPages: number
 }
 
-// Current live ads carry fuldtid or deltid. The settings API also offers
-// fleksjob, elev, studiejob and praktik, but no live ads currently carry
-// those tags, so selecting them silently returns an empty successful search.
-export const JOB_TYPES = ["fuldtid", "deltid"] as const
+// Values offered by /api/jobsearch/settings. Availability changes with live ads:
+// a currently empty type is still a valid filter, not an unsupported argument.
+export const JOB_TYPES = ["fuldtid", "deltid", "fleksjob", "elev", "studiejob", "praktik"] as const
 
 export function parseJobTypes(value: string | undefined): string[] {
   const types = value ? value.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean) : []
   const unknown = types.filter((t) => !(JOB_TYPES as readonly string[]).includes(t))
   if (unknown.length > 0) {
     throw new Error(
-      `unsupported --job-type ${unknown.join(", ")}: current live ads carry only ${JOB_TYPES.join(", ")}; the settings API also offers fleksjob, elev, studiejob and praktik, but no live ads currently carry those tags; use --text (for example elevplads) instead`,
+      `unsupported --job-type ${unknown.join(", ")}: choose ${JOB_TYPES.join(", ")}; use --text for keywords such as elevplads`,
     )
   }
   return types
