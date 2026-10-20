@@ -34,6 +34,19 @@ per-file diff commands.
 
 ### Fixed
 
+- **`convert_salary_excel.py` no longer takes a qualified salary header as the company
+  column** (`tools/convert_salary_excel.py`, `tests/test_convert_salary_excel.py`) - the
+  detection loop kept the *last* header matching a company pattern, so
+  `Company Name | City | Company Count | Company Index` made the index column the company
+  column and every converted row carried `"company": "108.5"`; a Danish header in the same
+  shape (`Firmanavn og by | Antal | Firmaets indeks`, constructed - the IDA workbook heads its
+  pairs `Antal` and `Indeks` and already converts) did the same. #571's exact-match preference
+  only helped when a header was exactly `Company` or `Firma`. Detection is now three tiers,
+  each taking the first match: an exact pattern header, then a pattern header that is not a
+  count/index column, then any pattern header; the city lookup skips the company column, so a
+  combined name-and-city header before a real city column no longer drops the city. Five new
+  cases; the two qualified-header ones fail on master.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
