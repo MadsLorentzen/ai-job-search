@@ -95,9 +95,9 @@ INSTRUCTION_PATTERNS = [re.compile(p, re.I) for p in (
     r"\bsystem prompt\b",
     r"\bdo not (tell|inform|mention)( this)? to the user\b",
     r"\b(run|execute) the following (command|commands|script|code|shell|instruction|instructions|steps)\b",
-    # "As an AI" that ends there or turns to "you"/"I" ("As an AI, you must ..."), optionally as a
-    # named model ("As an AI language model, I ..."). A following word is a job title: "As an AI Engineer".
-    r"\bas an ai(?:\s+(?:language model|model|assistant|agent|chatbot|llm))?(?=\s*(?:[^\w\s/-]|$)|\s+(?:you|i)\b)",
+    # "As an AI" flags by default. Exempt only a job-title noun within a few words of "AI", the way AI
+    # job ads introduce the role ("As an AI Engineer", "as an AI/ML Researcher", "As an AI Product Manager").
+    r"\bas an ai(?![\w-])(?![\s/&]+(?:[\w&/-]+\s+){0,3}?(?:engineer|developer|researcher|scientist|architect|specialist|lead|consultant|manager|analyst|intern|trainer|expert|strategist|designer|tester|owner|programmer)s?\b)",
     r"^\s*(assistant|system|user)\s*:",
     r"<\|",
     r"\[INST\]",
