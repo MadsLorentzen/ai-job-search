@@ -242,6 +242,17 @@ per-file diff commands.
   runs a bare `python`, or a spec that runs a tool carries no note, a second
   note, or one after its first command.
 
+- **A saved page that is not UTF-8 is read in the charset it declares** (#690, `tools/page_decode.py`,
+  `tools/posting_guard.py`, `tools/fetch_page.py`, `tests/test_page_decode.py`) - `posting_guard.py --html`
+  and `fetch_page.py --text` decoded a page saved by `fetch_page.py` as UTF-8 with replacement, so a
+  posting served in EUC-KR, Shift_JIS, windows-1251 or another legacy charset reached the gate and the
+  scorer as replacement characters while the gate still reported it clean (a live job.incruit.com
+  posting came out as 1206 U+FFFD and 4 Hangul characters). Bytes that are valid UTF-8 decode exactly
+  as before; otherwise a UTF-16 byte order mark or a `<meta>` charset in the first 1024 bytes picks the
+  codec browsers use for that label, from a fixed list (so a page cannot select UTF-7), and a missing
+  or unknown label keeps the old result. The homoglyph check now sees Cyrillic letters on a
+  windows-1251 page. Text input to the gate (`--text`) is unchanged.
+
 ### Security
 
 - **CI no longer leaves the job token in `.git/config` or expands a PR-controlled name into a
