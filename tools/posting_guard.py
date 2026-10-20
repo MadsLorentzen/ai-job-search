@@ -242,6 +242,25 @@ def clean_html(markup: str):
     return _fold(text), {"hidden_blocks": hidden_blocks, "hidden_text": "\n".join(hidden_parts)}
 
 
+def _excerpt(line: str, at: int) -> str:
+    """Up to LINE_MAX characters of `line`, always including position `at`.
+
+    The quote is what lets the user dismiss a flag in a second, so it must
+    show the match. A fixed `line[:LINE_MAX]` showed the first 200 characters
+    of a long paragraph and nothing suspicious when the trigger sat later -
+    WebFetch paragraphs and portal plain output routinely run past 200.
+    """
+    if len(line) <= LINE_MAX:
+        return line
+    lead = LINE_MAX // 3
+    start = max(0, at - lead)
+    end = min(len(line), start + LINE_MAX)
+    start = max(0, end - LINE_MAX)
+    head = "\u2026" if start else ""
+    tail = "\u2026" if end < len(line) else ""
+    return f"{head}{line[start:end]}{tail}"
+
+
 def scan(visible: str, hidden: str) -> dict:
     """Instruction-shaped lines, hidden URLs, visible URL count, mixed-script words."""
     seen = set()
@@ -250,9 +269,10 @@ def scan(visible: str, hidden: str) -> dict:
         stripped = line.strip()
         if not stripped or stripped in seen:
             continue
-        if any(p.search(stripped) for p in INSTRUCTION_PATTERNS):
+        match = next((m for m in (p.search(stripped) for p in INSTRUCTION_PATTERNS) if m), None)
+        if match:
             seen.add(stripped)
-            instruction_like.append(stripped[:LINE_MAX])
+            instruction_like.append(_excerpt(stripped, match.start()))
     hidden_urls = []
     for url in URL.findall(hidden):
         if url not in hidden_urls:
