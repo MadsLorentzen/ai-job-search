@@ -164,7 +164,8 @@ export function normalizeJobId(input: string): string | null {
   if (/^\d+$/.test(trimmed)) return trimmed
   let url: URL
   try {
-    url = new URL(trimmed)
+    const hostLike = /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(trimmed)
+    url = new URL(hostLike ? `https://${trimmed}` : trimmed)
   } catch {
     return null
   }

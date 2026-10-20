@@ -3,12 +3,22 @@ import { normalizeJobId } from "../src/helpers.js"
 import { runCLI } from "./helpers.js"
 
 describe("jobbank-search normalizeJobId", () => {
+  test("accepts portal URLs without a scheme", () => {
+    for (const host of ["jobbank.dk", "www.jobbank.dk", "m.jobbank.dk", "JOBBANK.DK"]) {
+      expect(normalizeJobId(` ${host}/job/3117065/company/role?ref=search#apply `)).toBe("3117065")
+    }
+  })
+
   test("rejects foreign hosts, non-web schemes and job paths only in a query", () => {
     for (const value of [
       "https://example.com/job/304212/",
       "https://jobbank.dk.example.com/job/304212/",
       "ftp://jobbank.dk/job/304212/",
       "https://jobbank.dk/?next=/job/304212/",
+      "example.com/job/304212/",
+      "jobbank.dk.evil.io/job/304212/",
+      "jobbank.dk@evil.io/job/304212/",
+      "jobbank.dk/?next=/job/304212/",
     ]) expect(normalizeJobId(value)).toBeNull()
   })
 

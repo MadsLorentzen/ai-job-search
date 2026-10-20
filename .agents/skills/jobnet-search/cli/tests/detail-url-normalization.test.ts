@@ -3,12 +3,24 @@ import { normalizeJobId } from "../src/helpers.js"
 import { runCLI } from "./helpers.js"
 
 describe("jobnet-search normalizeJobId", () => {
+  test("accepts portal URLs without a scheme", () => {
+    const id = "12345678-1234-1234-1234-123456789abc"
+    for (const host of ["jobnet.dk", "www.jobnet.dk", "m.jobnet.dk", "JOBNET.DK"]) {
+      expect(normalizeJobId(` ${host}/find-job/${id}?ref=search#apply `)).toBe(id)
+    }
+    expect(normalizeJobId(`job.jobnet.dk/CV/FindWork/Details/${id}`)).toBe(id)
+  })
+
   test("rejects foreign hosts, non-web schemes and job paths only in a query", () => {
     for (const value of [
       "https://example.com/find-job/6123456/",
       "https://jobnet.dk.example.com/find-job/6123456/",
       "ftp://jobnet.dk/find-job/6123456/",
       "https://jobnet.dk/?next=/find-job/6123456/",
+      "example.com/find-job/6123456/",
+      "jobnet.dk.evil.io/find-job/6123456/",
+      "jobnet.dk@evil.io/find-job/6123456/",
+      "jobnet.dk/?next=/find-job/6123456/",
     ]) expect(normalizeJobId(value)).toBeNull()
   })
 
