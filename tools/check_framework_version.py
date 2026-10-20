@@ -62,7 +62,9 @@ def get_base_commit() -> str | None:
 def parse_frontmatter(path: Path) -> dict:
     if not path.exists():
         return {}
-    text = path.read_text(encoding="utf-8")
+    return parse_frontmatter_text(path.read_text(encoding="utf-8"))
+
+def parse_frontmatter_text(text: str) -> dict:
     if not text.startswith("---\n"):
         return {}
     end = text.find("\n---", 4)
@@ -79,7 +81,7 @@ def parse_frontmatter(path: Path) -> dict:
 
 def has_non_trivial_changes(file_path: Path, base_commit: str) -> bool:
     # Get diff of the file from base_commit to HEAD
-    rel_path = str(file_path.relative_to(ROOT))
+    rel_path = file_path.relative_to(ROOT).as_posix()
     rc, stdout, stderr = run_git(["diff", "-U0", base_commit, "--", rel_path])
     if rc != 0:
         # If diff fails (e.g. file is new/untracked), it's a change
@@ -107,9 +109,15 @@ def has_non_trivial_changes(file_path: Path, base_commit: str) -> bool:
                 continue
             meaningful_changes += 1
             
-    # If the version key itself was modified, we don't fail, regardless of other changes
+    # Editing a version line is not necessarily a bump: YAML quoting and
+    # whitespace can change while the parsed marker stays the same.
     if version_changed:
-        return False
+        rc, base_text, _ = run_git(["show", f"{base_commit}:{rel_path}"])
+        if rc != 0 or (
+            parse_frontmatter_text(base_text).get("framework_version")
+            != parse_frontmatter(file_path).get("framework_version")
+        ):
+            return False
         
     # If there are meaningful changes but the version was not changed
     return meaningful_changes > 0
@@ -119,7 +127,7 @@ def main() -> int:
     
     # 1. Lint: Check that all framework files have framework_version in frontmatter
     for path in FRAMEWORK_FILES:
-        rel_path = str(path.relative_to(ROOT))
+        rel_path = path.relative_to(ROOT).as_posix()
         fm = parse_frontmatter(path)
         if "framework_version" not in fm:
             errors.append(f"{rel_path}: missing 'framework_version' in frontmatter")
@@ -129,7 +137,7 @@ def main() -> int:
     if base_commit:
         print(f"Comparing HEAD against base commit: {base_commit}")
         for path in FRAMEWORK_FILES:
-            rel_path = str(path.relative_to(ROOT))
+            rel_path = path.relative_to(ROOT).as_posix()
             if "framework_version" not in parse_frontmatter(path):
                 # Skip checking changes if it doesn't even have frontmatter (already reported above)
                 continue

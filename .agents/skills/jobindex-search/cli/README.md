@@ -4,14 +4,14 @@ CLI for searching jobs on [Jobindex.dk](https://www.jobindex.dk).
 
 **Base URL**: `https://www.jobindex.dk/`
 **Authentication**: None required.
-**Format**: The API returns JSON with embedded HTML blobs. The CLI parses the HTML internally and emits clean JSON.
+**Format**: The search HTML embeds a JSON `Stash` payload. The CLI extracts its structured search results and emits JSON, table, or plain output.
 
 ---
 
 ## Installation
 
 ```bash
-cd skills/jobindex-search/cli
+cd .agents/skills/jobindex-search/cli
 bun install
 ```
 
@@ -31,19 +31,19 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 
 ## `search` — Search for job listings
 
-**Endpoint**: `GET https://www.jobindex.dk/jobsoegning.json`
+**Endpoint**: `GET https://www.jobindex.dk/jobsoegning`
 
 ```bash
-bun run src/cli.ts search [flags]
+bun run src/cli.ts search --query "<text>" [flags]
 ```
 
-The API always returns 20 results per page (fixed — no `--per-page` flag). The CLI parses the `result_list_box_html` HTML blob from the response to extract structured job records.
+The portal returns 20 results per page (fixed — no `--per-page` flag). The CLI reads `searchResponse.results` from the page's `var Stash = {...}` script. `--query` is required; a query-free search exits with `MISSING_REQUIRED` before fetching.
 
 ### Flags
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
-| `--query` / `-q` | string | — | Keyword search query (e.g. `python`, `grafisk designer`) |
+| `--query` / `-q` | string | — | **Required.** Keyword search query (e.g. `python`, `grafisk designer`) |
 | `--page` | number | `1` | Page number (1-indexed) |
 | `--jobage` | number | `9999` | Max age of posting in days: `1`, `7`, `14`, `30`, or `9999` (all) |
 | `--sort` | string | `score` | Sort order: `score` (relevance) or `date` (newest first) |
@@ -97,8 +97,9 @@ bun run src/cli.ts search --query "data engineer" --page 2 --format table
       "companyUrl": "https://www.gavefabrikken.dk/",
       "location": "Valby",
       "date": "2026-03-12",
-      "url": "https://www.jobindex.dk/jobannonce/h1647303/data-engineer-til-opbygning-af-gavefabrikkens-dataplatform",
-      "description": "Vi søger en dygtig Data Engineer til at opbygge og vedligeholde vores dataplatform..."
+      "deadline": "2026-04-01",
+      "url": "https://www.jobindex.dk/jobannonce/h1647303",
+      "description": null
     }
   ]
 }
@@ -109,10 +110,11 @@ bun run src/cli.ts search --query "data engineer" --page 2 --format table
 - `company` — company name; may be `null` for some aggregated listings.
 - `companyUrl` — company homepage URL; may be `null` if not present.
 - `location` — city or area; may be `null` if not listed.
-- `date` — ISO date string (`YYYY-MM-DD`) from the `datetime` attribute on the `<time>` element; may be `null`.
-- `description` — short excerpt from the listing; may be `null` or empty.
-- `url` — full Jobindex.dk URL for the listing.
-- `total` in `meta` — parsed from `hitcount_html` (Danish thousands separator `.` is stripped before parsing, e.g. `18.903` → `18903`).
+- `date` — the posting's `firstdate` value; may be `null`.
+- `deadline` — the first ten characters of `apply_deadline`, falling back to `lastdate`; `null` when `apply_deadline_asap` is set or no date is present.
+- `description` — currently always `null` in search results. Use `detail` for the full ad.
+- `url` — canonical `https://www.jobindex.dk/jobannonce/{id}` URL; a result without an ID falls back to its `share_url` or `url`.
+- `total` in `meta` — numeric `searchResponse.hitcount`, falling back to the number of returned results if the count is absent.
 
 > **Note on area filtering**: The Jobindex API does not reliably support area/region filtering via query parameters. `area` and `geoareaid` params are silently ignored. To filter by location, use `--query` with a city name (e.g. `--query "python aarhus"`) or apply `--limit` and filter the JSON output externally.
 
@@ -213,35 +215,35 @@ All errors are written to **stderr** in JSON format and exit with code `1`:
 Job detail pages on jobindex.dk:
 - `https://www.jobindex.dk/jobannonce/{id}/{slug}`
 
-The slug is part of the `url` returned by `search`. When calling `detail` with just an ID, the CLI fetches `https://www.jobindex.dk/jobannonce/{id}` which redirects to the full URL.
+Search emits the canonical URL without a slug. When calling `detail` with an ID or full posting URL, the CLI rebuilds `https://www.jobindex.dk/jobannonce/{id}` and follows redirects.
 
 ---
 
 ## Parsing notes
 
-### Total count from `hitcount_html`
+### Search results from `Stash`
 
-The API returns pagination info as an HTML string like:
+The former `/jobsoegning.json` endpoint no longer provides the search payload.
+The HTML search page embeds structured data in a `var Stash = {...}` script.
+The CLI locates a nested `searchResponse` object with a `results` array, for
+example under `jobsearch.result_app.storeData.searchResponse`:
 
-```html
-<div class="jix_pagination_total"><strong>1</strong> til <strong>20</strong> af <strong>18.903</strong> resultater.</div>
+```json
+{
+  "hitcount": 237,
+  "results": [
+    {
+      "tid": "h1647303",
+      "headline": "Data Engineer",
+      "company": { "name": "Gavefabrikken", "homeurl": "https://www.gavefabrikken.dk/" },
+      "area": "Valby",
+      "firstdate": "2026-03-12",
+      "apply_deadline": "2026-04-01T00:00:00"
+    }
+  ]
+}
 ```
 
-Parse total with: `/af <strong>([\d.]+)<\/strong>/` and strip `.` before converting to integer.
-
-### Job card selectors
-
-Each job card is wrapped in `[data-beacon-tid]`. Inside, select:
-
-| Field | Selector |
-|-------|----------|
-| `id` | `[data-beacon-tid]` attribute value |
-| `title` | `h4 > a` text content |
-| `url` | `h4 > a[href]` |
-| `company` | `.jix-toolbar-top__company a` text |
-| `companyUrl` | `.jix-toolbar-top__company a[href]` |
-| `location` | `span.jix_robotjob--area` text |
-| `date` | `time[datetime]` attribute value |
-| `description` | `p` text content (first `<p>` in card) |
-
-Two card types exist: `div.PaidJob` (sponsored) and `div.jix_robotjob` (aggregated). Both use the same selector pattern.
+The active search path maps these fields directly; it does not parse job-card
+HTML or `hitcount_html`. `extractStash` and `parseSearchPage` in `src/helpers.ts`
+implement this path. The legacy `parseJobCards` helper is not used by `search`.

@@ -1,12 +1,23 @@
 import io
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
 from contextlib import redirect_stderr
 from types import SimpleNamespace
+
+try:
+    import openpyxl
+except ImportError:
+    openpyxl = None
 
 from salary_lookup import format_entry
 from tools.convert_salary_excel import (
     INDEX_PATTERNS,
     detect_column_type,
+    COMPANY_PATTERNS,
     header_matches,
     parse_numeric_cell,
     parse_sheet,
@@ -29,6 +40,51 @@ class FakeWorksheet:
 
     def __getitem__(self, row_number):
         return [SimpleNamespace(value=value) for value in self.rows[row_number - 1]]
+
+
+@unittest.skipUnless(openpyxl is not None, "openpyxl is not installed")
+class BooleanCellCliTests(unittest.TestCase):
+    def test_excel_logical_cells_are_not_salary_numbers(self):
+        # Exercise the documented converter CLI with actual Excel boolean cells,
+        # including partial pairs and numeric 0/1 controls.
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "salary.xlsx"
+            target = Path(tmp) / "salary.json"
+            workbook = openpyxl.Workbook()
+            sheet = workbook.active
+            sheet.append(["Company", "City", "Count", "Index", "Verified"])
+            sheet.append(["Logical Pair", "Berlin", True, False, True])
+            sheet.append(["Logical Count", "Berlin", False, 108.5, False])
+            sheet.append(["Logical Index", "Berlin", 12, True, None])
+            sheet.append(["Numeric Values", "Berlin", 0, 1, 0])
+            sheet.append(["Numeric Count", "Berlin", 1, 0, 1])
+            workbook.save(source)
+            workbook.close()
+
+            result = subprocess.run(
+                [sys.executable, str(Path(__file__).resolve().parents[1] /
+                                     "tools/convert_salary_excel.py"),
+                 str(source), "--output", str(target)],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            companies = json.loads(target.read_text(encoding="utf-8"))["companies"]
+
+        self.assertEqual(companies[0]["categories"], {})
+        self.assertEqual(companies[1]["categories"], {
+            "all_employees": {"count": None, "index": 108.5},
+        })
+        self.assertEqual(companies[2]["categories"], {
+            "all_employees": {"count": 12, "index": None},
+        })
+        self.assertEqual(companies[3]["categories"], {
+            "all_employees": {"count": 0, "index": 1.0},
+            "verified": {"index": 0.0},
+        })
+        self.assertEqual(companies[4]["categories"], {
+            "all_employees": {"count": 1, "index": 0.0},
+            "verified": {"index": 1.0},
+        })
 
 
 class DetectColumnTypeTests(unittest.TestCase):
@@ -107,6 +163,22 @@ class DetectColumnTypeTests(unittest.TestCase):
                 self.assertEqual(
                     companies[0]["categories"]["salary"], {"index": 105.5}
                 )
+
+    def test_parse_sheet_detects_danish_compound_company_header(self):
+        # The IDA workbook heads its company column "Firmanavn og by": "firma"
+        # glued to "navn". Whole-token matching alone skipped the entire sheet
+        # ("Could not find header row") from #75 until "firma" joined
+        # COMPOUND_PATTERNS, so the shipped demonstration data no longer
+        # converted at all.
+        self.assertTrue(header_matches("Firmanavn og by", COMPANY_PATTERNS))
+        ws = FakeWorksheet([
+            ("Firmanavn og by", "Antal", "Indeks"),
+            ("Example A/S, Aarhus", 12, 105.0),
+        ])
+        companies = parse_sheet(ws)
+        self.assertEqual(len(companies), 1)
+        self.assertEqual(companies[0]["company"], "Example A/S, Aarhus")
+        self.assertEqual(companies[0]["categories"]["all_employees"], {"count": 12, "index": 105.0})
 
     def test_parse_sheet_detects_city_column_with_token_header(self):
         # City headers are matched with the same token-based header_matches()

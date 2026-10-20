@@ -143,7 +143,7 @@ class SeenJobsDedupContinuityTests(unittest.TestCase):
         text = SCRAPER_SKILL.read_text(encoding="utf-8")
         self.assertRegex(
             text,
-            r"URL matches any existing `seen_jobs\.json` entry, regardless of\s+that entry's key",
+            r"URL matches any existing `(?:job_scraper/)?seen_jobs\.json` entry, regardless of\s+that entry's key",
             "legacy seen_jobs entries must be matched by URL during the key-rule transition",
         )
 

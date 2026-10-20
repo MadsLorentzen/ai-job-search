@@ -41,11 +41,11 @@ Invoke this skill when the user wants to:
 ### Search job listings
 
 ```bash
-bun run .agents/skills/jobindex-search/cli/src/cli.ts search [flags]
+bun run .agents/skills/jobindex-search/cli/src/cli.ts search --query "<text>" [flags]
 ```
 
 Key flags:
-- `--query <text>` / `-q <text>` — keyword search (job title, skill, company, city). **Required** for meaningful results.
+- `--query <text>` / `-q <text>` — keyword search (job title, skill, company, city). **Required.** Searches without a query exit with `MISSING_REQUIRED`.
 - `--jobage <days>` — filter by posting age: `1` (today), `7`, `14`, `30`, or `9999` (all, default)
 - `--sort <order>` — `score` (relevance, default) or `date` (newest first)
 - `--page <n>` — page number (1-indexed, 20 results per page, fixed)
@@ -121,10 +121,11 @@ bun run .agents/skills/jobindex-search/cli/src/cli.ts search \
   --format json
 ```
 
-### Jobs posted today across all sectors
+### Jobs posted today for a keyword
 
 ```bash
 bun run .agents/skills/jobindex-search/cli/src/cli.ts search \
+  --query python \
   --jobage 1 \
   --sort date \
   --limit 20 \
@@ -167,5 +168,5 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 - Page size is fixed at 20 results per page (Jobindex API limitation).
 - Area/region filtering via API params does not work — include city names in `--query` instead.
 - `--jobage 9999` is the default and includes all postings regardless of age.
-- Total count in `meta.total` uses Danish dot-thousands notation internally (e.g. `18.903`) — the CLI normalizes this to a plain integer.
+- Total count in `meta.total` comes from the numeric `searchResponse.hitcount` embedded in the search page.
 - Job IDs are string-prefixed (e.g. `h1647303`) — pass them as-is to `detail`.
