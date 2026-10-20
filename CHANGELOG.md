@@ -34,16 +34,6 @@ per-file diff commands.
 
 ### Fixed
 
-- **`posting_guard.py` quotes the part of a long line that triggered the flag**
-  (`tools/posting_guard.py`, `tests/test_posting_guard.py`) - the excerpt was a fixed
-  `line[:200]`, so when the trigger sat later in a long paragraph the user saw a ⚠ with 200
-  characters of ordinary company prose and nothing suspicious in them. `apply.md` relies on
-  the quote to let the user dismiss a flag in a second, and WebFetch paragraphs and portal
-  plain output routinely run past 200 characters. The excerpt is now a window of the same
-  length around the first match, with `…` marking a cut at either end; lines up to 200
-  characters are quoted whole as before. One new case fails on master; the short-line case
-  pins the unchanged behaviour.
-
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
@@ -287,6 +277,16 @@ per-file diff commands.
   a posting on the selected portal. Both CLIs now require an HTTP(S) URL on their own domain and extract
   the ID from its pathname only. Bare IDs, portal links without a scheme, portal subdomains, and Jobnet's
   legacy posting routes remain valid.
+
+- **`posting_guard.py` quotes the part of a long line that triggered the flag**
+  (#704, `tools/posting_guard.py`, `tests/test_posting_guard.py`) - the excerpt was a fixed
+  `line[:200]`, so when the trigger sat later in a long paragraph the user saw a ⚠ with 200
+  characters of ordinary company prose and nothing suspicious in them. `apply.md` relies on
+  the quote to let the user dismiss a flag in a second, and WebFetch paragraphs and portal
+  plain output routinely run past 200 characters. The excerpt is now a window of the same
+  length around the first match, with `…` marking a cut at either end; lines up to 200
+  characters are quoted whole as before. One new case fails on master; the short-line case
+  pins the unchanged behaviour.
 
 ### Security
 
