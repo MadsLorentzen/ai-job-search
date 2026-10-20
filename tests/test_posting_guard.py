@@ -228,6 +228,37 @@ class InputHandling(GuardFixture):
         self.assertEqual(code, 0, err)
         self.assertIn("Caf� manager wanted", self.text_of(out))
 
+    def test_html_mode_reads_a_page_saved_in_its_declared_charset(self):
+        # job.incruit.com serves postings as EUC-KR; fetch_page.py saves the bytes as sent.
+        page = (
+            '<html><head><meta http-equiv="Content-Type" content="text/html; charset=euc-kr">'
+            "</head><body><h1>백엔드 개발자 채용</h1><p>Python, SQL 경력 3년 이상</p></body></html>"
+        )
+        p = self.write("page.html", page.encode("cp949"))
+        code, out, err = self.run_main("--in", str(p), "--html", "--json")
+        self.assertEqual(code, 0, err)
+        self.assertIn("백엔드 개발자 채용", self.text_of(out))
+        self.assertNotIn("\ufffd", self.text_of(out))
+
+    def test_html_mode_scans_a_legacy_cyrillic_page_for_homoglyphs(self):
+        # Cyrillic о and а inside Latin words, saved as windows-1251.
+        page = (
+            '<html><head><meta charset="windows-1251"></head>'
+            "<body><p>Join Nоvo Nаrdisk as an engineer.</p></body></html>"
+        )
+        p = self.write("page.html", page.encode("cp1251"))
+        code, out, err = self.run_main("--in", str(p), "--html", "--json")
+        self.assertEqual(code, 0, err)
+        self.assertEqual(len(self.findings_of(out)["homoglyph_runs"]), 2)
+        self.assertIn("⚠", out.splitlines()[0])
+
+    def test_html_mode_keeps_valid_utf8_when_meta_names_another_charset(self):
+        page = '<html><head><meta charset="iso-8859-1"></head><body><p>Café manager</p></body></html>'
+        p = self.write("page.html", page)
+        code, out, err = self.run_main("--in", str(p), "--html", "--json")
+        self.assertEqual(code, 0, err)
+        self.assertIn("Café manager", self.text_of(out))
+
     def test_missing_in_file_exits_2(self):
         code, out, err = self.run_main("--in", str(self.tmp / "nope.txt"))
         self.assertEqual(code, 2)

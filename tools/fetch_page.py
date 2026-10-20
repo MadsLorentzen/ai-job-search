@@ -31,7 +31,8 @@ Prints `HTTP <code> size=<bytes> saved=<path>` and exits 0 whatever the HTTP
 status - the status is information for the escalation order, not a failure.
 With --text, also prints the tag-stripped page text (script/style/noscript/svg
 and comments removed, entities unescaped, whitespace folded), capped at
---max-chars (default 6000), after a `--- text ---` line.
+--max-chars (default 6000), after a `--- text ---` line. A saved body that is
+not valid UTF-8 is decoded by the charset the page declares (page_decode.py).
 
 Exit codes: 0 fetched; 1 refused by robots policy (go to escalation step 4);
 2 usage or transport error.
@@ -53,6 +54,7 @@ from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from page_decode import decode_page  # noqa: E402
 from robots_check import BROWSER, gate  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -213,7 +215,7 @@ def main(argv=None) -> int:
     print(f"{status} saved={out}")
     if args.text:
         print("--- text ---")
-        print(strip_tags(out.read_text(encoding="utf-8", errors="replace"), args.max_chars))
+        print(strip_tags(decode_page(out.read_bytes()), args.max_chars))
     return 0
 
 

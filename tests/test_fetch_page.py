@@ -30,12 +30,20 @@ PAGE = (
     "<noscript>noscript text</noscript><svg><text>svg text</text></svg>"
     "</body></html>"
 )
+KOREAN_PAGE = (
+    '<html><head><meta http-equiv="Content-Type" content="text/html; charset=euc-kr">'
+    "<title>채용공고</title></head><body><h1>백엔드 개발자 채용</h1></body></html>"
+)
+CONTENT_TYPES = {"/euc-kr.html": "text/html; charset=euc-kr"}
 
 
 class _Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):  # noqa: N802 (http.server naming)
         if self.path == "/ok.html":
             body = PAGE.encode("utf-8")
+            self.send_response(200)
+        elif self.path == "/euc-kr.html":
+            body = KOREAN_PAGE.encode("cp949")
             self.send_response(200)
         elif self.path == "/forbidden":
             body = b"<html><body>denied</body></html>"
@@ -54,7 +62,7 @@ class _Handler(http.server.BaseHTTPRequestHandler):
         else:
             body = b"nope"
             self.send_response(404)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Type", CONTENT_TYPES.get(self.path, "text/html; charset=utf-8"))
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -151,6 +159,14 @@ class Fetching(FetchPageFixture):
         self.assertIn("Visible text & more.", text)
         for leaked in ("alert(", "color:red", "hidden comment", "noscript text", "svg text", "<p>"):
             self.assertNotIn(leaked, text)
+
+    def test_text_decodes_a_page_by_its_declared_charset(self):
+        code, out, err = self.run_main(f"{self.base}/euc-kr.html", "--out", str(self.out), "--text")
+        self.assertEqual(code, 0, err)
+        self.assertEqual(self.out.read_bytes(), KOREAN_PAGE.encode("cp949"))
+        text = out.split("--- text ---", 1)[1]
+        self.assertIn("백엔드 개발자 채용", text)
+        self.assertNotIn("\ufffd", text)
 
     def test_max_chars_caps_text(self):
         code, out, err = self.run_main(

@@ -33,7 +33,10 @@ for the terminal.
 Usage:
   python3 tools/posting_guard.py [--in FILE] [--html|--text] [--out FILE] [--json]
 
-Input is `--in FILE` or stdin, decoded as UTF-8 with replacement. Pass --html
+Input is `--in FILE` or stdin, decoded as UTF-8 with replacement. With --html,
+bytes that are not valid UTF-8 are decoded by the charset the page declares
+(see page_decode.py), so a page saved in EUC-KR, Shift_JIS or windows-1252 is
+read as text instead of replacement characters. Pass --html
 for a saved page and --text for portal CLI output, pasted or archived text;
 without either the mode is guessed from the content, which is a fallback, not
 a documented path. Output: the verdict line, a `--- findings ---` block (JSON
@@ -47,6 +50,9 @@ import json
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from page_decode import decode_page  # noqa: E402
 
 EXCERPT = 120
 LINE_MAX = 200
@@ -331,13 +337,17 @@ def _force_utf8_output() -> None:
             reconfigure(encoding="utf-8")
 
 
-def _read_input(path):
+def _read_input(path, mode):
     if path is not None:
-        return path.read_bytes().decode("utf-8", errors="replace")
-    buffer = getattr(sys.stdin, "buffer", None)
-    if buffer is not None:
-        return buffer.read().decode("utf-8", errors="replace")
-    return sys.stdin.read()
+        data = path.read_bytes()
+    else:
+        buffer = getattr(sys.stdin, "buffer", None)
+        if buffer is None:
+            return sys.stdin.read()
+        data = buffer.read()
+    if mode == "html":
+        return decode_page(data)
+    return data.decode("utf-8", errors="replace")
 
 
 def main(argv=None) -> int:
@@ -353,7 +363,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     try:
-        raw = _read_input(args.infile)
+        raw = _read_input(args.infile, args.mode)
     except OSError as exc:
         print(f"posting_guard: cannot read input: {exc}", file=sys.stderr)
         return 2
