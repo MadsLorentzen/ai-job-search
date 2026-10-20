@@ -59,9 +59,20 @@ files ready    with fit ratings     (LaTeX, tailored)
 
 The framework encodes career guidance best practices, including structured evaluation criteria, forward-looking cover letter framing, and optional salary benchmarking.
 
+### Use with Codex
+
+This repository also includes a Codex skill at `.agents/skills/job-search-assistant/`. Open Codex with this repository as the workspace, then invoke `$job-search-assistant` or ask for a task in plain language, for example:
+
+```text
+$job-search-assistant Find new data science jobs near Copenhagen
+$job-search-assistant Evaluate this posting and prepare an application: <job URL>
+```
+
+It routes requests to the canonical workflows in `.claude/`; workflow names such as `/scrape` and `/apply` are names, not Codex slash commands. Portal CLIs remain reusable. Gmail and Notion sync require those connectors to be available in the Codex session, and PDF compilation requires the documented local LaTeX tools. See [`AGENTS.md`](AGENTS.md) for the Codex adapter rules.
+
 ## Prerequisites
 
-- [Claude Code](https://claude.com/claude-code) (CLI). Claude Code has no free tier: you need a Claude Pro/Max/Team subscription or Anthropic API credits (pay-per-token, usually cheaper for occasional use). Using a different agent tool (Codex, Antigravity, Gemini CLI)? Start at [`AGENTS.md`](AGENTS.md) - the portal search skills work there out of the box, and [community forks](https://github.com/MadsLorentzen/ai-job-search/discussions/78) adapt the full workflow.
+- [Claude Code](https://claude.com/claude-code) (CLI) for the native slash-command workflow. Claude Code has no free tier: you need a Claude Pro/Max/Team subscription or Anthropic API credits (pay-per-token, usually cheaper for occasional use). To use Codex, open this repository as the workspace and follow [Use with Codex](#use-with-codex); the repo skill routes to the same canonical workflows. Other agent tools can use the portal search skills described in [`AGENTS.md`](AGENTS.md); [community forks](https://github.com/MadsLorentzen/ai-job-search/discussions/78) adapt the full workflow.
 - Python 3.10+
 - [Bun](https://bun.sh) (for job search CLI tools)
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/), [MacTeX](https://tug.org/mactex/), [TinyTeX](https://yihui.org/tinytex/), or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`. If using a minimal TeX install such as TinyTeX or BasicTeX, install the extra packages listed in [SETUP.md](SETUP.md#minimal-tex-install-tinytexbasictex).
