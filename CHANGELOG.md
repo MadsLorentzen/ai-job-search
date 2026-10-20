@@ -34,19 +34,6 @@ per-file diff commands.
 
 ### Fixed
 
-- **Jobnet CLI detail command emits degraded search summary signal on stdout** (#549,
-  `.agents/skills/jobnet-search/cli/src/commands/detail.ts`,
-  `.agents/skills/jobnet-search/cli/tests/detail-fallback.test.ts`,
-  `.agents/skills/jobnet-search/cli/tests/detail-formatting.test.ts`,
-  `.agents/skills/jobnet-search/cli/README.md`) - when `runDetail`
-  resolved an external ad via the search endpoint fallback introduced in #432, it wrote an
-  informational note directly to `process.stderr`. To keep `jobnet-search` stderr behavior
-  consistent with the other portal CLIs (silent `stderr` on exit 0), the signal that detail
-  was synthesized from search results has moved to `stdout` as a `source: "search-fallback"`
-  field on the detail object, rendered in plain and table output as `Source: search-fallback
-  (detail unavailable, synthesised from search)`, documented in the CLI README, and covered
-  by automated tests.
-
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
@@ -300,6 +287,19 @@ per-file diff commands.
   length around the first match, with `…` marking a cut at either end; lines up to 200
   characters are quoted whole as before. One new case fails on master; the short-line case
   pins the unchanged behaviour.
+
+- **Jobnet CLI detail command emits degraded search summary signal on stdout** (#550, fixes #549,
+  `.agents/skills/jobnet-search/cli/src/commands/detail.ts`,
+  `.agents/skills/jobnet-search/cli/tests/detail-fallback.test.ts`,
+  `.agents/skills/jobnet-search/cli/tests/detail-formatting.test.ts`,
+  `.agents/skills/jobnet-search/cli/README.md`) - when `runDetail`
+  resolved an external ad via the search endpoint fallback introduced in #432, it wrote an
+  informational note directly to `process.stderr`. To keep `jobnet-search` stderr behavior
+  consistent with the other portal CLIs (silent `stderr` on exit 0), the signal that detail
+  was synthesized from search results has moved to `stdout` as a `source: "search-fallback"`
+  field on the detail object, rendered in plain and table output as `Source: search-fallback
+  (detail unavailable, synthesised from search)`, documented in the CLI README, and covered
+  by automated tests.
 
 ### Security
 
