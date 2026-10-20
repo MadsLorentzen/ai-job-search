@@ -99,8 +99,9 @@ export function occupationId(value: string): string {
 /**
  * Return the destination URL for an external ad, if it has a valid http(s)
  * jobAdUrl. Only an absolute http(s) URL is used: the value is employer-supplied
- * and downstream steps fetch it. Anything else returns null and the caller keeps
- * the jobnet.dk route to preserve a unique URL for /scrape deduplication.
+ * and downstream steps fetch it. Emitted in `applyUrl` (and `jobAdUrl`); `url`
+ * always keeps the canonical jobnet.dk route across all postings. Anything
+ * else returns null.
  */
 export function externalAdUrl(job: Pick<JobAdRaw, "isExternal" | "jobAdUrl">): string | null {
   const raw = job.jobAdUrl?.trim()

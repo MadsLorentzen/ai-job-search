@@ -42,8 +42,10 @@ per-file diff commands.
   (#562) to send the posting to `WebFetch` on an ATS application form rather than `jobnet detail`.
   `createSearchOutput` now keeps `url` canonical as `https://jobnet.dk/find-job/<id>` across all
   ads (preserving identity, deduplication, and portal routing to `detail`), while emitting the
-  external employer ATS destination in `applyUrl` (matching `jobindex` and `jobdanmark`) alongside
-  `jobAdUrl`.
+  external employer ATS destination in `applyUrl` (matching the `applyUrl` field name on `detail`
+  in `jobindex` and `jobdanmark`) alongside `jobAdUrl`. For external ads, `url` is Jobnet's
+  canonical identity link, which 404s in a browser, and the employer page is `applyUrl` (search) or
+  the `Apply:` line of `detail`.
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
