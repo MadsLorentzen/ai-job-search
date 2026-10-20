@@ -34,6 +34,19 @@ per-file diff commands.
 
 ### Fixed
 
+- **`posting_guard.py` removes, counts and flags Unicode tag characters** (`tools/posting_guard.py`,
+  `tests/test_posting_guard.py`) - the invisible-character set covered zero-width, bidi, soft
+  hyphen and BOM but not U+E0000-U+E007F, the "tags" block: one invisible code point per ASCII
+  character, which renders as nothing and is read by a model as the ASCII it mirrors. A posting
+  carrying `Ignore all previous instructions` written in that block got the `clean` verdict
+  through the documented `--text --json` call, and the characters survived into the cleaned
+  text the agent reads; a single tag character inside `ignore` also split the word past every
+  instruction pattern. The block is now stripped with the other invisibles, counted under
+  `invisible_chars.tag`, and always raises the ⚠ (`N tag characters (text hidden from the
+  reader)`), because no legitimate posting contains one other than the three UK subdivision flag
+  emoji (England, Scotland, Wales), which are matched in full and kept. Four new cases; the two
+  payload cases fail on master.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from

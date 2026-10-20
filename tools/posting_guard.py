@@ -16,6 +16,12 @@ evaluates anything:
   * invisible characters (zero-width, bidi controls, soft hyphen, BOM) -
     removed and counted; the ones that indicate tampering (a zero-width
     character inside a word, a bidi override or isolate) are flagged;
+  * Unicode tag characters (U+E0000-U+E007F) - a second alphabet that renders
+    as nothing but reads as ASCII to a model, so a sentence written in it is
+    invisible to the user and legible to the agent; removed, counted under
+    `tag`, and always flagged, because no legitimate posting contains one -
+    other than the three UK subdivision flag emoji, which are matched in
+    full and kept;
   * instruction-shaped lines aimed at an agent rather than a reader - quoted,
     never removed (an SSH administrator posting legitimately says "SSH");
   * URLs that only exist in hidden content - listed;
@@ -62,7 +68,20 @@ BIDI = "‎‏‪‫‬‭‮⁦⁧⁨⁩"
 BIDI_TAMPER = "‭‮⁦⁧⁨⁩"  # overrides and isolates
 FORMAT = "­  "  # soft hyphen, line/paragraph separators
 BOM = "﻿"
-INVISIBLE = ZERO_WIDTH + BIDI + FORMAT + BOM
+# U+E0000-U+E007F: the Unicode "tags" block, one invisible code point per ASCII
+# character. A payload written in it survives copy-paste, never renders, and
+# is decoded by a model as if it were the ASCII it mirrors; a single one
+# inside "ignore" also splits the word past every instruction pattern.
+TAG_CHARS = "".join(chr(c) for c in range(0xE0000, 0xE0080))
+INVISIBLE = ZERO_WIDTH + BIDI + FORMAT + BOM + TAG_CHARS
+# The one legitimate use of tag characters: the England, Scotland and Wales
+# flags (black flag, tag letters gbeng/gbsct/gbwls, cancel tag). Matched in
+# full and left intact; a payload inside a well-formed tag sequence, extra
+# tags after a valid flag, or a non-RGI subdivision still count and alarm.
+RGI_TAG_FLAG = re.compile(
+    "\U0001F3F4\U000E0067\U000E0062(?:\U000E0065\U000E006E\U000E0067"
+    "|\U000E0073\U000E0063\U000E0074|\U000E0077\U000E006C\U000E0073)\U000E007F"
+)
 
 HIDDEN_STYLE = re.compile(
     r"display\s*:\s*none"
@@ -136,6 +155,10 @@ def clean_text(text: str):
         n = sum(text.count(c) for c in chars)
         if n:
             counts[key] = n
+    flags = RGI_TAG_FLAG.findall(text)
+    tags = sum(1 for ch in RGI_TAG_FLAG.sub("", text) if "\U000E0000" <= ch <= "\U000E007F")
+    if tags:
+        counts["tag"] = tags
     for i, ch in enumerate(text):
         if ch in BIDI_TAMPER:
             flagged += 1
@@ -144,7 +167,18 @@ def clean_text(text: str):
             after = text[i + 1] if i + 1 < len(text) else ""
             if before.isalpha() and after.isalpha():
                 flagged += 1
-    text = text.translate({ord(c): None for c in INVISIBLE})
+    if flags:
+        # Strip around the flags so the visible emoji survive intact.
+        strip = {ord(c): None for c in INVISIBLE}
+        pieces, last = [], 0
+        for m in RGI_TAG_FLAG.finditer(text):
+            pieces.append(text[last:m.start()].translate(strip))
+            pieces.append(m.group(0))
+            last = m.end()
+        pieces.append(text[last:].translate(strip))
+        text = "".join(pieces)
+    else:
+        text = text.translate({ord(c): None for c in INVISIBLE})
     return _fold(text), {"invisible_chars": counts, "invisible_flagged": flagged}
 
 
@@ -303,6 +337,9 @@ def verdict(findings: dict) -> str:
     n = int(findings.get("invisible_flagged") or 0)
     if n:
         alarms.append(_plural(n, "invisible character inside words", "invisible characters inside words"))
+    n = int((findings.get("invisible_chars") or {}).get("tag") or 0)
+    if n:
+        alarms.append(_plural(n, "tag character (text hidden from the reader)", "tag characters (text hidden from the reader)"))
     n = len(findings.get("homoglyph_runs") or [])
     if n:
         alarms.append(_plural(n, "mixed-script word", "mixed-script words"))
