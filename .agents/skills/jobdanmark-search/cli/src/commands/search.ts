@@ -126,7 +126,7 @@ export const search = defineCommand({
       description: "Administrative region from locations (category administrativeRegion), e.g. Region Midtjylland",
     }),
     "job-type": option(z.string().optional(), {
-      description: "Comma-separated job types: fuldtid,deltid",
+      description: "Comma-separated job types: fuldtid,deltid,fleksjob,elev,studiejob,praktik",
     }),
     page: option(z.coerce.number().int().min(1).default(1), {
       description: "Page number (30 items per page, server-enforced)",

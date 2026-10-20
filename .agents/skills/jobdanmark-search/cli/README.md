@@ -38,7 +38,7 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 |-------|--------|---------|
 | `fuldtid` | Fuldtid | Full-time |
 | `deltid` | Deltid | Part-time |
-| `fleksjob` | Fleksjob | Flexible job |
+| `fleksjob` | Fleksjob | Flex job |
 | `elev` | Elev | Apprentice |
 | `studiejob` | Studiejob | Student job |
 | `praktik` | Praktik | Internship |

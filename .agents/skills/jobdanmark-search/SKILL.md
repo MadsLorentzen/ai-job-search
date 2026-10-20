@@ -227,4 +227,4 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 - The `detail` command fetches the HTML job page and parses embedded JSON-LD when available, with a rendered-HTML fallback for pages that omit structured data. It does not use a separate JSON API.
 - `slug` in search results is extracted from the API's relative `url` field (the path after `/job/`); it is also emitted as `id`, the portal-contract name every search CLI shares.
 - `applicationDeadline` in search results can be `null` (no deadline set).
-- Job type values for filters: `fuldtid`, `deltid`. Student jobs, apprenticeships, internships and fleksjob carry no job type of their own on Jobdanmark; find them with `--text`.
+- The settings API offers `fuldtid`, `deltid`, `fleksjob`, `elev`, `studiejob` and `praktik`; a type with no current ads returns zero results. Use `--text` as a keyword fallback.
