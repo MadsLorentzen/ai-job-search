@@ -34,6 +34,20 @@ per-file diff commands.
 
 ### Fixed
 
+- **Job scraper and search queries document per-portal query syntax and isolate WebSearch fallback**
+  (fixes #536, `.claude/skills/job-scraper/search-queries.md`, `.claude/skills/job-scraper/SKILL.md`,
+  `tests/test_scrape_contract.py`) - `search-queries.md` wrote query templates exclusively in
+  Google syntax (`site:`, quoted terms, a bare `OR`), but Step 1b passed them directly into portal
+  CLI flags. Portal backends do not support `OR` (treating it as an ordinary search word or
+  ignoring it, returning either broad noise or collapsing hits), and quoting semantics diverge:
+  unquoted multi-word terms cause loose keyword matches (1,300+ noisy hits) on `jobindex`,
+  `jobbank`, and `freehire` where quotes enforce phrase matching, while quotes on `jobnet` and
+  `linkedin` fail to phrase match. `search-queries.md` now provides clean, plain search terms for
+  portal CLIs, removes bare `OR`, and restricts `site:` to the WebSearch fallback (removing the
+  misleading "Direct Google searches" label). Step 1b documents one plain term per CLI call,
+  specifies the per-portal quoting rules, and guards that variants must be run as separate calls
+  and merged.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from

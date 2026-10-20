@@ -18,8 +18,8 @@ Primary (your market's job boards - scaffold one with `/add-portal`):
 - **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
 - **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
 
-Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for known target companies
+Secondary (company career pages via WebSearch fallback):
+- WebSearch queries naming the company or careers page for known target companies
 
 ## Query Categories
 
@@ -27,10 +27,20 @@ Queries are grouped by priority. Write **each category in every language from yo
 
 **Organize by function, not job title.** The same underlying work carries different titles across companies and markets (a "Data Scientist" role at one employer may be posted as "Insights Analyst" or "Data Consultant" at another). Name each priority category after the function it covers, and list several plausible job titles as query variants within that category rather than betting an entire priority tier on one exact title string.
 
+**Query syntax (CLIs vs fallback):**
+- **Portal CLIs (primary):** Use plain search terms (e.g. `[YOUR_PRIMARY_JOB_TITLE_1]`). Run one plain term per CLI call — **no boolean `OR`, no combined strings**. Job portal search backends do not support `OR` (they treat it as a literal word or ignore it). Run variants as separate calls and merge results. Quoting rules are applied automatically per portal per `job-scraper/SKILL.md` (quote on `jobindex`, `jobbank`, `freehire`; do not quote on `jobnet` and `linkedin`).
+- **WebSearch fallback:** The `site:` templates below are used when a portal has no CLI or when the CLI fails. Use plain queries naming the site; if a query returns nothing, try one plain fallback query naming the employer/site and role before concluding "nothing found".
+
 ### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
 
 These match your strongest and most desired career direction.
 
+**Portal CLI terms:**
+- `[YOUR_PRIMARY_JOB_TITLE_1]`
+- `[YOUR_PRIMARY_JOB_TITLE_2]`
+- `[YOUR_KEY_SKILL]`
+
+**WebSearch fallback:**
 ```
 site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE_1]" [YOUR_CITY]
 site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE_2]" [YOUR_CITY]
@@ -42,8 +52,14 @@ site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE_1]" [YOUR_COUNTRY]
 
 These match your domain expertise.
 
+**Portal CLI terms:**
+- `[YOUR_DOMAIN_KEYWORD_1]`
+- `[YOUR_DOMAIN_KEYWORD_2]`
+
+**WebSearch fallback:**
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
+site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY]
+site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_REGION]
 site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
 site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
 ```
@@ -52,6 +68,11 @@ site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
 
 Adjacent roles you could pivot into.
 
+**Portal CLI terms:**
+- `[YOUR_ADJACENT_TITLE_1]`
+- `[YOUR_ADJACENT_TITLE_2]`
+
+**WebSearch fallback:**
 ```
 site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
 site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
@@ -61,6 +82,11 @@ site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
 
 Wider net for general technical roles.
 
+**Portal CLI terms:**
+- `[YOUR_KEY_SKILL] developer`
+- `technical consultant`
+
+**WebSearch fallback:**
 ```
 site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
 site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]

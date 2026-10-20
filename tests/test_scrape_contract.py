@@ -152,5 +152,85 @@ class SeenJobsDedupContinuityTests(unittest.TestCase):
         self.assertRegex(text, r"matched by URL or\s+company\+title")
 
 
+SEARCH_QUERIES = REPO_ROOT / ".claude" / "skills" / "job-scraper" / "search-queries.md"
+
+
+class ScraperQuerySyntaxContractTests(unittest.TestCase):
+    """Guards for /scrape Step 1 query syntax and search-queries templates (#536).
+
+    Portal CLIs do not share Google search semantics: boolean OR is not
+    supported (it is treated as a word or ignored), and quoting semantics
+    differ per portal. These tests ensure the skill spec documents the exact
+    per-portal syntax rules and that search-queries.md avoids bare OR and
+    distinguishes CLI terms from WebSearch fallback templates.
+    """
+
+    def setUp(self):
+        self.skill_text = SCRAPER_SKILL.read_text(encoding="utf-8")
+        self.queries_text = SEARCH_QUERIES.read_text(encoding="utf-8")
+
+    def test_step1b_specifies_one_plain_term_per_cli_call_and_no_boolean_or(self):
+        self.assertIn("One plain term per CLI call", self.skill_text)
+        self.assertRegex(
+            self.skill_text,
+            r"No portal supports boolean `OR`",
+            "Step 1b must state that portals do not support boolean OR",
+        )
+
+    def test_step1b_documents_per_portal_quoting_rules(self):
+        self.assertRegex(
+            self.skill_text,
+            r"Quote multi-word terms.*jobindex.*jobbank.*freehire",
+            "Step 1b must specify quoting for jobindex, jobbank, and freehire",
+        )
+        self.assertRegex(
+            self.skill_text,
+            r"Do \*\*not\*\* quote on .*?jobnet.*?linkedin",
+            "Step 1b must specify that jobnet and linkedin should not receive quoted terms",
+        )
+
+    def test_search_queries_templates_have_no_bare_boolean_or(self):
+        query_blocks = re.findall(r"```(.*?)```", self.queries_text, re.DOTALL)
+        for block in query_blocks:
+            self.assertNotRegex(
+                block,
+                r"\bOR\b",
+                f"Query template block contains bare OR: {block!r}",
+            )
+
+    def test_search_queries_separates_cli_terms_from_fallback(self):
+        self.assertIn("Portal CLI terms", self.queries_text)
+        self.assertIn("WebSearch fallback", self.queries_text)
+
+    def test_search_queries_no_longer_claims_direct_google_searches(self):
+        self.assertNotIn(
+            "Direct Google searches",
+            self.queries_text,
+            "search-queries.md must not mislabel the WebSearch fallback as Direct Google searches",
+        )
+
+    def test_search_queries_preserves_expected_placeholders(self):
+        expected_placeholders = [
+            "[YOUR_PRIMARY_ROLE_TYPE]",
+            "[YOUR_PRIMARY_JOB_TITLE_1]",
+            "[YOUR_PRIMARY_JOB_TITLE_2]",
+            "[YOUR_KEY_SKILL]",
+            "[YOUR_DOMAIN_EXPERTISE]",
+            "[YOUR_DOMAIN_KEYWORD_1]",
+            "[YOUR_DOMAIN_KEYWORD_2]",
+            "[YOUR_ADJACENT_ROLE_TYPE]",
+            "[YOUR_ADJACENT_TITLE_1]",
+            "[YOUR_ADJACENT_TITLE_2]",
+            "[YOUR_CITY]",
+            "[YOUR_COUNTRY]",
+            "[YOUR_REGION]",
+            "[YOUR_JOB_BOARD]",
+        ]
+        for placeholder in expected_placeholders:
+            with self.subTest(placeholder=placeholder):
+                self.assertIn(placeholder, self.queries_text)
+
+
 if __name__ == "__main__":
     unittest.main()
+
