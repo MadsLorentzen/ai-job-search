@@ -44,7 +44,7 @@ Read the evaluation framework:
 
 Using the framework from `04-job-evaluation.md`, evaluate the job posting against the candidate's profile. If the salary lookup tool is configured, run:
 
-> **Windows:** on a stock python.org install, `python3` is Microsoft's Store App execution alias - the stub prints nothing and exits 49 in a non-interactive shell (#669); run the tools with `python` there, which `.claude/settings.json` already allows.
+> **Windows:** run these tools as `python`, not `python3`. A python.org install ships no `python3`, so that name reaches the Microsoft Store alias, which either exits 49 with no output (#669) or starts a separate Store Python without the packages `pip` installed (such as pypdf). `.claude/settings.json` allows both spellings.
 
 ```bash
 python3 salary_lookup.py "<Company Name>" --json

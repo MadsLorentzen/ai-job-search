@@ -35,7 +35,7 @@ Do **not** respond to a 403 by softening the cover letter to vague generalities,
 
 The retry command below runs this check itself and refuses to fetch when it fails - there is no flag to skip it. The standalone checker is still there for diagnosing a refusal:
 
-> **Windows:** on a stock python.org install, `python3` is Microsoft's Store App execution alias - the stub prints nothing and exits 49 in a non-interactive shell (#669); run the tools with `python` there, which `.claude/settings.json` already allows.
+> **Windows:** run these tools as `python`, not `python3`. A python.org install ships no `python3`, so that name reaches the Microsoft Store alias, which either exits 49 with no output (#669) or starts a separate Store Python without the packages `pip` installed (such as pypdf). `.claude/settings.json` allows both spellings.
 
 ```bash
 python3 tools/robots_check.py '<URL>'

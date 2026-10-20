@@ -1,19 +1,21 @@
 """Guard: the workflow specs settle on `python3`, with one Windows note each.
 
-The specs used to split between spellings: `/apply` ran bare `python ...`
-while `/rank`, `/scrape` and `09-web-research` ran `python3 ...` (#669).
-Neither literal is safe everywhere - on a stock Windows python.org install
-`python3` is the Microsoft Store App execution alias, which prints nothing and
-exits 49 in a non-interactive shell, while a distro without `python-is-python3`
-has no bare `python` - so the specs now all use `python3` and each carries a
-single Windows note at its first use pointing at the allowed `python`
-fallback. `.claude/settings.json` keeps granting both spellings, so the note's
-fallback stays permitted without any settings or guard change.
+The specs used to split between spellings: `/apply` and the skill files it
+reads (`04-job-evaluation`, `05-cv-templates`) ran bare `python ...` while
+`/rank`, `/scrape` and `09-web-research` ran `python3 ...` (#669). The specs
+now all use `python3`, and every spec that runs a tool carries a single
+Windows note at its first use: a python.org install on Windows ships no
+`python3`, so that name reaches the Microsoft Store alias, which either exits
+49 with no output or starts a separate Store Python without the packages
+`pip` installed. The note points at `python`, and `.claude/settings.json`
+keeps granting both spellings, so no settings or guard change is needed.
 
 Nothing enforced either half. A later edit could reintroduce a bare `python
 tools/...` line, or a second Windows note, without any test noticing;
 `lint_skills.py` reads frontmatter, not command bodies, and the changelog
-guard does not read the specs either. This does.
+guard does not read the specs either. This does - over every command, skill
+and agent spec rather than a fixed list, so a bare `python` line added to a
+spec this file never named still fails.
 
 Only line-leading interpreter tokens are checked - lines that actually run
 Python from a code block. Prose that mentions a spelling mid-sentence (the
@@ -27,14 +29,27 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 
-SPECS = [
+SPEC_GLOBS = (
+    ".claude/commands/*.md",
+    ".claude/skills/**/*.md",
+    ".claude/agents/*.md",
+)
+
+SPECS = sorted(
+    {path.relative_to(REPO).as_posix() for pattern in SPEC_GLOBS for path in REPO.glob(pattern)}
+)
+
+# Specs known to run a tool today; the glob must keep finding them.
+KNOWN_TOOL_SPECS = {
     ".claude/commands/rank.md",
     ".claude/commands/apply.md",
     ".claude/skills/job-scraper/SKILL.md",
+    ".claude/skills/job-application-assistant/04-job-evaluation.md",
+    ".claude/skills/job-application-assistant/05-cv-templates.md",
     ".claude/skills/job-application-assistant/09-web-research.md",
-]
+}
 
-WINDOWS_NOTE = "> **Windows:** on a stock python.org install, `python3`"
+WINDOWS_NOTE = "> **Windows:** run these tools as `python`, not `python3`."
 
 # A line that starts by running an interpreter: the token at line start,
 # optionally behind list indentation. `python3` is the settled spelling and
@@ -51,9 +66,9 @@ def command_lines(text):
 
 
 class SpecPythonSpellingTest(unittest.TestCase):
-    def test_specs_exist(self):
-        for spec in SPECS:
-            self.assertTrue((REPO / spec).is_file(), f"missing spec {spec}")
+    def test_glob_covers_every_known_tool_spec(self):
+        missing = KNOWN_TOOL_SPECS - set(SPECS)
+        self.assertEqual(missing, set(), f"spec glob no longer finds {sorted(missing)}")
 
     def test_every_command_invokes_python3(self):
         problems = []
@@ -70,28 +85,32 @@ class SpecPythonSpellingTest(unittest.TestCase):
             "Claude Code's per-call shells:\n" + "\n".join(problems),
         )
 
-    def test_each_spec_carries_exactly_one_windows_note_before_first_use(self):
+    def test_each_tool_spec_carries_exactly_one_windows_note_before_first_use(self):
         for spec in SPECS:
             text = (REPO / spec).read_text(encoding="utf-8")
+            lines = text.splitlines()
+            first_use = next(
+                (i for i, l in enumerate(lines) if LINE_INTERPRETER.match(l)), None
+            )
             notes = text.count(WINDOWS_NOTE)
+            if first_use is None:
+                self.assertEqual(
+                    notes, 0, f"{spec} runs no tool but carries a Windows note"
+                )
+                continue
             self.assertEqual(
                 notes,
                 1,
                 f"{spec} must carry exactly one Windows note (found {notes}) - "
-                "the note explains the exit-49 Store alias (#669) and must not "
-                "be repeated after every command",
+                "the note explains why Windows runs the tools as `python` (#669) "
+                "and must not be repeated after every command",
             )
-            lines = text.splitlines()
             note_at = next(i for i, l in enumerate(lines) if l.startswith(WINDOWS_NOTE))
-            first_use = next(
-                i for i, l in enumerate(lines) if LINE_INTERPRETER.match(l)
-            )
             self.assertLess(
                 note_at,
                 first_use,
                 f"{spec} puts its Windows note after the first python3 command",
             )
-
 
 if __name__ == "__main__":
     unittest.main()
