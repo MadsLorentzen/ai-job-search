@@ -134,6 +134,17 @@ class FindNonAsciiDateRangesTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertEqual(len(find_non_ascii_date_ranges(text)), 1)
 
+    def test_year_and_two_digit_year_is_a_date_range(self):
+        # The academic-year and season form, caught before the quantity rule
+        # (#533) and suppressed by it because `17` is a bare non-year number.
+        for text in ("MSc Physics, 2016\u201317", "Sep 2016\u201317", "2019\u201320 season", "2016 \u2013 17"):
+            with self.subTest(text=text):
+                self.assertEqual(len(find_non_ascii_date_ranges(text)), 1)
+
+    def test_two_digit_number_before_a_year_is_still_a_quantity(self):
+        # Only year-first is the date form; `17-2016` is not a date anyone writes.
+        self.assertEqual(find_non_ascii_date_ranges("items 17\u20132016"), [])
+
     def test_two_years_joined_by_a_dash_are_still_a_date_range(self):
         for text in ("2016\u20132024", "1990\u20132010 programme", "Roles 2000\u20132024"):
             with self.subTest(text=text):

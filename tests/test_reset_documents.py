@@ -8,9 +8,14 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+try:
+    from tests._bash import find_bash
+except ImportError:  # unittest discover -s tests imports modules top-level
+    from _bash import find_bash
+
 COMMAND = Path(__file__).resolve().parent.parent / ".claude/commands/reset.md"
 FOLDERS = ("cv", "linkedin", "diplomas", "references", "projects", "postings", "applications")
-BASH = shutil.which("bash")
+BASH = find_bash()
 
 
 def symlinks_available():

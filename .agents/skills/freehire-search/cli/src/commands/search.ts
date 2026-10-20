@@ -6,6 +6,12 @@ import { apiGet, toResult, writeError, type FreehireJob, type JobResult } from "
 // follow-up `detail` per hit.
 const SEARCH_PATH = "/api/v1/agent/jobs/search"
 
+// The web search: identical query surface, but each hit carries only the index's
+// truncated preview. --no-description uses it, because the agent endpoint reads
+// every full body from the database whether or not the caller wants them - the
+// lean mode would otherwise pay the expensive request and discard its payload.
+const LEAN_SEARCH_PATH = "/api/v1/jobs/search"
+
 /** How the API renders each result's full description. */
 export type DescriptionFormat = "markdown" | "text" | "html"
 
@@ -40,13 +46,7 @@ function buildQuery(opts: SearchOpts): URLSearchParams {
   if (opts.query) p.set("q", opts.query)
   p.set("limit", String(opts.limit))
   p.set("offset", String((opts.page - 1) * opts.limit))
-  p.set("semantic_ratio", "0") // keyword search; the semantic index is opt-in
-  // The agent endpoint serves the index's truncated preview unless asked to
-  // rehydrate each hit from the database, so both params travel together -
-  // unless the caller opted out of hydration entirely (--no-description).
-  const hydrate = opts.includeDescription !== false
-  p.set("include_description", hydrate ? "true" : "false")
-  if (hydrate) p.set("description_format", opts.descriptionFormat)
+  if (opts.includeDescription !== false) p.set("description_format", opts.descriptionFormat)
   if (opts.jobage > 0 && opts.jobage < 9999) p.set("posted_within_days", String(opts.jobage))
   if (opts.workMode) p.set("work_mode", opts.workMode)
   if (opts.company) p.set("company_slug", opts.company)
@@ -110,24 +110,75 @@ function renderPlain(rows: JobResult[]): string {
   return rows.map(block).join("\n\n")
 }
 
+// freehire's contract - the openapi `Regions` enum and `RegionValues` in vocab.go -
+// defines a closed set: these nine buckets plus `none`. Anything else is a stray
+// tag, `us` above all, which is a country code that matches only a handful of
+// postings. A search filtered on one therefore looks empty or nearly empty, so the
+// CLI says the value is wrong instead of letting it read as a thin market.
+const REGION_VALUES = [
+  "global",
+  "north_america",
+  "latam",
+  "eu",
+  "uk",
+  "mena",
+  "africa",
+  "apac",
+  "cis",
+  "none",
+] as const
+
+/** Region values the caller filtered on: `--region` plus the `--facet regions=` escape hatch. */
+function requestedRegions(opts: SearchOpts): string[] {
+  return [...opts.regions, ...(opts.facets.regions ?? [])]
+}
+
+/**
+ * One line on stderr when a region filter uses a value outside the closed
+ * vocabulary, written after stdout and without touching the exit code, so a bad
+ * parameter never reads as "no postings". The result count is deliberately not
+ * consulted: a broad query returns real hits under a stray tag and is still wrong,
+ * which is exactly the case a zero-result check would miss.
+ */
+function warnOnUnknownRegion(opts: SearchOpts): void {
+  const requested = requestedRegions(opts)
+  if (requested.length === 0) return
+  const known = new Set<string>(REGION_VALUES)
+  const unknown = [...new Set(requested.map((value) => value.trim().toLowerCase()))].filter(
+    (value) => value !== "" && !known.has(value),
+  )
+  if (unknown.length === 0) return
+  const country = unknown.includes("us")
+    ? " A country belongs in --country, e.g. --country US."
+    : " A country belongs in --country."
+  process.stderr.write(
+    JSON.stringify({
+      warning:
+        `--region ${unknown.join(", ")} is not a region value: freehire's regions are ` +
+        `${REGION_VALUES.join(", ")}.${country}`,
+      code: "REGION_VALUE_UNKNOWN",
+    }) + "\n",
+  )
+}
+
 export async function runSearch(opts: SearchOpts): Promise<number> {
   try {
-    const env = await apiGet<FreehireJob[]>(`${SEARCH_PATH}?${buildQuery(opts).toString()}`)
+    const path = opts.includeDescription === false ? LEAN_SEARCH_PATH : SEARCH_PATH
+    const env = await apiGet<FreehireJob[]>(`${path}?${buildQuery(opts).toString()}`)
     // A 404 here is a missing endpoint, not a missing job: a freehire instance
     // older than the agent search surface answers that way, and reporting it as
     // an empty result set would hide the misconfiguration behind plausible output.
     if (!env) {
       writeError(
-        `${SEARCH_PATH} not found — this freehire instance predates the agent search endpoint; upgrade it or unset FREEHIRE_API_URL to use the hosted API`,
+        `${path} not found — this freehire instance predates the search endpoint; upgrade it or unset FREEHIRE_API_URL to use the hosted API`,
         "SEARCH_FAILED",
       )
       return 1
     }
     let rows = (env.data ?? []).map(toResult)
-    // The API currently returns description bodies regardless of
-    // include_description=false (verified live 2026-08-19), and the cost this
-    // flag exists to avoid is the ~73% of CLI output the bodies occupy in
-    // agent context - so the lean mode strips them client-side either way.
+    // The web search still carries each hit's truncated preview, and the cost
+    // this flag exists to avoid is the share of CLI output descriptions occupy
+    // in agent context - so the lean mode drops them client-side.
     if (opts.includeDescription === false) {
       rows = rows.map((r) => ({ ...r, description: null }))
     }
@@ -146,6 +197,9 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
         ) + "\n",
       )
     }
+    // After stdout: a diagnostic must never interleave with the JSON, and the exit
+    // code stays 0 because a wrong filter value is not a failure of the request.
+    warnOnUnknownRegion(opts)
     return 0
   } catch (e) {
     writeError(e instanceof Error ? e.message : String(e), "SEARCH_FAILED")

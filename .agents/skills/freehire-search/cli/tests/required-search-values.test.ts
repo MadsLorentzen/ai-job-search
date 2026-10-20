@@ -55,7 +55,7 @@ describe("named search flags require their documented values", () => {
       expect(params.getAll("skills")).toEqual(["go", "kubernetes"]);
       expect(params.get("company_slug")).toBe("acme");
       expect(params.get("work_mode")).toBe("remote");
-      expect(params.get("include_description")).toBe("false");
+      expect(requests[0].pathname).toBe("/api/v1/jobs/search");
     } finally {
       server.stop(true);
     }

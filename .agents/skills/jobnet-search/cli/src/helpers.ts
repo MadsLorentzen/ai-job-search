@@ -60,7 +60,18 @@ export function normalizeJobId(input: string): string | null {
   const trimmed = input.trim()
   if (!trimmed) return null
   if (/^[a-zA-Z0-9_-]+$/.test(trimmed)) return trimmed
-  const match = trimmed.match(/(?:\/find-job\/|\/JobAdDetails\/|\/Details\/)(?:detaljer\/)?([a-zA-Z0-9_-]+)(?:\/|$|\?|#)/i)
+  let url: URL
+  try {
+    const hostLike = /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(trimmed)
+    url = new URL(hostLike ? `https://${trimmed}` : trimmed)
+  } catch {
+    return null
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return null
+  if (url.hostname !== "jobnet.dk" && !url.hostname.endsWith(".jobnet.dk")) return null
+  // Otherwise an unrelated site's matching path silently selects a Jobnet ad.
+  // Keep legacy routes, but never interpret a query or fragment as a job path.
+  const match = url.pathname.match(/(?:\/find-job\/|\/JobAdDetails\/|\/Details\/)(?:detaljer\/)?([a-zA-Z0-9_-]+)(?:\/|$)/i)
   if (match) return match[1]
   return null
 }
