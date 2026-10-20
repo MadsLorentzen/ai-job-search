@@ -8,7 +8,10 @@ import unittest
 from contextlib import redirect_stderr
 from types import SimpleNamespace
 
-import openpyxl
+try:
+    import openpyxl
+except ImportError:
+    openpyxl = None
 
 from salary_lookup import format_entry
 from tools.convert_salary_excel import (
@@ -39,6 +42,7 @@ class FakeWorksheet:
         return [SimpleNamespace(value=value) for value in self.rows[row_number - 1]]
 
 
+@unittest.skipUnless(openpyxl is not None, "openpyxl is not installed")
 class BooleanCellCliTests(unittest.TestCase):
     def test_excel_logical_cells_are_not_salary_numbers(self):
         # Exercise the documented converter CLI with actual Excel boolean cells,
