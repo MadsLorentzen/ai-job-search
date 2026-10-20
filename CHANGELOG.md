@@ -263,6 +263,14 @@ per-file diff commands.
   `MadsLorentzen/ai-job-search/1.0 (freehire-search)`. The host-check test now lists `github.com` and
   `gist.github.com` postings among the hosts that must stay unverified.
 
+- **The `/reset` replay tests find a Bash that actually runs the script on Windows** (#671,
+  `tests/_bash.py`, `tests/test_bash.py`, `tests/test_reset_command.py`, `tests/test_reset_documents.py`) -
+  the tests replayed the documented `/reset` commands with whichever `bash` came first on PATH. On
+  Windows that is often the WSL launcher, which expands variables before WSL's bash sees them, so the
+  replayed script deleted nothing and two tests failed. Each candidate is now probed with
+  `x=ok; test "$x" = ok`, Git for Windows' own Bash is tried when the launcher fails the probe, and the
+  replay checks skip only when no usable shell is found.
+
 ### Security
 
 - **CI no longer leaves the job token in `.git/config` or expands a PR-controlled name into a
@@ -350,12 +358,6 @@ per-file diff commands.
   not gate on it.
 
 ### Fixed
-
-- **Reset replay tests probe Bash before using it** (`tests/_bash.py`) - on Windows,
-  a nonfunctional WSL launcher can be found before Git Bash, causing three false
-  failures in the Python suite. The tests now check that the shell can execute a
-  command, try Git for Windows' bundled Bash when needed, and skip the replay
-  checks only when no usable shell is found.
 
 - **`.gitignore` ignores `node_modules` without a trailing slash, and `security_guards.py` fails on any tracked `node_modules` path** (`.gitignore`, `tools/security_guards.py`, `tests/test_security_guards.py`) - the old `node_modules/` rule matched directories only, so a symlink named `node_modules` pointing at a contributor's absolute path was committed in a PR, broke `bun install` in CI with a dangling link and checked out as a text file on Windows. The rule loses its slash, and the guard now lists every tracked path with a `node_modules` component (skipped quietly outside a git checkout). Also qualifies the one bare `seen_jobs.json` mention left in `README.md` after #617.
 
