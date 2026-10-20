@@ -170,10 +170,10 @@ bun run src/cli.ts search \
 
 ## `detail` — Full job ad detail
 
-**Endpoint**: `GET /FindJob/JobAdDetails/{id}`
+**Endpoint**: `GET /FindJob/JobAdDetails/{id}` (falls back to `GET /FindJob/Search?searchString={id}` on 404 for external ads)
 
 ```bash
-bun run src/cli.ts detail <id> [--format json|plain]
+bun run src/cli.ts detail <id> [--format json|table|plain]
 ```
 
 The `id` is the `jobAdId` UUID from `search` results.
@@ -251,6 +251,8 @@ bun run src/cli.ts detail 9ef43bce-d82b-4ea1-a098-7ff6520f99be --format plain
 ```
 
 > **Note**: `body` contains raw HTML. In `--format plain` output the CLI strips HTML tags to produce readable text.
+
+> **Note**: The optional `source` field indicates whether detail was synthesized from the search endpoint fallback (`"search-fallback"`) when `JobAdDetails` returned 404 for an external ad. Direct responses omit `source`. When present, plain and table formats render a `Source: search-fallback (detail unavailable, synthesised from search)` line.
 
 > **Note**: `application.url` may be empty for some job ads — the employer may only accept applications through Jobnet's internal system.
 
