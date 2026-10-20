@@ -15,6 +15,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest import mock
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -369,6 +370,29 @@ class CurlArgvShape(unittest.TestCase):
         self.assertNotIn("-L", argv)
         self.assertIn("-A", argv)
         self.assertEqual(argv[argv.index("-A") + 1], fetch_page.BROWSER)
+
+    def test_curl_without_content_decoder_does_not_receive_compressed_flag(self):
+        with mock.patch.object(fetch_page, "_curl_supports_compressed", return_value=False):
+            argv = fetch_page.build_curl_argv(
+                "https://example.com", Path("out.html"), Path("headers.txt"), 45
+            )
+        self.assertNotIn("--compressed", argv)
+
+    def test_curl_features_line_controls_compressed_support(self):
+        cases = {
+            "Features: AsynchDNS HTTPS-proxy IPv6": False,
+            "Features: AsynchDNS HTTPS-proxy IPv6 libz brotli zstd": True,
+        }
+        for version_output, expected in cases.items():
+            with self.subTest(version_output=version_output):
+                with mock.patch.object(
+                    fetch_page.subprocess,
+                    "run",
+                    return_value=type("Result", (), {"returncode": 0, "stdout": version_output})(),
+                ):
+                    fetch_page._curl_supports_compressed.cache_clear()
+                    self.assertEqual(fetch_page._curl_supports_compressed(), expected)
+        fetch_page._curl_supports_compressed.cache_clear()
 
     def test_user_agent_is_the_one_robots_check_uses(self):
         import robots_check
