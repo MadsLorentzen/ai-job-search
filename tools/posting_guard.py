@@ -8,8 +8,10 @@ makes the obvious payload classes visible deterministically, before Step 1
 evaluates anything:
 
   * hidden HTML (display:none, visibility:hidden, opacity:0, font-size:0,
-    color:transparent, clip/clip-path, off-screen positioning, the `hidden`
-    attribute, aria-hidden) - removed from the text; its content is scanned,
+    color:transparent, clip/clip-path, off-screen positioning, a zero-height
+    or zero-width box with overflow:hidden, the `hidden` attribute,
+    aria-hidden; the style value is read the way a browser reads it, with
+    entities decoded and CSS comments removed) - removed from the text; its content is scanned,
     and reported as excerpts under `hidden_blocks`. Comments and
     script/style/noscript/svg/template blocks are removed and scanned too but
     not listed (every page has them);
@@ -202,11 +204,32 @@ def _attrs(raw: str) -> dict:
     return out
 
 
+CSS_COMMENT = re.compile(r"/\*.*?\*/", re.S)
+# A box collapsed to nothing with its overflow clipped hides its content as
+# surely as display:none. Either half alone is everyday layout CSS (overflow:
+# hidden is on most cards; height:0 is a spacer), so both must be present.
+COLLAPSED_BOX = re.compile(r"\b(?:max-)?(?:height|width)\s*:\s*0(?:\.0+)?(?:px|em|rem|%|pt)?(?![\d.])", re.I)
+CLIPPED = re.compile(r"\boverflow(?:-[xy])?\s*:\s*hidden\b", re.I)
+
+
+def _style(attrs: dict) -> str:
+    """The style attribute as a browser reads it: entities decoded, CSS comments gone.
+
+    A browser decodes `display&#58;none` before parsing the CSS and ignores
+    `/**/` inside a declaration, so both hid the content while the regex saw
+    neither. Normalise before matching.
+    """
+    return CSS_COMMENT.sub("", html.unescape(attrs.get("style", "")))
+
+
 def _is_hidden(raw_attrs: str) -> bool:
     attrs = _attrs(raw_attrs)
     if "hidden" in attrs or attrs.get("aria-hidden", "").strip().lower() == "true":
         return True
-    return bool(HIDDEN_STYLE.search(attrs.get("style", "")))
+    style = _style(attrs)
+    if HIDDEN_STYLE.search(style):
+        return True
+    return bool(COLLAPSED_BOX.search(style) and CLIPPED.search(style))
 
 
 def clean_html(markup: str):

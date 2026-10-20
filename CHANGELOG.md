@@ -34,6 +34,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`posting_guard.py` reads a style attribute the way a browser does and treats a collapsed,
+  clipped box as hidden** (`tools/posting_guard.py`, `tests/test_posting_guard.py`) - the hidden-style
+  regex ran on the raw attribute value, so `display&#58;none` (entity-encoded colon) and
+  `display:/**/none` (a CSS comment inside the declaration) both hid the content in a browser
+  while the guard showed it under a clean verdict; and a zero-height or zero-width box with
+  `overflow:hidden`, the other common way to hide a block, was not a hidden style at all.
+  The value is now entity-decoded and comment-stripped before matching, and a collapsed box
+  counts as hidden only when both halves are present, because `overflow:hidden` alone is on
+  most cards and `height:0` alone is a spacer. Three new `Bypasses` cases, seven subtests
+  failing on master, plus a calibration case pinning that either half alone stays visible.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from

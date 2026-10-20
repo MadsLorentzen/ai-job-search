@@ -453,6 +453,28 @@ class Bypasses(GuardFixture):
             with self.subTest(style=style):
                 self.assert_hidden(f"<p>Real.</p><span style='{style}'>SECRET</span>", "SECRET")
 
+    def test_entity_encoded_and_comment_broken_style_values_still_hide(self):
+        # A browser decodes the attribute and ignores /**/ inside a declaration
+        # before it parses the CSS; the regex saw neither and showed the text
+        # under a clean verdict.
+        for style in ("display&#58;none", "display:/**/none", "visibility&#x3a;/* */hidden", "opacity:/*x*/0"):
+            with self.subTest(style=style):
+                self.assert_hidden(f"<p>Real.</p><div style=\"{style}\">SECRET</div>", "SECRET")
+
+    def test_collapsed_box_with_clipped_overflow_hides(self):
+        for style in ("height:0;overflow:hidden", "max-height: 0px; overflow: hidden", "width:0;overflow-x:hidden"):
+            with self.subTest(style=style):
+                self.assert_hidden(f"<p>Real.</p><div style='{style}'>SECRET</div>", "SECRET")
+
+    def test_either_half_of_a_collapsed_box_alone_is_layout_not_hiding(self):
+        # overflow:hidden is on most cards and height:0 is a spacer; neither
+        # alone hides text, and treating them as hidden would flag every page.
+        for style in ("overflow:hidden", "height:0", "height:0.5em;overflow:hidden", "max-height:200px;overflow:hidden"):
+            with self.subTest(style=style):
+                code, out, err = self.run_main("--html", "--json", stdin_text=f"<p>Real.</p><div style='{style}'>Visible.</div>")
+                self.assertIn("Visible.", self.text_of(out), style)
+                self.assertEqual(self.findings_of(out)["hidden_blocks"], [], style)
+
     def test_doctype_and_xml_prolog_are_not_text(self):
         code, out, err = self.run_main("--html", stdin_text="<!DOCTYPE html><?xml version='1.0'?><p>Real.</p>")
         text = self.text_of(out)
