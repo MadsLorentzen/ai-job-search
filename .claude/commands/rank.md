@@ -52,6 +52,8 @@ State how many jobs will be ranked and how many are deferred before proceeding.
 
 ## Step 2: Batch-Fetch and Score
 
+国内社招先读第10章市场规则。`candidates` 结果带 `posting_file` 时，将 key 和该标记内联交给 scorer；它用 `python3 tools/china_jobs.py show "<key>"` 获取已清洗的本地全文，保留原 guard verdict 并对正文重新过 gate。此路径无需外网，不因 URL 为空判 `unreachable`。展示 `review_required` 及待确认条件；原始隐藏片段未保存，不重构。没有本地正文时才运行下方抓取阶梯。
+
 Dispatch parallel **`posting-scorer`** agents via the **Agent tool** (`subagent_type: posting-scorer`, the shipped definition in `.claude/agents/posting-scorer.md`: Read, WebFetch, WebSearch and the allowlisted Bash only - no Edit, no Write, because these agents hold untrusted posting text), ~5 jobs per agent (a single agent is fine for ≤5 jobs). Token-efficiency rules, consistent with `/apply`:
 
 - Pass each agent everything it needs **inline in the prompt** - the job list (title, company, URL) and a compact scoring rubric extracted from the files you read in Step 1: the strong/moderate/weak skill match areas, direct/adjacent experience domains, behavioral thrive/drain factors, career goals, deal-breakers, and the location constraints. Do **not** make agents re-read the profile files.

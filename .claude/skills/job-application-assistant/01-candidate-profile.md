@@ -1,5 +1,5 @@
 ---
-framework_version: 1.1.1
+framework_version: 1.1.2
 ---
 
 # Candidate Profile
@@ -26,6 +26,16 @@ a hard no, not a gap to smooth over. -->
 | Language | Level | Notes |
 |----------|-------|-------|
 | [LANGUAGE] | [LEVEL, e.g. "Native" / "C2" / "B1/B2 (conversational)"] | [optional] |
+
+## 国内社招偏好
+
+- 目标岗位/职级：待确认
+- 意向城市、通勤、搬迁：待确认
+- 工作年限及到岗时间：待确认
+- 行业、合同主体、直签/外包/派遣：待确认
+- 工作时间、出差偏好：待确认
+- 期望税前月薪、保证发薪月数、年现金目标：待确认（可选）
+- 奖金、提成、股权的比较口径：待确认（可选）
 
 ## Education
 

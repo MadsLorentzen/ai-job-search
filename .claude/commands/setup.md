@@ -2,6 +2,8 @@
 
 You are running the onboarding setup for the AI Job Search framework. Your goal is to collect the user's professional information and populate all profile files so the `/apply` workflow works out of the box.
 
+本 fork 默认国内社招。开始前读取 `.claude/skills/job-application-assistant/10-china-market.md`，以中文提问；现有材料足够时复用，不重复访谈。保留下面的公开 fork 隐私检查及事实确认流程。
+
 There are three paths into setup. Step 0 picks the right one; all three converge on Step 3 (file generation) and Step 4 (confirmation).
 
 ---
@@ -274,7 +276,7 @@ Ask about:
 - Phone, email, LinkedIn, GitHub
 - What languages they work in professionally, and roughly what level in each (native, fluent, conversational, a CEFR letter like B2 - whatever's natural for them to describe, doesn't need to be precise). Worth explaining why: a posting requiring a language they don't list at all gets auto-excluded later by the Language Gate, while one asking for a higher level in a language they do list gets flagged for their own judgment instead of silently passed or rejected - so it's worth being honest here rather than optimistic.
 - Current employment status
-- Family/commute constraints (if any)
+- Commute constraints, target cities and relocation preferences; do not request family or marital information
 
 ### Section 2: Education
 For each degree:
@@ -331,6 +333,8 @@ For each reference:
 - Relationship to the user
 
 ### Section 9: Job Search Configuration
+
+国内社招先收集第10章「建档与个人信息」里的偏好：岗位/职级、城市、年限、到岗、用工形式、工作时间及可选的税前薪资结构；保存到 `01-candidate-profile.md` 的「国内社招偏好」。语言默认简体中文，中文/英文熟练度由用户确认。默认渠道为企业官网、BOSS直聘、猎聘、智联、前程无忧，使用公开搜索和人工导入。无需启用海外 CLI，也不要求新增平台 API；下面的国际渠道问题仅在用户选择国际市场时使用。
 This section generates the search queries that power `/scrape`. Use the information from Sections 1, 4, and 7 to build targeted queries.
 
 Ask about:
@@ -379,6 +383,8 @@ Personalise the contact line and the signature inside the file's LaTeX template:
 
 ### 7. Update `07-interview-prep.md` *(Path B and C; skip if Path A populated it)*
 Create STAR examples from their actual experience (at least 3-4 examples). Path A leaves STAR stubs under "## STAR Candidates (Complete Manually)" rather than full examples; if any stubs are present, mention them in Step 4 so the user knows to flesh them out.
+
+国内模式同时说明：中文简历从 `templates/china-resume/example.json` 创建，示例保持占位结构，实际材料写入被忽略的 `cv/main_<company>_<role>.json`。无需将中文姓名强行填入未配置 CJK 的国际 LaTeX 示例；国内模式第8项跳过，事实仍完整保存于 `01` 和 `CLAUDE.md`。
 
 ### 8. Update `cv/main_example.tex`
 Replace placeholder personal data with their actual name, contact info, and add their education and most recent experience entries.

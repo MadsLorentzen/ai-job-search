@@ -1,0 +1,22 @@
+/* 中文社招简历：单栏排版，保证文本层和打印顺序一致。 */
+@page { size: A4; margin: 15mm 17mm; }
+* { box-sizing: border-box; }
+body { margin: 0; color: #1f2937; background: #fff;
+  font-family: ChinaResume, sans-serif;
+  font-size: 10.5pt; line-height: 1.55; overflow-wrap: anywhere; }
+main { max-width: 176mm; margin: 0 auto; }
+h1 { font-size: 22pt; color: #111827; margin: 0 0 2mm; }
+.identity { margin-bottom: 5mm; }
+.identity p { margin: 1mm 0; }
+.target { font-size: 11pt; font-weight: 600; }
+h2 { font-size: 12pt; color: #164e63; border-bottom: 1px solid #b6c8cf;
+  margin: 4mm 0 2mm; padding-bottom: 1mm; break-after: avoid; }
+h3 { font-size: 10.5pt; margin: 0; }
+.entry-heading { display: flex; justify-content: space-between; gap: 4mm; break-after: avoid; }
+.entry-heading span { white-space: nowrap; }
+.subtitle { margin: 0.5mm 0; color: #4b5563; break-after: avoid; }
+article { margin: 0 0 3mm; }
+ul { margin: 1mm 0; padding-left: 5mm; }
+li { margin-bottom: 1mm; orphans: 2; widows: 2; }
+@media screen { body { padding: 12mm; background: #edf1f4; }
+  main { background: white; padding: 12mm; max-width: 210mm; } }

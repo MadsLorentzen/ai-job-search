@@ -33,6 +33,10 @@ Every grant the template ships, where it lives, how long it lasts, and what chec
 | Portal CLI manifests (`.agents/**/package.json`) | No lifecycle scripts (`preinstall`, `postinstall`, ...) and no `trustedDependencies`, so `bun install` runs no code | - | Fails CI; `tools/install_portal_clis.py` also skips a manifest that carries one |
 | The browser-header retry (`tools/fetch_page.py`) | A GET with a fixed argv, http(s) only, 45 s / 5 redirects / 10 MB, `robots.txt` enforced with no bypass flag, output refused inside the repo | - | Pinned by `tests/test_fetch_page.py`; the grant names the script, not `curl` |
 
+### China fork additions
+
+The China-market helper pre-approves only `china_jobs.py show`, `salary`, and `search-plan` (Python/Python3), which read local data or print calculations/queries. The writing `import --write` and `render_china_resume.py` commands have no pre-approved Bash grant. The integrity gate also runs on manual imports; archives retain cleaned text and finding counts. The resume renderer escapes text, embeds a local font subset and blocks scripts/network resources through a CSP. These additions do not change the sandbox limitations below.
+
 ### What this does not do
 
 - **It is not a sandbox.** Claude Code's Bash sandbox does not run on native Windows at all, and on macOS and Linux it is off by default. If you are on macOS or Linux, turning it on in your user settings is the single strongest addition you can make; nothing in this repo conflicts with it.

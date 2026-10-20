@@ -1,8 +1,10 @@
 ---
-framework_version: 1.0.0
+framework_version: 1.0.1
 ---
 
 # Agent Guidelines: AI Job Search
+
+本 fork 默认服务中国大陆社招。首次处理求职任务先读取 [.claude/skills/job-application-assistant/10-china-market.md](.claude/skills/job-application-assistant/10-china-market.md)，国内申请执行 `.claude/commands/apply-cn.md`。Codex 等宿主用自然语言路由至这些文件；不要求宿主支持 Claude slash commands。用户明确海外岗位时保留原流程。
 
 This workspace is structured to manage job search activities, scraper tools, CVs, cover letters, and interview preparation.
 

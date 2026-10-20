@@ -12,6 +12,10 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(python t
 
 ---
 
+## 国内社招路径（本 fork 默认）
+
+先读 `../job-application-assistant/10-china-market.md` 和 `search-queries.md`。目标岗位/城市未知时先问；运行 `python3 tools/china_jobs.py search-plan` 生成查询，调用 WebSearch 搜索国内平台和企业官网，使用完整正文验证。国内模式跳过下面 Step 1b 的海外 CLI，并采用 Step 1c、Step 2-4 的公开查询、核验、去重和状态规则；不执行 Step 4.5 的 LinkedIn 人脉链接，Step 4.75 仅报告国内实际使用渠道的访问状态，不探测海外 CLI。遇到登录或验证码请用户粘贴 JD，通过 `china_jobs.py import` 导入。交接申请材料时执行 `.claude/commands/apply-cn.md`，保留原申请状态与存档约定。用户明确国际市场时才执行下方原 CLI 默认路径。
+
 ## How It Works
 
 This skill searches job portals using the **installed portal-search CLIs** in

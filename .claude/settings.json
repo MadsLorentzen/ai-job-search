@@ -24,7 +24,13 @@
       "Bash(python tools/fetch_page.py:*)",
       "Bash(python3 tools/fetch_page.py:*)",
       "Bash(python tools/posting_guard.py:*)",
-      "Bash(python3 tools/posting_guard.py:*)"
+      "Bash(python3 tools/posting_guard.py:*)",
+      "Bash(python tools/china_jobs.py show:*)",
+      "Bash(python tools/china_jobs.py salary:*)",
+      "Bash(python tools/china_jobs.py search-plan:*)",
+      "Bash(python3 tools/china_jobs.py show:*)",
+      "Bash(python3 tools/china_jobs.py salary:*)",
+      "Bash(python3 tools/china_jobs.py search-plan:*)"
     ],
     "ask": [
       "Edit(.claude/settings.json)",

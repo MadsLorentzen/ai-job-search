@@ -53,6 +53,14 @@ errors: list[str] = []
 # The exact permission entries the template ships. A PR that adds or changes
 # an entry must add it here too - that is the point: the diff shows both.
 ALLOWED_PERMISSIONS = {
+    # 国内工具只预批准只读子命令；导入和渲染保留普通的写入授权流程。
+    "Bash(python tools/china_jobs.py show:*)",
+    "Bash(python tools/china_jobs.py salary:*)",
+    "Bash(python tools/china_jobs.py search-plan:*)",
+    "Bash(python3 tools/china_jobs.py show:*)",
+    "Bash(python3 tools/china_jobs.py salary:*)",
+    "Bash(python3 tools/china_jobs.py search-plan:*)",
+
     "Skill(job-application-assistant)",
     # Narrowed from the upstream template's blanket Bash(bun run:*), which
     # pre-approved `bun run <any file>`. One entry per shipped portal CLI,

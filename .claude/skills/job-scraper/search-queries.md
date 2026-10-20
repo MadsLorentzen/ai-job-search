@@ -1,5 +1,9 @@
 # Search Queries for Job Scraper
 
+本 fork 默认国内社招。以 `10-china-market.md`（位于相邻 `job-application-assistant/`）为准：优先企业官网及 BOSS直聘、猎聘、智联招聘、前程无忧的公开查询；使用 `python3 tools/china_jobs.py search-plan --role "<岗位>" --city "<城市>"` 生成搜索词。这些渠道当前没有自动登录或平台 CLI。搜索命中只是线索，正文不可读则请用户粘贴。用户未选择海外市场时不运行下方国际渠道默认值。
+
+中文岗位别名按实际工作内容扩展（例如后端开发/Java开发/服务端研发）；城市及行业来自本人偏好，不预填履历。搜索角色和技能时保留通用英文术语；岗位不写外语要求时不凭广告语言排除。
+
 <!-- SETUP: Customize these queries based on your skills, target roles, and location -->
 
 ## Installed portal CLIs (primary for `/scrape`)

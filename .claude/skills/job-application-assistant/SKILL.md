@@ -3,14 +3,19 @@ name: job-application-assistant
 description: >
   Assists with job applications: evaluating job postings, tailoring CVs, writing cover letters,
   and preparing for interviews. Triggers on keywords like: job posting, job application, CV,
-  cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling
+  cover letter, resume, interview prep, job fit, career, application, apply, ansøgning, stilling,
+  求职, 社招, 简历, 岗位匹配, 面试, 招呼语
 allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Edit, Write, AskUserQuestion
-framework_version: 1.3.6
+framework_version: 1.3.7
 ---
 
 # Job Application Assistant
 
 ---
+
+## 国内社招入口
+
+本 fork 默认先读 `10-china-market.md`，国内岗位执行 `.claude/commands/apply-cn.md`；该流程包含评估、事实核对、独立审查、PDF验证和状态记录，正式求职信按需。下方保留国际流程供用户明确选择海外申请时使用。
 
 ## Workflow
 

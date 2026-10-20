@@ -205,6 +205,10 @@ def cmd_candidates(args) -> int:
                 "portal": entry.get("portal"),
                 "deadline": entry.get("deadline"),
                 "posted_date": entry.get("posted_date"),
+                **({"posting_file": entry["posting_file"],
+                    "guard": entry.get("guard"), "review_required": entry.get("review_required", False),
+                    "salary": entry.get("salary")}
+                   if entry.get("posting_file") else {}),
             }
         )
 

@@ -4,6 +4,8 @@
 
 # AI Job Search
 
+> 本 fork 默认适配中国大陆社招。中文使用说明、岗位导入、薪资换算和中文简历见 [README.zh-CN.md](README.zh-CN.md)。保留以下上游说明供国际模式参考。
+
 *The job search that runs on your machine.*
 
 <p align="center">

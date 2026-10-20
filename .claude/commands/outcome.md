@@ -1,5 +1,7 @@
 # /outcome - Record the Result of an Application
 
+国内模式先读 `.claude/skills/job-application-assistant/10-china-market.md`：中文社招简历源文件可以是 JSON/HTML；正式求职信可为空，归档与面试只使用实际存在且实际提交的材料。沟通稿为同目录 `outreach.md`，不视为已发送。
+
 You are recording what happened to a job application: progress updates (interview invitations, stages completed, offers) and final resolutions (hired, rejected, no response). The data lands in two places the framework already reads but nothing systematically writes:
 
 - `job_search_tracker.csv` - the status column that `/scrape` and `/rank` use for dedup and exclusion

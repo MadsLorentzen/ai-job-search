@@ -1,6 +1,8 @@
 ---
-framework_version: 1.0.0
+framework_version: 1.0.1
 ---
+
+国内社招先读 `10-china-market.md` 并执行其市场规则。中文简历、可选求职信、薪资和面试偏好以该文件为准；下文保留国际参考。
 
 # Interview Preparation Guide
 

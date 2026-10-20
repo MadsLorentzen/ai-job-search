@@ -80,7 +80,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Excel integration test dependency
-        run: python -m pip install openpyxl==3.1.5
+        run: python -m pip install openpyxl==3.1.5 -r requirements-china.txt
       - run: python -m unittest discover -s tests -t . -v
 
   python-tests-windows:
@@ -99,7 +99,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install Excel integration test dependency
-        run: python -m pip install openpyxl==3.1.5
+        run: python -m pip install openpyxl==3.1.5 -r requirements-china.txt
       - name: Run the suite under Git Bash
         shell: bash
         run: python -m unittest discover -s tests -t . -v

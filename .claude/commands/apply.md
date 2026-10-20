@@ -2,6 +2,8 @@
 
 You are orchestrating a two-agent job application workflow. The job posting is provided below as `$ARGUMENTS` (either a URL or pasted text).
 
+国内社招模式先执行 `.claude/commands/apply-cn.md` 并在该流程完成后结束；以下为用户明确选择海外/国际申请时的原流程。市场判断和默认值见 `.claude/skills/job-application-assistant/10-china-market.md`。
+
 Follow these steps **exactly in order**. Do not skip steps.
 
 **Standing rule — write new facts back to the profile.** If the user confirms, corrects or supplies a fact that is not already in `01-candidate-profile.md` — a metric, a project detail, a skill, a scope correction — update that file in the same turn. Do not leave it living only in the conversation or in a draft.

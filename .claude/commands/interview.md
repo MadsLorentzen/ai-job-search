@@ -1,5 +1,7 @@
 # /interview - Prepare for an Interview on a Tracked Application
 
+国内模式先读 `.claude/skills/job-application-assistant/10-china-market.md`：中文社招简历源文件可以是 JSON/HTML；正式求职信可为空，归档与面试只使用实际存在且实际提交的材料。沟通稿为同目录 `outreach.md`，不视为已发送。
+
 You are preparing the user for a real, scheduled interview on one of their applications. The frameworks for this already exist - `07-interview-prep.md` (STAR examples, tough questions, questions to ask, roleplay protocol) and the Company Research Checklist in `04-job-evaluation.md` - and the `/outcome` archive records which stage the user is at and what earlier stages surfaced. This command wires them together into a stage-specific prep pack and an optional mock interview.
 
 `/apply` optimizes what the company reads; `/interview` optimizes what the company hears. The bridge between them is consistency: the interviewer has read the submitted CV and cover letter, so everything prepared here must match what those documents claim.
