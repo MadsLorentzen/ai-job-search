@@ -253,6 +253,16 @@ per-file diff commands.
   or unknown label keeps the old result. The homoglyph check now sees Cyrillic letters on a
   windows-1251 page. Text input to the gate (`--text`) is unchanged.
 
+- **freehire-search's User-Agent no longer makes github.com look like a job board** (#689,
+  `.agents/skills/freehire-search/cli/src/helpers.ts`, `url-reference.md`,
+  `tests/test_apply_host_check.py`) - `/apply` derives each installed portal's board hosts from the
+  host literals in its `cli/src`, and the contact URL added to freehire's User-Agent in #633 put
+  `github.com` among them, so a "posting" published in any GitHub repo or gist classified as an
+  installed portal instead of getting the `⚠ Unverified source host` warning. The User-Agent keeps
+  the `owner/project/version` name freehire's API docs ask for and drops the optional URL:
+  `MadsLorentzen/ai-job-search/1.0 (freehire-search)`. The host-check test now lists `github.com` and
+  `gist.github.com` postings among the hosts that must stay unverified.
+
 ### Security
 
 - **CI no longer leaves the job token in `.git/config` or expands a PR-controlled name into a
