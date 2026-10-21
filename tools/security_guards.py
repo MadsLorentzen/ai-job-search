@@ -339,7 +339,9 @@ def check_skill_tool_grants() -> None:
     skills = sorted(ROOT.glob(".claude/skills/*/SKILL.md")) + sorted(
         ROOT.glob(".agents/skills/*/SKILL.md")
     )
-    commands = sorted((ROOT / ".claude" / "commands").glob("*.md"))
+    # rglob, not glob: Claude Code loads namespaced commands from subfolders of
+    # .claude/commands/, so a grant in commands/ops/evil.md is live too.
+    commands = sorted((ROOT / ".claude" / "commands").rglob("*.md"))
     for path in skills + commands:
         rel = path.relative_to(ROOT).as_posix()
         try:
@@ -352,6 +354,12 @@ def check_skill_tool_grants() -> None:
                 continue  # commands may omit frontmatter entirely
             errors.append(f"{rel}: missing or unterminated frontmatter (expected --- ... ---)")
             continue
+        if "hooks" in data:
+            errors.append(
+                f"{rel}: frontmatter `hooks:` - a skill- or command-scoped hook runs a shell "
+                "command around matching tool calls for the turn that invokes it, the same "
+                "escape hatch check_hooks keeps out of settings.json. Ship no hooks here."
+            )
         # A portal skill may grant exactly its own CLI and nothing else - that is
         # the promise SECURITY.md makes.
         own_cli = _own_cli_grant(path)
@@ -562,8 +570,15 @@ def check_tracked_node_modules() -> None:
             )
 
 
+# Frontmatter keys that hand an agent more than its `tools:` list says. A
+# `permissionMode` other than the default skips the ask rules, and a `hooks:`
+# block runs shell commands around the agent's tool calls - the same two
+# things check_hooks and check_permissions keep out of settings.json.
+AGENT_PERMISSION_MODES = {"default"}
+
+
 def check_agent_tool_grants() -> None:
-    for path in sorted((ROOT / ".claude" / "agents").glob("*.md")):
+    for path in sorted((ROOT / ".claude" / "agents").rglob("*.md")):
         rel = path.relative_to(ROOT).as_posix()
         try:
             data = _frontmatter(path.read_text(encoding="utf-8"))
@@ -573,6 +588,19 @@ def check_agent_tool_grants() -> None:
         if data is None:
             errors.append(f"{rel}: missing or unterminated frontmatter (expected --- ... ---)")
             continue
+        mode = data.get("permissionMode")
+        if mode is not None and str(mode).strip() not in AGENT_PERMISSION_MODES:
+            errors.append(
+                f"{rel}: permissionMode {str(mode).strip()!r} - a subagent that skips the ask "
+                "rules can do whatever its tools allow without a prompt. Shipped agents read "
+                "untrusted posting text; leave permissionMode unset."
+            )
+        if "hooks" in data:
+            errors.append(
+                f"{rel}: frontmatter `hooks:` - an agent-scoped hook runs a shell command "
+                "around every matching tool call, the same escape hatch check_hooks keeps "
+                "out of settings.json. Ship no hooks on agent definitions."
+            )
         if "tools" not in data or not _tool_entries(data.get("tools")):
             errors.append(
                 f"{rel}: no `tools:` key - an agent without one gets every tool, including "
