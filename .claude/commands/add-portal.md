@@ -90,7 +90,7 @@ These conventions are what make portal skills interchangeable for `/scrape` and 
 - **`SKILL.md` body:** what the skill searches, the personal-use warning if Step 2 found terms restrictions, command reference with flags, 4-6 usage examples using the user's market (real cities, realistic roles), output-format table, and a Notes section recording portal quirks found in Step 2. If Step 2.5 found the portal needs a credential, add a **Setup** section naming the service, the exact environment variable to export, and the fact that every call is billed - stated where the user reads it before running the skill, not after.
 - **`url-reference.md`:** the endpoints, parameters table, and response-structure notes from Step 2 - this is the file a future maintainer needs when the portal changes its markup.
 - **`package.json`:** name `<portal>-cli`, `"type": "module"`, scripts `start`, `test` (`bun test --timeout 30000`), and `typecheck` (`tsc --noEmit`); dev-only dependencies in the zero-dependency default.
-- **`tests/`:** copy `runCLI`/`parseJSON` from `jobindex-search/cli/tests/helpers.ts`, then add a small live smoke-test file: `search` with the test query returns exit code 0 and ≥1 result with non-null `id`/`title`/`url`; a bogus flag or missing required arg exits 1 with a JSON error on stderr.
+- **`tests/`:** copy `runCLI`/`parseJSON` from `jobindex-search/cli/tests/helpers.ts`, then add network-free fixture/mock tests. Use the response captured in Step 2 to exercise the real parser or CLI: `search` returns exit code 0 and the fixture's expected `id`/`title`/`url`; a bogus flag or missing required arg exits 1 with a JSON error on stderr. For a CLI-level request test, follow the shipped portal tests' local HTTP server/fetch-preload pattern and reject unexpected external requests. Do not put live portal calls in checked-in `*.test.ts` files: CI discovers every generated CLI and runs its test script on every push. The bounded live search/detail verification belongs to Step 4, run manually, rather than to `bun test`.
 
 ---
 
@@ -112,7 +112,7 @@ Never register a portal skill that has not returned real results. Markup assumpt
    bun run src/cli.ts detail <id> --format plain
    ```
    Verify the description is readable text (entities decoded, tags stripped, paragraph breaks preserved).
-5. Run the test suite: `bun run test`.
+5. Run the network-free test suite: `bun run test`. The live calls in Steps 4.2 and 4.4 are separate manual checks; they must not become tests that CI replays against the portal.
 6. Keep volume low during iteration - a handful of requests, not a crawl. If the portal rate-limits you mid-test, back off and tell the user.
 
 Do not proceed to Step 5 until search, detail, and tests all pass.
@@ -131,7 +131,7 @@ Do not proceed to Step 5 until search, detail, and tests all pass.
    ```
    (Skip if the skill is zero-dependency and they don't care about typecheck types.)
 3. Note that the skill auto-triggers from its `SKILL.md` description - no other wiring is needed.
-4. CI coverage is also automatic: the `cli-checks` job discovers every `.agents/skills/*/cli/package.json`, so the new CLI's `typecheck` and `test` scripts run on every push to the fork without editing the workflow.
+4. CI coverage is also automatic: the `cli-checks` job discovers every `.agents/skills/*/cli/package.json`, so the new CLI's `typecheck` and network-free `test` scripts run on every push to the fork without editing the workflow. CI must not contact the live portal, including when personal use was approved in Step 2.4.
 
 ---
 
