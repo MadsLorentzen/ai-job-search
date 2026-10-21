@@ -69,7 +69,7 @@ HIDDEN_STYLE = re.compile(
     r"|visibility\s*:\s*hidden"
     r"|opacity\s*:\s*0(?![.\d]*[1-9])"
     r"|font-size\s*:\s*0(?:\.0+)?(?:px|pt|em|rem|%)?(?![\d.])"
-    r"|color\s*:\s*transparent"
+    r"|(?:^|;)\s*color\s*:\s*transparent"
     r"|clip\s*:\s*rect\(\s*0"
     r"|clip-path\s*:\s*inset\(\s*100%"
     r"|(?:left|top|text-indent)\s*:\s*-\d{4,}px",

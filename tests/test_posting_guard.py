@@ -401,6 +401,22 @@ class Calibration(GuardFixture):
         # href targets are attributes, not text: hidden nav links are not "hidden URLs".
         self.assertEqual(self.findings_of(out)["hidden_urls"], [])
 
+    def test_transparent_decoration_does_not_hide_visible_posting_text(self):
+        # These declarations are serialized by the browser after assigning the
+        # DOM style properties; all three retain black, visible text.
+        for property_name in ("background-color", "border-color", "text-decoration-color"):
+            with self.subTest(property_name=property_name):
+                page = self.write("posting.html", (
+                    f'<article style="color: black; {property_name}: transparent;">'
+                    'Software Engineer: Python and SQL experience</article>'
+                    '<article style="color: transparent;">Hidden content</article>'
+                ))
+                code, out, err = self.run_main("--in", str(page), "--html", "--json")
+                self.assertEqual(code, 0, err)
+                self.assertIn("Software Engineer: Python and SQL experience", self.text_of(out))
+                self.assertNotIn("Hidden content", self.text_of(out))
+                self.assertEqual(self.findings_of(out)["hidden_blocks"], ["Hidden content"])
+
     def test_leading_bom_is_encoding_noise(self):
         code, out, err = self.run_main("--text", "--json", stdin_text="﻿Plain posting.")
         self.assertTrue(out.startswith("posting_guard: clean"), out.splitlines()[0])
