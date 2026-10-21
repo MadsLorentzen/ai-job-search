@@ -34,7 +34,7 @@ per-file diff commands.
 
 ### Fixed
 
-- **`jobnet-search` lists all six announcement types** in CLI help, the skill and README, so
+- **`jobnet-search` lists all six announcement types** (#719) in CLI help, the skill and README, so
   agents can discover the existing `Hotjob`, `Fleksjob` and `Handicapingenhindring` filters.
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
