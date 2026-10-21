@@ -34,6 +34,9 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/outcome followup` uses the latest dated tracker note for days quiet**, matching the
+  open-pipeline table so a recent interview update or employer reply postpones a follow-up.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
