@@ -36,11 +36,17 @@ The command is **silently optional**: when the destination is not reachable, the
 
 ## Step 2: Build the Sync Set (local data only - no external calls yet)
 
+> **Windows:** run these tools as `python`, not `python3`.
+
 Validate the cheap, local precondition before creating anything external. A run with nothing to sync must exit with **zero side effects** - no database created, no state file written.
 
 1. Read `job_scraper/seen_jobs.json` and `job_search_tracker.csv` (either may be missing).
 2. Select `job_scraper/seen_jobs.json` entries with status `ranked` whose `rank_score` meets the threshold from Step 0. `--all` lifts the threshold entirely.
-3. Every tracker row joins the sync set (an applied-to job always syncs, ranked or not), matched to `job_scraper/seen_jobs.json` entries case-insensitively on company + title where possible (the tracker's `role` column against the entry's `title` field — entries carry `title`, not `role`). Tracker rows with no `job_scraper/seen_jobs.json` entry sync too - build their Key as `<company>_<role>` lowercased with underscores.
+3. Every tracker row joins the sync set (an applied-to job always syncs, ranked or not), matched to `job_scraper/seen_jobs.json` entries case-insensitively on company + title where possible (the tracker's `role` column against the entry's `title` field — entries carry `title`, not `role`). Tracker rows with no `job_scraper/seen_jobs.json` entry sync too. For these tracker-only jobs, generate the Key with the same helper `/scrape` uses, passing the tracker's `company`, `role` and `source` (the posting URL, empty when absent):
+   ```bash
+python3 tools/job_key.py --company "<company>" --title "<role>" --url "<source>"
+   ```
+   Use its stdout verbatim. A matched scraper entry still uses its **stored** key, never a newly generated replacement. This keeps a direct `/apply` → `/notion-sync` run on the same key when `/scrape` later discovers that posting.
 4. `job_scraper/seen_jobs.json` entries with status `expired` join the sync set regardless of score as update-only candidates. An entry selected only because it is `expired` and has no matching tracker row can update an existing page, but never creates a page or writes a body. If a matching tracker row exists, it remains an ordinary sync item and tracker status precedence applies.
 5. **Status precedence:** the tracker wins. A job that is `ranked` in `job_scraper/seen_jobs.json` but `interview` in the tracker syncs as `interview`. Jobs only in `job_scraper/seen_jobs.json` keep their stored status. **Deadline precedence: the tracker wins too** - the tracker's `deadline` (written by `/apply` from the posting the application was actually built on) overrides the `job_scraper/seen_jobs.json` value; jobs only in `job_scraper/seen_jobs.json` keep the scraper's stored deadline. Omit the property when neither states one, and **never reconcile the two by picking the earlier or later date** - both were read from the posting at different times, and the safe-looking `min()` substitutes a date the user never applied against.
 6. **If the sync set is empty** (no ranked entries meet the threshold and there are no tracker rows), say "Nothing to sync - run `/scrape` and `/rank` first" (or, when jobs exist but all score below the threshold, say so and suggest `--min-score`/`--all`) and **stop**.
@@ -73,7 +79,7 @@ Validate the cheap, local precondition before creating anything external. A run 
    | CV file | rich text | tracker `cv_file` column - the filename only, never document content |
    | Cover letter | rich text | tracker `cover_letter_file` column - the filename only, never document content |
    | URL | url | posting URL |
-   | Key | rich text | the job's key in `job_scraper/seen_jobs.json` - dedup anchor, never edited by hand |
+   | Key | rich text | the stored scraper key, or the helper-generated tracker-only key from Step 2.3 - dedup anchor, never edited by hand |
 
    The tracker-sourced properties (Applied on, Channel, CV file, Cover letter) stay empty for jobs that have no tracker row. CV file and Cover letter fill in once `/apply` records the draft; Applied on stays empty until `/outcome` records the submission. Only filenames ever sync; document contents stay local.
 
@@ -86,7 +92,10 @@ Validate the cheap, local precondition before creating anything external. A run 
 
 For each job in the sync set:
 
-1. Query the database for a page whose `Key` equals the job's key.
+1. Query the database for a page whose `Key` equals the job's key. For a job with a tracker row, also check the **documented legacy tracker-only fallback Key**: `<company>_<role>` lowercased with spaces replaced by underscores, using the common interpretation of the former Step 2.3 wording; historical runs may have normalized it differently, so do not guess other aliases. Never derive a legacy Key for a job without a tracker row. If the two Keys are identical, query once.
+   - With exactly one legacy page and no canonical page, first verify its Company and Name match the current company and `<Role> — <Company>` (case-insensitive, trimmed); when both posting URLs are known, require them to match too. If identity is missing or differs, report a Key conflict and skip that job. Otherwise, update that page's Key to the canonical Key and use it as the match below; do not rewrite its body. This preserves notes from an earlier tracker-only sync when the scraper key becomes available.
+   - With distinct canonical and legacy pages, or multiple pages matching either Key, report a Key conflict and skip that job; never merge or delete pages. A single page matching both identical Keys is not a conflict.
+   - This compatibility lookup is not a general migration of changed scraper keys. Do not guess old slug rules or rename unrelated pages.
 2. **No match** → if the job is an expired-only entry, skip it - do not create a page or write a body. Otherwise, create the page with all properties from the Step 3 table, then write its body (Step 5).
 3. **Match, expired-only entry** → update **Status only** to `expired`. Do not update other properties or touch the page body.
 4. **Match, any other effective status** → update **properties only**: Status, Score, Verdict, Deadline, Ranked, Applied on, Channel, CV file, Cover letter. Properties are the always-current surface (bodies are write-once), so tracker updates recorded by `/outcome` reach the destination exclusively through them. Do not touch the page body - the user may have added their own notes there, and clobbering them breaks trust in the whole view. (`--rebuild` is the sole exception for non-expired jobs.)
