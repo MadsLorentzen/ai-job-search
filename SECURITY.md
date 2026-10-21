@@ -31,7 +31,7 @@ Every grant the template ships, where it lives, how long it lasts, and what chec
 | Hooks (`.claude/settings.json` `hooks`) | None. The template ships no hooks: a hook runs with no prompt the moment its event fires, which is the vector the Shai-Hulud worm used in August 2026. | - | Any hook fails CI |
 | Compiling (`lualatex`, `xelatex`, a custom template's command) | Not pre-approved: a `lualatex:*` grant would also approve `-shell-escape`. In default mode each compile prompts. Answering "don't ask again" would persist exactly that `lualatex` rule to your `settings.local.json`, so answer per call. | - | - |
 | Portal CLI manifests (`.agents/**/package.json`) | No lifecycle scripts (`preinstall`, `postinstall`, ...) and no `trustedDependencies`, so `bun install` runs no code | - | Fails CI; `tools/install_portal_clis.py` also skips a manifest that carries one |
-| The browser-header retry (`tools/fetch_page.py`) | A GET with a fixed argv, http(s) only, 45 s / 5 redirects / 10 MB, `robots.txt` enforced with no bypass flag, output refused inside the repo | - | Pinned by `tests/test_fetch_page.py`; the grant names the script, not `curl` |
+| The browser-header retry (`tools/fetch_page.py`) | A GET with a fixed argv, http(s) only, 45 s / 5 redirects / 10 MB, `robots.txt` enforced before each redirect target with no bypass flag, output refused inside the repo | - | Pinned by `tests/test_fetch_page.py`; the grant names the script, not `curl` |
 
 ### What this does not do
 
