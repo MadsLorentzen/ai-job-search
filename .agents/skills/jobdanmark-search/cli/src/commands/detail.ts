@@ -202,11 +202,17 @@ function fromRenderedHtml(root: ReturnType<typeof parse>, slug: string, url: str
     root.querySelector(".company-logo source")?.getAttribute("srcset")?.split(/\s+/)[0]
   const workplace = overviewValue(root, "Arbejdssted")
 
-  const description = root
-    .querySelectorAll(".job-list-details p, .job-list-details li")
-    .map((node) => cleanText(node.text))
-    .filter(Boolean)
-    .join("\n")
+  // Current pages put prose directly in this container, separated by <br>.
+  // Selecting only p/li loses those requirements and application instructions,
+  // and includes the header's metadata list. Keep the old layout fallback.
+  const body = root.querySelector(".job-list-details .job-details-body")
+  const description = body
+    ? descriptionToText(body.innerHTML)
+    : root
+      .querySelectorAll(".job-list-details p, .job-list-details li")
+      .map((node) => cleanText(node.text))
+      .filter(Boolean)
+      .join("\n")
 
   const employmentType = overviewValue(root, "Jobtype")
   const applyUrl = normalizeUrl(root.querySelector("a.action.primary")?.getAttribute("href"))
