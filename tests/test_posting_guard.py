@@ -401,13 +401,15 @@ class Calibration(GuardFixture):
         # href targets are attributes, not text: hidden nav links are not "hidden URLs".
         self.assertEqual(self.findings_of(out)["hidden_urls"], [])
 
-    def test_transparent_decoration_does_not_hide_visible_posting_text(self):
+    def test_decoration_and_custom_properties_do_not_hide_visible_posting_text(self):
         # These declarations are serialized by the browser after assigning the
         # DOM style properties; all three retain black, visible text.
-        for property_name in ("background-color", "border-color", "text-decoration-color"):
-            with self.subTest(property_name=property_name):
+        styles = [f"{name}: transparent" for name in ("background-color", "border-color", "text-decoration-color")]
+        styles += ["stroke-opacity: 0", "--opacity: 0", "--display: none"]
+        for style in styles:
+            with self.subTest(style=style):
                 page = self.write("posting.html", (
-                    f'<article style="color: black; {property_name}: transparent;">'
+                    f'<article style="color: black; {style};">'
                     'Software Engineer: Python and SQL experience</article>'
                     '<article style="color: transparent;">Hidden content</article>'
                 ))

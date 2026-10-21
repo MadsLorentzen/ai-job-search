@@ -34,7 +34,7 @@ per-file diff commands.
 
 ### Fixed
 
-- **`posting_guard.py` keeps job text with transparent backgrounds, borders or text decorations** - only the `color` declaration marks transparent text as hidden, preserving visible posting content styled with `background-color`, `border-color` or `text-decoration-color`.
+- **`posting_guard.py` matches hidden-style declaration names rather than property suffixes** - visible job text with transparent backgrounds, borders, text decorations, stroke opacity or custom CSS properties is preserved, while actual transparent text and hidden declarations are still removed.
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
