@@ -46,6 +46,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **`scrape_state.py` folds hits that share a canonical key instead of raising mid-batch**
+  (`tools/scrape_state.py`) - `candidates` deduplicated on URL and on the NFC-cased
+  (company, title) pair, but `store` keys the history with `make_key`, which folds accents
+  to ASCII. "Développeur Python" and "Developpeur Python" at one company are two pairs but
+  one key, so `candidates` selected the second spelling and `store` raised
+  `canonical key already exists` after validating the batch - the whole run's new postings,
+  the unrelated ones included, never reached the history. Both commands now deduplicate on
+  the key as well; a colliding hit counts as `already_seen` (or `repeated_in_batch`) and the
+  rest of the batch is stored.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
