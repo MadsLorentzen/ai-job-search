@@ -17,6 +17,7 @@ export interface DetailApiResponse {
   hasLogo: boolean
   logoUrl: string | null
   isExternal?: boolean
+  source?: string
   employer: {
     cvrNumber: string | null
     pNumber: string | null
@@ -81,6 +82,7 @@ export function mapSearchAdToDetail(raw: JobAdRaw & { jobAdUrl?: string | null; 
     hasLogo: Boolean(raw.hasLogo),
     logoUrl: raw.logoUrl ?? null,
     isExternal: true,
+    source: "search-fallback",
     employer: {
       cvrNumber: raw.cvr ?? null,
       pNumber: null,
@@ -184,7 +186,6 @@ export const detail = defineCommand({
           })
           const match = searchResult.jobAds?.find((ad) => ad.jobAdId === id)
           if (match) {
-            process.stderr.write("note: detail endpoint returned 404; retrieved external posting summary from search endpoint\n")
             data = prepareDetail(mapSearchAdToDetail(match))
           }
         } catch {
@@ -217,6 +218,9 @@ function outputTable(data: DetailApiResponse): void {
   console.log(`ID:          ${data.id}`)
   console.log(`Title:       ${data.title}`)
   console.log(`Employer:    ${data.employer.name}`)
+  if (data.source) {
+    console.log(`Source:      ${data.source} (detail unavailable, synthesised from search)`)
+  }
   console.log(`Type:        ${data.job.type ?? "-"}`)
   console.log(`City:        ${data.job.address.city ?? "-"}`)
   console.log(`Postal:      ${data.job.address.postalCode ?? "-"}`)
@@ -240,6 +244,10 @@ export function formatDetailPlain(data: DetailApiResponse): string {
     `Deadline: ${data.application.deadlineDate ?? "-"}`,
     `Positions: ${data.application.availablePositions ?? "-"}`,
   ]
+
+  if (data.source) {
+    lines.push(`Source: ${data.source} (detail unavailable, synthesised from search)`)
+  }
 
   if (data.application.url) {
     lines.push(`Apply: ${data.application.url}`)

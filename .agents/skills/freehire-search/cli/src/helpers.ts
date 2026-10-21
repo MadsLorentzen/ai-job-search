@@ -16,11 +16,14 @@ export function writeError(error: string, code: string): void {
   process.stderr.write(JSON.stringify({ error, code }) + "\n")
 }
 
-// Names this project, the shape freehire's API docs ask for (owner/project/version
-// plus a contact URL), so the API's operators can reach the maintainer before a
-// limit or a field changes. The old value linked to freehire.me itself, which
-// identified the API, not the caller.
-const UA = "MadsLorentzen/ai-job-search/1.0 (+https://github.com/MadsLorentzen/ai-job-search; freehire-search)"
+// Names this project in the owner/project/version shape freehire's API docs ask
+// for, so the API's operators can find the maintainer before a limit or a field
+// changes. The contact URL the docs make optional is left out on purpose: /apply
+// learns which hosts a portal serves by reading the host literals in its
+// cli/src, so a github.com URL here made every github.com link classify as an
+// installed job board instead of an unverified host. The owner/project name
+// already identifies the repo on GitHub.
+const UA = "MadsLorentzen/ai-job-search/1.0 (freehire-search)"
 
 /** The shared API response envelope: {data, meta, error}. */
 export interface Envelope<T> {
@@ -29,9 +32,29 @@ export interface Envelope<T> {
   error?: string
 }
 
+// The most apiGet sleeps across all retries of one request. Its own backoff
+// schedule (500ms doubling to 8s, six retries) stays under it; a Retry-After
+// that would push past it fails the request at once instead, so an outage still
+// degrades this source quickly rather than outlasting the caller's tool timeout.
+const RETRY_BUDGET_MS = 30_000
+
+/**
+ * The wait a 429/503 asks for via `Retry-After`, in ms, or null when absent or
+ * unreadable. Accepts both RFC 9110 forms: delta-seconds and an HTTP-date.
+ */
+export function retryAfterMs(header: string | null, now = Date.now()): number | null {
+  if (!header) return null
+  const value = header.trim()
+  if (/^\d+$/.test(value)) return Number(value) * 1000
+  const date = Date.parse(value)
+  if (Number.isNaN(date)) return null
+  return Math.max(date - now, 0)
+}
+
 /**
  * GET a JSON envelope from the freehire API. Retries 429/5xx (transient server
- * states) with backoff; returns `null` on a 404. A connection failure fails fast
+ * states) with backoff, waiting at least as long as a `Retry-After` header asks
+ * within a total budget of RETRY_BUDGET_MS; returns `null` on a 404. A connection failure fails fast
  * with a clear message — no retry, so an outage degrades this source quickly
  * rather than hanging the caller (the graceful-degradation contract).
  */
@@ -39,6 +62,7 @@ export async function apiGet<T>(path: string): Promise<Envelope<T> | null> {
   const url = `${baseUrl()}${path}`
   const maxRetries = 6
   let delay = 500
+  let waited = 0
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     let response: Response
@@ -59,7 +83,17 @@ export async function apiGet<T>(path: string): Promise<Envelope<T> | null> {
       if (attempt === maxRetries) {
         throw new Error(`freehire API request failed: ${response.status} ${response.statusText}`)
       }
-      await sleep(delay + Math.floor(Math.random() * 500))
+      const backoff = delay + Math.floor(Math.random() * 500)
+      const retryAfter = retryAfterMs(response.headers.get("Retry-After"))
+      const wait = Math.max(backoff, retryAfter ?? 0)
+      if (waited + wait > RETRY_BUDGET_MS) {
+        throw new Error(
+          `freehire API request failed: ${response.status} ${response.statusText}; ` +
+            `the server asked to retry in ${Math.ceil(wait / 1000)}s, past this CLI's ${RETRY_BUDGET_MS / 1000}s retry budget`,
+        )
+      }
+      await sleep(wait)
+      waited += wait
       delay = Math.min(delay * 2, 8000)
       continue
     }
@@ -246,12 +280,46 @@ export function cleanHtml(html: string | null | undefined): string | null {
   return text || null
 }
 
-/** Extract a freehire public slug from a bare slug or a /jobs/<slug> URL. */
+const FREEHIRE_HOST = /(^|\.)freehire\.me$/i
+
+/** True for freehire.me, any of its subdomains, or the configured self-hosted base URL's host. */
+function isFreehireHost(host: string): boolean {
+  if (FREEHIRE_HOST.test(host)) return true
+  try {
+    const self = new URL(baseUrl()).hostname.toLowerCase()
+    return host === self || host.endsWith(`.${self}`)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Extract a freehire public slug from a bare slug or a freehire `/jobs/<slug>` URL.
+ *
+ * A URL on any other host is rejected. The previous pattern took the segment
+ * after `/jobs/` from ANY string, so a Greenhouse apply link - which is what a
+ * freehire search result's own `url` field carries - was reduced to its last
+ * path segment and `detail` asked the API for a slug that never existed,
+ * reporting "job not found" for a URL that was never a freehire posting. URLs
+ * are parsed for real, so look-alike hosts (freehire.me.evil.io) and userinfo
+ * tricks (freehire.me@evil.io) fall on the reject side; FREEHIRE_API_URL's host
+ * is accepted for a self-hosted instance.
+ */
 export function normalizeSlug(input: string): string | null {
   const trimmed = input.trim()
   if (!trimmed) return null
-  const m = trimmed.match(/\/jobs\/([^/?#]+)/)
-  if (m) return m[1]
+  const hasScheme = /^https?:\/\//i.test(trimmed)
+  if (hasScheme || /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(trimmed)) {
+    let parsed: URL
+    try {
+      parsed = new URL(hasScheme ? trimmed : `https://${trimmed}`)
+    } catch {
+      return null
+    }
+    if (!isFreehireHost(parsed.hostname.toLowerCase())) return null
+    const m = parsed.pathname.match(/^\/jobs\/([a-z0-9][a-z0-9-]*)\/?$/i)
+    return m ? m[1] : null
+  }
   // A bare slug: lowercase alphanumerics and hyphens (no path/scheme).
   if (/^[a-z0-9][a-z0-9-]*$/i.test(trimmed)) return trimmed
   return null

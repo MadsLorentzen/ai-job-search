@@ -24,7 +24,9 @@ Two signals drive the sort:
 2. Relevant to this fork? A commit that only touches files this fork deleted
    (e.g. removed demo portals) is almost certainly N/A. We check each commit's
    touched paths against HEAD and the shared base: a genuinely new upstream
-   path is worth reviewing, rather than a file the fork chose to remove.
+   path is worth reviewing, rather than a file the fork chose to remove. A new
+   file inside a directory the fork removed (a test added to a dropped portal)
+   counts as removed too.
 
 Usage: python tools/upstream_triage.py [--remote upstream] [--branch master]
 Exits 0 always (a report, not a gate). Prints a note to stderr and exits 0 if
@@ -89,6 +91,24 @@ def path_exists(path: str, ref: str = "HEAD") -> bool:
         ["git", "cat-file", "-e", f"{ref}:{path}"], capture_output=True
     )
     return r.returncode == 0
+
+
+def in_removed_dir(path: str, base: str) -> bool:
+    """Whether a path absent from HEAD and base sits in a directory the fork removed.
+
+    The nearest ancestor directory decides: one HEAD still has means the path is
+    new in a directory the fork kept; one only the base has means the fork
+    deleted the tree the path would land in. Directories in neither are new
+    upstream too, so the walk goes on up to the root.
+    """
+    parts = path.split("/")[:-1]
+    for depth in range(len(parts), 0, -1):
+        parent = "/".join(parts[:depth])
+        if path_exists(parent):
+            return False
+        if path_exists(parent, base):
+            return True
+    return False
 
 
 def remote_slug(remote: str) -> str | None:
@@ -177,7 +197,9 @@ def main() -> int:
         touched = files_touched(sha)
         relevant = [
             f for f in touched
-            if path_exists(f) or common_base is None or not path_exists(f, common_base)
+            if path_exists(f)
+            or common_base is None
+            or not (path_exists(f, common_base) or in_removed_dir(f, common_base))
         ]
         # A commit whose only surviving footprint is the changelog is one whose
         # real change lives in files this fork removed - the code doesn't apply,
