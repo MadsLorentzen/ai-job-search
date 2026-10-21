@@ -46,6 +46,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **The web-research escalation step guards `$SCRATCHPAD` again** (`09-web-research.md`,
+  `tests/test_posting_gate_wiring.py`) - #642 re-added a bare `$SCRATCHPAD/page.html` on the
+  `fetch_page.py` line of the escalation order, the one both `posting-fetcher` and
+  `posting-scorer` follow, while the same file's retry section already used
+  `${SCRATCHPAD:?...}`. With the variable unset the path becomes `/page.html`: outside the
+  repo, so `fetch_page`'s own guard allows it, and nothing fails loudly. The wiring test
+  checked `apply.md` and the two agent files for the guarded form but not this file; it now
+  does, and fails on master. `framework_version` 1.1.7 -> 1.1.8.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
