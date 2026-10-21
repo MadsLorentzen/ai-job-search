@@ -34,19 +34,6 @@ per-file diff commands.
 
 ### Fixed
 
-- **`jobnet-search` keeps canonical portal URLs for external ads and emits destination in `applyUrl`**
-  (fixes #701, `.agents/skills/jobnet-search/cli/src/commands/search.ts`,
-  `tests/search-normalization.test.ts`) - external job ads in search results emitted the
-  external employer ATS link directly in `url` (#557), which tripped `/scrape`'s Step 4.75 degraded
-  scan ("URLs that do not point at the portal") and caused `/apply` and `/rank`'s host-based routing
-  (#562) to send the posting to `WebFetch` on an ATS application form rather than `jobnet detail`.
-  `createSearchOutput` now keeps `url` canonical as `https://jobnet.dk/find-job/<id>` across all
-  ads (preserving identity, deduplication, and portal routing to `detail`), while emitting the
-  external employer ATS destination in `applyUrl` (matching the `applyUrl` field name on `detail`
-  in `jobindex` and `jobdanmark`) alongside `jobAdUrl`. For external ads, `url` is Jobnet's
-  canonical identity link, which 404s in a browser, and the employer page is `applyUrl` (search) or
-  the `Apply:` line of `detail`.
-
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
@@ -340,6 +327,19 @@ per-file diff commands.
   followed an `ftp:` redirect, a size failure left a partial file at `--out`, and the urllib path had
   no total deadline. `size=` in the status line is now the saved file's size on both paths, and step 3
   of `09-web-research.md` says an exit 1 can come from a redirect target's policy.
+
+- **`jobnet-search` keeps canonical portal URLs for external ads and emits destination in `applyUrl`**
+  (#706, fixes #701, `.agents/skills/jobnet-search/cli/src/commands/search.ts`,
+  `tests/search-normalization.test.ts`) - external job ads in search results emitted the
+  external employer ATS link directly in `url` (#557), which tripped `/scrape`'s Step 4.75 degraded
+  scan ("URLs that do not point at the portal") and caused `/apply` and `/rank`'s host-based routing
+  (#562) to send the posting to `WebFetch` on an ATS application form rather than `jobnet detail`.
+  `createSearchOutput` now keeps `url` canonical as `https://jobnet.dk/find-job/<id>` across all
+  ads (preserving identity, deduplication, and portal routing to `detail`), while emitting the
+  external employer ATS destination in `applyUrl` (matching the `applyUrl` field name on `detail`
+  in `jobindex` and `jobdanmark`) alongside `jobAdUrl`. For external ads, `url` is Jobnet's
+  canonical identity link, which 404s in a browser, and the employer page is `applyUrl` (search) or
+  the `Apply:` line of `detail`.
 
 ### Security
 
