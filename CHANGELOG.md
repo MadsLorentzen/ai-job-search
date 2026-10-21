@@ -34,7 +34,7 @@ per-file diff commands.
 
 ### Fixed
 
-- `/notion-sync` now uses the canonical job-key helper for tracker-only jobs and preserves uniquely matched legacy pages when the same posting is later scraped.
+- `/notion-sync` now uses the canonical job-key helper for tracker-only jobs and preserves uniquely matched legacy pages when the same posting is later scraped (#728).
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
