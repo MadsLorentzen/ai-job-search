@@ -150,6 +150,13 @@ description, skills, region/country, and — when the posting is enriched — se
 category, employment type, and salary. `salary` keeps its period when freehire records
 one (`INR 300000–300000/year`, `INR 12000/month`); compare pay only in one period.
 
+Detail JSON preserves `closed_at`: a non-null value means closed, explicit `null`
+means open according to freehire, and a missing field means unknown (older or
+self-hosted responses). Never infer open from a missing field. Plain output states
+`Status: closed (<timestamp>)`, `Status: open`, or `Status: unknown`. A closed
+posting remains available for historical reference; do not present it as a current
+opening.
+
 Use it for a posting you already have a slug for — a tracked application, a shared
 link, or a closed posting search no longer lists. Re-fetching a hit that `search`
 just returned only re-reads a description you already have.

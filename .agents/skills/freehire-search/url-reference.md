@@ -121,7 +121,9 @@ identifier.
 A single job by its `public_slug`. Returns the same job object in `data`. A closed
 posting is still served here (with a non-null `closed_at`); a missing slug is 404
 `{ "error": "not found" }`. The skill's `detail` command maps a 404 to a
-`NOT_FOUND` error on stderr.
+`NOT_FOUND` error on stderr. The CLI preserves `closed_at` in detail JSON:
+non-null means closed, explicit null means open, and absence is unknown. Search
+output is unchanged; its endpoint already omits closed postings.
 
 ## `GET /api/v1/jobs/facets`
 

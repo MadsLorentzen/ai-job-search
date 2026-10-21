@@ -51,6 +51,9 @@ and exits `0`, leaving stdout a valid JSON document.
 posting's **full** description (Markdown by default, `--description-format
 text|html` to change it). `detail` remains for looking a single posting up by
 slug — including a closed one, which search does not return.
+Detail JSON retains `closed_at`: non-null is closed, explicit null is open, and
+absence is unknown. Plain detail prints the corresponding `Status` line. A missing
+field must never be treated as open.
 
 ## Quick examples
 
