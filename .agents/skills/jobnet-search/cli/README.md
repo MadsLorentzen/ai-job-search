@@ -71,7 +71,7 @@ bun run src/cli.ts search [flags]
 | `--radius` | number | `50` | Radius in km from postal code (requires `--postal-code`) |
 | `--work-hours` | string | — | `FullTime` or `PartTime` |
 | `--duration` | string | — | `Permanent` or `Temporary` |
-| `--job-type` | string | — | Announcement type: `Ordinaert`, `Efterloenner`, `Foertidspension` |
+| `--job-type` | string | — | Announcement type: `Ordinaert`, `Hotjob`, `Efterloenner`, `Foertidspension`, `Fleksjob`, `Handicapingenhindring` |
 | `--occupation-area` | string | — | Occupation area identifier, e.g. `10000` |
 | `--occupation-group` | string | — | Occupation group identifier, e.g. `10060` |
 | `--occupation` | string | — | One ESCO occupation: the `conceptUriDa` from `occupations`, or its trailing UUID (sent as `occupations`) |

@@ -34,6 +34,9 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobnet-search` lists all six announcement types** in CLI help, the skill and README, so
+  agents can discover the existing `Hotjob`, `Fleksjob` and `Handicapingenhindring` filters.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
