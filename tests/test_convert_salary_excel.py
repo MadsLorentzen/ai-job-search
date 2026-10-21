@@ -118,7 +118,7 @@ class DetectColumnTypeTests(unittest.TestCase):
         self.assertTrue(header_matches("Firmanavn og by", COMPANY_PATTERNS))
         ws = FakeWorksheet([
             ("Firmanavn og by", "Antal", "Indeks"),
-            ("Example A/S, Aarhus", 12, 105.0),
+            ("Example A/S,Aarhus", 12, 105.0),
         ])
         companies = parse_sheet(ws)
         self.assertEqual(len(companies), 1)
@@ -141,12 +141,26 @@ class DetectColumnTypeTests(unittest.TestCase):
     def test_parse_sheet_splits_english_combined_company_and_city_header(self):
         ws = FakeWorksheet([
             ("Company and City", "Count", "Index"),
-            ("Ørsted A/S, Kongens Lyngby", 200, 105.2),
+            ("Ørsted A/S,Kongens Lyngby", 200, 105.2),
         ])
         companies = parse_sheet(ws)
         self.assertEqual(len(companies), 1)
         self.assertEqual(companies[0]["company"], "Ørsted A/S")
         self.assertEqual(companies[0]["city"], "Kongens Lyngby")
+
+    def test_parse_sheet_splits_on_the_last_comma_when_the_company_contains_one(self):
+        # IDA cells have no space after the separating comma. A company can
+        # itself contain ", " ("Rambøll Danmark A/S, Odense,Odense C").
+        ws = FakeWorksheet([
+            ("Firmanavn og by", "Antal", "Indeks"),
+            ("Rambøll Danmark A/S, Odense,Odense C", 12, 105.0),
+            ("Ørsted A/S,Fredericia", 200, 105.2),
+        ])
+        companies = parse_sheet(ws)
+        self.assertEqual(
+            [(c["company"], c["city"]) for c in companies],
+            [("Rambøll Danmark A/S, Odense", "Odense C"), ("Ørsted A/S", "Fredericia")],
+        )
 
     def test_parse_sheet_keeps_a_combined_cell_with_no_comma_as_company_only(self):
         ws = FakeWorksheet([

@@ -20,7 +20,7 @@ Expected Excel format:
     - A "Company" or "Firma" column (required)
     - An optional "City" or "By" column. A combined header such as
       "Firmanavn og by" / "Company and City" (no separate city column)
-      is split on the last ", " into company and city.
+      is split on the last comma, and both parts are stripped, into company and city.
     - Any number of numeric data columns (salary index, count, etc.)
 
 The script auto-detects the header row and column layout. For Excel files
@@ -98,20 +98,21 @@ def parse_numeric_cell(value):
 
 
 def split_combined_company_city(value):
-    """Split a 'Company, City' cell from a combined name-and-city column.
+    """Split a combined name-and-city cell on its last comma.
 
     The IDA demonstration workbook heads its company column "Firmanavn og by"
-    and stores "Ørsted A/S, Fredericia" in one cell. salary_lookup's --city
-    filter only reads entry["city"], so leaving the city in the company
+    and stores "Ørsted A/S,Fredericia" (no space after the comma). salary_lookup's
+    --city filter only reads entry["city"], so leaving the city in the company
     string makes the documented
-    `python3 salary_lookup.py "Ørsted" --city "Fredericia"` miss. The last
-    ", " is the split: city names can contain spaces ("Kongens Lyngby") and
-    this column's city comes last. A cell with no ", " is left as the company
+    `python3 salary_lookup.py "Ørsted" --city "Fredericia"` miss. Split on the
+    last comma and strip both parts: a city may contain spaces ("Kongens Lyngby")
+    and a company may contain ", " ("Rambøll Danmark A/S, Odense,Odense C"
+    keeps "Rambøll Danmark A/S, Odense"). A cell with no comma stays the company
     with an empty city.
     """
-    if not isinstance(value, str) or ", " not in value:
+    if not isinstance(value, str) or "," not in value:
         return value, ""
-    company, city = value.rsplit(", ", 1)
+    company, city = value.rsplit(",", 1)
     company, city = company.strip(), city.strip()
     if company and city:
         return company, city
