@@ -43,7 +43,7 @@ export function parseJobTypes(value: string | undefined): string[] {
   const unknown = types.filter((t) => !(JOB_TYPES as readonly string[]).includes(t))
   if (unknown.length > 0) {
     throw new Error(
-      `unsupported --job-type ${unknown.join(", ")}: choose ${JOB_TYPES.join(", ")}; use --text for keywords such as elevplads`,
+      `unsupported --job-type ${unknown.join(", ")}: the settings API offers ${JOB_TYPES.join(", ")}, and a type with no current ads returns zero jobs rather than being invalid; use --text for keywords such as elevplads`,
     )
   }
   return types

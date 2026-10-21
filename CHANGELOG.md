@@ -46,7 +46,15 @@ per-file diff commands.
 
 ### Fixed
 
-- **`jobdanmark-search search --job-type` rejects unknown filters before making a request** (#652) - all six values offered by the settings API remain accepted even when currently empty, and the examples show `--text elevplads` as a keyword fallback for apprenticeships.
+- **`jobdanmark-search search --job-type` rejects unknown filters before making a request**
+  (#652, `.agents/skills/jobdanmark-search/cli/src/commands/search.ts`, `cli/tests/job-type-cli.test.ts`,
+  `cli/README.md`, `SKILL.md`) - an unrecognized value such as `fulltime` or `student` was sent to the
+  portal unchanged and came back as a successful empty search, so the agent could not tell a typo from a
+  quiet market. The six values `/api/jobsearch/settings` offers (`fuldtid`, `deltid`, `fleksjob`, `elev`,
+  `studiejob`, `praktik`) are all still accepted and sent unchanged; the portal does offer them as filters,
+  and a type with no live ads carrying it returns zero jobs rather than being invalid. Anything else exits 1
+  with `BAD_ARG` before a request. The SKILL.md student-job and apprentice examples now use `--text`
+  (`--text studiejob`, `--text elevplads`), which is what agents copy.
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,

@@ -32,7 +32,7 @@ Invoke this skill when the user wants to:
 
 - Search for job listings in Denmark (by keyword, location, category, or job type)
 - Browse available jobs in a specific Danish city, municipality, zip code, or region
-- Filter jobs by employment type (full-time, part-time, fleksjob, student jobs, apprenticeships and internships; use `--text` as a keyword fallback)
+- Filter jobs by employment type (full-time, part-time, fleksjob); for student jobs, apprenticeships and internships use `--text` (e.g. `--text elevplads`), since those filters often have no current ads
 - Look up the full details of a specific job posting including description and deadline
 - List all job categories with current live job counts
 - Resolve a job search term into a job title ID or category ID for precise filtering
