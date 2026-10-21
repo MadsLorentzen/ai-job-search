@@ -34,6 +34,8 @@ per-file diff commands.
 
 ### Fixed
 
+- **Application archives preserve submitted template source extensions** (#716) - `/outcome` keeps Typst and other non-TeX files in their actual format, and follow-up, interview and setup readers discover those archived filenames alongside stock `.tex` sources.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
