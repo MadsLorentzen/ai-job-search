@@ -46,7 +46,19 @@ per-file diff commands.
 
 ### Fixed
 
-- **Portal CLIs decode HTML entities in one pass** (#625) - escaped named and numeric references remain literal text instead of being decoded again, including in Jobindex detail pages.
+- **Portal CLIs decode HTML entities in one pass** (#625,
+  `.agents/skills/freehire-search/cli/src/helpers.ts`, `.agents/skills/jobindex-search/cli/src/helpers.ts`,
+  `.agents/skills/jobindex-search/cli/src/commands/detail.ts`, `.agents/skills/jobnet-search/cli/src/helpers.ts`,
+  `.agents/skills/linkedin-search/cli/src/helpers.ts`, and the matching `tests/parsing.test.ts`,
+  `tests/detail-parsing.test.ts` and `tests/strip-html.test.ts`) - each decoder ran one
+  `String.replace` per entity, so the output of an earlier replacement was still visible to a later one and
+  an escaped reference was decoded twice: `&amp;lt;` became `<` instead of the literal text `&lt;`. Each
+  decoder now makes a single pass with one regex built from its own replacement map, so replacement text is
+  never scanned again and a double-encoded reference decodes exactly one level - `&amp;lt;` is the text
+  `&lt;`, and `&#38;amp;` is the text `&amp;`. Reordering the replacements instead would have fixed
+  `&amp;lt;` while breaking `&#38;amp;`; the single pass removes the whole class. The regex is derived from
+  the map keys, so a decoder's vocabulary and its pattern cannot drift apart. Jobindex's `detail` command
+  keeps its own copy, now covered by `parseDetailPage` entity tests.
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
