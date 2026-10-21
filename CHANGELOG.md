@@ -313,6 +313,21 @@ per-file diff commands.
   salary indices of 1 and 0. Numeric 0 and 1 remain valid, and a count/index pair retains
   its numeric half when the other cell is logical.
 
+- **`fetch_page.py` checks `robots.txt` before every redirect it follows** (#680, `tools/fetch_page.py`,
+  `tests/test_fetch_page.py`, `SECURITY.md`, `tests/test_posting_gate_wiring.py`,
+  `.claude/skills/job-application-assistant/09-web-research.md` `framework_version: 1.1.6 -> 1.1.7`) -
+  the gate ran once, on the URL it was given, and `curl -L` or urllib's redirect handler then followed
+  up to five redirects unchecked, so an allowed posting URL that redirected to a path the site's
+  `robots.txt` disallows, or to another host whose policy says no, was fetched and saved anyway. The
+  script now follows redirects itself: each hop must be http(s) and passes the gate for its own host
+  before it is requested, and a refusal exits 1 without requesting it. The 5-redirect cap and the 45 s
+  budget now hold across all hops on both the curl and the urllib path, and the body goes to a temp file
+  that replaces `--out` only on success. A non-conformant `Location` (a raw space or raw UTF-8) is
+  percent-encoded the way urllib's own redirect handler does it. This also closes three gaps: curl
+  followed an `ftp:` redirect, a size failure left a partial file at `--out`, and the urllib path had
+  no total deadline. `size=` in the status line is now the saved file's size on both paths, and step 3
+  of `09-web-research.md` says an exit 1 can come from a redirect target's policy.
+
 ### Security
 
 - **CI no longer leaves the job token in `.git/config` or expands a PR-controlled name into a
