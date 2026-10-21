@@ -46,6 +46,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`fetch_page.py` compares `--out` against the repo by identity, not spelling**
+  (`tools/fetch_page.py`) - the inside-the-repo refusal compared the resolved path as a
+  string, so on a case-insensitive filesystem (macOS and Windows defaults) a repo path in
+  another case passed the check and a fetched page landed in the repo. The guard now walks
+  up to the nearest existing ancestor and asks the OS (`os.path.samefile`) whether any
+  ancestor is the repo root, the same check `posting_guard.py --out` uses.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
