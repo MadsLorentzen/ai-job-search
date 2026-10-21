@@ -45,6 +45,7 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
 import sys
 import unicodedata
 from pathlib import Path
@@ -62,12 +63,35 @@ HASH_LEN = 6
 _NON_SLUG = re.compile(r"[^a-z0-9]+")
 _JOB_ID = re.compile(r"(\d{6,})")
 
+# Latin letters that have no NFKD decomposition are deleted by the ASCII fold
+# below, so they are transliterated first (#537). Covers every such letter in
+# Latin-1 Supplement and Latin Extended-A - the class that reaches real
+# company and title names - using the conventional romanisation. "å" is
+# deliberately absent: it already decomposes to "a" without losing a letter,
+# and "å"->"aa" would move keys that work today for no gain.
+_FOLD = str.maketrans({
+    "Æ": "AE", "æ": "ae",
+    "Œ": "OE", "œ": "oe",
+    "Ø": "OE", "ø": "oe",
+    "ẞ": "SS", "ß": "ss",
+    "Ð": "D", "ð": "d",
+    "Þ": "TH", "þ": "th",
+    "Đ": "D", "đ": "d",
+    "Ħ": "H", "ħ": "h",
+    "Ł": "L", "ł": "l",
+    "Ŋ": "N", "ŋ": "n",
+    "Ŧ": "T", "ŧ": "t",
+    "ı": "i",
+    "ĸ": "k",
+})
+
 
 def slugify(text: str) -> str:
     """Lowercase ASCII slug. Non-Latin scripts legitimately reduce to ''."""
     if not text:
         return ""
-    decomposed = unicodedata.normalize("NFKD", str(text))
+    folded = unicodedata.normalize("NFC", str(text)).translate(_FOLD)
+    decomposed = unicodedata.normalize("NFKD", folded)
     ascii_only = decomposed.encode("ascii", "ignore").decode("ascii")
     return _NON_SLUG.sub("-", ascii_only.lower()).strip("-")
 
@@ -79,11 +103,10 @@ def _lost_letters(text: str) -> bool:
     Latin text keeps every letter. A Cyrillic, Greek, CJK or Arabic letter has
     no ASCII decomposition and vanishes; a mixed-script name then keeps only
     its Latin or digit fragment, and two different names can share it.
-
-    Latin letters that also lack a decomposition ("ø", "æ", "ß", "ł") are
-    deliberately NOT counted: "Ørsted" has keyed as "rsted" since the rule
-    existed, and treating it as lossy would re-key every Danish company in a
-    live seen_jobs.json for a collision that does not happen in practice.
+    The Latin letters in that class ("ø", "æ", "ß", "ł", ...) survive via the
+    _FOLD transliteration above (#537), so they no longer count as loss here;
+    rare Latin Extended-B letters without a fold entry are still dropped and
+    deliberately still not counted, matching the rule before the fold existed.
     """
     if not text:
         return False
@@ -177,23 +200,31 @@ def is_legacy_shape(key: str) -> bool:
     )
 
 
-def audit(path: Path) -> int:
+def _load_seen(path: Path) -> dict | None:
+    """Read and validate a state file's job entries. None on a reported error."""
     try:
         doc = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         print(f"cannot read {path}: {exc}", file=sys.stderr)
-        return 1
+        return None
     seen = doc.get("seen", doc) if isinstance(doc, dict) else doc
     if not isinstance(seen, dict):
         print(f"{path}: expected an object of job entries", file=sys.stderr)
-        return 1
+        return None
     not_objects = [k for k, v in seen.items() if not isinstance(v, dict)]
     if not_objects:
         print(f"{path}: entry is not an object: {not_objects[0]}", file=sys.stderr)
-        return 1
+        return None
     bad_url = [k for k, v in seen.items() if v.get("url") is not None and not isinstance(v["url"], str)]
     if bad_url:
         print(f"{path}: entry url is not a string: {bad_url[0]}", file=sys.stderr)
+        return None
+    return seen
+
+
+def audit(path: Path) -> int:
+    seen = _load_seen(path)
+    if seen is None:
         return 1
 
     malformed = [k for k in seen if not is_canonical(k) and not is_legacy_shape(k)]
@@ -221,6 +252,57 @@ def audit(path: Path) -> int:
     return 1 if (malformed or duplicates) else 0
 
 
+def migrate(path: Path) -> int:
+    """One-time re-key: rewrite drifted keys to what make_key produces today.
+
+    Pairs the #537 fold table with a migration so live seen_jobs.json files can
+    catch up. Deterministic - the same file always migrates to the same result -
+    and conservative: the original is copied to "<name>.bak" before anything is
+    written, a rename is skipped rather than overwrite another entry, and every
+    action is reported. Legacy three-part and malformed keys are left alone;
+    they are separate findings from `--audit`, not drift.
+    """
+    seen = _load_seen(path)
+    if seen is None:
+        return 1
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    wrapped = isinstance(doc, dict) and "seen" in doc
+
+    renamed: dict[str, str] = {}
+    skipped_target_exists: list[str] = []
+    result: dict[str, dict] = {}
+    for key, entry in seen.items():
+        new_key = key
+        if is_canonical(key):
+            candidate = make_key(entry.get("company", ""), entry.get("title", ""), entry.get("url", ""))
+            if candidate != key:
+                # Never create a key that another entry may already occupy,
+                # whether it survives migration or not: losing a job to a
+                # silent overwrite is worse than a key that stays drifted.
+                if candidate in seen or candidate in result:
+                    skipped_target_exists.append(key)
+                else:
+                    renamed[key] = candidate
+                    new_key = candidate
+        result[new_key] = entry
+
+    backup = path.with_name(path.name + ".bak")
+    shutil.copy2(path, backup)
+    if renamed:
+        if wrapped:
+            doc["seen"] = result
+        else:
+            doc = result
+        path.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    print(json.dumps({
+        "backup": str(backup),
+        "renamed": renamed,
+        "kept_old_key_target_exists": skipped_target_exists,
+    }, indent=2, ensure_ascii=False))
+    return 1 if skipped_target_exists else 0
+
+
 def _force_utf8_output() -> None:
     """Write UTF-8 whatever the host's default encoding is.
 
@@ -241,10 +323,14 @@ def main() -> int:
     ap.add_argument("--title")
     ap.add_argument("--url", default="")
     ap.add_argument("--audit", nargs="?", const=str(STATE), metavar="STATE_JSON")
+    ap.add_argument("--migrate", action="store_true",
+                    help="with --audit: rewrite drifted keys in place (backup first)")
     args = ap.parse_args()
 
     if args.audit:
-        return audit(Path(args.audit))
+        return migrate(Path(args.audit)) if args.migrate else audit(Path(args.audit))
+    if args.migrate:
+        ap.error("--migrate goes together with --audit")
     if args.company is None or args.title is None:
         ap.error("give --company and --title, or --audit")
     print(make_key(args.company, args.title, args.url))

@@ -159,12 +159,26 @@ class MixedScriptNamesKeepTheirIdentity(unittest.TestCase):
         # NFKD folds these without dropping a letter, so existing keys stay put.
         self.assertEqual(make_key("Zürich Versicherung", "Ingénieur ﬁnance"), "zurich-versicherung_ingenieur-finance")
 
-    def test_latin_letters_without_a_decomposition_do_not_re_key(self):
-        # "ø" and "æ" have no NFKD decomposition and are dropped by the fold,
-        # but they are Latin letters: "Ørsted" has keyed as "rsted" since the
-        # rule existed, and a live Danish seen_jobs.json must not re-key.
-        self.assertEqual(make_key("Ørsted A/S", "Senior Engineer"), "rsted-a-s_senior-engineer")
-        self.assertEqual(make_key("Mærsk", "Søfarende"), "mrsk_sfarende")
+    def test_latin_letters_without_a_decomposition_are_folded(self):
+        # #537: "ø" and "æ" have no NFKD decomposition and used to be dropped
+        # by the fold, so "Ørsted" keyed as "rsted" and "Ærø" collided with
+        # "Rø". The pin that froze that ("mrsk_sfarende") flips to the folded
+        # expectation; `--audit --migrate` re-keys live files once.
+        self.assertEqual(make_key("Ørsted A/S", "Senior Engineer"), "oersted-a-s_senior-engineer")
+        self.assertEqual(make_key("Mærsk", "Søfarende"), "maersk_soefarende")
+        self.assertNotEqual(make_key("Ærø", "x"), make_key("Rø", "x"))
+
+    def test_fold_covers_the_uppercase_and_the_other_undecomposed_latin_letters(self):
+        self.assertEqual(slugify("Æ Ø ß"), "ae-oe-ss")
+        self.assertEqual(slugify("Łódź Đorđe"), "lodz-dorde")
+        self.assertEqual(slugify("Þórður Ħamrun"), "thordur-hamrun")
+        self.assertEqual(slugify("Ŋarrka Ŧimur"), "narrka-timur")
+        self.assertEqual(slugify("Straße ıi ĸ"), "strasse-ii-k")
+
+    def test_a_ring_still_decomposes_to_bare_a(self):
+        # #537: "å" keeps its key - NFKD already folds it to "a" without
+        # losing a letter, and "aa" would move keys that work today.
+        self.assertEqual(slugify("Århus Åben"), "arhus-aben")
 
 
 class CompanyFallbackCLI(unittest.TestCase):
@@ -285,6 +299,68 @@ class AuditCLI(unittest.TestCase):
                 self.assertEqual(proc.returncode, 1)
                 self.assertIn("entry url is not a string: acme_soc-analyst", proc.stderr)
                 self.assertNotIn("Traceback", proc.stderr)
+
+
+class MigrateCLI(unittest.TestCase):
+    """--audit --migrate, the one-time re-key that pairs the #537 fold table.
+
+    Rewrites drifted keys in place, deterministic, backup first, reported.
+    """
+
+    def run_migrate(self, seen: dict) -> tuple[dict, int, Path]:
+        import tempfile
+
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+            json.dump({"seen": seen}, fh)
+            path = Path(fh.name)
+        proc = subprocess.run(
+            [sys.executable, str(TOOL), "--audit", str(path), "--migrate"],
+            capture_output=True, text=True, encoding="utf-8",
+        )
+        return json.loads(proc.stdout), proc.returncode, path
+
+    def test_renames_drifted_keys_and_backs_up_first(self):
+        report, code, path = self.run_migrate({
+            "rsted-a-s_senior-engineer": {"company": "Ørsted A/S", "title": "Senior Engineer"},
+            "acme_soc-analyst": {"company": "Acme", "title": "SOC Analyst"},
+        })
+        self.assertEqual(code, 0)
+        self.assertEqual(report["renamed"], {"rsted-a-s_senior-engineer": "oersted-a-s_senior-engineer"})
+        migrated = json.loads(path.read_text(encoding="utf-8"))["seen"]
+        self.assertIn("oersted-a-s_senior-engineer", migrated)
+        self.assertNotIn("rsted-a-s_senior-engineer", migrated)
+        # Untouched keys keep their entry exactly.
+        self.assertEqual(migrated["acme_soc-analyst"], {"company": "Acme", "title": "SOC Analyst"})
+        backup = json.loads(path.with_name(path.name + ".bak").read_text(encoding="utf-8"))["seen"]
+        self.assertIn("rsted-a-s_senior-engineer", backup)
+
+    def test_is_deterministic_across_runs(self):
+        seen = {"mrsk_sfarende": {"company": "Mærsk", "title": "Søfarende"}}
+        first, _, first_path = self.run_migrate(dict(seen))
+        second, _, second_path = self.run_migrate(dict(seen))
+        self.assertEqual(first["renamed"], second["renamed"])
+        self.assertEqual(first["renamed"], {"mrsk_sfarende": "maersk_soefarende"})
+        for path in (first_path, second_path):
+            path.unlink(missing_ok=True)
+            path.with_name(path.name + ".bak").unlink(missing_ok=True)
+
+    def test_never_renames_onto_an_existing_key(self):
+        report, code, path = self.run_migrate({
+            "oersted-a-s_senior-engineer": {"company": "Ørsted A/S", "title": "Senior Engineer"},
+            "rsted-a-s_senior-engineer": {"company": "Ørsted A/S", "title": "Senior Engineer"},
+        })
+        self.assertEqual(code, 1)
+        self.assertEqual(report["renamed"], {})
+        self.assertEqual(report["kept_old_key_target_exists"], ["rsted-a-s_senior-engineer"])
+        migrated = json.loads(path.read_text(encoding="utf-8"))["seen"]
+        self.assertEqual(len(migrated), 2)
+
+    def test_migrate_requires_audit(self):
+        proc = subprocess.run(
+            [sys.executable, str(TOOL), "--migrate"], capture_output=True, text=True, encoding="utf-8"
+        )
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("--migrate goes together with --audit", proc.stderr)
 
 
 if __name__ == "__main__":
