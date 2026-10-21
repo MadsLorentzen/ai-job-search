@@ -34,8 +34,6 @@ per-file diff commands.
 
 ### Fixed
 
-- **Upstream triage distinguishes subject-only matches from verified patch matches** (#569) - matching subjects with different patches now name the fork commit and request verification instead of claiming the change was already cherry-picked.
-
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
@@ -427,6 +425,8 @@ per-file diff commands.
   counts as hidden only when both halves are present, because `overflow:hidden` alone is on
   most cards and `height:0` alone is a spacer. Three new `Bypasses` cases, seven subtests
   failing on master, plus a calibration case pinning that either half alone stays visible.
+
+- **Upstream triage distinguishes subject-only matches from verified patch matches** (#569) - matching subjects with different patches now name the fork commit and request verification instead of claiming the change was already cherry-picked.
 
 ### Security
 
