@@ -34,6 +34,8 @@ per-file diff commands.
 
 ### Fixed
 
+- **PDF date verification leaves currency-symbol budget ranges alone** (#724) - attached currency symbols identify amounts such as `€2000–€5000`, so `--ascii-dates` no longer asks users to fix a nonexistent date while genuine date ranges remain checked.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
