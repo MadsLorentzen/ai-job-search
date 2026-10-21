@@ -25,6 +25,18 @@ per-file diff commands.
 
 ### Changed
 
+- **`job_key.py` folds the Latin letters the ASCII fold used to delete, and `--audit --migrate`
+  re-keys live state once** (#537, `tools/job_key.py`, `tests/test_job_key.py`) - `ø`, `æ`, `ß`, `ł`,
+  `đ`, `þ`, `ð`, `œ` and the rest of the Latin-1/Extended-A letters without an NFKD decomposition
+  were dropped by `slugify`, so `Ørsted` keyed as `rsted` and `Ærø` collided with `Rø`: two
+  different companies shared one key and `/scrape` dropped the second as already seen. They are now
+  transliterated first (`æ`->`ae`, `ø`->`oe`, `ß`->`ss`, ...); `å` keeps folding to `a` as before.
+  Existing keys that moved are drift, so the fold pairs with a one-time migration: run
+  `python3 tools/job_key.py --audit --migrate` once to rewrite them in place (deterministic, the
+  original is copied to `seen_jobs.json.bak` first, every rename is reported, and a rename is
+  skipped rather than overwrite another entry). The pinned test assertions flip to the folded
+  expectations.
+
 - **`freehire-search` documents the `OR` and `title:` query operators** (#674,
   `.agents/skills/freehire-search/SKILL.md`, `url-reference.md`, `cli/README.md`, `--help`) -
   freehire's search parses an uppercase `OR` between up to five alternatives and a leading `title:`
