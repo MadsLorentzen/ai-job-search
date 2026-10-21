@@ -46,6 +46,10 @@ per-file diff commands.
 
 ### Fixed
 
+- **README repo tree lists every shipped tool** (`README.md`) - `job_key.py`, `page_decode.py`,
+  `rank_state.py`, `scrape_state.py` and `.github/workflows/upstream-watch.yml` were missing
+  from the tree that introduces the layout.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
