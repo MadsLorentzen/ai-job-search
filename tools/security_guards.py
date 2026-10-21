@@ -21,7 +21,8 @@ Checks:
    weakening that would make future users silently commit their tracker,
    profile exports, or application archives.
 3. .agents/**/package.json — no npm/bun lifecycle scripts (preinstall,
-   install, postinstall, prepare, prepack) and no trustedDependencies.
+   install, postinstall, preprepare, prepare, postprepare, prepack) and no
+   trustedDependencies.
    Catches code execution smuggled into `bun install`.
 4. Skill and command frontmatter — every `allowed-tools` entry in
    .claude/skills/*/SKILL.md, .agents/skills/*/SKILL.md and
@@ -219,7 +220,9 @@ ALLOWED_IGNORE_NEGATIONS = {
 # https://research.jfrog.com/post/shai-hulud-is-back-august/
 ALLOWED_HOOKS: set[str] = set()
 
-FORBIDDEN_SCRIPTS = {"preinstall", "install", "postinstall", "prepare", "prepack"}
+FORBIDDEN_SCRIPTS = {
+    "preinstall", "install", "postinstall", "preprepare", "prepare", "postprepare", "prepack"
+}
 
 # The exact `allowed-tools` entries a skill or command frontmatter may carry.
 # Claude Code pre-approves these for the turn that invokes the skill, with no
