@@ -34,6 +34,9 @@ per-file diff commands.
 
 ### Fixed
 
+- **Search-query date guidance matches `/scrape`'s 14-day discovery window**, removing the
+  conflicting promise that a future deadline alone includes an older posting.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
