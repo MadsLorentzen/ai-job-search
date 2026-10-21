@@ -1,0 +1,60 @@
+{
+  "jobAds": [
+    {
+      "country": "Danmark",
+      "municipality": "Viborg",
+      "postalCode": 8800,
+      "postalDistrictName": "Viborg",
+      "hiringOrgName": "7-Eleven",
+      "occupation": "Butiksassistent",
+      "conceptUriDa": "http://data.star.dk/esco/occupation/8e917fa3-6853-48b9-8242-a4cf90af9b9b",
+      "jobAnnouncementTypeName": "Hotjob",
+      "workHourPartTime": true,
+      "jobAdId": "cba418f6-bf67-4a1e-bdd1-e70c4c1bff31",
+      "jobAdUrl": "",
+      "logoUrl": "/bff/SharedComponents/JobAdCard/CompanyLogo/ByJobAdId/cba418f6-bf67-4a1e-bdd1-e70c4c1bff31",
+      "hasLogo": true,
+      "workPlaceAddress": "",
+      "cvr": "31601258",
+      "title": "Butikmedarbejder søges til 7-Eleven ",
+      "applicationDeadline": "2026-11-15T15:23:30+01:00",
+      "applicationDeadlineSort": "2026-11-15T15:23:30+01:00",
+      "applicationDeadlineStatus": "ExpirationDate",
+      "isSeen": false,
+      "isFavorite": false,
+      "isJoblogged": false,
+      "isExternal": false,
+      "publicationDate": "2026-10-15T00:00:00+02:00"
+    }
+  ],
+  "searchFacets": {
+    "jobAnnouncements": [
+      {
+        "type": "Ordinaert",
+        "jobAdCount": 823
+      },
+      {
+        "type": "Hotjob",
+        "jobAdCount": 8
+      },
+      {
+        "type": "Efterloenner",
+        "jobAdCount": 0
+      },
+      {
+        "type": "Foertidspension",
+        "jobAdCount": 0
+      },
+      {
+        "type": "Fleksjob",
+        "jobAdCount": 0
+      },
+      {
+        "type": "Handicapingenhindring",
+        "jobAdCount": 0
+      }
+    ]
+  },
+  "totalJobAdCount": 8,
+  "searchString": "software"
+}

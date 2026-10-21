@@ -199,7 +199,7 @@ export const search = defineCommand({
       description: "Permanent or Temporary",
     }),
     "job-type": option(z.string().optional(), {
-      description: "Announcement type: Ordinaert, Efterloenner, Foertidspension",
+      description: "Announcement type: Ordinaert, Hotjob, Efterloenner, Foertidspension, Fleksjob, Handicapingenhindring",
     }),
     "postal-code": option(z.string().optional(), {
       description: "Postal code for radius search",

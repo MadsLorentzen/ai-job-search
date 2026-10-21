@@ -56,7 +56,7 @@ Key flags:
 - `--radius <km>` — radius in km from postal code (default: `50`)
 - `--work-hours <type>` — `FullTime` or `PartTime`
 - `--duration <type>` — `Permanent` or `Temporary`
-- `--job-type <type>` — `Ordinaert`, `Efterloenner`, `Foertidspension`
+- `--job-type <type>` — `Ordinaert`, `Hotjob`, `Efterloenner`, `Foertidspension`, `Fleksjob`, `Handicapingenhindring`
 - `--occupation-area <id>` — occupation area identifier, e.g. `10000`
 - `--occupation-group <id>` — occupation group identifier, e.g. `10060`
 - `--occupation <uuid>` — one ESCO occupation: the `conceptUriDa` printed by `occupations`, or its trailing UUID
