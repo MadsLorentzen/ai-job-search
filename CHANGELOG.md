@@ -34,6 +34,8 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/add-portal` generates network-free tests instead of live portal smoke tests** - captured-response fixtures run in automatically discovered CLI CI jobs, while bounded live search/detail verification remains a separate manual registration step.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
