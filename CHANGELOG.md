@@ -34,7 +34,7 @@ per-file diff commands.
 
 ### Fixed
 
-- **Security guards reject the lifecycle hooks around `prepare`** - portal manifests containing `preprepare` or `postprepare` now fail the admission check because Bun runs those root-package hooks during installation even without dependencies.
+- **Security guards reject the lifecycle hooks around `prepare`** (#725) - portal manifests containing `preprepare` or `postprepare` now fail the admission check because Bun runs those root-package hooks during installation even without dependencies.
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
