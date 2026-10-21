@@ -46,6 +46,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **`rank_state.py` reports a `seen_jobs.json` entry that is not an object** (#636, `tools/rank_state.py`,
+  `tests/test_rank_state.py`) - `load_state` already exits with a one-line message for a state file that is
+  not an object of entries, but an object whose individual entries were not objects (a string or a number)
+  passed that check. `candidates` and `sweep` read every entry, so either crashed with an `AttributeError`
+  traceback on `.get` for any such entry; `apply` only touches the keys its results name, so it crashed when
+  a result named the bad entry and otherwise exited 0 and wrote the valid ones. `load_state` now validates
+  every entry, so all three exit 1 naming the offending key and leave the file untouched, as
+  `job_key.py --audit` has since #626.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
