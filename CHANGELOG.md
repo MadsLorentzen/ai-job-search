@@ -46,6 +46,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`posting_guard.py --out` refuses a path inside the repository** (`tools/posting_guard.py`,
+  `tests/test_posting_guard.py`) - the flag created parent directories and wrote wherever it was
+  pointed, with no check, while `settings.json` pre-approves the tool for the `posting-fetcher`
+  and `posting-scorer` agents whose definitions say they cannot write files, and whose input is
+  untrusted posting text by definition: an injected `--out` was a pre-approved way to create or
+  overwrite a repo file, a command, agent or skill definition included. `fetch_page.py` already
+  refuses the same thing for the same reason. `--out` inside the repo now exits 2 with
+  `refusing to write inside the repo` before anything is written; the check compares by file
+  identity, so a differently cased spelling of the repo path on macOS or Windows is caught
+  too. No spec uses `--out`. Two new cases; the refusal one fails on master.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
