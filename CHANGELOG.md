@@ -34,7 +34,7 @@ per-file diff commands.
 
 ### Fixed
 
-- **Salary lookup matches Nordic thorn and eth in anglicized company names** - ASCII spellings using `th` and `d` now find stored `þ` and `ð` names, and native queries find ASCII data, without changing the preserved company identity.
+- **Salary lookup matches Nordic thorn and eth in anglicized company names** - ASCII spellings using `th` and `d` now find stored `þ` and `ð` names, and native queries find ASCII data, without changing the preserved company identity (#720).
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
