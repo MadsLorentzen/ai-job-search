@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **bunli portal CLIs reject empty option values** (`jobnet-search`, `jobdanmark-search`,
+  `jobbank-search`, `jobindex-search` `cli.ts`) - the missing-value guard skipped every
+  `--flag=value` token and only checked that the next token after `--flag` existed and was
+  not another flag, so `--region=` and `--region ''` passed an empty string through. The
+  handler tested it for truthiness, dropped the filter and ran the search unfiltered with
+  exit 0 - the silent discard the guard exists to stop. An empty or whitespace-only value in
+  either form is now `BAD_ARG` with "requires a value", like a bare `--flag`.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
