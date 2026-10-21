@@ -46,6 +46,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`fetch_page.py` decodes zlib-wrapped `deflate` bodies on the urllib path**
+  (`tools/fetch_page.py`) - RFC 9110 defines `Content-Encoding: deflate` as a zlib stream and
+  some servers send raw DEFLATE instead; curl and browsers accept both. The urllib fallback
+  (hosts without curl, every Windows install without it on PATH) only accepted raw, so a
+  conforming server's page failed with `incorrect header check` where curl fetched it. The
+  zlib framing is tried first and raw is the fallback.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from

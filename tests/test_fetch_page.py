@@ -94,6 +94,12 @@ class _Handler(http.server.BaseHTTPRequestHandler):
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
+        elif self.path in ("/deflate-zlib", "/deflate-raw"):
+            import zlib as _zlib
+            raw = PAGE.encode("utf-8")
+            body = _zlib.compress(raw) if self.path == "/deflate-zlib" else _zlib.compress(raw)[2:-4]
+            self.send_response(200)
+            self.send_header("Content-Encoding", "deflate")
         elif self.path == "/gzip-big":
             import gzip as _gzip
             body = _gzip.compress(b"<p>" + b"x" * 5000 + b"</p>")
@@ -338,6 +344,18 @@ class Fetching(FetchPageFixture):
         self.assertEqual(code, 2, out + err)
         self.assertIn("exceeds", err)
         self.assertFalse(self.out.exists())
+
+    def test_deflate_bodies_decode_in_both_framings_on_urllib_path(self):
+        # RFC 9110 defines Content-Encoding: deflate as a zlib stream, and some
+        # servers send raw DEFLATE instead; curl and browsers accept both. The
+        # urllib path only accepted raw, so a conforming server's page failed
+        # with "incorrect header check" where curl would have fetched it.
+        self._without_curl()
+        for path in ("/deflate-zlib", "/deflate-raw"):
+            with self.subTest(path=path):
+                code, out, err = self.run_main(f"{self.base}{path}", "--out", str(self.out))
+                self.assertEqual(code, 0, out + err)
+                self.assertEqual(self.out.read_text(encoding="utf-8"), PAGE)
 
     def test_urllib_fallback_when_curl_missing(self):
         orig_which = fetch_page.shutil.which
