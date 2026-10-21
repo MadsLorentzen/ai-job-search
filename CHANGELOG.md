@@ -46,6 +46,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **`fetch_page.py --text` honours the HTTP `Content-Type` charset** (`tools/fetch_page.py`,
+  `tools/page_decode.py`) - `page_decode` read a BOM or a `<meta>` charset from the saved
+  bytes, but the response header never reached it, and many legacy portals declare the
+  charset only there. A page served as `text/html; charset=euc-kr` with no `<meta>` came
+  out of `--text` as replacement characters on both the curl and the urllib path. Both
+  fetchers now return the final response's charset and `decode_page` takes it as a hint,
+  ranked where browsers rank it: after a BOM, before the page's own declaration, and only
+  when the label is one the module already honours.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
