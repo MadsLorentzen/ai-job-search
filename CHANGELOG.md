@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`/rank` hands the posting-scorer each job's `key`** (`.claude/commands/rank.md`,
+  `.claude/agents/posting-scorer.md`) - Step 2 told the orchestrator to pass the job list as
+  title, company and URL, then required every scored result to carry `key`, the
+  `seen_jobs.json` key that `rank_state.py apply` matches on. The key is a company+title slug
+  from `job_key.py`, so an agent given only those three fields could not produce it and
+  `apply` rejected the result with "no such key". The dispatch sentence now passes the key
+  from Step 1's `candidates` output and the agent definition says to echo it back unchanged.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
