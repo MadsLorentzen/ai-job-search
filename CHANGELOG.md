@@ -34,7 +34,7 @@ per-file diff commands.
 
 ### Fixed
 
-- `jobdanmark-search detail` preserves the complete rendered job body when JSON-LD is unavailable instead of dropping prose outside paragraph and list tags.
+- `jobdanmark-search detail` preserves the complete rendered job body when JSON-LD is unavailable instead of dropping prose outside paragraph and list tags (#729).
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
