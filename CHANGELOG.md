@@ -34,7 +34,7 @@ per-file diff commands.
 
 ### Fixed
 
-- **Search-query date guidance matches `/scrape`'s 14-day discovery window**, removing the
+- **Search-query date guidance matches `/scrape`'s 14-day discovery window** (#727), removing the
   conflicting promise that a future deadline alone includes an older posting.
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
