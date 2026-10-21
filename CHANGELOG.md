@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **bunli portal CLIs refuse a repeated single-value option** (`jobnet-search`, `jobdanmark-search`,
+  `jobbank-search`, `jobindex-search` `cli.ts`) - bunli keeps only the last value of an option
+  that is not declared `repeatable`, so `jobnet search --region Nordjylland --region Midtjylland`
+  searched Midtjylland alone with exit 0, and the same for jobdanmark's `--municipality`,
+  jobbank's `--key` and jobindex's `--query`. The option guard now counts every occurrence
+  in both spellings and exits `BAD_ARG` on a repeat; jobbank's `repeatable` options
+  (`--type 3 --type 6`) still collect every value.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
