@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`scrape_state.py store` validates the date fields** (`tools/scrape_state.py`) - the
+  entry shape in `job-scraper/SKILL.md` is `first_seen` as `YYYY-MM-DD` and `posted_date` /
+  `deadline` as `YYYY-MM-DD` or `null`, but `store` only checked that the keys were present,
+  so `"13/05/2024"`, `""` or a timestamp went into the history. `rank_state`'s defensive
+  parse then reads those as absent and the freshness and deadline rules cannot act on the
+  posting. A value outside the shape is now rejected with the field named, before anything
+  is written, like the other field checks.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
