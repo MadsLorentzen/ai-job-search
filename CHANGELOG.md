@@ -34,6 +34,8 @@ per-file diff commands.
 
 ### Fixed
 
+- **`convert_salary_excel.py` splits a combined name-and-city column so `salary_lookup.py --city` can filter** (`tools/convert_salary_excel.py`, `tools/README_SALARY_TOOL.md`, `README.md`, `tests/test_convert_salary_excel.py`, `tests/test_salary_combined_city_cli.py`) - the IDA demonstration workbook heads its company column "Firmanavn og by" and stores "Ørsted A/S,Fredericia" in that one cell (no space after the comma). After #615 the sheet converts, but the whole cell went into `company` with `city: ""`, so the documented `python3 salary_lookup.py "Ørsted" --city "Fredericia"` missed. A combined header (no separate city column) now splits on the last comma and strips both parts, so a company name that itself contains ", " (such as "Rambøll Danmark A/S, Odense,Odense C") stays intact; a "Company" header still keeps commas in the name.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
