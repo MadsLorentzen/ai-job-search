@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`scrape_state.py` accepts `company: null`** (`tools/scrape_state.py`) - the portal
+  contract (`add-portal.md`) says a missing value is `null`, never omitted, and freehire,
+  linkedin and jobindex all emit `company: null` for a board posting with no employer name.
+  `identity()` treated that as a malformed hit, so every unnamed posting was filed under
+  `invalid` and never reached the detail fetch or the history. An unnamed posting is now a
+  candidate with an empty company half in its pair and is stored under `job_key.py`'s own
+  `unknown-company` fallback; a non-string company is still rejected.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
