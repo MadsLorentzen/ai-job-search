@@ -34,8 +34,6 @@ per-file diff commands.
 
 ### Fixed
 
-- **`rank_state.py apply` rejects unknown gate verdicts** (#640) - invalid `location_verdict` and `language_gate` values now return an error without shortlisting or writing the entry.
-
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
@@ -433,6 +431,8 @@ per-file diff commands.
 - **Upstream version checks decode Git output as UTF-8** (#587) - future non-Latin framework lines and non-Latin branch names no longer depend on the host code page, guarding a latent case absent from the shipped framework files.
 
 - **`rank_state.py apply` rounds weighted scores exactly** (#588) - decimal half-points such as 31/55/51/96 now produce 60/Good Fit instead of 59/Moderate Fit from binary floating-point drift.
+
+- **`rank_state.py apply` rejects unknown gate verdicts** (#640) - invalid `location_verdict` and `language_gate` values now return an error without shortlisting or writing the entry.
 
 ### Security
 
