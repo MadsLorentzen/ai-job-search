@@ -65,14 +65,14 @@ BOM = "﻿"
 INVISIBLE = ZERO_WIDTH + BIDI + FORMAT + BOM
 
 HIDDEN_STYLE = re.compile(
-    r"display\s*:\s*none"
+    r"(?:^|;)\s*(?:display\s*:\s*none"
     r"|visibility\s*:\s*hidden"
     r"|opacity\s*:\s*0(?![.\d]*[1-9])"
     r"|font-size\s*:\s*0(?:\.0+)?(?:px|pt|em|rem|%)?(?![\d.])"
     r"|color\s*:\s*transparent"
     r"|clip\s*:\s*rect\(\s*0"
     r"|clip-path\s*:\s*inset\(\s*100%"
-    r"|(?:left|top|text-indent)\s*:\s*-\d{4,}px",
+    r"|(?:left|top|text-indent)\s*:\s*-\d{4,}px)",
     re.I,
 )
 PRESTRIP = re.compile(r"<!DOCTYPE[^>]*>|<\?[^>]*\?>", re.I)
