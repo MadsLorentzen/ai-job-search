@@ -41,20 +41,36 @@ Sixty-nine tailored applications, twenty first interviews, and one signed contra
 
 A structured workflow that turns Claude Code into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Danish market (Jobindex, Jobnet, Akademikernes Jobbank, etc.), but the pattern is designed to be swapped for your local job boards.
 
-```
-/setup          /scrape              /apply <url>
-  |                |                     |
-  v                v                     v
-Fill in        Search job           Evaluate fit
-your profile   portals              Score & recommend
-  |                |                     |
-  v                v                     v
-Profile        Present matches      Draft CV + Cover Letter
-files ready    with fit ratings     (LaTeX, tailored)
-                   |                     |
-                   v                     v
-               Pick a match         Reviewer agent critiques
-               -> /apply            -> Revise -> Final output
+```mermaid
+flowchart TD
+    A(["👤 Your career profile"]) --> B["/setup<br/>Build your candidate profile"]
+
+    B --> C["/scrape<br/>Discover relevant jobs"]
+    C --> D{"Want to rank<br/>multiple jobs?"}
+
+    D -->|Yes| E["/rank<br/>Score and prioritize jobs"]
+    D -->|No| F["Select a job"]
+    E --> F
+
+    F --> G["/apply<br/>Evaluate fit against your profile"]
+    G --> H["Draft tailored CV<br/>and cover letter"]
+    H --> I["Reviewer agent<br/>Critiques the drafts"]
+    I --> J["Revise and compile PDFs"]
+    J --> K["Verify layout and<br/>ATS-readable text"]
+    K --> L{"Documents<br/>pass checks?"}
+
+    L -->|No| H
+    L -->|Yes| M["📄 Final application documents"]
+    M --> N(["👤 You review and submit"])
+
+    classDef input fill:#E8F2FF,stroke:#3973AC,color:#163A5C
+    classDef process fill:#F1EDFF,stroke:#8064B5,color:#38245D
+    classDef output fill:#E3F5E8,stroke:#43875A,color:#194B2A
+    classDef decision fill:#FFF3D6,stroke:#B58B32,color:#664600
+
+    class A,N input
+    class B,C,E,F,G,H,I,J,K,M process
+    class D,L decision
 ```
 
 The framework encodes career guidance best practices, including structured evaluation criteria, forward-looking cover letter framing, and optional salary benchmarking.
