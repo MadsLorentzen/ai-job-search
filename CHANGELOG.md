@@ -32,6 +32,18 @@ per-file diff commands.
   or `-q "golang rust"`, which returns fewer jobs than `golang` alone. Measured live: `golang`
   3,550, `golang OR rust` 6,805. The CLI already passes `-q` through unchanged.
 
+- **`/scrape` drops already-seen hits before fetching details and keeps its history out of the conversation**
+  (#710, `tools/scrape_state.py`, `tests/test_scrape_state.py`, `.claude/skills/job-scraper/SKILL.md`,
+  `.claude/settings.json`, `tools/security_guards.py`) - previously `/scrape` read the whole
+  `job_scraper/seen_jobs.json` and the application tracker into the conversation on every run, fetched
+  details for every promising hit before checking whether it had been seen, and rewrote the file at the end;
+  a history of a few hundred jobs is already about 100 KB. A new helper does the deduplication outside the
+  conversation: `candidates` drops hits seen before (by URL, including entries stored under older keys, or by
+  company and title), already in the tracker, or repeated within the run, before any detail fetch; `store`
+  rechecks, keys each new entry with `job_key.make_key` and adds it atomically without touching existing
+  entries; `history` gives the portal health check its prior-entry count. The helper gets path-scoped allow
+  entries in `.claude/settings.json` and the guard allowlist, like `rank_state.py`.
+
 ### Fixed
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
