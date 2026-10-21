@@ -221,7 +221,15 @@ ALLOWED_IGNORE_NEGATIONS = {
 # https://research.jfrog.com/post/shai-hulud-is-back-august/
 ALLOWED_HOOKS: set[str] = set()
 
-FORBIDDEN_SCRIPTS = {"preinstall", "install", "postinstall", "prepare", "prepack"}
+# Every script bun (and npm) runs during an install of the package itself.
+# `preprepare` and `postprepare` wrap `prepare` and run on `bun install` too -
+# verified against bun 1.4: a package declaring only those two still executes
+# both - so a blocklist without them let a borrowed CLI run code on install.
+FORBIDDEN_SCRIPTS = {
+    "preinstall", "install", "postinstall",
+    "preprepare", "prepare", "postprepare",
+    "prepack",
+}
 
 # The exact `allowed-tools` entries a skill or command frontmatter may carry.
 # Claude Code pre-approves these for the turn that invokes the skill, with no

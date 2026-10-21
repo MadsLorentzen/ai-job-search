@@ -67,6 +67,15 @@ class InstallPortalClis(unittest.TestCase):
         self.assertEqual(install(discover(self.root), "bun", False, self.root, run), 1)
         self.assertEqual(run.calls, ["safe-search"])
 
+    def test_prepare_wrapper_scripts_are_unsafe(self):
+        # bun install runs these; the installer must skip a manifest that
+        # declares either, the same as postinstall.
+        for script in ("preprepare", "postprepare"):
+            with self.subTest(script=script):
+                reason = unsafe_reason(self.add_cli(f"{script}-search", {"scripts": {script: "echo test"}}))
+                self.assertIsNotNone(reason)
+                self.assertIn(script, reason)
+
     def test_trusted_dependencies_is_unsafe(self):
         self.assertIn("trustedDependencies", unsafe_reason(self.add_cli("x", {"trustedDependencies": ["y"]})))
 

@@ -675,6 +675,13 @@ class ManifestGuardTests(GuardRepoFixture):
                 self.assertIn(script, result.stdout)
         self.write_manifest({"name": "example-cli", "scripts": {}})
 
+    def test_prepare_wrappers_are_in_the_blocklist(self):
+        # bun install runs preprepare and postprepare alongside prepare; a
+        # blocklist that named only prepare passed a manifest declaring the
+        # wrappers, and install_portal_clis.py (which imports this set) then
+        # installed it. Pinned by name so the set cannot lose them again.
+        self.assertTrue({"preprepare", "prepare", "postprepare"} <= security_guards.FORBIDDEN_SCRIPTS)
+
     def test_trusted_dependencies_fails(self):
         self.write_manifest({"name": "example-cli", "trustedDependencies": ["left-pad"]})
         result = run_guards(self.root)

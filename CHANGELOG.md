@@ -46,6 +46,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **`preprepare` and `postprepare` join the forbidden lifecycle scripts** (`tools/security_guards.py`,
+  `tests/test_security_guards.py`, `tests/test_install_portal_clis.py`) - the blocklist named
+  `preinstall`, `install`, `postinstall`, `prepare` and `prepack`, but `bun install` also runs
+  the two wrappers around `prepare` (verified on bun 1.4: a manifest declaring only those two
+  executed both). Both consumers of the set - the CI security-guards job and
+  `tools/install_portal_clis.py`'s skip check - passed such a manifest, so a portal copied from
+  another fork could run code on install despite SECURITY.md's promise that a CLI with an
+  install-time lifecycle script is skipped. Pinned by name in both test suites; the three new
+  cases fail on master.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
