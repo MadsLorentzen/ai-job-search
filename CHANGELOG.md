@@ -34,7 +34,7 @@ per-file diff commands.
 
 ### Fixed
 
-- **Portal CLI installation disables dependency lifecycle scripts explicitly** - `bun install --ignore-scripts` keeps a borrowed portal’s default-trusted npm dependency from running a hook on older Bun releases, even when its own manifest declares no hooks.
+- **Portal CLI installation disables dependency lifecycle scripts explicitly** (#718) - `bun install --ignore-scripts` keeps a borrowed portal’s default-trusted npm dependency from running a hook on older Bun releases, even when its own manifest declares no hooks.
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
