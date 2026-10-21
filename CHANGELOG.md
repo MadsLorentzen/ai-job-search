@@ -46,6 +46,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`security_guards.py` checks nested command and agent files, and rejects agent
+  `permissionMode` and frontmatter `hooks`** (`tools/security_guards.py`,
+  `tests/test_security_guards.py`) - the skill/command and agent checks globbed only the top
+  level of `.claude/commands/` and `.claude/agents/`, so a namespaced command in a subfolder
+  (which Claude Code loads) with `allowed-tools: Bash, Write`, or a nested agent with no
+  `tools:` key, passed with `security_guards: OK`; and the agent check read only `tools:`, so
+  `permissionMode: bypassPermissions` or a frontmatter `hooks:` block - the two escape hatches
+  `check_permissions` and `check_hooks` keep out of `settings.json` - passed too. Both globs are
+  recursive now; an agent `permissionMode` other than absent or `default` fails; a `hooks:`
+  block in agent, skill or command frontmatter fails. Seven new cases fail on master.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from

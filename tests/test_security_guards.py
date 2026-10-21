@@ -314,6 +314,34 @@ class SkillGrantGuardTests(GuardRepoFixture):
         self.assertIn("'Bash'", result.stdout)
         self.assertIn("commands/example.md", result.stdout.replace("\\", "/"))
 
+    def test_nested_command_frontmatter_is_checked(self):
+        # Claude Code loads namespaced commands from subfolders of
+        # .claude/commands/, so a grant there is live; the guard used a
+        # top-level glob and never saw it.
+        nested = self.root / ".claude" / "commands" / "ops" / "evil.md"
+        nested.parent.mkdir(parents=True)
+        nested.write_text("---\ndescription: Nested\nallowed-tools: Bash, Write\n---\n# /ops:evil\n", encoding="utf-8")
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("commands/ops/evil.md", result.stdout.replace("\\", "/"))
+        self.assertIn("'Bash'", result.stdout)
+
+    def test_nested_command_without_frontmatter_passes(self):
+        nested = self.root / ".claude" / "commands" / "ops" / "plain.md"
+        nested.parent.mkdir(parents=True)
+        nested.write_text("# /ops:plain - no frontmatter\n", encoding="utf-8")
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_command_frontmatter_hooks_fail(self):
+        self.command.write_text(
+            "---\ndescription: Example\nhooks:\n  PreToolUse:\n    - hooks:\n        - type: command\n          command: echo test\n---\n# /example\n",
+            encoding="utf-8",
+        )
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("frontmatter `hooks:`", result.stdout)
+
     def test_command_without_frontmatter_passes(self):
         result = run_guards(self.root)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -386,6 +414,48 @@ class AgentGrantGuardTests(GuardRepoFixture):
         result = run_guards(self.root)
         self.assertEqual(result.returncode, 1)
         self.assertIn("name granularity", result.stdout)
+
+    def test_nested_agent_is_checked(self):
+        nested = self.root / ".claude" / "agents" / "extra" / "wide.md"
+        nested.parent.mkdir(parents=True)
+        self.write_agent("", path=nested, omit_tools=True)
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("agents/extra/wide.md", result.stdout.replace("\\", "/"))
+        self.assertIn("every tool", result.stdout)
+
+    def test_agent_permission_mode_other_than_default_fails(self):
+        for mode in ("bypassPermissions", "acceptEdits", "plan"):
+            with self.subTest(mode=mode):
+                self.agent.write_text(
+                    "---\nname: example\ndescription: An example agent.\n"
+                    f"tools: Read, Grep\npermissionMode: {mode}\nmodel: sonnet\n---\n\nYou read.\n",
+                    encoding="utf-8",
+                )
+                result = run_guards(self.root)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertIn("permissionMode", result.stdout)
+                self.assertIn(mode, result.stdout)
+
+    def test_agent_permission_mode_default_passes(self):
+        self.agent.write_text(
+            "---\nname: example\ndescription: An example agent.\n"
+            "tools: Read, Grep\npermissionMode: default\nmodel: sonnet\n---\n\nYou read.\n",
+            encoding="utf-8",
+        )
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_agent_frontmatter_hooks_fail(self):
+        self.agent.write_text(
+            "---\nname: example\ndescription: An example agent.\ntools: Read, Grep\n"
+            "hooks:\n  PreToolUse:\n    - hooks:\n        - type: command\n          command: echo test\n"
+            "model: sonnet\n---\n\nYou read.\n",
+            encoding="utf-8",
+        )
+        result = run_guards(self.root)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("frontmatter `hooks:`", result.stdout)
 
     def test_allowlisted_agent_passes(self):
         result = run_guards(self.root)
