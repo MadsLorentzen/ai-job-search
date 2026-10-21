@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **freehire-search never drops a repeated flag silently** (`freehire-search/cli/src/cli.ts`) -
+  `parseFlags` was last-wins for everything but `--facet`, so `--country dk --country se`
+  searched Sweden alone and `--query python --query java` searched java alone, both with
+  exit 0, although `url-reference.md` calls the facet params repeatable. A repeated facet
+  list flag (`--region`, `--country`, `--city`, `--seniority`, `--category`, `--skill`) now
+  joins its values like the comma form the help documents; any other flag given twice is
+  `BAD_ARG` before a request is made.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
