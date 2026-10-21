@@ -403,7 +403,7 @@ class Calibration(GuardFixture):
 
     def test_decoration_and_custom_properties_do_not_hide_visible_posting_text(self):
         # These declarations are serialized by the browser after assigning the
-        # DOM style properties; all three retain black, visible text.
+        # DOM style properties; each retains black, visible text.
         styles = [f"{name}: transparent" for name in ("background-color", "border-color", "text-decoration-color")]
         styles += ["stroke-opacity: 0", "--opacity: 0", "--display: none"]
         for style in styles:
