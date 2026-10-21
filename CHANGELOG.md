@@ -46,6 +46,13 @@ per-file diff commands.
 
 ### Fixed
 
+- **`scrape_state.py` writes UTF-8 like the other tools** (fixes #743, `tools/scrape_state.py`,
+  `tests/test_tools_utf8_output.py`) - on Windows a piped stdout defaults to the ANSI code page
+  (cp1252 on most Western installs), so `/scrape`'s `candidates` step exited 1 with
+  `scrape_state: 'charmap' codec can't encode ...` as soon as one search hit had a Cyrillic, CJK
+  or Polish company or title. `main()` now calls `_force_utf8_output()` first, as #490 and #686
+  did for the other tools.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
