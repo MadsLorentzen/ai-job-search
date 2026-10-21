@@ -34,7 +34,7 @@ per-file diff commands.
 
 ### Fixed
 
-- **`/outcome followup` uses the latest dated tracker note for days quiet**, matching the
+- **`/outcome followup` uses the latest dated tracker note for days quiet** (#726), matching the
   open-pipeline table so a recent interview update or employer reply postpones a follow-up.
 
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
