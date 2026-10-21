@@ -34,8 +34,6 @@ per-file diff commands.
 
 ### Fixed
 
-- **Upstream version checks decode Git output as UTF-8** (#587) - future non-Latin framework lines and non-Latin branch names no longer depend on the host code page, guarding a latent case absent from the shipped framework files.
-
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
@@ -429,6 +427,8 @@ per-file diff commands.
   failing on master, plus a calibration case pinning that either half alone stays visible.
 
 - **Upstream triage distinguishes subject-only matches from verified patch matches** (#569) - matching subjects with different patches now name the fork commit and request verification instead of claiming the change was already cherry-picked.
+
+- **Upstream version checks decode Git output as UTF-8** (#587) - future non-Latin framework lines and non-Latin branch names no longer depend on the host code page, guarding a latent case absent from the shipped framework files.
 
 ### Security
 
