@@ -112,6 +112,12 @@ looks identical to a job never seen, and the recorded status is what makes a lat
 ghost report self-triaging. `isActive: true` is only the absence of that banner, not
 proof the posting is open; deadlines and dead URLs remain `/rank`'s job.
 
+`freehire-search detail` preserves `closed_at` when its API supplies it. A non-null
+value means closed: record the same `"status": "expired"` entry and omit it from
+presentation, as above. Explicit null means open according to freehire; a missing
+field is unknown, never evidence that the posting is open. Detail can still serve
+closed postings looked up from a saved slug even though search excludes them.
+
 **From WebSearch results:** Use `WebFetch` on the posting URL and extract the same
 fields manually. If it returns HTTP 403, retry with browser headers via `python3 tools/fetch_page.py` per
 `.claude/skills/job-application-assistant/09-web-research.md` before giving up — most

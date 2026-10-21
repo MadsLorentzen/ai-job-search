@@ -136,6 +136,8 @@ export interface FreehireJob {
   cities: string[]
   posted_at: string | null
   created_at: string | null
+  // Explicit null means open; absent on an older/self-hosted response is unknown.
+  closed_at?: string | null
   // Always present in the wire shape (an unenriched job serializes it as `{}`);
   // the individual fields are what may be absent.
   enrichment: {
@@ -177,6 +179,7 @@ export interface JobResult {
 
 /** A job detail: the search result plus the cleaned description and enrichment. */
 export interface JobDetailResult extends JobResult {
+  closed_at?: string | null
   cities: string[]
   seniority: string | null
   category: string | null
@@ -224,6 +227,8 @@ export function toDetail(j: FreehireJob): JobDetailResult {
   const e = j.enrichment
   return {
     ...toResult(j),
+    // Keep absence distinct from the explicit null the API uses for open jobs.
+    ...(j.closed_at !== undefined ? { closed_at: j.closed_at } : {}),
     cities: j.cities,
     seniority: e.seniority || null,
     category: e.category || null,

@@ -42,6 +42,8 @@ export async function runDetail(opts: DetailOpts): Promise<number> {
         job.title,
         `${job.company || "—"} · ${job.location || "—"}`,
         job.date ? `Posted: ${job.date.slice(0, 10)}` : "",
+        job.closed_at === undefined ? "Status: unknown"
+          : job.closed_at === null ? "Status: open" : `Status: closed (${job.closed_at})`,
         job.seniority ? `Seniority: ${job.seniority}` : "",
         job.category ? `Category: ${job.category}` : "",
         job.employment_type ? `Employment: ${job.employment_type}` : "",
