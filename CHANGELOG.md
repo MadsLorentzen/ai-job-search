@@ -46,6 +46,12 @@ per-file diff commands.
 
 ### Fixed
 
+- **`robots_check.py` points a refusal at escalation step 4** (`tools/robots_check.py`) - its
+  docstring and both refusal messages said "go to step 3", but step 3 of `09-web-research.md`
+  is the `fetch_page.py` retry that just ran the check; step 4 (find the employer's own
+  posting) is where the skill, `fetch_page.py` and the agent definitions all send a refused
+  URL. An agent following the message literally retried the step it had just been refused on.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
