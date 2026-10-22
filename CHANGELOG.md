@@ -46,6 +46,16 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobdanmark-search detail` rejects posting URLs on other hosts**
+  (`.agents/skills/jobdanmark-search/cli/src/helpers.ts`,
+  `.agents/skills/jobdanmark-search/cli/tests/detail-url-normalization.test.ts`,
+  `.agents/skills/jobdanmark-search/cli/tests/reject-network.ts`) - previously,
+  a matching `/job/<slug>` path on any website was silently interpreted as a posting
+  on Jobdanmark, fetching Jobdanmark's fallback search page and exiting 0 with a bogus posting.
+  The CLI now requires an HTTP(S) URL on `jobdanmark.dk` (or its subdomains) and extracts the
+  slug from its pathname only. Bare slugs, relative `/job/<slug>` paths, and scheme-less portal
+  links remain valid, while off-host URLs exit 1 with `BAD_ID` before any request.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
