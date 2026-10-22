@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **bunli portal CLIs report an out-of-enum option value in the contract's error shape**
+  (`jobnet-search`, `jobdanmark-search`, `jobbank-search`, `jobindex-search` `cli.ts`) - `--format csv`
+  or jobindex's `--sort newest` exited 1, but bunli printed its own
+  `{"ok":false,"error":{"kind":"validation",...}}` envelope instead of the `{"error":"...","code":"..."}`
+  that `add-portal.md` requires and that freehire and linkedin emit, so a caller keyed on `code`
+  saw none. The option guard now checks enum membership itself, for `--flag value` and
+  `--flag=value`, and exits `BAD_ARG` naming the allowed values.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
