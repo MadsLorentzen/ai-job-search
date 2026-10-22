@@ -46,6 +46,12 @@ per-file diff commands.
 
 ### Fixed
 
+- **`scrape_state.py` takes `--state` and `--tracker`** (`tools/scrape_state.py`) - `main()` hard-wired
+  `job_scraper/seen_jobs.json` and `job_search_tracker.csv` at the repo root, so the real entry point
+  could only run against the real history, and its argument parsing had no test. The two overrides
+  `rank_state.py` already takes are now accepted with the same defaults; the skill's invocations are
+  unchanged.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
