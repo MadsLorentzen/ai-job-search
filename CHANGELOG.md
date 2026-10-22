@@ -46,6 +46,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **Frontmatter parsers accept CRLF line endings and a UTF-8 BOM** (`tools/lint_skills.py`,
+  `tools/check_framework_version.py`, `tools/check_upstream_updates.py`) - all three tested for
+  `---\n` and searched for `\n---`, so a Windows checkout (Git for Windows defaults to
+  `core.autocrlf=true` and the repo pins no line endings) or a file saved by Notepad with a BOM
+  failed every check: "missing YAML frontmatter" for each skill, "missing 'framework_version'" for
+  each framework file, and `check_upstream_updates.py` reporting all eleven local files as
+  unversioned. The BOM is dropped and CRLF folded to LF before parsing; the content is the same
+  file either way.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
