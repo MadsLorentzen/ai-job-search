@@ -46,6 +46,11 @@ per-file diff commands.
 
 ### Fixed
 
+- **SETUP.md troubleshooting points at the installer** (`SETUP.md`) - the "Job search CLI tools not
+  working" entry still said to run `bun install` in each CLI directory, the manual step section 3
+  replaced with `tools/install_portal_clis.py` (which also skips and reports a CLI with an
+  install-time lifecycle script). The entry now names the script and refers to section 3.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
