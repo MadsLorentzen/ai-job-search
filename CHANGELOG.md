@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`lint_skills.py` checks every form of `allowed-tools` grant the skills use** (`tools/lint_skills.py`) -
+  the missing-file check ran only when `allowed-tools` was a string, only on `bun run` targets, and
+  stripped only a trailing `*`. A YAML-list `allowed-tools` naming a file that does not exist passed;
+  a `Bash(bun run <file>:*)` grant on a file that exists was reported as missing because the `:` stayed
+  on the target; and a stale `Bash(python tools/<gone>.py:*)` grant, the form `job-scraper` uses, was
+  never looked at. List entries are joined, `:*` is stripped like ` *`, and `python`/`python3` targets
+  are checked like `bun run` ones.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
