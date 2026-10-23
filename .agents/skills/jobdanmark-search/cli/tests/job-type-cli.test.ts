@@ -63,8 +63,8 @@ test("--job-type fuldtid,deltid is sent as the jobTypes array", async () => {
   expect(result.bodies.map((b) => b.jobTypes)).toEqual([["fuldtid", "deltid"]]);
 });
 
-// All six are still listed by /api/jobsearch/settings. No live ad carries
-// fleksjob, elev, studiejob, or praktik, but each remains a valid filter.
+// All six are listed by /api/jobsearch/settings. A live 2026-10-20 search
+// returned a deltid+fleksjob ad, despite fleksjob having no ads on 2026-10-18.
 test.each(["fleksjob", "elev", "studiejob", "praktik"])(
   "settings-offered --job-type %s remains usable even when currently empty",
   async (value) => {
