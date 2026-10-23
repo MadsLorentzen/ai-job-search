@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`fetch_page.py` passes `--compressed` only when curl supports it** (fixes #705, `tools/fetch_page.py`,
+  `tests/test_fetch_page.py`) - on Windows the stock `C:\Windows\System32\curl.exe` build lacks
+  content-encoding decoders (`libz`, `brotli`, `zstd`), causing `build_curl_argv` to fail with
+  `curl: option --compressed: the installed libcurl version doesn't support this` (exit code 2) on
+  every fetch. `_curl_supports_compressed()` now checks `curl --version` features before passing
+  `--compressed`; curls without decoder support fetch uncompressed content cleanly.
+
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
