@@ -46,6 +46,14 @@ per-file diff commands.
 
 ### Fixed
 
+- **`install_portal_clis.py` finds bun in standard install locations when PATH misses it**
+  (fixes #707, `tools/install_portal_clis.py`, `tests/test_install_portal_clis.py`) - the official
+  installer writes `~/.bun/bin` only to interactive shell rc files, so non-interactive shells,
+  CI runners, and subprocesses failed immediately with `bun is not on PATH`. `find_bun()` now checks
+  candidate locations (`~/.bun/bin`, Homebrew, Linuxbrew, etc.) before reporting bun as missing,
+  prepends its directory to `PATH` for subsequent calls, and prints an actionable export command.
+
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
