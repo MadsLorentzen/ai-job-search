@@ -46,6 +46,17 @@ per-file diff commands.
 
 ### Fixed
 
+- **`jobindex-search detail` no longer treats a jobannonce id in the query or fragment as the posting**
+  (`.agents/skills/jobindex-search/cli/src/commands/detail.ts`, `tests/detail-input.test.ts`) -
+  `buildUrl` searched the raw URL string for `/jobannonce/<id>`, so
+  `https://www.jobindex.dk/?next=/jobannonce/h1647303` and a search URL or hash
+  route with the id only off the path were rebuilt into that posting and fetched.
+  Jobbank and jobnet already reject a job path that exists only in the query.
+  The id is now taken from the parsed pathname, which still has to be
+  `/jobannonce/<id>`, and the fetch URL stays the canonical jobannonce URL.
+  A real posting URL with a title slug or a tracking query is unchanged. The new
+  cases fail on master.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from

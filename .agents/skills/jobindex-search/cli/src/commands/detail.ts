@@ -69,22 +69,28 @@ function stripTags(html: string): string {
  * homepage) came back as a well-formed fake posting with exit 0 (#447). A URL
  * input now needs a jobindex.dk host (apex or subdomain) and a
  * /jobannonce/<id> path, and the fetch URL is rebuilt from the extracted id -
- * the canonical short form the bare-id path always used. A bare id stays a
- * permissive scheme- and slash-free token (the jobnet precedent): the server
- * 404s unknowns loudly, which is the honest failure. Exported for tests.
+ * the canonical short form the bare-id path always used. The id is read from
+ * the parsed pathname only: a search or redirect URL that merely carries
+ * /jobannonce/<id> in the query or fragment is not that posting, and fetching
+ * it stored the wrong job (the same hole jobbank and jobnet already close).
+ * A bare id stays a permissive scheme- and slash-free token (the jobnet
+ * precedent): the server 404s unknowns loudly, which is the honest failure.
+ * Exported for tests.
  */
 export function buildUrl(idOrUrl: string): { url: string; id: string } | null {
   const trimmed = idOrUrl.trim()
   if (/^https?:\/\//i.test(trimmed)) {
-    let host: string
+    let parsed: URL
     try {
-      host = new URL(trimmed).hostname.toLowerCase()
+      parsed = new URL(trimmed)
     } catch {
       return null
     }
+    const host = parsed.hostname.toLowerCase()
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null
     if (host !== "jobindex.dk" && !host.endsWith(".jobindex.dk")) return null
-    // Match IDs like h1647303, r13677312, etc.
-    const match = trimmed.match(/\/jobannonce\/([a-zA-Z]\d+)/)
+    // IDs look like h1647303 or r13677312, and they are their own path segment.
+    const match = parsed.pathname.match(/^\/jobannonce\/([a-zA-Z]\d+)(?:\/|$)/)
     if (!match) return null
     return { url: `${BASE_URL}/jobannonce/${match[1]}`, id: match[1] }
   }
