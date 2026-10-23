@@ -45,6 +45,15 @@ describe("jobindex detail input parsing", () => {
     expect(buildUrl("https://www.jobindex.dk/")).toBeNull();
   });
 
+  test("a jobannonce id only in the query or fragment is not a posting URL", () => {
+    // The same hole jobbank and jobnet closed: the id was matched anywhere in
+    // the raw string, so a jobindex page that is not a posting (a search URL,
+    // a redirect with ?next=) was fetched as that job and stored under it.
+    expect(buildUrl("https://www.jobindex.dk/?next=/jobannonce/h1647303")).toBeNull();
+    expect(buildUrl("https://jobindex.dk/jobsoegning?q=/jobannonce/r13677312")).toBeNull();
+    expect(buildUrl("https://www.jobindex.dk/#/jobannonce/h1647303")).toBeNull();
+  });
+
   test("garbage bare input is rejected", () => {
     expect(buildUrl("not a slug!")).toBeNull();
     expect(buildUrl("ftp://www.jobindex.dk/jobannonce/h1")).toBeNull();
