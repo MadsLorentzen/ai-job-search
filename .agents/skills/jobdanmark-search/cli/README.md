@@ -43,6 +43,8 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 | `studiejob` | Studiejob | Student job |
 | `praktik` | Praktik | Internship |
 
+These six values are offered by `/api/jobsearch/settings`. Availability varies with current ads: a valid filter can return no jobs. Try `--text` as a keyword fallback, e.g. `--text elevplads` for apprenticeships. Unknown job-type values are rejected (`BAD_ARG`, exit 1) before a request.
+
 ---
 
 ## Categories

@@ -34,6 +34,21 @@ interface ApiSearchResponse {
   totalPages: number
 }
 
+// Values offered by /api/jobsearch/settings. Availability changes with live ads:
+// a currently empty type is still a valid filter, not an unsupported argument.
+export const JOB_TYPES = ["fuldtid", "deltid", "fleksjob", "elev", "studiejob", "praktik"] as const
+
+export function parseJobTypes(value: string | undefined): string[] {
+  const types = value ? value.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean) : []
+  const unknown = types.filter((t) => !(JOB_TYPES as readonly string[]).includes(t))
+  if (unknown.length > 0) {
+    throw new Error(
+      `unsupported --job-type ${unknown.join(", ")}: the settings API offers ${JOB_TYPES.join(", ")}, and a type with no current ads returns zero jobs rather than being invalid; use --text for keywords such as elevplads`,
+    )
+  }
+  return types
+}
+
 export function toContractDate(value: string | null): string | null {
   const match = value?.match(/^(\d{2})-(\d{2})-(\d{4})$/)
   return match ? `${match[3]}-${match[2]}-${match[1]}` : (value ?? null)
@@ -153,9 +168,13 @@ export const search = defineCommand({
       filters.push({ type: "administrativeRegion", value, displayText: value })
     }
 
-    const jobTypes = flags["job-type"]
-      ? flags["job-type"].split(",").map((t) => t.trim()).filter(Boolean)
-      : []
+    let jobTypes: string[]
+    try {
+      jobTypes = parseJobTypes(flags["job-type"])
+    } catch (err) {
+      writeError(err instanceof Error ? err.message : String(err), "BAD_ARG")
+      process.exit(1)
+    }
 
     const body = {
       jobTypes,
