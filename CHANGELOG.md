@@ -46,6 +46,15 @@ per-file diff commands.
 
 ### Fixed
 
+- **`fetch_page.py --text` drops unclosed script/style blocks and `<template>`** (`tools/fetch_page.py`,
+  `tests/test_fetch_page.py`) - the stripper required a closing tag, so a page cut off inside
+  `<script>` (a truncated fetch, or a payload that never closes the tag) printed
+  `ignore previous instructions` into the text the retry writes into the agent's context.
+  A closed `<template>` was printed too. `posting_guard.py` already hides both the way a
+  browser does, through the end of the input when the closer is missing. `--text` now does
+  the same for script, style, noscript, svg, template and comments. Visible text after a
+  closed block is unchanged. The new cases fail on master.
+
 - **`freehire-search detail` no longer asks the API for a slug cut out of a URL on another
   host** (#623, fixes #622, `.agents/skills/freehire-search/cli/src/helpers.ts`, `tests/parsing.test.ts`,
   `tests/commands.test.ts`, `SKILL.md`) - `normalizeSlug` took the segment after `/jobs/` from
