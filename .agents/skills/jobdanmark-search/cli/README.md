@@ -43,7 +43,7 @@ All errors are written to **stderr** as `{ "error": "...", "code": "..." }` and 
 | `studiejob` | Studiejob | Student job |
 | `praktik` | Praktik | Internship |
 
-These six values are offered by `/api/jobsearch/settings`. Availability varies with current ads: a valid filter can return no jobs. Try `--text` as a keyword fallback, e.g. `--text elevplads` for apprenticeships. Unknown job-type values are rejected (`BAD_ARG`, exit 1) before a request.
+Jobdanmark's settings API still lists these six values. No live ad carries `fleksjob`, `elev`, `studiejob`, or `praktik`, so those filters return zero jobs; they remain valid filters. Use `--text` for keywords, e.g. `--text elevplads` for apprenticeships. Unknown job-type values are rejected (`BAD_ARG`, exit 1) before a request.
 
 ---
 

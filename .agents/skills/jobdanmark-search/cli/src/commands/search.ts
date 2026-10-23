@@ -34,8 +34,9 @@ interface ApiSearchResponse {
   totalPages: number
 }
 
-// Values offered by /api/jobsearch/settings. Availability changes with live ads:
-// a currently empty type is still a valid filter, not an unsupported argument.
+// Still listed by GET /api/jobsearch/settings. The portal offers fleksjob, elev,
+// studiejob and praktik as filters; no live ad carries them. An empty result is
+// not an invalid argument, and these values are not dropped from the portal.
 export const JOB_TYPES = ["fuldtid", "deltid", "fleksjob", "elev", "studiejob", "praktik"] as const
 
 export function parseJobTypes(value: string | undefined): string[] {
@@ -43,7 +44,7 @@ export function parseJobTypes(value: string | undefined): string[] {
   const unknown = types.filter((t) => !(JOB_TYPES as readonly string[]).includes(t))
   if (unknown.length > 0) {
     throw new Error(
-      `unsupported --job-type ${unknown.join(", ")}: the settings API offers ${JOB_TYPES.join(", ")}, and a type with no current ads returns zero jobs rather than being invalid; use --text for keywords such as elevplads`,
+      `unsupported --job-type ${unknown.join(", ")}: Jobdanmark's settings API still lists ${JOB_TYPES.join(", ")}; no live ad carries fleksjob, elev, studiejob, or praktik. Use --text for keywords such as elevplads`,
     )
   }
   return types
